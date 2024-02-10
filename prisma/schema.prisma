@@ -21,8 +21,8 @@ model Job {
   salary         String
   status         ApplicationStatus?
   interviews     Interview[]
-  offers         Offer[]
-  rejections     Rejection[]
+  offer         Offer[]
+  rejection     Rejection[]
 
   interviewRequestDate DateTime?
   offerMadeDate        DateTime?
