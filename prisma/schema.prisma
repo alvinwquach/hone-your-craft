@@ -8,25 +8,27 @@ datasource db {
 }
 
 model Job {
-  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
-  company              String
-  description          String
-  requiredSkills       String[]
-  bonusSkills          String[]
-  industry             String
-  jobTitle             String
-  location             String
-  workLocation         WorkLocation
-  postUrl              String
-  salary               String
-  status               ApplicationStatus?
-  interviews           Interview[]
-  offers               Offer[]
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  company        String
+  description    String
+  requiredSkills String[]
+  bonusSkills    String[]
+  industry       String
+  jobTitle       String
+  location       String
+  workLocation   WorkLocation
+  postUrl        String
+  salary         String
+  status         ApplicationStatus?
+  interviews     Interview[]
+  offers         Offer[]
+  rejections     Rejection[]
+
   interviewRequestDate DateTime?
   offerMadeDate        DateTime?
   offerAcceptedDate    DateTime?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@map("job")
 }
@@ -47,6 +49,18 @@ enum JobTitle {
   SOFTWARE_ENGINEER
   QA_ENGINEER
   TECHNICAL_WRITER
+  DATA_SCIENTIST
+  MACHINE_LEARNING_ENGINEER
+  SECURITY_ENGINEER
+  DATA_ENGINEER
+  EMBEDDED_ENGINEER
+  SOFTWARE_ARCHITECT
+  WEB_DEVELOPER
+  MOBILE_DEVELOPER
+  IOS_DEVELOPER
+  ANDROID_DEVELOPER
+  GAME_ENGINEER
+  SUPPORT_ENGINEER
 }
 
 enum ApplicationStatus {
@@ -65,6 +79,8 @@ model Interview {
   interviewRounds InterviewRound[]
   scheduledDate   DateTime?
   acceptedDate    DateTime?
+  User            User?            @relation(fields: [userId], references: [id])
+  userId          String?          @db.ObjectId
 
   @@map("interview")
 }
@@ -91,14 +107,20 @@ model Offer {
   salary    String
   notes     String
   offerDate DateTime?
+  User      User?     @relation(fields: [userId], references: [id])
+  userId    String?   @db.ObjectId
 
   @@map("offer")
 }
 
 model Rejection {
-  id    String   @id @default(auto()) @map("_id") @db.ObjectId
-  date  DateTime
-  notes String
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  date   DateTime
+  notes  String
+  job    Job?     @relation(fields: [jobId], references: [id])
+  user   User?    @relation(fields: [userId], references: [id])
+  jobId  String?  @db.ObjectId
+  userId String?  @db.ObjectId
 
   @@map("rejection")
 }
@@ -131,16 +153,19 @@ model Session {
 }
 
 model User {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
   name           String?
-  email          String?   @unique
+  email          String?     @unique
   emailVerified  DateTime?
   image          String?
   hashedPassword String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
   accounts       Account[]
   sessions       Session[]
+  offers         Offer[]
+  interviews     Interview[]
+  rejections     Rejection[]
 
   @@map("users")
 }
