@@ -86,7 +86,7 @@ model InterviewRound {
 
 model Offer {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  job        Job      @relation(fields: [jobId], references: [id]) // Opposite relation
+  job        Job      @relation(fields: [jobId], references: [id]) 
   jobId      String   @db.ObjectId
   date       DateTime
   salary     String
