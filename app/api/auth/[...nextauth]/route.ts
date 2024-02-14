@@ -1,4 +1,4 @@
-import prisma from "../../../lib/db/prisma";
+import prisma from "@/app/lib/db/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import { Adapter } from "next-auth/adapters";
@@ -15,4 +15,6 @@ export const authOptions: NextAuthOptions = {
   ],
 };
 
-export default NextAuth(authOptions);
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
