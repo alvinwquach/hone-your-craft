@@ -4,22 +4,26 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@prisma/client": "^5.1.1",
+    "@auth/prisma-adapter": "^1.4.0",
+    "@prisma/client": "^5.9.1",
     "mongodb": "^6.3.0",
     "next": "14.1.0",
+    "next-auth": "^4.24.6",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "daisyui": "^4.7.2",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "postcss": "^8",

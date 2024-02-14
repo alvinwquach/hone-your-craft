@@ -1,0 +1,21 @@
+import prisma from "@/app/lib/db/prisma";
+import { env } from "@/app/lib/db/env";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { NextAuthOptions } from "next-auth";
+import { Adapter } from "next-auth/adapters";
+import NextAuth from "next-auth/next";
+import GoogleProvider from "next-auth/providers/google";
+
+const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma) as Adapter,
+  providers: [
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    }),
+  ],
+  secret: env.NEXTAUTH_SECRET,
+};
+
+export default authOptions;
+
