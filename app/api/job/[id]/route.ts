@@ -4,7 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 const prisma = new PrismaClient();
 
 // Get job by ID
-export async function GET({ params }: { params: { jobId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { jobId: string } }
+) {
   const jobId = params.jobId;
 
   try {
