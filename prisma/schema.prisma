@@ -7,32 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Job {
-  id             String             @id @default(auto()) @map("_id") @db.ObjectId
-  company        String
-  description    String
-  requiredSkills String[]
-  bonusSkills    String[]
-  industry       String
-  jobTitle       String
-  location       String
-  workLocation   WorkLocation
-  postUrl        String
-  salary         String
-  status         ApplicationStatus?
-  interviews     Interview[]
-  offer         Offer[]
-  rejection     Rejection[]
-
-  interviewRequestDate DateTime?
-  offerMadeDate        DateTime?
-  offerAcceptedDate    DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-
-  @@map("job")
-}
-
 enum WorkLocation {
   ONSITE
   HYBRID
@@ -40,10 +14,10 @@ enum WorkLocation {
 }
 
 enum JobTitle {
-  BACKEND_DEVELOPER
-  BACKEND_ENGINEER
-  FRONTEND_DEVELOPER
-  FRONTEND_ENGINEER
+  BACK_END_DEVELOPER
+  BACK_END_ENGINEER
+  FRONT_END_DEVELOPER
+  FRONT_END_ENGINEER
   FULL_STACK_DEVELOPER
   FULL_STACK_ENGINEER
   SOFTWARE_ENGINEER
@@ -61,6 +35,11 @@ enum JobTitle {
   ANDROID_DEVELOPER
   GAME_ENGINEER
   SUPPORT_ENGINEER
+  RESEARCH_ENGINEER
+  HARDWARE_ENGINEER
+  IT_SUPPORT
+  MECHANICAL_ENGINEER
+  SYSTEMS_ENGINEER
 }
 
 enum ApplicationStatus {
@@ -71,77 +50,133 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum RoundOutcome {
+  PASS
+  FAIL
+  PENDING
+}
+
+enum RejectionInitiator {
+  APPLICANT
+  COMPANY
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+
+model Job {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  company              String
+  description          String
+  industry             String
+  jobTitle             JobTitle
+  location             String
+  workLocation         WorkLocation
+  postUrl              String
+  salary               String
+  status               ApplicationStatus?
+  interviews           Interview[]
+  offer                Offer[]
+  rejection            Rejection[]
+  jobSkills            JobSkill[]        
+  interviewRequestDate DateTime?
+  offerMadeDate        DateTime?
+  offerAcceptedDate    DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@map("job")
+}
+
+model JobSkill {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  job        Job      @relation(fields: [jobId], references: [id])
+  jobId      String   @db.ObjectId
+  skill      String   
+  isRequired Boolean  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("job_skill")
+}
+
 model Interview {
   id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  date            DateTime
-  jobId           String           @db.ObjectId
+  user            User?            @relation(fields: [userId], references: [id])
+  userId          String?          @db.ObjectId
   job             Job              @relation(fields: [jobId], references: [id])
+  jobId           String           @db.ObjectId
+  date            DateTime
   interviewRounds InterviewRound[]
   scheduledDate   DateTime?
   acceptedDate    DateTime?
-  User            User?            @relation(fields: [userId], references: [id])
-  userId          String?          @db.ObjectId
 
   @@map("interview")
 }
 
 model InterviewRound {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  interviewId String    @db.ObjectId
-  interview   Interview @relation(fields: [interviewId], references: [id])
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  interviewId String        @db.ObjectId
+  interview   Interview     @relation(fields: [interviewId], references: [id])
   roundNumber Int
   date        DateTime
   notes       String?
-  outcome     String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  outcome     RoundOutcome?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@map("interview_round")
 }
 
 model Offer {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  job       Job       @relation(fields: [jobId], references: [id])
-  jobId     String    @db.ObjectId
-  date      DateTime
-  salary    String
-  notes     String
-  offerDate DateTime?
-  User      User?     @relation(fields: [userId], references: [id])
-  userId    String?   @db.ObjectId
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  user         User?       @relation(fields: [userId], references: [id])
+  userId       String?     @db.ObjectId
+  job          Job         @relation(fields: [jobId], references: [id])
+  jobId        String      @db.ObjectId
+  offerDate    DateTime
+  acceptedDate DateTime?
+  salary       String
+  notes        String
+  status       OfferStatus
 
   @@map("offer")
 }
 
 model Rejection {
-  id     String   @id @default(auto()) @map("_id") @db.ObjectId
-  date   DateTime
-  notes  String
-  job    Job?     @relation(fields: [jobId], references: [id])
-  user   User?    @relation(fields: [userId], references: [id])
-  jobId  String?  @db.ObjectId
-  userId String?  @db.ObjectId
+  id          String             @id @default(auto()) @map("_id") @db.ObjectId
+  user        User?              @relation(fields: [userId], references: [id])
+  userId      String?            @db.ObjectId
+  job         Job?               @relation(fields: [jobId], references: [id])
+  jobId       String?            @db.ObjectId
+  date        DateTime
+  initiatedBy RejectionInitiator
+  notes       String
 
   @@map("rejection")
 }
 
 model Account {
-  id                String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String  @db.ObjectId
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.String
+  id                       String  @id @default(auto()) @map("_id") @db.ObjectId
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                   String  @db.ObjectId
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.String
   refresh_token_expires_in Int?
-  access_token      String? @db.String
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.String
-  session_state     String?
-  oauth_token_secret String?
-  oauth_token String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  access_token             String? @db.String
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? @db.String
+  session_state            String?
+  oauth_token_secret       String?
+  oauth_token              String?
 
   @@unique([provider, providerAccountId])
   @@map("account")
@@ -158,11 +193,11 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?     @unique
+  emailVerified  DateTime?
+  image          String?
   hashedPassword String?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
