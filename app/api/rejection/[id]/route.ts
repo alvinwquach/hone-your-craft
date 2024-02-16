@@ -4,7 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 const prisma = new PrismaClient();
 
 // Get rejection by ID
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const rejectionId = params.id;
 
   try {
