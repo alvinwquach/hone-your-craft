@@ -39,7 +39,7 @@ export async function GET(
 
 // Create a new interview
 export async function POST(request: NextRequest) {
-  const { userId, jobId, date, scheduledDate, interviewRounds } =
+  const { userId, jobId, acceptedDate, interviewDate, interviewRounds } =
     await request.json();
 
   try {
@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         jobId,
-        date,
-        scheduledDate,
+        acceptedDate,
+        interviewDate,
         interviewRounds: {
           createMany: {
             data: interviewRounds,
@@ -77,15 +77,15 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const interviewId = params.id;
-  const { date, scheduledDate, interviewRounds } = await request.json();
+  const { acceptedDate, interviewDate, interviewRounds } = await request.json();
 
   try {
     // Attempt to update the interview
     const updatedInterview = await prisma.interview.update({
       where: { id: interviewId },
       data: {
-        date,
-        scheduledDate,
+        acceptedDate,
+        interviewDate,
         interviewRounds: {
           upsert: interviewRounds.map((round: InterviewRound) => ({
             where: { id: round.id },
