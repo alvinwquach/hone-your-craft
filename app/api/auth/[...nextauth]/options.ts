@@ -2,13 +2,17 @@ import prisma from "@/app/lib/db/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { Adapter } from "next-auth/adapters";
-import bcrypt from "bcrypt";
 import GoogleProvider from "next-auth/providers/google";
+import DiscordProvider from "next-auth/providers/discord";
 
 const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
     GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }),
+    DiscordProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
@@ -19,7 +23,7 @@ const authOptions: NextAuthOptions = {
     updateAge: 24 * 60 * 60,
   },
   // Secret key for encrypting and decrypting tokens
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.JWT_SECRET,
   callbacks: {
     // Callback triggered when a user signs in
     async signIn({ user }) {
