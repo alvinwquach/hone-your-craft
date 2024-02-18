@@ -4,6 +4,7 @@ import { NextAuthOptions } from "next-auth";
 import { Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
+import GitHubProvider from "next-auth/providers/github";
 
 const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
@@ -11,10 +12,17 @@ const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
     }),
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID as string,
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID as string,
+      clientSecret: process.env.GITHUB_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   session: {
@@ -42,6 +50,7 @@ const authOptions: NextAuthOptions = {
               image: user.image,
             },
           });
+          console.log("Sign-in data:", user);
 
           console.log("New user created:", newUser);
         } else {
@@ -59,13 +68,19 @@ const authOptions: NextAuthOptions = {
         const foundUser = await prisma.user.findUnique({
           where: { email: user.email },
         });
+
+        console.log("Found user in database:", foundUser);
+
         if (foundUser) {
           // Adding user ID to the token
           token.userId = foundUser.id;
         }
       }
+
+      console.log("JWT token data:", token);
       return token;
     },
+
     // Callback triggered when a session is created or updated
     async session({ session, token }) {
       if (session.user) {
