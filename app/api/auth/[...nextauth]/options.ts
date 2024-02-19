@@ -4,7 +4,7 @@ import { NextAuthOptions } from "next-auth";
 import { Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
-import GitHubProvider from "next-auth/providers/github";
+// import GitHubProvider from "next-auth/providers/github";
 
 const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
@@ -19,11 +19,11 @@ const authOptions: NextAuthOptions = {
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
       allowDangerousEmailAccountLinking: true,
     }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
-      allowDangerousEmailAccountLinking: true,
-    }),
+    // GitHubProvider({
+    //   clientId: process.env.GITHUB_ID as string,
+    //   clientSecret: process.env.GITHUB_SECRET as string,
+    //   allowDangerousEmailAccountLinking: true,
+    // }),
   ],
   session: {
     strategy: "jwt",

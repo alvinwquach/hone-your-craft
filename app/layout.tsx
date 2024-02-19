@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import SessionProvider from "./SessionProvider";
 import "./globals.css";
-import Sidebar from "./components/common/Sidebar";
+import Header from "./components/common/Header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <SessionProvider>
           <main>
-            <Sidebar />
+            <Header />
             {children}
           </main>
         </SessionProvider>
