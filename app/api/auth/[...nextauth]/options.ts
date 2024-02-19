@@ -5,6 +5,8 @@ import { Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import GitHubProvider from "next-auth/providers/github";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcrypt";
 
 const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
@@ -24,7 +26,48 @@ const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_SECRET as string,
       allowDangerousEmailAccountLinking: true,
     }),
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "email", type: "text" },
+        password: { label: "password", type: "password" },
+      },
+      async authorize(credentials) {
+        // Check if either email or password is missing
+        if (!credentials?.email || !credentials?.password) {
+          // Throw an error indicating missing email or password
+          throw new Error("Email or password is missing");
+        }
+        // Query the database to find a user with the provided email
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+        });
+        // Check if user is not found or hashedPassword is null
+
+        if (!user || user.hashedPassword === null) {
+          // Throw an error indicating user not found or password not set
+          throw new Error("User not found or password not set");
+        }
+
+        // Compare the provided password with the hashed password stored in the database
+        const correctPassword = await bcrypt.compare(
+          credentials.password,
+          user.hashedPassword
+        );
+
+        // Check if password is incorrect
+        if (!correctPassword) {
+          // Throw an error indicating incorrect password
+          throw new Error("Incorrect password");
+        }
+        // Return the authenticated user
+        return user;
+      },
+    }),
   ],
+
   session: {
     strategy: "jwt",
     maxAge: 60 * 60 * 24,
@@ -34,6 +77,7 @@ const authOptions: NextAuthOptions = {
   secret: process.env.JWT_SECRET,
   callbacks: {
     // Callback triggered when a user signs in
+
     async signIn({ user }) {
       if (user && user.email) {
         // Check if the user exists in the database
