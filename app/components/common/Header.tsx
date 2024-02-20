@@ -15,11 +15,10 @@ import { MdAssignmentInd } from "react-icons/md";
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
   { href: "/profile", text: "Profile", icon: FiUser },
-  { href: "/roles", text: "Roles", icon: MdAssignmentInd },
-
   { href: "/track", text: "Track", icon: FiColumns },
   { href: "/calendar", text: "Calendar", icon: FiCalendar },
   { href: "/metrics", text: "Metrics", icon: FiBarChart2 },
+  { href: "/roles", text: "Roles", icon: MdAssignmentInd },
 ];
 
 function classNames(...classes: string[]) {
@@ -40,11 +39,12 @@ export default function CustomNavigation() {
             <div className="flex justify-between items-end space-x-4">
               <button
                 onClick={() => signIn()}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold px-4 py-2 rounded-lg"
+                className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold px-4 py-2 rounded-lg"
               >
                 Sign in
               </button>
-              <button className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold px-4 py-2 rounded-lg">
+
+              <button className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold px-4 py-2 rounded-lg">
                 Sign up
               </button>
             </div>
@@ -220,7 +220,7 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 function BottomNavigation() {
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full bg-gray-50 dark:bg-gray-800">
-      <div className="flex justify-around items-center h-16 max-w-lg mx-auto font-medium">
+      <div className="flex justify-around items-center h-20 max-w-lg mx-auto font-medium">
         {navigation.map((item, index) => (
           <BottomNavigationItem
             key={index}
@@ -251,21 +251,21 @@ function BottomNavigationItem({
   return (
     <Link href={href}>
       <button
-        className={`inline-flex flex-col items-center justify-center px-5 group ${
+        className={`inline-flex flex-col items-center justify-center px-4 rounded-lg group ${
           isActive
-            ? "bg-gray-200 dark:bg-gray-700"
-            : "hover:bg-gray-200 dark:hover:bg-gray-700"
+            ? "bg-gray-200 dark:bg-gray-700 "
+            : "hover:bg-gray-200 dark:hover:bg-gray-700 "
         }`}
       >
         <Icon
-          className={`w-5 h-5 mb-1 mt-2 ${
+          className={`w-5 h-5 mb-1 mt-1 ${
             isActive
               ? "text-blue-600 dark:text-blue-500"
               : "text-gray-500 dark:text-gray-400"
           }`}
         />
         <span
-          className={`text-xs ${
+          className={`text-xs mb-1 ${
             isActive
               ? "text-blue-600 dark:text-blue-500"
               : "text-gray-500 dark:text-gray-400"
@@ -277,3 +277,5 @@ function BottomNavigationItem({
     </Link>
   );
 }
+
+
