@@ -10,11 +10,14 @@ import { IconType } from "react-icons";
 import { AiOutlineHome } from "react-icons/ai";
 import { FiUser, FiCalendar, FiBarChart2, FiColumns } from "react-icons/fi";
 import { HiOutlineChevronDown } from "react-icons/hi";
+import { MdAssignmentInd } from "react-icons/md";
 
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
   { href: "/profile", text: "Profile", icon: FiUser },
-  { href: "/jobs", text: "Jobs", icon: FiColumns },
+  { href: "/roles", text: "Roles", icon: MdAssignmentInd },
+
+  { href: "/track", text: "Track", icon: FiColumns },
   { href: "/calendar", text: "Calendar", icon: FiCalendar },
   { href: "/metrics", text: "Metrics", icon: FiBarChart2 },
 ];
