@@ -30,7 +30,7 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <header className="fixed top-0 right-0 bg-white dark:bg-gray-800 w-full p-4 h-20 flex justify-end items-center">
+      <header className="fixed top-0 right-0 bg-gray-800 w-full p-4 h-20 flex justify-end items-center">
         <div>
           {user ? (
             <ProfileMenu user={user} />
@@ -38,7 +38,7 @@ export default function CustomNavigation() {
             <div className="flex justify-between items-end space-x-4">
               <button
                 onClick={() => signIn()}
-                className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold px-4 py-2 rounded-lg"
+                className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold px-4 py-2 rounded-lg"
               >
                 Sign in
               </button>
@@ -73,7 +73,7 @@ function ProfileMenu({ user }: ProfileMenuProps) {
     <div className="flex items-center space-x-4">
       <Menu as="div" className="relative">
         <div>
-          <Menu.Button className="rounded-lg px-2 py-3 hover:bg-gray-200 dark:hover:bg-gray-700">
+          <Menu.Button className="rounded-lg px-2 py-3 hover:bg-gray-700">
             <span className="sr-only">Open user menu</span>
             <div className="flex items-center">
               <Image
@@ -102,20 +102,18 @@ function ProfileMenu({ user }: ProfileMenuProps) {
             {user ? (
               <>
                 <Menu.Item>
-                  {({ active }) => (
-                    <div className="px-4 py-2 flex items-center space-x-2">
-                      <Image
-                        src={user?.image || ""}
-                        alt={`${user?.name}'s profile picture`}
-                        height={40}
-                        width={40}
-                        className="rounded-full"
-                      />
-                      <span className="text-sm text-gray-700 mb-3 font-semibold ">
-                        {user.name}
-                      </span>
-                    </div>
-                  )}
+                  <div className="px-4 py-2 flex items-center space-x-2">
+                    <Image
+                      src={user?.image || ""}
+                      alt={`${user?.name}'s profile picture`}
+                      height={40}
+                      width={40}
+                      className="rounded-full"
+                    />
+                    <span className="text-sm text-gray-700 mb-3 font-semibold ">
+                      {user.name}
+                    </span>
+                  </div>
                 </Menu.Item>
                 <hr className="my-1 border-gray-200 w-4/5 mx-auto" />
                 <Menu.Item>
@@ -143,7 +141,7 @@ function ProfileMenu({ user }: ProfileMenuProps) {
 function Sidebar() {
   return (
     <nav className="fixed inset-y-0 left-0 flex z-50">
-      <div className="fixed inset-y-0 left-0 w-64 bg-gray-50 dark:bg-gray-800 z-40 overflow-y-auto">
+      <div className="fixed inset-y-0 left-0 w-64 bg-gray-800 z-40 overflow-y-auto">
         <div className="px-4 py-8 mt-12">
           <ul className="space-y-4">
             {navigation.map((item, index) => (
@@ -176,20 +174,14 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
       <Link
         href={href}
         className={`flex items-center p-3 rounded-lg ${
-          isActive
-            ? "bg-gray-200 dark:bg-gray-700"
-            : "hover:bg-gray-200 dark:hover:bg-gray-700"
+          isActive ? "bg-gray-700" : "hover:bg-gray-700"
         }`}
       >
         <Icon
-          className={`w-6 h-6 ${
-            isActive ? "text-blue-500" : "text-gray-900 dark:text-gray-300"
-          }`}
+          className={`w-6 h-6 ${isActive ? "text-blue-500" : "text-gray-300"}`}
         />
         <span
-          className={`ml-3 ${
-            isActive ? "text-blue-500" : "text-gray-900 dark:text-gray-300"
-          }`}
+          className={`ml-3 ${isActive ? "text-blue-500" : "text-gray-300"}`}
         >
           {text}
         </span>
@@ -200,7 +192,7 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 
 function BottomNavigation() {
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full bg-gray-50 dark:bg-gray-800">
+    <div className="fixed bottom-0 left-0 z-50 w-full bg-gray-800">
       <div className="flex justify-around items-center h-20 max-w-screen-lg mx-auto px-4">
         {navigation.map((item, index) => (
           <BottomNavigationItem
@@ -233,24 +225,16 @@ function BottomNavigationItem({
     <Link href={href}>
       <button
         className={`inline-flex flex-col items-center justify-center px-2 rounded-lg group ${
-          isActive
-            ? "bg-gray-200 dark:bg-gray-700 "
-            : "hover:bg-gray-200 dark:hover:bg-gray-700 "
+          isActive ? "bg-gray-700 " : "hover:bg-gray-700 "
         }`}
       >
         <Icon
           className={`w-5 h-5 my-1 ${
-            isActive
-              ? "text-blue-600 dark:text-blue-500"
-              : "text-gray-500 dark:text-gray-400"
+            isActive ? "text-blue-500" : "text-gray-400"
           }`}
         />
         <span
-          className={`text-xs ${
-            isActive
-              ? "text-blue-600 dark:text-blue-500"
-              : "text-gray-500 dark:text-gray-400"
-          }`}
+          className={`text-xs ${isActive ? "text-blue-500" : "text-gray-400"}`}
         >
           <span className="text-xs">{text}</span>
         </span>
