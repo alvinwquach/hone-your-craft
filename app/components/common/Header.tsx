@@ -43,9 +43,6 @@ export default function CustomNavigation() {
                 Sign in
               </button>
 
-              <button className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold px-4 py-2 rounded-lg">
-                Sign up
-              </button>
             </div>
           )}
         </div>
