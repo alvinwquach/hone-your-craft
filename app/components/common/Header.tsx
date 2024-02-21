@@ -42,7 +42,6 @@ export default function CustomNavigation() {
               >
                 Sign in
               </button>
-
             </div>
           )}
         </div>
@@ -202,7 +201,7 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 function BottomNavigation() {
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full bg-gray-50 dark:bg-gray-800">
-      <div className="flex justify-around items-center h-20 max-w-lg mx-2 font-medium">
+      <div className="flex justify-around items-center h-20 max-w-screen-lg mx-auto px-4">
         {navigation.map((item, index) => (
           <BottomNavigationItem
             key={index}
@@ -233,7 +232,7 @@ function BottomNavigationItem({
   return (
     <Link href={href}>
       <button
-        className={`inline-flex flex-col items-center justify-center px-4 rounded-lg group ${
+        className={`inline-flex flex-col items-center justify-center px-2 rounded-lg group ${
           isActive
             ? "bg-gray-200 dark:bg-gray-700 "
             : "hover:bg-gray-200 dark:hover:bg-gray-700 "
@@ -247,17 +246,18 @@ function BottomNavigationItem({
           }`}
         />
         <span
-          className={`text-xs mb-1 ${
+          className={`text-xs ${
             isActive
               ? "text-blue-600 dark:text-blue-500"
               : "text-gray-500 dark:text-gray-400"
           }`}
         >
-          {text}
+          <span className="text-xs">{text}</span>
         </span>
       </button>
     </Link>
   );
 }
+
 
 
