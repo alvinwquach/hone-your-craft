@@ -8,13 +8,12 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { IconType } from "react-icons";
 import { AiOutlineHome } from "react-icons/ai";
-import { FiUser, FiCalendar, FiBarChart2, FiColumns } from "react-icons/fi";
+import { FiCalendar, FiBarChart2, FiColumns } from "react-icons/fi";
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { MdAssignmentInd } from "react-icons/md";
 
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
-  { href: "/profile", text: "Profile", icon: FiUser },
   { href: "/track", text: "Track", icon: FiColumns },
   { href: "/calendar", text: "Calendar", icon: FiCalendar },
   { href: "/metrics", text: "Metrics", icon: FiBarChart2 },
@@ -251,14 +250,14 @@ function BottomNavigationItem({
   return (
     <Link href={href}>
       <button
-        className={`inline-flex flex-col items-center justify-center px-4 rounded-lg group ${
+        className={`inline-flex flex-col items-center justify-center px-6 rounded-lg group ${
           isActive
             ? "bg-gray-200 dark:bg-gray-700 "
             : "hover:bg-gray-200 dark:hover:bg-gray-700 "
         }`}
       >
         <Icon
-          className={`w-5 h-5 mb-1 mt-1 ${
+          className={`w-5 h-5 my-1 ${
             isActive
               ? "text-blue-600 dark:text-blue-500"
               : "text-gray-500 dark:text-gray-400"
