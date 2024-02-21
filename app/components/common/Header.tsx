@@ -121,20 +121,6 @@ function ProfileMenu({ user }: ProfileMenuProps) {
                 <hr className="my-1 border-gray-200 w-4/5 mx-auto" />
                 <Menu.Item>
                   {({ active }) => (
-                    <Link
-                      href="/profile/"
-                      className={classNames(
-                        active ? "bg-gray-100" : "",
-                        "block px-4 py-2 text-sm text-gray-700 text-left"
-                      )}
-                    >
-                      Edit Profile
-                    </Link>
-                  )}
-                </Menu.Item>
-                <hr className="my-1 border-gray-200 w-4/5 mx-auto" />
-                <Menu.Item>
-                  {({ active }) => (
                     <button
                       onClick={() => signOut()}
                       className={classNames(
@@ -216,7 +202,7 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 function BottomNavigation() {
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full bg-gray-50 dark:bg-gray-800">
-      <div className="flex justify-around items-center h-20 max-w-lg mx-auto font-medium">
+      <div className="flex justify-around items-center h-20 max-w-lg mx-2 font-medium">
         {navigation.map((item, index) => (
           <BottomNavigationItem
             key={index}
@@ -247,7 +233,7 @@ function BottomNavigationItem({
   return (
     <Link href={href}>
       <button
-        className={`inline-flex flex-col items-center justify-center px-6 rounded-lg group ${
+        className={`inline-flex flex-col items-center justify-center px-4 rounded-lg group ${
           isActive
             ? "bg-gray-200 dark:bg-gray-700 "
             : "hover:bg-gray-200 dark:hover:bg-gray-700 "
