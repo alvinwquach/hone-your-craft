@@ -30,8 +30,9 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <header className="fixed top-0 right-0 bg-gray-800 w-full p-4 h-20 flex justify-end items-center">
-        <div>
+      <header className="fixed top-0 right-0 bg-gray-800 w-full h-20 flex items-center z-50 border-b border-gray-600">
+        <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
+        <div className="mr-6">
           {user ? (
             <ProfileMenu user={user} />
           ) : (
@@ -140,19 +141,21 @@ function ProfileMenu({ user }: ProfileMenuProps) {
 
 function Sidebar() {
   return (
-    <nav className="fixed inset-y-0 left-0 flex z-50">
-      <div className="fixed inset-y-0 left-0 w-64 bg-gray-800 z-40 overflow-y-auto">
-        <div className="px-4 py-8 mt-12">
-          <ul className="space-y-4">
-            {navigation.map((item, index) => (
-              <SidebarItem
-                key={index}
-                href={item.href}
-                text={item.text}
-                icon={item.icon}
-              />
-            ))}
-          </ul>
+    <nav className="fixed inset-y-0 left-0 z-50">
+      <div className="fixed inset-y-0 left-0 w-24 bg-gray-800 z-40">
+        <div className="h-full border-r border-gray-600">
+          <div className="px-4 py-8 mt-20">
+            <ul className="space-y-4">
+              {navigation.map((item, index) => (
+                <SidebarItem
+                  key={index}
+                  href={item.href}
+                  text={item.text}
+                  icon={item.icon}
+                />
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </nav>
@@ -173,15 +176,19 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
     <li>
       <Link
         href={href}
-        className={`flex items-center p-3 rounded-lg ${
-          isActive ? "bg-gray-700" : "hover:bg-gray-700"
+        className={`flex flex-col items-center p-3 rounded-lg ${
+          isActive
+            ? "bg-gray-700"
+            : "hover:bg-gray-700 hover:underline hover:text-gray-400"
         }`}
       >
         <Icon
           className={`w-6 h-6 ${isActive ? "text-blue-500" : "text-gray-300"}`}
         />
         <span
-          className={`ml-3 ${isActive ? "text-blue-500" : "text-gray-300"}`}
+          className={`mt-1 text-xs ${
+            isActive ? "text-blue-500" : "text-gray-300"
+          }`}
         >
           {text}
         </span>
@@ -192,8 +199,8 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 
 function BottomNavigation() {
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full bg-gray-800">
-      <div className="flex justify-around items-center h-20 max-w-screen-lg mx-auto px-4">
+    <div className="fixed bottom-0 z-50 w-full bg-gray-800 border-t border-gray-600 ">
+      <div className="flex justify-around  my-2">
         {navigation.map((item, index) => (
           <BottomNavigationItem
             key={index}
@@ -224,8 +231,10 @@ function BottomNavigationItem({
   return (
     <Link href={href}>
       <button
-        className={`inline-flex flex-col items-center justify-center px-2 rounded-lg group ${
-          isActive ? "bg-gray-700 " : "hover:bg-gray-700 "
+        className={`inline-flex flex-col items-center justify-center px-2 py-1 rounded-lg group ${
+          isActive
+            ? "bg-gray-700 "
+            : "hover:bg-gray-700 hover:underline hover:text-gray-400"
         }`}
       >
         <Icon
@@ -234,14 +243,13 @@ function BottomNavigationItem({
           }`}
         />
         <span
-          className={`text-xs ${isActive ? "text-blue-500" : "text-gray-400"}`}
+          className={`text-xs ${isActive ? "text-blue-500" : "text-gray-400 "}`}
         >
-          <span className="text-xs">{text}</span>
+          <span className="text-xs ">{text}</span>
         </span>
       </button>
     </Link>
   );
 }
-
 
 
