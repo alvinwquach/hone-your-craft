@@ -45,7 +45,7 @@ enum JobTitle {
 enum ApplicationStatus {
   SAVED
   APPLIED
-  INTERVIEWING
+  INTERVIEW
   OFFER
   REJECTED
 }
@@ -67,18 +67,19 @@ enum OfferStatus {
   REJECTED
 }
 
-
 model Job {
   id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String   @db.ObjectId
   company              String
   description          String
-  jobTitle             JobTitle
+  title             JobTitle
   industry             String
   location             String
   workLocation         WorkLocation
   postUrl              String
   salary               String
-  status               ApplicationStatus?
+  status               ApplicationStatus
   interviews           Interview[]
   offer                Offer[]
   rejection            Rejection[]
@@ -196,6 +197,7 @@ model User {
   image          String?
   accounts       Account[]
   sessions       Session[]
+  jobs     Job[]
   offers         Offer[]
   interviews     Interview[]
   rejections     Rejection[]
