@@ -13,33 +13,16 @@ enum WorkLocation {
   REMOTE
 }
 
-enum JobTitle {
-  BACK_END_DEVELOPER
-  BACK_END_ENGINEER
-  FRONT_END_DEVELOPER
-  FRONT_END_ENGINEER
-  FULL_STACK_DEVELOPER
-  FULL_STACK_ENGINEER
-  SOFTWARE_ENGINEER
-  QA_ENGINEER
-  TECHNICAL_WRITER
-  DATA_SCIENTIST
-  MACHINE_LEARNING_ENGINEER
-  SECURITY_ENGINEER
-  DATA_ENGINEER
-  EMBEDDED_ENGINEER
-  SOFTWARE_ARCHITECT
-  WEB_DEVELOPER
-  MOBILE_DEVELOPER
-  IOS_DEVELOPER
-  ANDROID_DEVELOPER
-  GAME_ENGINEER
-  SUPPORT_ENGINEER
-  RESEARCH_ENGINEER
-  HARDWARE_ENGINEER
-  IT_SUPPORT
-  MECHANICAL_ENGINEER
-  SYSTEMS_ENGINEER
+enum InterviewType {
+  FINAL_ROUND
+  ON_SITE
+  TECHNICAL
+  PANEL
+  PHONE_SCREEN
+  ASSESSMENT
+  INTERVIEW
+  VIDEO_INTERVIEW
+  FOLLOW_UP
 }
 
 enum ApplicationStatus {
@@ -68,24 +51,24 @@ enum OfferStatus {
 }
 
 model Job {
-  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String   @db.ObjectId
-  company              String
-  description          String
-  title             JobTitle
-  industry             String
-  location             String
-  workLocation         WorkLocation
-  postUrl              String
-  salary               String
-  status               ApplicationStatus
-  interviews           Interview[]
-  offer                Offer[]
-  rejection            Rejection[]
-  jobSkills            JobSkill[]        
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String            @db.ObjectId
+  company      String
+  description  String
+  title        String
+  industry     String
+  location     String
+  workLocation WorkLocation
+  postUrl      String
+  salary       String
+  status       ApplicationStatus
+  interviews   Interview[]
+  offer        Offer[]
+  rejection    Rejection[]
+  jobSkills    JobSkill[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@map("job")
 }
@@ -94,8 +77,8 @@ model JobSkill {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   job        Job      @relation(fields: [jobId], references: [id])
   jobId      String   @db.ObjectId
-  skill      String   
-  isRequired Boolean  
+  skill      String
+  isRequired Boolean
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -111,7 +94,7 @@ model Interview {
   acceptedDate    DateTime
   interviewDate   DateTime
   interviewRounds InterviewRound[]
-
+  interviewType InterviewType 
   @@map("interview")
 }
 
@@ -154,26 +137,26 @@ model Rejection {
   date        DateTime
   initiatedBy RejectionInitiator
   notes       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@map("rejection")
 }
 
 model Account {
-  id                       String  @id @default(auto()) @map("_id") @db.ObjectId
-  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                   String  @db.ObjectId
-  type                     String
-  provider                 String
-  providerAccountId        String
-  refresh_token            String? @db.String
-  access_token             String? @db.String
-  expires_at               Int?
-  token_type               String?
-  scope                    String?
-  id_token                 String? @db.String
-  session_state            String?
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
 
   @@unique([provider, providerAccountId])
   @@map("account")
@@ -190,19 +173,19 @@ model Session {
 }
 
 model User {
-  id             String      @id @default(auto()) @map("_id") @db.ObjectId
-  name           String?
-  email          String?     @unique
-  emailVerified  DateTime?
-  image          String?
-  accounts       Account[]
-  sessions       Session[]
-  jobs     Job[]
-  offers         Offer[]
-  interviews     Interview[]
-  rejections     Rejection[]
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?     @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  jobs          Job[]
+  offers        Offer[]
+  interviews    Interview[]
+  rejections    Rejection[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@map("users")
 }
