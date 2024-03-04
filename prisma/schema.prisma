@@ -13,6 +13,18 @@ enum WorkLocation {
   REMOTE
 }
 
+enum InterviewType {
+  FINAL_ROUND
+  ON_SITE
+  TECHNICAL
+  PANEL
+  PHONE_SCREEN
+  ASSESSMENT
+  INTERVIEW
+  VIDEO_INTERVIEW
+  FOLLOW_UP
+}
+
 enum ApplicationStatus {
   SAVED
   APPLIED
@@ -25,18 +37,6 @@ enum RoundOutcome {
   PASS
   FAIL
   PENDING
-}
-
-enum InterviewType {
-  FINAL_ROUND
-  ON_SITE
-  TECHNICAL
-  PANEL
-  PHONE_SCREEN
-  ASSESSMENT
-  INTERVIEW
-  VIDEO_INTERVIEW
-  FOLLOW_UP
 }
 
 enum RejectionInitiator {
@@ -63,7 +63,6 @@ model Job {
   postUrl      String
   salary       String
   status       ApplicationStatus
-  interviewType InterviewType
   interviews   Interview[]
   offer        Offer[]
   rejection    Rejection[]
@@ -94,9 +93,8 @@ model Interview {
   jobId           String           @db.ObjectId
   acceptedDate    DateTime
   interviewDate   DateTime
-  interviewType   InterviewType   
   interviewRounds InterviewRound[]
-
+  interviewType InterviewType 
   @@map("interview")
 }
 
@@ -201,4 +199,3 @@ model VerificationToken {
   @@unique([identifier, token])
   @@map("verificationtokens")
 }
-

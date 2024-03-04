@@ -39,20 +39,20 @@ export async function GET(
 
 // Create a new interview
 export async function POST(request: NextRequest) {
-  const { userId, jobId, acceptedDate, interviewDate, interviewRounds } =
-    await request.json();
+  const requestBody = await request.json();
 
   try {
     // Attempt to create a new interview
     const interview = await prisma.interview.create({
       data: {
-        userId,
-        jobId,
-        acceptedDate,
-        interviewDate,
+        userId: requestBody.userId,
+        jobId: requestBody.jobId,
+        acceptedDate: requestBody.acceptedDate,
+        interviewDate: requestBody.interviewDate,
+        interviewType: requestBody.interviewType,
         interviewRounds: {
           createMany: {
-            data: interviewRounds,
+            data: requestBody.interviewRounds,
           },
         },
       },
@@ -77,7 +77,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const interviewId = params.id;
-  const { acceptedDate, interviewDate, interviewRounds } = await request.json();
+  const { acceptedDate, interviewDate, interviewRounds, interviewType } =
+    await request.json(); // Extract interviewType from the request body
 
   try {
     // Attempt to update the interview
@@ -86,11 +87,12 @@ export async function PUT(
       data: {
         acceptedDate,
         interviewDate,
+        interviewType,
         interviewRounds: {
           upsert: interviewRounds.map((round: InterviewRound) => ({
-            where: { id: round.id },
-            update: round,
-            create: round,
+            where: { id: round.id }, // Where condition for upsert
+            update: round, // Update the existing round
+            create: round, // Create a new round if it doesn't exist
           })),
         },
       },
@@ -133,3 +135,6 @@ export async function DELETE(
     );
   }
 }
+
+
+
