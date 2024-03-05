@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -8,15 +8,17 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { IconType } from "react-icons";
 import { AiOutlineHome } from "react-icons/ai";
-import { FiCalendar, FiBarChart2, FiColumns } from "react-icons/fi";
+import { FiCalendar, FiBarChart2, FiUser, FiBriefcase } from "react-icons/fi";
 import { HiOutlineChevronDown } from "react-icons/hi";
+import { SiBaremetrics } from "react-icons/si";
 import { MdAssignmentInd } from "react-icons/md";
 
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
-  { href: "/track", text: "Track", icon: FiColumns },
+  { href: "/profile", text: "Profile", icon: FiUser },
+  { href: "/track", text: "Track", icon: FiBriefcase },
   { href: "/calendar", text: "Calendar", icon: FiCalendar },
-  { href: "/metrics", text: "Metrics", icon: FiBarChart2 },
+  { href: "/metrics", text: "Metrics", icon: SiBaremetrics },
   { href: "/roles", text: "Roles", icon: MdAssignmentInd },
 ];
 
@@ -37,12 +39,12 @@ export default function CustomNavigation() {
             <ProfileMenu user={user} />
           ) : (
             <div className="flex justify-between items-end space-x-4">
-              <button
-                onClick={() => signIn()}
+              <Link
+                href="/login"
                 className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold px-4 py-2 rounded-lg"
               >
-                Sign in
-              </button>
+                Log in
+              </Link>
             </div>
           )}
         </div>
@@ -117,6 +119,23 @@ function ProfileMenu({ user }: ProfileMenuProps) {
                   </div>
                 </Menu.Item>
                 <hr className="my-1 border-gray-200 w-4/5 mx-auto" />
+                <div className="ml-6 mt-2 text-gray-400 text-xs">Personal</div>
+                <Menu.Item>
+                  {({ active }) => (
+                    <Link
+                      href="/profile"
+                      className={classNames(
+                        active ? "bg-gray-100" : "",
+                        "block px-4 py-2 text-sm text-gray-700 w-full text-left"
+                      )}
+                    >
+                      Edit Profile
+                    </Link>
+                  )}
+                </Menu.Item>
+
+                <hr className="my-1 border-gray-200 w-4/5 mx-auto" />
+
                 <Menu.Item>
                   {({ active }) => (
                     <button
@@ -126,7 +145,7 @@ function ProfileMenu({ user }: ProfileMenuProps) {
                         "block px-4 py-2 text-sm text-gray-700 w-full text-left"
                       )}
                     >
-                      Sign out
+                      Log out
                     </button>
                   )}
                 </Menu.Item>
@@ -231,25 +250,29 @@ function BottomNavigationItem({
   return (
     <Link href={href}>
       <button
-        className={`inline-flex flex-col items-center justify-center px-2 py-1 rounded-lg group ${
+        className={`inline-flex flex-col items-center justify-center rounded-lg group ${
           isActive
             ? "bg-gray-700 "
             : "hover:bg-gray-700 hover:underline hover:text-gray-400"
         }`}
       >
         <Icon
-          className={`w-5 h-5 my-1 ${
+          className={`w-5 h-5 mt-1 ${
             isActive ? "text-blue-500" : "text-gray-400"
           }`}
         />
         <span
-          className={`text-xs ${isActive ? "text-blue-500" : "text-gray-400 "}`}
+          className={`text-xs  ${
+            isActive ? "text-blue-500" : "text-gray-400 "
+          }`}
         >
-          <span className="text-xs ">{text}</span>
+          <span className="text-xs">{text}</span>
         </span>
       </button>
     </Link>
   );
 }
+
+
 
 
