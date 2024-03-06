@@ -8,7 +8,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { IconType } from "react-icons";
 import { AiOutlineHome } from "react-icons/ai";
-import { FiCalendar, FiBarChart2, FiUser, FiBriefcase } from "react-icons/fi";
+import { FiCalendar, FiUser, FiBriefcase } from "react-icons/fi";
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { SiBaremetrics } from "react-icons/si";
 import { MdAssignmentInd } from "react-icons/md";
