@@ -3,6 +3,35 @@ import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { email: string } }
+) {
+  // Extract the email from the URL params
+  const userEmail = params.email;
+
+  try {
+    // Extract the role from the request body
+    const { role } = await request.json();
+
+    // Attempt to update the user's role in the database
+    const updatedUser = await prisma.user.update({
+      where: { email: userEmail },
+      data: { role }, // Update the role field
+    });
+
+    // Return a JSON response with the updated user object
+    return NextResponse.json({ user: updatedUser });
+  } catch (error) {
+    // Handle errors and return a JSON response with the error message
+    console.error("Error updating user role:", error);
+    return NextResponse.json(
+      { message: "Error updating user role" },
+      { status: 500 }
+    );
+  }
+}
+
 // Get user by email
 export async function GET(
   request: NextRequest,
@@ -39,26 +68,28 @@ export async function PUT(
   { params }: { params: { email: string } }
 ) {
   const userEmail = params.email;
-  const userData = await request.json();
+  const { role } = await request.json(); // Extract role from request body
 
   try {
-    // Attempt to update the user
+    // Attempt to update the user's role
     const updatedUser = await prisma.user.update({
       where: { email: userEmail },
-      data: userData,
+      data: { role }, // Update the role field
     });
 
     // Return the updated user as a JSON response
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
     // Handle errors and return a 500 response
-    console.error("Error updating user:", error);
+    console.error("Error updating user role:", error);
     return NextResponse.json(
-      { message: "Error updating user" },
+      { message: "Error updating user role" },
       { status: 500 }
     );
   }
 }
+
+
 
 // Delete user by email
 export async function DELETE(
