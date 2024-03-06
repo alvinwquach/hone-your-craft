@@ -1,59 +1,42 @@
+import getCurrentUser from "@/app/lib/getCurrentUser";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { email: string } }
-) {
-  // Extract the email from the URL params
-  const userEmail = params.email;
-
-  try {
-    // Extract the role from the request body
-    const { role } = await request.json();
-
-    // Attempt to update the user's role in the database
-    const updatedUser = await prisma.user.update({
-      where: { email: userEmail },
-      data: { role }, // Update the role field
-    });
-
-    // Return a JSON response with the updated user object
-    return NextResponse.json({ user: updatedUser });
-  } catch (error) {
-    // Handle errors and return a JSON response with the error message
-    console.error("Error updating user role:", error);
-    return NextResponse.json(
-      { message: "Error updating user role" },
-      { status: 500 }
-    );
-  }
-}
-
-// Get user by email
 export async function GET(
   request: NextRequest,
   { params }: { params: { email: string } }
 ) {
-  const userEmail = params.email;
-
   try {
-    // Attempt to find the user by email
+    // Fetching current user
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
+    // Extracting email from request parameters
+    const userEmail = params.email;
+
+    // Retrieving user from the database based on email
     const user = await prisma.user.findUnique({
       where: { email: userEmail },
+      select: {
+        role: true,
+        skills: true,
+      },
     });
 
-    // If user is not found, return a 404 response
+    // If user not found, return a 404 response
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Return the user as a JSON response
+    // Returning user information as a JSON response
     return NextResponse.json({ user });
   } catch (error) {
-    // Handle errors and return a 500 response
+    // Handling errors and returning a 500 response
     console.error("Error fetching user:", error);
     return NextResponse.json(
       { message: "Error fetching user" },
@@ -62,55 +45,115 @@ export async function GET(
   }
 }
 
-// Update user by email
 export async function PUT(
   request: NextRequest,
   { params }: { params: { email: string } }
 ) {
-  const userEmail = params.email;
-  const { role } = await request.json(); // Extract role from request body
-
   try {
-    // Attempt to update the user's role
+    // Fetching current user
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
+    // Extracting email from request parameters
+    const userEmail = params.email;
+    // Extracting role and skills from request body
+    const { role, skills } = await request.json();
+
+    // Updating user information in the database
     const updatedUser = await prisma.user.update({
       where: { email: userEmail },
-      data: { role }, // Update the role field
+      data: { role, skills },
     });
 
-    // Return the updated user as a JSON response
+    // Returning the updated user as a JSON response
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    // Handle errors and return a 500 response
-    console.error("Error updating user role:", error);
+    // Handling errors and returning a 500 response
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { message: "Error updating user role" },
+      { message: "Error updating user" },
       { status: 500 }
     );
   }
 }
 
-
-
-// Delete user by email
-export async function DELETE(
+export async function POST(
   request: NextRequest,
   { params }: { params: { email: string } }
 ) {
-  const userEmail = params.email;
-
   try {
-    // Attempt to delete the user
-    await prisma.user.delete({
+    // Fetching current user
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
+    // Extracting email from request parameters
+    const userEmail = params.email;
+    // Extracting skill from request body
+    const { role, skill } = await request.json();
+
+    // Split the input skill string by commas to get individual skills
+    const skillsToAdd = skill.split(",").map((s: string) => s.trim());
+
+    // Updating user's skills in the database by adding each new skill individually
+    const updatedUser = await prisma.user.update({
       where: { email: userEmail },
+      data: {
+        role, // Add user's role
+        skills: { push: skillsToAdd }, // Add multiple skills as separate elements
+      },
     });
 
-    // Return a success message as a JSON response
-    return NextResponse.json({ message: "User deleted successfully" });
+    // Returning the updated user as a JSON response
+    return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    // Handle errors and return a 500 response
-    console.error("Error deleting user:", error);
+    // Handling errors and returning a 500 response
+    console.error("Error adding skill to user:", error);
     return NextResponse.json(
-      { message: "Error deleting user" },
+      { message: "Error adding skill to user" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { email: string; skill: string } }
+) {
+  try {
+    // Fetching current user
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
+    // Extracting email and skill name from request parameters
+    const userEmail = params.email;
+    const skillName = params.skill;
+
+    // Updating user's skills in the database by removing the specified skill
+    const updatedUser = await prisma.user.update({
+      where: { email: userEmail },
+      data: {
+        skills: {
+          set: currentUser.skills.filter((s) => s !== skillName),
+        },
+      },
+    });
+
+    // Returning the updated user as a JSON response
+    return NextResponse.json({ user: updatedUser });
+  } catch (error) {
+    // Handling errors and returning a 500 response
+    console.error("Error deleting skill from user:", error);
+    return NextResponse.json(
+      { message: "Error deleting skill from user" },
       { status: 500 }
     );
   }

@@ -1,21 +1,24 @@
 "use client";
 
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import useSWR from "swr";
 import axios from "axios";
 import * as yup from "yup";
-import { Suspense, useEffect, useState, useRef } from "react";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
-import useSWR from "swr";
-import { Session } from "next-auth";
+import { FiX, FiUser } from "react-icons/fi";
+import { GiStoneCrafting } from "react-icons/gi";
 
 const schema = yup.object().shape({
-  role: yup.string().required("Role is required"),
+  role: yup.string(),
+  skills: yup.array().of(yup.string()),
 });
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url);
+const fetcher = async (url: string, options: RequestInit) => {
+  const response = await fetch(url, options);
   return response.json();
 };
 
@@ -24,13 +27,21 @@ type ProfileCardProps = {
 };
 
 const ProfileCard = ({ session }: ProfileCardProps) => {
-  const { data: userData, mutate } = useSWR(
-    `/api/user/${session?.user?.email}`,
-    fetcher
+  const {
+    data: userData,
+    isLoading,
+    error,
+    mutate,
+  } = useSWR(`/api/user/${session?.user?.email}`, (url) =>
+    fetcher(url, { method: "GET" })
   );
   const [editing, setEditing] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [newSkill, setNewSkill] = useState("");
   const optionsMenuRef = useRef<HTMLDivElement>(null);
+
+  // If there are no user skills, default to empty array
+  const userSkills = userData?.user?.skills || [];
 
   const toggleOptionsMenu = () => {
     setShowOptionsMenu(!showOptionsMenu);
@@ -49,53 +60,147 @@ const ProfileCard = ({ session }: ProfileCardProps) => {
     setEditing(true);
   };
 
-  const handleClickOutsideMenu = (e: MouseEvent) => {
-    if (
-      optionsMenuRef.current &&
-      !optionsMenuRef.current.contains(e.target as Node)
-    ) {
-      setShowOptionsMenu(false);
-    }
-  };
-
   const exportUserDataToCsv = () => {
     setShowOptionsMenu(false);
   };
 
   const onSubmit = async (data: any) => {
     try {
-      // Send PUT request to update user role
+      // Send PUT request to update user role and skills
       await axios.put(`/api/user/${session?.user?.email}`, {
         role: data.role,
+        skills: data.skills,
       });
       mutate(); // Refresh data after update
-      setEditing(false); // Exit editing mode
+      setEditing(false);
     } catch (error) {
-      // Handle error
-      console.error("Error updating role:", error);
+      console.error("Error updating role and skills:", error);
     }
   };
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
+  // Add one skill at a time
+  // const handleKeyPress = (event: React.KeyboardEvent) => {
+  //   // Check if the pressed key is the "Enter" key
+  //   if (event.key === "Enter") {
+  //     // If the enter key is pressed, invoke handleSubmit
+  //     handleSubmit(onSubmit)();
+  //   }
+  // };
+
+  // Add a skill or multiple skills (separated by commas)
+  const handleKeyPress = async (event: React.KeyboardEvent) => {
+    // Check if the pressed key is the enter key
     if (event.key === "Enter") {
-      handleSubmit(onSubmit)();
+      // Split the newSkill string by both line breaks and commas
+      const skills = newSkill.split(/[\n,]+/).map((skill) => skill.trim());
+
+      // Iterate over each skill and add it individually
+      for (const skill of skills) {
+        // If the skill isn't an empty string
+        if (skill !== "") {
+          try {
+            // Make a POST request to add the new skill
+            await axios.post(`/api/user/${session?.user?.email}`, {
+              skill: skill.trim(), // Trim the skill to remove any leading/trailing whitespace
+            });
+            // Trigger re-fetching of user data including skills
+            mutate();
+          } catch (error) {
+            // Handle error
+            console.error("Error adding skill:", error);
+          }
+        }
+      }
+
+      // Clear the input field
+      setNewSkill("");
+    }
+  };
+
+  const handleAddSkill = async () => {
+    // Check if the newSkill string, after trimming whitespace, isn't an empty string
+    if (newSkill.trim() !== "") {
+      try {
+        // Make a POST request to add the new skill
+        await axios.post(`/api/user/${session?.user?.email}`, {
+          skill: newSkill.trim(), // Send just the skill string by trimming off the whitespace
+        });
+        // Trigger re-fetching of user data including skills
+        mutate();
+        // Clear the input field
+        setNewSkill("");
+      } catch (error) {
+        // Handle error
+        console.error("Error adding skill:", error);
+      }
+    }
+  };
+
+  const handleRemoveSkill = async (skillToRemove: string) => {
+    try {
+      // Filter out the skill to remove from the userSkills array
+      const updatedSkills = userSkills.filter(
+        (skill: string) => skill !== skillToRemove
+      );
+
+      // Send a PUT request to update user skills
+      await axios.put(`/api/user/${session?.user?.email}`, {
+        skills: updatedSkills,
+      });
+
+      // Trigger re-fetching of user data including skills
+      mutate();
+    } catch (error) {
+      console.error("Error updating user skills:", error);
     }
   };
 
   useEffect(() => {
+    // When the component mounts
+    const handleClickOutsideMenu = (e: MouseEvent) => {
+      // If the optionsMenuRef exists and the clicked element isn't within it:
+      if (
+        optionsMenuRef.current &&
+        !optionsMenuRef.current.contains(e.target as Node)
+      ) {
+        // Hide the options menu by setting setShowOptionsMenu to false.
+        setShowOptionsMenu(false);
+      }
+    };
+
+    const handleClickOutsideInput = (e: MouseEvent) => {
+      // Get the inputField by its ID.
+      const inputField = document.getElementById("roleInput");
+      // If the inputField exists and the clicked element isn't within it and not within the options menu:
+      if (
+        inputField &&
+        !inputField.contains(e.target as Node) &&
+        !optionsMenuRef.current?.contains(e.target as Node)
+      ) {
+        // Set editing to false to exit the editing mode.
+        setEditing(false);
+      }
+    };
+    // Add an event listener to detect mousedown events outside the options menu.
     document.addEventListener("mousedown", handleClickOutsideMenu);
+    // Add an event listener to detect mousedown events outside the input field for the role:
+    document.addEventListener("mousedown", handleClickOutsideInput);
+
     return () => {
+      // Return a cleanup function to remove the event listener when the component unmounts.
       document.removeEventListener("mousedown", handleClickOutsideMenu);
+      // Return a cleanup function to remove the event listener when the component unmounts.
+      document.removeEventListener("mousedown", handleClickOutsideInput);
     };
   }, []);
 
   return (
-    <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full max-w-xl border rounded-lg shadow bg-gray-800 border-gray-700">
       <div className="flex justify-end px-4 pt-4 relative" ref={optionsMenuRef}>
         <button
           id="dropdownButton"
           onClick={toggleOptionsMenu}
-          className="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5"
+          className="inline-block text-gray-400  hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-700 rounded-lg text-xs md:text-sm p-1.5"
           type="button"
         >
           <span className="sr-only">Open dropdown</span>
@@ -116,23 +221,20 @@ const ProfileCard = ({ session }: ProfileCardProps) => {
           >
             <ul className="py-2" aria-labelledby="dropdownButton">
               <li>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-black transition-colors  hover:bg-gray-100 hover:text-gray-900"
+                <button
+                  className="block px-4 py-2 text-sm text-black transition-colors hover:bg-gray-100 hover:text-gray-900"
                   onClick={handleEditRole}
                 >
                   Edit
-                </a>
+                </button>
               </li>
-
               <li>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-sm text-black transition-colors  hover:bg-gray-100 hover:text-gray-900"
+                <button
+                  className="block px-4 py-2 text-sm text-black transition-colors hover:bg-gray-100 hover:text-gray-900"
                   onClick={exportUserDataToCsv}
                 >
                   Export Data
-                </a>
+                </button>
               </li>
             </ul>
           </div>
@@ -153,34 +255,115 @@ const ProfileCard = ({ session }: ProfileCardProps) => {
           <h5 className="mb-1 text-xl font-medium text-white">
             {session?.user?.name}
           </h5>
-          {editing ? (
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="relative">
-                <input
-                  type="text"
-                  defaultValue={userData?.user?.role || ""}
-                  {...register("role")}
-                  className={`mt-4 px-3 py-2 border border-gray-300 rounded-md text-black ${
-                    errors.role ? "border-red-500" : ""
-                  }`}
-                  placeholder="Update role"
-                  onKeyPress={handleKeyPress}
-                />
-                {errors.role && (
-                  <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
-                    {errors.role.message}
-                  </span>
-                )}
+          <div className="max-w-7xl">
+            {userData?.user?.role ? (
+              editing ? (
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <div className="relative mt-4">
+                    <label htmlFor="role" className="text-gray-400 sr-only">
+                      Role:
+                    </label>
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <FiUser className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <input
+                      id="roleInput"
+                      type="text"
+                      defaultValue={userData?.user?.role || ""}
+                      {...register("role")}
+                      className="block w-full max-w-lg p-4 pl-10 text-xs md:text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      placeholder="Update role"
+                      onKeyPress={handleKeyPress}
+                    />
+
+                    {errors.role && (
+                      <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
+                        {errors.role.message}
+                      </span>
+                    )}
+                  </div>
+                </form>
+              ) : (
+                <div className="relative mt-4">
+                  <label htmlFor="role" className="text-gray-400 sr-only">
+                    Role:
+                  </label>
+
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <FiUser className="h-4 w-4 text-gray-500" />
+                  </div>
+
+                  <input
+                    type="text"
+                    className="block w-full max-w-lg p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    readOnly
+                    value={userData?.user?.role || ""}
+                  />
+                </div>
+              )
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="mx-auto">
+                <div className="relative mt-4">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <FiUser className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <label htmlFor="role" className="text-gray-400 sr-only">
+                    Role:
+                  </label>
+                  <input
+                    type="text"
+                    {...register("role")}
+                    className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Add a role"
+                    onKeyPress={handleKeyPress}
+                  />
+                  {errors.role && (
+                    <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
+                      {errors.role.message}
+                    </span>
+                  )}
+                </div>
+              </form>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center mt-4">
+            {userSkills?.map((skill: string, index: number) => (
+              <div
+                key={index}
+                className="bg-gray-600 text-white rounded-full px-3 py-1 flex items-center m-1"
+              >
+                <span className="mr-2">{skill}</span>
+                <button
+                  className="text-gray-300 hover:text-gray-100 focus:outline-none"
+                  onClick={() => handleRemoveSkill(skill)}
+                >
+                  <FiX />
+                </button>
               </div>
-            </form>
-          ) : userData?.user?.role ? (
-            <input
-              type="text"
-              className="text-sm text-gray-400 mt-4 px-3 py-2 border border-transparent rounded-md"
-              readOnly
-              value={userData?.user?.role || ""}
-            />
-          ) : null}
+            ))}
+          </div>
+          <div className=" mt-4">
+            <div className="relative mt-4">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <GiStoneCrafting className="h-4 w-4 text-gray-100" />
+              </div>
+              <label htmlFor="skills" className="text-gray-400 sr-only">
+                Skills:
+              </label>
+              <input
+                type="text"
+                value={newSkill}
+                onChange={(e) => setNewSkill(e.target.value)}
+                className="w-full p-4 pl-10 text-xs md:text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Add a skill or skills"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddSkill();
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -192,9 +375,7 @@ export default function Profile() {
 
   return (
     <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen flex flex-col items-center justify-center">
-      <div className="w-full max-w-sm border border-gray-700 rounded-lg shadow bg-gray-800">
-        {status === "authenticated" && <ProfileCard session={session} />}
-      </div>
+      {status === "authenticated" && <ProfileCard session={session} />}
     </section>
   );
 }
