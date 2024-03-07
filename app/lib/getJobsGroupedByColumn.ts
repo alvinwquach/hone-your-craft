@@ -46,10 +46,12 @@ export const getJobsGroupedByColumn = async () => {
     /* Iterate over user jobs
     Add user's jobs to the respective columns */
     for (const job of userJobs) {
-      // Get the column corresponding to the job status and push the job into its array of jobs
-      columns.get(job.status)?.jobs.push(job);
+      // Check if job status is not null
+      if (job.status !== null) {
+        // Get the column corresponding to the job status and push the job into its array of jobs
+        columns.get(job.status)?.jobs.push(job);
+      }
     }
-
     // Initialize a new board object with columns
     const board: Board = {
       columns: columns,
