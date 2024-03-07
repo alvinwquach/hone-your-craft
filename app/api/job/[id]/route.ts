@@ -1,3 +1,4 @@
+import getCurrentUser from "@/app/lib/getCurrentUser";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -37,6 +38,20 @@ export async function POST(request: NextRequest) {
   const jobData = await request.json();
 
   try {
+    // Retrieve the current user from the session
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      // If the current user is not found, return a 401 Unauthorized response
+      return NextResponse.json(
+        { message: "User not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    // Add the current user's ID to the job data
+    jobData.userId = currentUser.id;
+
     // Attempt to create a new job
     const job = await prisma.job.create({
       data: jobData,

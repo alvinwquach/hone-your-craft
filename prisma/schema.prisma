@@ -58,12 +58,12 @@ model Job {
   company      String
   description  String
   title        String
-  industry     String
-  location     String
-  workLocation WorkLocation
-  postUrl      String
-  salary       String
-  status       ApplicationStatus
+  industry     String?
+  location     String?
+  workLocation WorkLocation?
+  postUrl      String 
+  salary       String?
+  status       ApplicationStatus?
   interviews   Interview[]
   offer        Offer[]
   rejection    Rejection[]

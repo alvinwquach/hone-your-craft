@@ -28,14 +28,6 @@ function JobCard({
   const deleteJob = useBoardStore((state) => state.deleteJob);
   const [isHovering, setIsHovering] = useState(false);
 
-  const getReadableJobTitle = (title: string) => {
-    // Capitalize the first letter of each word and replace underscores with spaces
-    return title
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
-  };
-
   return (
     <div
       className="relative bg-zinc-800 rounded-lg shadow-md mb-8"
@@ -50,7 +42,7 @@ function JobCard({
       )}
       <div className="p-4 sm:p-2 flex justify-between items-center text-gray-300 relative">
         <div>
-          <p className="text-sm mb-2">{getReadableJobTitle(job.title)}</p>
+          <p className="text-base mb-2 font-semibold">{job.title}</p>
 
           <span className="text-sm">{job.company}</span>
         </div>

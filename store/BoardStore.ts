@@ -16,6 +16,7 @@ export interface BoardState {
   titleSearchString: string;
   setTitleSearchString: (searchString: string) => void;
   updateJobStatus: (job: Job, columnId: TypedColumn) => void;
+  addJob: (job: Job, columnId: TypedColumn) => void;
   deleteJob: (jobIndex: number, job: Job, id: TypedColumn) => void;
 }
 
@@ -62,6 +63,43 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       return response.data;
     } catch (error) {
       console.error("Error updating job:", error);
+      throw error;
+    }
+  },
+  addJob: async (job: Job, columnId: TypedColumn) => {
+    try {
+      // Make a POST request to add the new job
+      const response = await axios.post(`/api/job/${job.id}`, job);
+
+      // If the request was successful, update the board state
+      if (response.status === 201) {
+        // Get the created job from the response data
+        const createdJob = response.data.job;
+
+        // Clone the existing columns map
+        const newColumns = new Map(get().board.columns);
+
+        // Retrieve the column with the specified ID
+        const column = newColumns.get(columnId);
+
+        // If the column exists, add the created job to its jobs array
+        if (column) {
+          column.jobs.push(createdJob);
+        }
+
+        // Update the board state with the new job added
+        set((state) => ({
+          board: {
+            ...state.board,
+            columns: newColumns,
+          },
+        }));
+      }
+      // Log the column ID for debugging
+      console.log(columnId);
+    } catch (error) {
+      // Log and rethrow any errors that occur during the process
+      console.error("Error adding job:", error);
       throw error;
     }
   },
