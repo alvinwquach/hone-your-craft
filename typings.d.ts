@@ -20,7 +20,7 @@ interface Job {
   workLocation: string | null;
   postUrl: string;
   salary: string | null;
-  status: string;
+  status: string | null;
   interviews?: Interview[];
   offer?: Offer[];
   rejection?: Rejection[];
