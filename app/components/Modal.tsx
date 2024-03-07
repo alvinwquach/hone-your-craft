@@ -1,17 +1,29 @@
 "use client";
 
-import { ChangeEvent, Fragment, useRef, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+import { ChangeEvent, Fragment, useRef } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useModalStore } from "@/store/ModalStore";
 import { useBoardStore } from "@/store/BoardStore";
 import { iDToColumnText } from "./Column";
 
+const schema = yup.object().shape({
+  company: yup.string().required("Company is required"),
+  postUrl: yup.string().required("Post URL is required"),
+  title: yup.string().required("Title is required"),
+  description: yup.string().required("Title is required"),
+});
+
 function Modal() {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [newJobInput, setNewJobInput] = useBoardStore((state) => [
+  const [newJobInput, setNewJobInput, addJob] = useBoardStore((state) => [
     state.newJobInput,
     state.setNewJobInput,
+    state.addJob,
   ]);
 
   const [isOpen, closeModal, selectedCategory, openModal] = useModalStore(
@@ -36,6 +48,29 @@ function Modal() {
     const category = e.target.value as TypedColumn;
     // Open the modal with the selected category
     openModal(category);
+    console.log(category);
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async (data: any) => {
+    try {
+      // Add the selected category as the 'status' field in the job data
+      data.status = selectedCategory;
+      // Call the addJob function to add the job to the correct column
+      await addJob(data);
+      // Close the modal after adding the job
+      closeModal();
+    } catch (error) {
+      console.error("Error adding job:", error);
+      // Handle error if necessary
+    }
   };
 
   return (
@@ -44,6 +79,7 @@ function Modal() {
         as="form"
         className="fixed inset-0 z-50 overflow-y-auto"
         onClose={closeModal}
+        onSubmit={handleSubmit(onSubmit)} // Add onSubmit handler to the form
         static
       >
         <div
@@ -87,8 +123,8 @@ function Modal() {
                       </label>
                       <input
                         type="text"
-                        name="company"
                         id="company"
+                        {...register("company")}
                         value={newJobInput.company}
                         onChange={handleChange}
                         placeholder="Company"
@@ -105,8 +141,8 @@ function Modal() {
                       </label>
                       <input
                         type="text"
-                        name="postUrl"
                         id="postUrl"
+                        {...register("postUrl")}
                         value={newJobInput.postUrl}
                         onChange={handleChange}
                         placeholder="+ add URL"
@@ -123,8 +159,8 @@ function Modal() {
                       </label>
                       <input
                         type="text"
-                        name="title"
                         id="title"
+                        {...register("title")}
                         value={newJobInput.title}
                         onChange={handleChange}
                         placeholder="Job Title"
@@ -160,8 +196,10 @@ function Modal() {
                         Job Description
                       </label>
                       <textarea
+                        required
                         id="description"
                         rows={4}
+                        {...register("description")}
                         value={newJobInput.description}
                         onChange={handleChange}
                         className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"

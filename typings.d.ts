@@ -15,11 +15,11 @@ interface Job {
   company: string;
   description: string;
   title: string;
-  industry: string;
-  location: string;
-  workLocation: string;
+  industry: string | null;
+  location: string | null;
+  workLocation: string | null;
   postUrl: string;
-  salary: string;
+  salary: string | null;
   status: string;
   interviews?: Interview[];
   offer?: Offer[];

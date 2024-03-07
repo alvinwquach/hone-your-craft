@@ -8,7 +8,8 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { IconType } from "react-icons";
 import { AiOutlineHome } from "react-icons/ai";
-import { FiCalendar, FiUser, FiBriefcase } from "react-icons/fi";
+import { BsBriefcase } from "react-icons/bs";
+import { FiCalendar, FiUser } from "react-icons/fi";
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { SiBaremetrics } from "react-icons/si";
 import { MdAssignmentInd } from "react-icons/md";
@@ -16,7 +17,7 @@ import { MdAssignmentInd } from "react-icons/md";
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
   { href: "/profile", text: "Profile", icon: FiUser },
-  { href: "/track", text: "Track", icon: FiBriefcase },
+  { href: "/track", text: "Track", icon: BsBriefcase },
   { href: "/calendar", text: "Calendar", icon: FiCalendar },
   { href: "/metrics", text: "Metrics", icon: SiBaremetrics },
   { href: "/roles", text: "Roles", icon: MdAssignmentInd },
