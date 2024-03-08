@@ -31,7 +31,7 @@ const authOptions: NextAuthOptions = {
     updateAge: 24 * 60 * 60,
   },
   // Secret key for encrypting and decrypting tokens
-  secret: process.env.JWT_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     // Callback triggered when a user signs in
     async signIn({ user }) {

@@ -1,21 +1,13 @@
 "use client";
 
-import { getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 
 export default function Login() {
-  const router = useRouter();
-
-  const checkSession = async () => {
-    const session = await getSession();
-    if (session) {
-      router.push("/profile");
-    }
+  const handleSignIn = async (provider: string) => {
+    // Sign in using the specified provider
+    const result = await signIn(provider, { callbackUrl: "/profile" });
   };
-
-  checkSession();
 
   return (
     <section className="flex items-center justify-center min-h-screen">
@@ -23,7 +15,7 @@ export default function Login() {
         <p className="text-center text-white text-2xl font-bold mb-4">Log in</p>
         <div className="flex flex-col items-center justify-center space-y-4 mb-4">
           <button
-            onClick={() => signIn("google")}
+            onClick={() => handleSignIn("google")}
             className="py-3 px-6 text-white hover:text-black font-semibold rounded-md shadow hover:bg-white border border-white flex items-center justify-center w-3/5"
           >
             <div className="mr-2">
@@ -37,7 +29,7 @@ export default function Login() {
             <span>Log in with Google</span>
           </button>
           <button
-            onClick={() => signIn("github")}
+            onClick={() => handleSignIn("github")}
             className="py-3 px-6 text-white hover:text-black font-semibold rounded-md shadow hover:bg-white border border-white flex items-center justify-center w-3/5"
           >
             <svg
@@ -57,7 +49,7 @@ export default function Login() {
           </button>
 
           <button
-            onClick={() => signIn("discord")}
+            onClick={() => handleSignIn("discord")}
             className="py-3 px-6 text-white hover:text-black font-semibold rounded-md shadow hover:bg-white border border-white flex items-center justify-center w-3/5"
           >
             <div className="mr-2">
