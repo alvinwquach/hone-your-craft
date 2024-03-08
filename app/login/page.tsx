@@ -1,9 +1,22 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { signIn } from "next-auth/react";
 
 export default function Login() {
+  const router = useRouter();
+
+  const checkSession = async () => {
+    const session = await getSession();
+    if (session) {
+      router.push("/profile");
+    }
+  };
+
+  checkSession();
+
   return (
     <section className="flex items-center justify-center min-h-screen">
       <div className="max-w-md w-full rounded-lg">
