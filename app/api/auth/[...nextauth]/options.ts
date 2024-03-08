@@ -31,7 +31,7 @@ const authOptions: NextAuthOptions = {
     updateAge: 24 * 60 * 60,
   },
   // Secret key for encrypting and decrypting tokens
-  secret: process.env.JWT_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     // Callback triggered when a user signs in
     async signIn({ user }) {
@@ -80,13 +80,18 @@ const authOptions: NextAuthOptions = {
       console.log("JWT token data:", token);
       return token;
     },
-
     // Callback triggered when a session is created or updated
     async session({ session, token }) {
       if (session.user) {
         session.user.userId = token.userId as number | null | undefined;
       }
       return session;
+    },
+
+    async redirect({ url, baseUrl }) {
+      // Redirect to /profile after successful sign-in
+      if (url === baseUrl) return "/profile";
+      return baseUrl;
     },
   },
 };
