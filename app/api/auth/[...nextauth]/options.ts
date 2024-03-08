@@ -80,13 +80,18 @@ const authOptions: NextAuthOptions = {
       console.log("JWT token data:", token);
       return token;
     },
-
     // Callback triggered when a session is created or updated
     async session({ session, token }) {
       if (session.user) {
         session.user.userId = token.userId as number | null | undefined;
       }
       return session;
+    },
+
+    async redirect({ url, baseUrl }) {
+      // Redirect to /profile after successful sign-in
+      if (url === baseUrl) return "/profile";
+      return baseUrl;
     },
   },
 };

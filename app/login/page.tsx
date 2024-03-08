@@ -4,18 +4,13 @@ import Image from "next/image";
 import { signIn } from "next-auth/react";
 
 export default function Login() {
-  const handleSignIn = async (provider: string) => {
-    // Sign in using the specified provider
-    const result = await signIn(provider, { callbackUrl: "/profile" });
-  };
-
   return (
     <section className="flex items-center justify-center min-h-screen">
       <div className="max-w-md w-full rounded-lg">
         <p className="text-center text-white text-2xl font-bold mb-4">Log in</p>
         <div className="flex flex-col items-center justify-center space-y-4 mb-4">
           <button
-            onClick={() => handleSignIn("google")}
+            onClick={() => signIn("google")}
             className="py-3 px-6 text-white hover:text-black font-semibold rounded-md shadow hover:bg-white border border-white flex items-center justify-center w-3/5"
           >
             <div className="mr-2">
@@ -29,7 +24,7 @@ export default function Login() {
             <span>Log in with Google</span>
           </button>
           <button
-            onClick={() => handleSignIn("github")}
+            onClick={() => signIn("github")}
             className="py-3 px-6 text-white hover:text-black font-semibold rounded-md shadow hover:bg-white border border-white flex items-center justify-center w-3/5"
           >
             <svg
@@ -49,7 +44,7 @@ export default function Login() {
           </button>
 
           <button
-            onClick={() => handleSignIn("discord")}
+            onClick={() => signIn("discord")}
             className="py-3 px-6 text-white hover:text-black font-semibold rounded-md shadow hover:bg-white border border-white flex items-center justify-center w-3/5"
           >
             <div className="mr-2">
