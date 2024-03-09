@@ -17,10 +17,10 @@ interface Job {
   title: string;
   industry: string | null;
   location: string | null;
-  workLocation: string | null;
+  workLocation: WorkLocation | null;
   postUrl: string;
   salary: string | null;
-  status: string | null;
+  status: ApplicationStatus | null;
   interviews?: Interview[];
   offer?: Offer[];
   rejection?: Rejection[];
@@ -28,3 +28,13 @@ interface Job {
   createdAt: Date;
   updatedAt: Date;
 }
+
+interface JobSkill {
+  id: string;
+  jobId: string;
+  skill: string;
+  isRequired: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+

@@ -16,6 +16,8 @@
     "@prisma/client": "^5.9.1",
     "@zach.codes/react-calendar": "^0.3.3",
     "axios": "^1.6.7",
+    "chart.js": "^4.4.2",
+    "d3": "^7.8.5",
     "date-fns": "^3.3.1",
     "dotenv": "^16.4.4",
     "force-resolutions": "^1.0.11",
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/d3": "^7.4.3",
     "@types/node": "^20.11.17",
     "@types/react": "^18.2.58",
     "@types/react-beautiful-dnd": "^13.1.8",
