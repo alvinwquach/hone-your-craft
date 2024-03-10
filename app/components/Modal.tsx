@@ -45,7 +45,7 @@ function Modal() {
 
   const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
     // Extract the selected category from the event
-    const category = e.target.value as TypedColumn;
+    const category = e.target.value as ApplicationStatus;
     // Open the modal with the selected category
     openModal(category);
     console.log(category);

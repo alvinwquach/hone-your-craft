@@ -1,10 +1,11 @@
+import { ApplicationStatus } from "@prisma/client";
 import { create } from "zustand";
 
 interface ModalState {
   isOpen: boolean;
-  openModal: (category: TypedColumn) => void;
+  openModal: (category: ApplicationStatus) => void;
   closeModal: () => void;
-  selectedCategory: TypedColumn | null;
+  selectedCategory: ApplicationStatus | null;
 }
 
 // Create a Zustand store for managing modal state

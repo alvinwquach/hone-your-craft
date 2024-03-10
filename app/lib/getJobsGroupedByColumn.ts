@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/app/lib/db/prisma";
+import { ApplicationStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import authOptions from "../api/auth/[...nextauth]/options";
 
@@ -18,14 +19,15 @@ export const getJobsGroupedByColumn = async () => {
         userId: session.user.userId.toString(),
       },
     });
+    console.log(userJobs.length);
 
     /* Initialize a Map to store columns
     Group jobs by columns */
 
-    const columns = new Map<TypedColumn, Column>();
+    const columns = new Map<ApplicationStatus, Column>();
 
     // Ensure all columns are initialized, even if no jobs exist for them
-    const columnTypes: TypedColumn[] = [
+    const columnTypes: ApplicationStatus[] = [
       "SAVED",
       "APPLIED",
       "INTERVIEW",

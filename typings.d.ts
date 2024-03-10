@@ -2,7 +2,7 @@ interface Board {
   columns: Map<TypedColumn, Column>;
 }
 
-type TypedColumn = "SAVED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED";
+// type TypedColumn = "SAVED" | "APPLIED" | "INTERVIEW" | "OFFER" | "REJECTED";
 
 interface Column {
   id: TypedColumn;
@@ -20,7 +20,7 @@ interface Job {
   workLocation: WorkLocation | null;
   postUrl: string;
   salary: string | null;
-  status: ApplicationStatus | null;
+  status: ApplicationStatus;
   interviews?: Interview[];
   offer?: Offer[];
   rejection?: Rejection[];

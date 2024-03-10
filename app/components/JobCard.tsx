@@ -5,13 +5,14 @@ import {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
 } from "@hello-pangea/dnd";
+import { ApplicationStatus } from "@prisma/client";
 import { useState } from "react";
 import { HiTrash, HiLink } from "react-icons/hi";
 
 type JobCardProps = {
   job: Job;
   index: number;
-  id: TypedColumn;
+  id: ApplicationStatus;
   innerRef: (element: HTMLElement | null) => void;
   draggableProps: DraggableProvidedDraggableProps;
   draghandleProps: DraggableProvidedDragHandleProps | null | undefined;
