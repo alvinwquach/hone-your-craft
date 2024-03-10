@@ -9,6 +9,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useModalStore } from "@/store/ModalStore";
 import { useBoardStore } from "@/store/BoardStore";
 import { iDToColumnText } from "./Column";
+import { ApplicationStatus } from "@prisma/client";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
