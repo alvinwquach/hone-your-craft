@@ -21,6 +21,24 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
     },
+    gradientColorStops: {
+      "gradient-start": "#ff7e5f",
+      "gradient-middle": "#feb47b",
+      "gradient-end": "#ff7e5f",
+    },
+    animation: {
+      "gradient-border": "gradient-border 2s linear infinite",
+    },
+    keyframes: {
+      "gradient-border": {
+        "0%, 100%": {
+          borderColor: "transparent",
+        },
+        "50%": {
+          borderColor: "#ff7e5f",
+        },
+      },
+    },
   },
   plugins: [],
 };

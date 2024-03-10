@@ -42,6 +42,7 @@ const ProfileCard = ({ session }: ProfileCardProps) => {
 
   // If there are no user skills, default to empty array
   const userSkills = userData?.user?.skills || [];
+  console.log(userSkills);
 
   const toggleOptionsMenu = () => {
     setShowOptionsMenu(!showOptionsMenu);
