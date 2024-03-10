@@ -9,6 +9,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useModalStore } from "@/store/ModalStore";
 import { useBoardStore } from "@/store/BoardStore";
 import { iDToColumnText } from "./Column";
+import { ApplicationStatus } from "@prisma/client";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
@@ -45,7 +46,7 @@ function Modal() {
 
   const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
     // Extract the selected category from the event
-    const category = e.target.value as TypedColumn;
+    const category = e.target.value as ApplicationStatus;
     // Open the modal with the selected category
     openModal(category);
     console.log(category);

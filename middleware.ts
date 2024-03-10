@@ -11,7 +11,13 @@ export default withAuth(
     const isAuthenticated = !!token;
 
     // Define routes that require authentication
-    const authRoutes = ["/profile", "/calendar", "/track", "/metrics"];
+    const authRoutes = [
+      "/profile",
+      "/calendar",
+      "/track",
+      "/metrics",
+      "/roles",
+    ];
 
     // Check if the requested route is in the list of protected routes
     if (authRoutes.includes(req.nextUrl.pathname)) {
@@ -37,5 +43,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/profile", "/calendar", "/track", "/metrics"],
+  matcher: ["/profile", "/calendar", "/track", "/metrics", "/roles"],
 };

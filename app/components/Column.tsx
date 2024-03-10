@@ -1,18 +1,19 @@
 import { useBoardStore } from "@/store/BoardStore";
 import { useModalStore } from "@/store/ModalStore";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
+import { ApplicationStatus } from "@prisma/client";
 import { HiPlusCircle } from "react-icons/hi";
 import JobCard from "./JobCard";
 
 type ColumnProps = {
-  id: TypedColumn;
+  id: ApplicationStatus;
   jobs: Job[];
   index: number;
 };
 
 // A mapping of column IDs to their corresponding display text
 export const iDToColumnText: {
-  [key in TypedColumn]: string;
+  [key in ApplicationStatus]: string;
 } = {
   SAVED: "Saved",
   APPLIED: "Applied",

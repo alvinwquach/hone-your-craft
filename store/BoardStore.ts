@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { getJobsGroupedByColumn } from "@/app/lib/getJobsGroupedByColumn";
 import axios from "axios";
+import { ApplicationStatus } from "@prisma/client";
 
 export interface BoardState {
   board: Board;
@@ -15,15 +16,15 @@ export interface BoardState {
   setNewJobInput: (input: Partial<BoardState["newJobInput"]>) => void;
   titleSearchString: string;
   setTitleSearchString: (searchString: string) => void;
-  updateJobStatus: (job: Job, columnId: TypedColumn) => void;
-  addJob: (job: Job, columnId: TypedColumn) => void;
-  deleteJob: (jobIndex: number, job: Job, id: TypedColumn) => void;
+  updateJobStatus: (job: Job, columnId: ApplicationStatus) => void;
+  addJob: (job: Job, columnId: ApplicationStatus) => void;
+  deleteJob: (jobIndex: number, job: Job, id: ApplicationStatus) => void;
 }
 
 // Create a Zustand store for managing board state
 export const useBoardStore = create<BoardState>((set, get) => ({
   board: {
-    columns: new Map<TypedColumn, Column>(),
+    columns: new Map<ApplicationStatus, Column>(),
   },
   getBoard: async () => {
     // Fetch the board data grouped by columns
@@ -66,7 +67,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       throw error;
     }
   },
-  addJob: async (job: Job, columnId: TypedColumn) => {
+  addJob: async (job: Job, columnId: ApplicationStatus) => {
     try {
       // Make a POST request to add the new job
       const response = await axios.post(`/api/job/${job.id}`, job);
@@ -103,7 +104,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       throw error;
     }
   },
-  deleteJob: async (jobIndex: number, job: Job, id: TypedColumn) => {
+  deleteJob: async (jobIndex: number, job: Job, id: ApplicationStatus) => {
     try {
       // Make a DELETE request to delete the job
       await axios.delete(`/api/job/${job.id}`);

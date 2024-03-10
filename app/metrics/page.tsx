@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getUserJobSkillsAndFrequency } from "../lib/getUserJobSkillsAndFrequency";
 import Chart from "chart.js/auto";
 
+
 function Metrics(): JSX.Element {
   const [sortedSkills, setSortedSkills] = useState<string[]>([]);
   const [sortedFrequencies, setSortedFrequencies] = useState<number[]>([]);
@@ -11,12 +12,13 @@ function Metrics(): JSX.Element {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Fetch user job skills and frequency
         const { sortedSkills, sortedFrequencies } =
           await getUserJobSkillsAndFrequency();
         setSortedSkills(sortedSkills);
         setSortedFrequencies(sortedFrequencies);
       } catch (error) {
-        console.error("Error fetching user job skills and frequency:", error);
+        console.error("Error fetching data:", error);
       }
     }
 
@@ -25,7 +27,7 @@ function Metrics(): JSX.Element {
 
   useEffect(() => {
     if (sortedSkills.length > 0) {
-      // Draw chart when sortedSkills change
+      // Draw chart when sortedSkills or statusPercentages change
       const chartContainer = document.getElementById("skillFrequencyChart");
       if (
         chartContainer &&
