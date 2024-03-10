@@ -1,13 +1,36 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import useSWR from "swr";
 import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
-import Chart from "chart.js/auto";
+import JobPostingCard from "../components/roles/JobPostingCard";
+import getUserJobPostings from "../lib/getUserJobPostings";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
+import { Chart } from "chart.js/auto";
+
+interface JobPosting {
+  company: string;
+  title: string;
+  postUrl: string;
+  skills: string[];
+}
+
+const fetcher = async (url: string, options: RequestInit) => {
+  const response = await fetch(url, options);
+  return response.json();
+};
 
 function Roles(): JSX.Element {
+  const { data: session } = useSession({ required: true });
+  const { data: userSkills } = useSWR(
+    session ? `/api/user/${session?.user?.email}` : null,
+    (url) => fetcher(url, { method: "GET" })
+  );
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
+  const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -21,8 +44,19 @@ function Roles(): JSX.Element {
         );
       }
     }
-
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchUserJobPostings() {
+      try {
+        const userJobPostings = await getUserJobPostings();
+        setJobPostings(userJobPostings);
+      } catch (error) {
+        console.error("Error fetching user job skills:", error);
+      }
+    }
+    fetchUserJobPostings();
   }, []);
 
   useEffect(() => {
@@ -106,9 +140,25 @@ function Roles(): JSX.Element {
       }
     }
   }, [statusPercentages]);
+
   return (
     <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
-      <canvas id="applicationStatusChart"></canvas>
+      <div className="w-full h-96 mt-2">
+        <canvas id="applicationStatusChart"></canvas>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {jobPostings.map((job, index) => (
+          <JobPostingCard
+            key={index}
+            company={job.company}
+            title={job.title}
+            skills={job.skills}
+            postUrl={job.postUrl}
+            userSkills={userSkills?.user?.skills || []}
+          />
+        ))}
+      </div>
     </div>
   );
 }

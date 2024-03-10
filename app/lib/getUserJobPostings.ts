@@ -306,7 +306,7 @@ const extractSkillsFromDescription = (description: string): string[] => {
   return extractedSkills.length > 0 ? extractedSkills : ["No skills available"];
 };
 
-const getUserJobSkillsFromDescription = async () => {
+const getUserJobPostings = async () => {
   try {
     // Retrieve the current user
     const currentUser = await getCurrentUser();
@@ -323,20 +323,19 @@ const getUserJobSkillsFromDescription = async () => {
       },
     });
 
-    // Initialize an array to store job skills
-    const jobSkills = userJobs.map((job) => ({
+    // Initialize an array to store job postings
+    const jobPostings = userJobs.map((job) => ({
       title: job.title,
       company: job.company,
       postUrl: job.postUrl,
       skills: extractSkillsFromDescription(job.description),
     }));
 
-    return jobSkills;
+    return jobPostings;
   } catch (error) {
     console.error("Error fetching user jobs or extracting skills:", error);
     throw new Error("Failed to fetch user jobs or extract skills");
   }
 };
 
-
-export default getUserJobSkillsFromDescription;
+export default getUserJobPostings;
