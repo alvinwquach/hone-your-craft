@@ -15,7 +15,10 @@ export const MonthlyNav = () => {
         <FiChevronLeft className="h-5 w-5" />
         <span>Prev</span>
       </button>
-      <div className="text-center text-2xl text-white" aria-live="polite">
+      <div
+        className="text-center lg:text-2xl text-base lg:text-white text-white"
+        aria-live="polite"
+      >
         {format(
           currentMonth,
           getYear(currentMonth) === getYear(new Date()) ? "LLLL" : "LLLL yyyy"
