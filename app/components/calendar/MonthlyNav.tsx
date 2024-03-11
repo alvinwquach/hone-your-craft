@@ -16,7 +16,7 @@ export const MonthlyNav = () => {
         <span>Prev</span>
       </button>
       <div
-        className="text-center lg:text-2xl text-base lg:text-white text-white"
+        className="text-center  text-base lg:text-2xl  text-white"
         aria-live="polite"
       >
         {format(
