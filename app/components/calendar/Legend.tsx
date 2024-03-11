@@ -12,8 +12,8 @@ interface LegendProps {
 function LegendItem({ color, label }: InterviewType) {
   return (
     <div className="flex items-center mt-1 md:mt-1">
-      <div className={`w-6 h-6 mr-2 ${color} `} />
-      {label}
+      <div className={`h-3 w-3 lg:w-6 lg:h-6 mr-2 ${color} `} />
+      <div className="text-xs lg:text-lg">{label}</div>
     </div>
   );
 }
