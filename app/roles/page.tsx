@@ -30,13 +30,14 @@ function Roles(): JSX.Element {
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
+
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const { percentages } = await getJobsByApplicationStatus();
-        setStatusPercentages(percentages);
+        setStatusPercentages(new Map(Array.from(percentages.entries())));
       } catch (error) {
         console.error(
           "Error fetching user jobs and application status:",
@@ -96,6 +97,20 @@ function Roles(): JSX.Element {
             plugins: {
               legend: {
                 display: false,
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    let label = context.dataset.label || "";
+                    if (label) {
+                      label += ": ";
+                    }
+                    if (context.parsed.y !== null) {
+                      label += context.parsed.y.toFixed(2) + "%";
+                    }
+                    return label;
+                  },
+                },
               },
             },
             responsive: true,

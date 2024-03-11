@@ -40,9 +40,12 @@ export const getJobsByApplicationStatus = async () => {
 
     // Calculate percentages based on the counts
     const totalCount = userJobs.length;
-    const percentages = new Map<string, number>(); // Change the map type to string
+    const percentages = new Map<string, number>();
     statusCounts.forEach((count, status) => {
-      percentages.set(status, (count / totalCount) * 100);
+      const percentage = (count / totalCount) * 100;
+      // Round the percentage to two decimal places
+      const roundedPercentage = parseFloat(percentage.toFixed(2));
+      percentages.set(status, roundedPercentage);
     });
 
     return { userJobs, percentages };
@@ -51,3 +54,4 @@ export const getJobsByApplicationStatus = async () => {
     throw new Error("Failed to fetch user jobs or application status");
   }
 };
+
