@@ -79,11 +79,13 @@ function Metrics(): JSX.Element {
           },
           plugins: {
             legend: {
-              labels: {
-                color: "#fff",
-              },
+              display: false,
+            },
+            tooltip: {
+              enabled: false,
             },
           },
+          onClick: () => {},
         },
       });
     }
