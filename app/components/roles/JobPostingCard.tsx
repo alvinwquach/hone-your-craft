@@ -16,7 +16,7 @@ function JobPostingCard({
   skills,
   postUrl,
   userSkills,
-}: JobPostingCardProps): JSX.Element {
+}: JobPostingCardProps) {
   const [displayedSkills, setDisplayedSkills] = useState<number>(5);
   const [matchPercentage, setMatchPercentage] = useState<number>(0);
 
@@ -54,7 +54,9 @@ function JobPostingCard({
 
   return (
     <div className="group relative overflow-hidden border border-gray-700 bg-gray-800 shadow-lg rounded-lg p-4 mb-4 max-w-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl hover:bg-gray-900">
-      <h2 className="text-xl font-bold mb-2 text-gray-200">{title}</h2>
+      <h2 className="text-lg sm:text-xl font-bold mb-2 text-gray-200">
+        {title}
+      </h2>
       <p className="text-gray-400 mt-2 mb-4 text-lg font-bold ">{company}</p>
       <div className="mb-4">
         <p className="text-gray-400 mb-2">
@@ -88,7 +90,7 @@ function JobPostingCard({
         ) : null}
         {displayedSkills > 5 && (
           <button
-            className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+            className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
             onClick={handleShowLess}
             aria-label="Show less skills"
           >
