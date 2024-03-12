@@ -54,16 +54,14 @@ function JobPostingCard({
 
   return (
     <div className="group relative overflow-hidden border border-gray-700 bg-gray-800 shadow-lg rounded-lg p-4 mb-4 max-w-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl hover:bg-gray-900">
-      <h2 className="text-lg sm:text-xl font-bold mb-2 text-gray-200">
-        {title}
-      </h2>
+      <h2 className="text-base font-bold mb-2 text-gray-200">{title}</h2>
       <p className="text-gray-400 mt-2 mb-4 text-lg font-bold ">{company}</p>
       <div className="mb-4">
         <p className="text-gray-400 mb-2">
           Match Percentage:{" "}
           <span className={determineMatchClass()}>{matchPercentage}%</span>
         </p>
-        <PercentageBar percentage={matchPercentage} />
+        <PercentageBar matchPercentage={matchPercentage} />
       </div>
       <div>
         <p className="text-gray-400 mb-2">Skills:</p>
@@ -71,7 +69,7 @@ function JobPostingCard({
           {skills.slice(0, displayedSkills).map((skill, index) => (
             <span
               key={index}
-              className="bg-gray-600 text-white rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2"
+              className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
             >
               {skill}
             </span>
