@@ -1,14 +1,14 @@
 type PercentageBarProps = {
-  percentage: number;
+  matchPercentage: number;
 };
 
-function PercentageBar({ percentage }: PercentageBarProps) {
+function PercentageBar({ matchPercentage }: PercentageBarProps) {
   return (
     <div className="w-full h-4 bg-gray-600 rounded-full mt-2">
       <div
         className="h-full rounded-full bg-gradient-to-r from-gradient-start via-gradient-middle to-gradient-end"
         style={{
-          width: `${percentage}%`,
+          width: `${matchPercentage}%`,
           transition: "width 0.3s ease-in-out",
         }}
       ></div>
