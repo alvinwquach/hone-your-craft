@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
-import JobPostingCard from "../components/roles/JobPostingCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
 import { Chart } from "chart.js/auto";
+import JobPostingCard from "../components/roles/JobPostingCard";
 
 interface JobPosting {
   company: string;
   title: string;
   postUrl: string;
   skills: string[];
+  matchPercentage: number;
 }
 
 const fetcher = async (url: string, options: RequestInit) => {
@@ -27,27 +28,11 @@ function Roles(): JSX.Element {
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
+
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
-
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const { percentages } = await getJobsByApplicationStatus();
-        setStatusPercentages(new Map(Array.from(percentages.entries())));
-      } catch (error) {
-        console.error(
-          "Error fetching user jobs and application status:",
-          error
-        );
-      }
-    }
-    fetchData();
-  }, []);
-
   const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
     Map<string, number>
   >(new Map());
@@ -55,22 +40,58 @@ function Roles(): JSX.Element {
   useEffect(() => {
     async function fetchData() {
       try {
-        const userJobPostings = await getUserJobPostings();
-        setJobPostings(userJobPostings);
+        const { percentages } = await getJobsByApplicationStatus();
+        setStatusPercentages(new Map(Array.from(percentages.entries())));
+      } catch (error) {
+        console.error("Error fetching application status:", error);
+      }
+    }
+    fetchData();
+  }, []);
 
-        // Aggregate missing skills frequencies across all job postings
-        const updatedFrequency = new Map<string, number>();
-        userJobPostings.forEach((job) => {
-          job.skills.forEach((skill) => {
-            if (!userSkills?.user?.skills.includes(skill)) {
-              updatedFrequency.set(
-                skill,
-                (updatedFrequency.get(skill) || 0) + 1
-              );
-            }
-          });
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Fetch user job postings
+        const userJobPostings = await getUserJobPostings();
+        // Calculate match percentage for each job posting based on user skills
+        const jobPostingsWithMatch = userJobPostings.map((job) => {
+          // Filter out skills that user has
+          const matchedSkills = job.skills.filter((skill) =>
+            userSkills?.user?.skills.includes(skill)
+          );
+          // Calculate match percentage
+          const matchPercentage =
+            (matchedSkills.length / job.skills.length) * 100;
+          // Return job with match percentage
+          return { ...job, matchPercentage };
         });
-        setMissingSkillsFrequency(updatedFrequency);
+        // Sort job postings by match percentage
+        const sortedJobPostings = jobPostingsWithMatch.sort(
+          (a, b) => b.matchPercentage - a.matchPercentage
+        );
+        // Update job postings state
+        setJobPostings(sortedJobPostings);
+
+        // Calculate missing skills frequency
+        if (userSkills) {
+          const updatedFrequency = new Map<string, number>();
+          // Iterate through sorted job postings
+          sortedJobPostings.forEach((job) => {
+            // Iterate through job skills
+            job.skills.forEach((skill) => {
+              // If user does not possess skill, update frequency
+              if (!userSkills.user.skills.includes(skill)) {
+                updatedFrequency.set(
+                  skill,
+                  (updatedFrequency.get(skill) || 0) + 1
+                );
+              }
+            });
+          });
+          // Update missing skills frequency state
+          setMissingSkillsFrequency(updatedFrequency);
+        }
       } catch (error) {
         console.error(
           "Error fetching user jobs and application status:",
@@ -86,7 +107,6 @@ function Roles(): JSX.Element {
     if (missingSkillsFrequency.size > 0) {
       const chartContainer = document.getElementById("missingSkillsChart");
       if (chartContainer instanceof HTMLCanvasElement) {
-        // Sort the missingSkillsFrequency map by values (frequencies)
         const sortedData = Array.from(missingSkillsFrequency.entries()).sort(
           (a, b) => b[1] - a[1]
         );
@@ -127,7 +147,7 @@ function Roles(): JSX.Element {
               y: {
                 title: {
                   display: true,
-                  text: "Skills",
+                  text: "Missing Skills",
                   color: "#fff",
                 },
                 ticks: {
@@ -251,10 +271,10 @@ function Roles(): JSX.Element {
 
   return (
     <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
-      <div className="w-full h-96 mt-2">
+      <div className="w-full h-[550px] mt-2">
         <canvas id="applicationStatusChart"></canvas>
       </div>
-      <div className="w-full h-96 mt-2">
+      <div className="w-full h-[550px] mb-4">
         <canvas id="missingSkillsChart"></canvas>
       </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -164,7 +164,7 @@ function Sidebar() {
     <nav className="fixed inset-y-0 left-0 z-50">
       <div className="fixed inset-y-0 left-0 w-24 bg-gray-800 z-40">
         <div className="h-full ">
-          <div className="px-4 py-8 mt-10">
+          <div className="px-4 py-10 mt-10">
             <ul className="space-y-4">
               {navigation.map((item, index) => (
                 <SidebarItem
