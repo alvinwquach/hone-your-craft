@@ -7,11 +7,11 @@ type PercentageBarProps = {
 function PercentageBar({ matchPercentage }: PercentageBarProps) {
   const determineGradient = (percentage: number) => {
     if (percentage >= 80) {
-      return "from-green-400 to-green-600";
+      return "from-green-200 to-green-300";
     } else if (percentage >= 50) {
-      return "from-yellow-400 to-yellow-600";
+      return "from-yellow-200 to-yellow-300";
     } else {
-      return "from-red-400 to-red-600";
+      return "from-red-200 to-red-300";
     }
   };
 
