@@ -33,7 +33,7 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <header className="fixed top-0 right-0 bg-gray-800 w-full h-20 flex items-center z-50 border-b border-gray-600">
+      <header className="fixed top-0 right-0 bg-gray-800 w-full h-20 flex items-center z-50 border-b border-gray-700">
         <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
         <div className="mr-6">
           {user ? (
@@ -163,8 +163,8 @@ function Sidebar() {
   return (
     <nav className="fixed inset-y-0 left-0 z-50">
       <div className="fixed inset-y-0 left-0 w-24 bg-gray-800 z-40">
-        <div className="h-full border-r border-gray-600">
-          <div className="px-4 py-8 mt-20">
+        <div className="h-full ">
+          <div className="px-4 py-8 mt-10">
             <ul className="space-y-4">
               {navigation.map((item, index) => (
                 <SidebarItem
