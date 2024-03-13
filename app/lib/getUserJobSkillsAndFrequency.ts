@@ -4,6 +4,8 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "./db/prisma";
 
 const skillKeywords = [
+  "Mailchimp",
+
   "Relational Database",
   "Nonrelational Database",
   "Sequelize",
