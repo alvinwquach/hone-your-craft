@@ -39,8 +39,8 @@ function UserSkillsCard() {
             await axios.post(`/api/user/${session?.user?.email}`, {
               skill: skill.trim(), // Trimmed skill
             });
-            // Update data using SWR's mutate function
-            mutate();
+            // Prepend the new skill to the beginning of the userSkills array
+            mutate({ user: { skills: [skill.trim(), ...userSkills] } }, false);
           } catch (error) {
             // Log error if adding skill fails
             console.error("Error adding skill:", error);
@@ -112,7 +112,7 @@ function UserSkillsCard() {
             ))}
         </div>
         {userSkills.length > displayedSkills && (
-          <div className="mt-4">
+          <div className="mt-4 flex justify-center">
             <button
               className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
               onClick={showMoreSkills}
