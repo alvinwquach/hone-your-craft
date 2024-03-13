@@ -17,7 +17,10 @@ function JobPostingCard({
   postUrl,
   userSkills,
 }: JobPostingCardProps) {
-  const [displayedSkills, setDisplayedSkills] = useState<number>(5);
+  const [displayedMatchingSkills, setDisplayedMatchingSkills] =
+    useState<number>(2);
+  const [displayedMissingSkills, setDisplayedMissingSkills] =
+    useState<number>(2);
   const [matchPercentage, setMatchPercentage] = useState<number>(0);
   const [missingSkills, setMissingSkills] = useState<string[]>([]);
 
@@ -45,14 +48,24 @@ function JobPostingCard({
     }
   };
 
-  const handleShowMore = () => {
-    if (displayedSkills < skills.length) {
-      setDisplayedSkills((prevCount) => prevCount + 10);
+  const handleShowMoreMatchingSkills = () => {
+    if (displayedMatchingSkills < userSkills.length) {
+      setDisplayedMatchingSkills((prevCount) => prevCount + 5);
     }
   };
 
-  const handleShowLess = () => {
-    setDisplayedSkills(5);
+  const handleShowLessMatchingSkills = () => {
+    setDisplayedMatchingSkills(5);
+  };
+
+  const handleShowMoreMissingSkills = () => {
+    if (displayedMissingSkills < missingSkills.length) {
+      setDisplayedMissingSkills((prevCount) => prevCount + 5);
+    }
+  };
+
+  const handleShowLessMissingSkills = () => {
+    setDisplayedMissingSkills(5);
   };
 
   return (
@@ -69,9 +82,43 @@ function JobPostingCard({
       <div>
         <p className="text-gray-400 mb-2">Matching Skills</p>
         <div className="flex flex-wrap items">
-          {skills
-            .filter((skill) => userSkills.includes(skill))
-            .slice(0, displayedSkills)
+          {userSkills.slice(0, displayedMatchingSkills).map((skill, index) => (
+            <span
+              key={index}
+              className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+        {userSkills.length > 5 && (
+          <div className="flex justify-center">
+            {displayedMatchingSkills < userSkills.length ? (
+              <button
+                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                onClick={handleShowMoreMatchingSkills}
+                aria-label="Show more matching skills"
+              >
+                Show more
+              </button>
+            ) : null}
+            {displayedMatchingSkills > 5 && (
+              <button
+                className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                onClick={handleShowLessMatchingSkills}
+                aria-label="Show less matching skills"
+              >
+                Show less
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      <div>
+        <p className="text-gray-400 mb-2">Missing Skills:</p>
+        <div className="flex flex-wrap items">
+          {missingSkills
+            .slice(0, displayedMissingSkills)
             .map((skill, index) => (
               <span
                 key={index}
@@ -81,38 +128,27 @@ function JobPostingCard({
               </span>
             ))}
         </div>
-      </div>
-      <div>
-        <p className="text-gray-400 mb-2">Missing Skills:</p>
-        <div className="flex flex-wrap items">
-          {missingSkills.slice(0, displayedSkills).map((skill, index) => (
-            <span
-              key={index}
-              className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
-            >
-              {skill}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className="flex justify-center">
-        {displayedSkills < skills.length ? (
-          <button
-            className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-            onClick={handleShowMore}
-            aria-label="Show 10 more skills"
-          >
-            Show more
-          </button>
-        ) : null}
-        {displayedSkills > 5 && (
-          <button
-            className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-            onClick={handleShowLess}
-            aria-label="Show less skills"
-          >
-            Show less
-          </button>
+        {missingSkills.length > 5 && (
+          <div className="flex justify-center">
+            {displayedMissingSkills < missingSkills.length ? (
+              <button
+                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                onClick={handleShowMoreMissingSkills}
+                aria-label="Show more missing skills"
+              >
+                Show more
+              </button>
+            ) : null}
+            {displayedMissingSkills > 5 && (
+              <button
+                className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                onClick={handleShowLessMissingSkills}
+                aria-label="Show less missing skills"
+              >
+                Show less
+              </button>
+            )}
+          </div>
         )}
       </div>
       <a
