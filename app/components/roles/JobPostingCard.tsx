@@ -19,6 +19,7 @@ function JobPostingCard({
 }: JobPostingCardProps) {
   const [displayedSkills, setDisplayedSkills] = useState<number>(5);
   const [matchPercentage, setMatchPercentage] = useState<number>(0);
+  const [missingSkills, setMissingSkills] = useState<string[]>([]);
 
   useEffect(() => {
     const calculateMatchPercentage = () => {
@@ -27,6 +28,8 @@ function JobPostingCard({
       );
       const percentage = (matchedSkills.length / skills.length) * 100;
       setMatchPercentage(parseFloat(percentage.toFixed(2)));
+      const missing = skills.filter((skill) => !userSkills.includes(skill));
+      setMissingSkills(missing);
     };
 
     calculateMatchPercentage();
@@ -64,9 +67,25 @@ function JobPostingCard({
         <PercentageBar matchPercentage={matchPercentage} />
       </div>
       <div>
-        <p className="text-gray-400 mb-2">Skills:</p>
+        <p className="text-gray-400 mb-2">Matching Skills</p>
         <div className="flex flex-wrap items">
-          {skills.slice(0, displayedSkills).map((skill, index) => (
+          {skills
+            .filter((skill) => userSkills.includes(skill))
+            .slice(0, displayedSkills)
+            .map((skill, index) => (
+              <span
+                key={index}
+                className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
+              >
+                {skill}
+              </span>
+            ))}
+        </div>
+      </div>
+      <div>
+        <p className="text-gray-400 mb-2">Missing Skills:</p>
+        <div className="flex flex-wrap items">
+          {missingSkills.slice(0, displayedSkills).map((skill, index) => (
             <span
               key={index}
               className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
