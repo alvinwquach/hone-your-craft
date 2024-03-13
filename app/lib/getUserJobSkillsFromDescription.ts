@@ -4,6 +4,8 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "./db/prisma";
 
 const skillKeywords = [
+  "Emotion",
+  "RxJS",
   "Mailchimp",
   "Relational Database",
   "Nonrelational Database",
@@ -295,16 +297,27 @@ const skillKeywords = [
 ];
 
 const extractSkillsFromDescription = (description: string): string[] => {
-  const extractedSkills: string[] = [];
+  // Convert the description to lowercase for case-insensitive comparison
   const lowercaseDescription = description.toLowerCase();
-  // Iterate over skill keywords
-  skillKeywords.forEach((skill) => {
+  // Filter the skillKeywords array based on certain conditions
+
+  const filteredSkills = skillKeywords.filter((skill) => {
+    // Convert each skill to lowercase for case-insensitive comparison
     const lowercaseSkill = skill.toLowerCase();
-    if (lowercaseDescription.includes(lowercaseSkill)) {
-      extractedSkills.push(skill);
+    // Check if the skill is 'chai' and the description contains certain irrelevant keywords related to blockchains
+    if (
+      lowercaseSkill === "chai" &&
+      (lowercaseDescription.includes("blockchains") ||
+        lowercaseDescription.includes("blockchain") ||
+        lowercaseDescription.includes("chain") ||
+        lowercaseDescription.includes("chains"))
+    ) {
+      return false;
     }
+    return lowercaseDescription.includes(lowercaseSkill);
   });
-  return extractedSkills.length > 0 ? extractedSkills : ["No skills available"];
+
+  return filteredSkills.length > 0 ? filteredSkills : ["No skills available"];
 };
 
 const getUserJobSkillsFromDescription = async () => {
