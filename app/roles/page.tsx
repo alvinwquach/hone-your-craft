@@ -48,17 +48,110 @@ function Roles(): JSX.Element {
     fetchData();
   }, []);
 
+  const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
+    Map<string, number>
+  >(new Map());
+
   useEffect(() => {
-    async function fetchUserJobPostings() {
+    async function fetchData() {
       try {
         const userJobPostings = await getUserJobPostings();
         setJobPostings(userJobPostings);
+
+        // Aggregate missing skills frequencies across all job postings
+        const updatedFrequency = new Map<string, number>();
+        userJobPostings.forEach((job) => {
+          job.skills.forEach((skill) => {
+            if (!userSkills?.user?.skills.includes(skill)) {
+              updatedFrequency.set(
+                skill,
+                (updatedFrequency.get(skill) || 0) + 1
+              );
+            }
+          });
+        });
+        setMissingSkillsFrequency(updatedFrequency);
       } catch (error) {
-        console.error("Error fetching user job skills:", error);
+        console.error(
+          "Error fetching user jobs and application status:",
+          error
+        );
       }
     }
-    fetchUserJobPostings();
-  }, []);
+    fetchData();
+  }, [userSkills]);
+
+  useEffect(() => {
+    // Draw chart when missingSkillsFrequency changes
+    if (missingSkillsFrequency.size > 0) {
+      const chartContainer = document.getElementById("missingSkillsChart");
+      if (chartContainer instanceof HTMLCanvasElement) {
+        // Sort the missingSkillsFrequency map by values (frequencies)
+        const sortedData = Array.from(missingSkillsFrequency.entries()).sort(
+          (a, b) => b[1] - a[1]
+        );
+        const labels = sortedData.map(([skill]) => skill);
+        const data = sortedData.map(([_, frequency]) => frequency);
+
+        const chart = new Chart(chartContainer, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Frequency",
+                data: data,
+                backgroundColor: "steelblue",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Frequency",
+                  color: "#fff",
+                },
+                ticks: {
+                  color: "#fff",
+                  font: {
+                    size: 10,
+                  },
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: "Skills",
+                  color: "#fff",
+                },
+                ticks: {
+                  color: "#fff",
+                  font: {
+                    size: 10,
+                  },
+                },
+                beginAtZero: true,
+              },
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+          },
+        });
+        return () => {
+          chart.destroy();
+        };
+      }
+    }
+  }, [missingSkillsFrequency]);
 
   useEffect(() => {
     // Draw chart when statusPercentages change
@@ -161,7 +254,9 @@ function Roles(): JSX.Element {
       <div className="w-full h-96 mt-2">
         <canvas id="applicationStatusChart"></canvas>
       </div>
-
+      <div className="w-full h-96 mt-2">
+        <canvas id="missingSkillsChart"></canvas>
+      </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {jobPostings.map((job, index) => (
           <JobPostingCard
