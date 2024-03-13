@@ -5,7 +5,7 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "node_modules/@zach.codes/react-calendar/dist/**/*/.{js, jsx, ts, tsx}",
+    "node_modules/@zach.codes/react-calendar/dist/**/*/.{js,jsx,ts,tsx}",
   ],
   purge: [
     "./pages/**/*.{js,ts,jsx,tsx}",
@@ -20,14 +20,6 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
-    },
-    gradientColorStops: {
-      "gradient-start": "#ff7e5f",
-      "gradient-middle": "#feb47b",
-      "gradient-end": "#ff7e5f",
-    },
-    animation: {
-      "gradient-border": "gradient-border 2s linear infinite",
     },
     keyframes: {
       "gradient-border": {
