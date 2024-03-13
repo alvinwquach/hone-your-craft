@@ -32,8 +32,8 @@ function SuggestedSkillsCard({
     <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
       <h2 className="text-xl font-bold text-gray-200 mb-4">Suggested Skills</h2>
       <p className="text-gray-300 mb-4">
-        Based on the roles you've applied to, here are some skills we suggest
-        adding to your profile:
+        Based on the roles you&apos;ve applied to, here are some skills we
+        suggest adding to your profile:
       </p>
       <div className="flex flex-wrap gap-2">
         {missingSkills.slice(0, visibleSkills).map((missingSkill, index) => (
