@@ -76,14 +76,14 @@ function JobPostingCard({
           ))}
         </div>
       </div>
-      <div>
+      <div className="flex justify-center">
         {displayedSkills < skills.length ? (
           <button
             className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
             onClick={handleShowMore}
             aria-label="Show 10 more skills"
           >
-            Show 10 more
+            Show more
           </button>
         ) : null}
         {displayedSkills > 5 && (
