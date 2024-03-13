@@ -1,7 +1,7 @@
 "use client";
 
 import { useBoardStore } from "@/store/BoardStore";
-import JobTitleSearchForm from "../components/JobSearchForm";
+import JobTitleSearchForm from "../components/JobTitleSearchForm";
 import Board from "../components/Board";
 
 function Track() {
