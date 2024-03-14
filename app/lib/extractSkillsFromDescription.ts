@@ -29,5 +29,5 @@ export const extractSkillsFromDescription = (description: string): string[] => {
     return lowercaseDescription.includes(lowercaseSkill);
   });
 
-  return filteredSkills.length > 0 ? filteredSkills : ["No skills available"];
+  return filteredSkills;
 };

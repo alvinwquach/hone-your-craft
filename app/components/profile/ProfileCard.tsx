@@ -160,6 +160,7 @@ function ProfileCard() {
               alt={`${session?.user?.name}'s profile picture`}
               height={96}
               width={96}
+              priority
             />
           </Suspense>
           <h5 className="mb-1 text-xl font-medium text-white">
