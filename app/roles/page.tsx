@@ -219,7 +219,10 @@ function Roles(): JSX.Element {
                       label += ": ";
                     }
                     if (context.parsed.y !== null) {
-                      label += context.parsed.y.toFixed(2) + "%";
+                      const value = context.parsed.y;
+                      label += Number.isInteger(value)
+                        ? value.toFixed(0) + "%"
+                        : value.toFixed(2) + "%";
                     }
                     return label;
                   },
