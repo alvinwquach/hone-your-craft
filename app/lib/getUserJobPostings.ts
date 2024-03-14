@@ -4,7 +4,6 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "./db/prisma";
 import { extractSkillsFromDescription } from "./extractSkillsFromDescription";
 
-
 const getUserJobPostings = async () => {
   try {
     // Retrieve the current user

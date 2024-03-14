@@ -14,6 +14,8 @@ interface JobPosting {
   title: string;
   postUrl: string;
   skills: string[];
+  matchingSkills: string[];
+  missingSkills: string[];
   matchPercentage: number;
 }
 
@@ -22,13 +24,12 @@ const fetcher = async (url: string, options: RequestInit) => {
   return response.json();
 };
 
-function Roles(): JSX.Element {
+function Roles() {
   const { data: session } = useSession({ required: true });
   const { data: userSkills } = useSWR(
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
-
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
@@ -50,37 +51,53 @@ function Roles(): JSX.Element {
   }, []);
 
   useEffect(() => {
+    // Define an asynchronous function to fetch user job postings
     async function fetchData() {
       try {
         // Fetch user job postings
         const userJobPostings = await getUserJobPostings();
-        // Calculate match percentage for each job posting based on user skills
+
+        // Map each job posting to add match details
         const jobPostingsWithMatch = userJobPostings.map((job) => {
-          // Filter out skills that user has
+          // Filter skills to find matching and missing skills
           const matchedSkills = job.skills.filter((skill) =>
             userSkills?.user?.skills.includes(skill)
           );
+          const missingSkills = job.skills.filter(
+            (skill) => !userSkills?.user?.skills.includes(skill)
+          );
+
           // Calculate match percentage
           const matchPercentage =
             (matchedSkills.length / job.skills.length) * 100;
-          // Return job with match percentage
-          return { ...job, matchPercentage };
+
+          // Return job posting with match details
+          return {
+            ...job,
+            matchPercentage: matchPercentage,
+            matchingSkills: matchedSkills,
+            missingSkills: missingSkills,
+          };
         });
+
         // Sort job postings by match percentage
         const sortedJobPostings = jobPostingsWithMatch.sort(
           (a, b) => b.matchPercentage - a.matchPercentage
         );
-        // Update job postings state
+
+        // Set sorted job postings
         setJobPostings(sortedJobPostings);
 
-        // Calculate missing skills frequency
+        // If userSkills exist, update missing skills frequency
         if (userSkills) {
+          // Initialize a map to track missing skills frequency
           const updatedFrequency = new Map<string, number>();
+
           // Iterate through sorted job postings
           sortedJobPostings.forEach((job) => {
-            // Iterate through job skills
+            // Iterate through skills of each job
             job.skills.forEach((skill) => {
-              // If user does not possess skill, update frequency
+              // If the skill is missing in userSkills, update frequency
               if (!userSkills.user.skills.includes(skill)) {
                 updatedFrequency.set(
                   skill,
@@ -89,19 +106,22 @@ function Roles(): JSX.Element {
               }
             });
           });
-          // Update missing skills frequency state
+
+          // Set missing skills frequency
           setMissingSkillsFrequency(updatedFrequency);
         }
       } catch (error) {
+        // Handle error if fetching fails
         console.error(
           "Error fetching user jobs and application status:",
           error
         );
       }
     }
+
+    // Call fetchData function when userSkills change
     fetchData();
   }, [userSkills]);
-
   useEffect(() => {
     // Draw chart when missingSkillsFrequency changes
     if (missingSkillsFrequency.size > 0) {
@@ -288,7 +308,8 @@ function Roles(): JSX.Element {
             title={job.title}
             skills={job.skills}
             postUrl={job.postUrl}
-            userSkills={userSkills?.user?.skills || []}
+            matchingSkills={job.matchingSkills}
+            missingSkills={job.missingSkills}
           />
         ))}
       </div>

@@ -18,6 +18,14 @@ export const extractSkillsFromDescription = (description: string): string[] => {
     ) {
       return false;
     }
+    // Check if the skill is 'java' and the description contains JavaScript variations
+    if (
+      lowercaseSkill === "java" &&
+      lowercaseDescription.includes("javascript")
+    ) {
+      return false;
+    }
+    // Check if the description includes the lowercase skill
     return lowercaseDescription.includes(lowercaseSkill);
   });
 
