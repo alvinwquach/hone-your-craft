@@ -11,8 +11,8 @@ function SuggestedSkillsCard({
   suggestedSkills,
   userSkills = [],
 }: SuggestedSkillsCardProps) {
-  const maxSkillsToShow = 8;
-  const [visibleSkills, setVisibleSkills] = useState(maxSkillsToShow);
+  const minSkillsToShow = 5;
+  const [visibleSkills, setVisibleSkills] = useState(minSkillsToShow);
 
   const userSkillsArray = Array.isArray(userSkills) ? userSkills : [];
 
@@ -21,13 +21,12 @@ function SuggestedSkillsCard({
   );
 
   const handleShowMore = () => {
-    setVisibleSkills((prev) => prev + 8);
+    setVisibleSkills((prev) => Math.min(prev + 5, missingSkills.length));
   };
 
   const handleShowLess = () => {
-    setVisibleSkills((prev) => Math.max(maxSkillsToShow, prev - 8));
+    setVisibleSkills((prev) => Math.max(minSkillsToShow, prev - 5));
   };
-
   return (
     <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
       <h2 className="text-xl font-bold text-gray-200 mb-4">Suggested Skills</h2>
@@ -53,12 +52,14 @@ function SuggestedSkillsCard({
           >
             Show more
           </button>
-          <button
-            onClick={handleShowLess}
-            className="text-gray-300 hover:text-white text-sm font-semibold"
-          >
-            Show less
-          </button>
+          {visibleSkills > minSkillsToShow && (
+            <button
+              onClick={handleShowLess}
+              className="text-gray-300 hover:text-white text-sm font-semibold"
+            >
+              Show less
+            </button>
+          )}
         </div>
       ) : null}
     </div>
