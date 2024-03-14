@@ -7,7 +7,8 @@ interface JobPostingCardProps {
   title: string;
   skills: string[];
   postUrl: string;
-  userSkills: string[];
+  matchingSkills: string[];
+  missingSkills: string[];
 }
 
 function JobPostingCard({
@@ -15,28 +16,34 @@ function JobPostingCard({
   title,
   skills,
   postUrl,
-  userSkills,
+  matchingSkills,
+  missingSkills,
 }: JobPostingCardProps) {
   const [displayedMatchingSkills, setDisplayedMatchingSkills] =
     useState<number>(2);
   const [displayedMissingSkills, setDisplayedMissingSkills] =
     useState<number>(2);
   const [matchPercentage, setMatchPercentage] = useState<number>(0);
-  const [missingSkills, setMissingSkills] = useState<string[]>([]);
 
   useEffect(() => {
     const calculateMatchPercentage = () => {
-      const matchedSkills = skills.filter((skill) =>
-        userSkills.includes(skill)
+      const lowercaseUserSkills = matchingSkills.map((skill) =>
+        skill.toLowerCase()
       );
-      const percentage = (matchedSkills.length / skills.length) * 100;
+      const lowercaseJobSkills = skills.map((skill) => skill.toLowerCase());
+
+      // Calculate the number of matching skills
+      const matchedSkillsCount = lowercaseUserSkills.filter((skill) =>
+        lowercaseJobSkills.includes(skill)
+      ).length;
+
+      // Calculate the match percentage
+      const percentage = (matchedSkillsCount / lowercaseJobSkills.length) * 100;
       setMatchPercentage(parseFloat(percentage.toFixed(2)));
-      const missing = skills.filter((skill) => !userSkills.includes(skill));
-      setMissingSkills(missing);
     };
 
     calculateMatchPercentage();
-  }, [skills, userSkills]);
+  }, [skills, matchingSkills]);
 
   const determineMatchClass = () => {
     if (matchPercentage >= 80) {
@@ -49,23 +56,27 @@ function JobPostingCard({
   };
 
   const handleShowMoreMatchingSkills = () => {
-    if (displayedMatchingSkills < userSkills.length) {
-      setDisplayedMatchingSkills((prevCount) => prevCount + 5);
+    if (displayedMatchingSkills < matchingSkills.length) {
+      setDisplayedMatchingSkills((prevCount) => prevCount + 3);
     }
   };
 
   const handleShowLessMatchingSkills = () => {
-    setDisplayedMatchingSkills(5);
+    setDisplayedMatchingSkills(3);
   };
 
   const handleShowMoreMissingSkills = () => {
     if (displayedMissingSkills < missingSkills.length) {
-      setDisplayedMissingSkills((prevCount) => prevCount + 5);
+      setDisplayedMissingSkills((prevCount) => prevCount + 3);
     }
   };
 
   const handleShowLessMissingSkills = () => {
-    setDisplayedMissingSkills(5);
+    setDisplayedMissingSkills(3);
+  };
+
+  const filterDuplicateMissingSkills = (skills: string[]) => {
+    return Array.from(new Set(skills));
   };
 
   return (
@@ -79,78 +90,84 @@ function JobPostingCard({
         </p>
         <PercentageBar matchPercentage={matchPercentage} />
       </div>
-      <div>
-        <p className="text-gray-400 mb-2">Matching Skills</p>
-        <div className="flex flex-wrap items">
-          {userSkills.slice(0, displayedMatchingSkills).map((skill, index) => (
-            <span
-              key={index}
-              className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
-            >
-              {skill}
-            </span>
-          ))}
-        </div>
-        {userSkills.length > 5 && (
-          <div className="flex justify-center">
-            {displayedMatchingSkills < userSkills.length ? (
-              <button
-                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-                onClick={handleShowMoreMatchingSkills}
-                aria-label="Show more matching skills"
-              >
-                Show more
-              </button>
-            ) : null}
-            {displayedMatchingSkills > 5 && (
-              <button
-                className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-                onClick={handleShowLessMatchingSkills}
-                aria-label="Show less matching skills"
-              >
-                Show less
-              </button>
-            )}
+      {matchingSkills.length > 0 && (
+        <div>
+          <p className="text-gray-400 mb-2">Matching Skills:</p>
+          <div className="flex flex-wrap items">
+            {matchingSkills
+              .slice(0, displayedMatchingSkills)
+              .map((skill, index) => (
+                <span
+                  key={index}
+                  className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
+                >
+                  {skill}
+                </span>
+              ))}
           </div>
-        )}
-      </div>
-      <div>
-        <p className="text-gray-400 mb-2">Missing Skills:</p>
-        <div className="flex flex-wrap items">
-          {missingSkills
-            .slice(0, displayedMissingSkills)
-            .map((skill, index) => (
-              <span
-                key={index}
-                className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
-              >
-                {skill}
-              </span>
-            ))}
+          {matchingSkills.length > 5 && (
+            <div className="flex justify-center">
+              {displayedMatchingSkills < matchingSkills.length ? (
+                <button
+                  className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  onClick={handleShowMoreMatchingSkills}
+                  aria-label="Show more matching skills"
+                >
+                  Show more
+                </button>
+              ) : null}
+              {displayedMatchingSkills > 5 && (
+                <button
+                  className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  onClick={handleShowLessMatchingSkills}
+                  aria-label="Show less matching skills"
+                >
+                  Show less
+                </button>
+              )}
+            </div>
+          )}
         </div>
-        {missingSkills.length > 5 && (
-          <div className="flex justify-center">
-            {displayedMissingSkills < missingSkills.length ? (
-              <button
-                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-                onClick={handleShowMoreMissingSkills}
-                aria-label="Show more missing skills"
-              >
-                Show more
-              </button>
-            ) : null}
-            {displayedMissingSkills > 5 && (
-              <button
-                className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-                onClick={handleShowLessMissingSkills}
-                aria-label="Show less missing skills"
-              >
-                Show less
-              </button>
-            )}
+      )}
+      {missingSkills.length > 0 && (
+        <div>
+          <p className="text-gray-400 mb-2">Missing Skills:</p>
+          <div className="flex flex-wrap items">
+            {filterDuplicateMissingSkills(missingSkills)
+              .slice(0, displayedMissingSkills)
+              .map((skill, index) => (
+                <span
+                  key={index}
+                  className="bg-gray-600 text-white rounded-lg px-3 py-1 text-sm font-semibold mr-2 mb-2"
+                >
+                  {skill}
+                </span>
+              ))}
           </div>
-        )}
-      </div>
+          {missingSkills.length > 5 && (
+            <div className="flex justify-center">
+              {displayedMissingSkills < missingSkills.length ? (
+                <button
+                  className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  onClick={handleShowMoreMissingSkills}
+                  aria-label="Show more missing skills"
+                >
+                  Show more
+                </button>
+              ) : null}
+              {displayedMissingSkills > 5 && (
+                <button
+                  className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  onClick={handleShowLessMissingSkills}
+                  aria-label="Show less missing skills"
+                >
+                  Show less
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       <a
         href={postUrl}
         className="text-gray-400 text-sm hover:text-gray-200 flex items-center mt-2 absolute top-0 right-0"
