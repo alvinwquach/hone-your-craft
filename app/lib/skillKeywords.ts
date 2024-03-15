@@ -1,4 +1,12 @@
 export const skillKeywords = [
+  "Hubspot",
+  "CRM",
+  "CRMs",
+  "DevOps",
+  "Web3",
+  "Nuxt",
+  "Nuxt.js",
+  "Vue.js",
   "Emotion",
   "RxJS",
   "Mailchimp",
