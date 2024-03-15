@@ -60,12 +60,12 @@ function Modal() {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: any, selectedCategory: any) => {
     try {
       // Add the selected category as the 'status' field in the job data
       data.status = selectedCategory;
       // Call the addJob function to add the job to the correct column
-      await addJob(data);
+      await addJob(data, selectedCategory);
       // Close the modal after adding the job
       closeModal();
     } catch (error) {
