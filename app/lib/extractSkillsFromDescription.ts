@@ -25,6 +25,7 @@ export const extractSkillsFromDescription = (description: string): string[] => {
     ) {
       return false;
     }
+    // Check if the skill is 'ember' and it exists as a standalone word in the description
     if (
       (lowercaseSkill === "ember" &&
         lowercaseDescription.includes("remember")) ||
