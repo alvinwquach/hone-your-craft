@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import SessionProvider from "./SessionProvider";
 import "./globals.css";
 import Header from "./components/common/Header";
-import Modal from "./components/Modal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,10 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <SessionProvider>
           <Header />
-          <main className="bg-slate-700">
-            {children}
-            <Modal />
-          </main>
+          <main className="bg-slate-700">{children}</main>
         </SessionProvider>
       </body>
     </html>

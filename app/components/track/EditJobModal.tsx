@@ -1,75 +1,86 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-
-import { ChangeEvent, Fragment, useRef } from "react";
+import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useModalStore } from "@/store/ModalStore";
-import { useBoardStore } from "@/store/BoardStore";
 import { iDToColumnText } from "./Column";
-import { ApplicationStatus } from "@prisma/client";
+
+import { ApplicationStatus, WorkLocation } from "@prisma/client";
+import axios from "axios";
+import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
   postUrl: yup.string().required("Post URL is required"),
   title: yup.string().required("Title is required"),
-  description: yup.string().required("Title is required"),
+  description: yup.string().required("Description is required"),
+  industry: yup.string(),
+  location: yup.string(),
+  salary: yup.string(),
+  workLocation: yup.mixed<WorkLocation>().oneOf(Object.values(WorkLocation)),
+  status: yup
+    .mixed<ApplicationStatus>()
+    .oneOf(Object.values(ApplicationStatus)),
+  interviews: yup.array().of(
+    yup.object().shape({
+      date: yup.date().required("Interview date is required"),
+    })
+  ),
+  offers: yup.array().of(
+    yup.object().shape({
+      date: yup.date().required("Offer date is required"),
+    })
+  ),
+  rejections: yup.array().of(
+    yup.object().shape({
+      date: yup.date().required("Rejection date is required"),
+    })
+  ),
 });
 
-function Modal() {
-  const modalRef = useRef<HTMLDivElement>(null);
+type EditJobModalProps = {
+  isOpen: boolean;
+  closeModal: () => void;
+  job: Job;
+  id: ApplicationStatus;
+};
 
-  const [newJobInput, setNewJobInput, addJob] = useBoardStore((state) => [
-    state.newJobInput,
-    state.setNewJobInput,
-    state.addJob,
-  ]);
-
-  const [isOpen, closeModal, selectedCategory, openModal] = useModalStore(
-    (state) => [
-      state.isOpen,
-      state.closeModal,
-      state.selectedCategory,
-      state.openModal,
-    ]
-  );
-
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    // Set the state of the 'newJobInput' object by spreading its current properties and updating or adding a property based on the 'name' extracted from the event and its corresponding 'value'.
-    setNewJobInput({ ...newJobInput, [name]: value });
-  };
-
-  const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    // Extract the selected category from the event
-    const category = e.target.value as ApplicationStatus;
-    // Open the modal with the selected category
-    openModal(category);
-    console.log(category);
-  };
-
+function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm({
     resolver: yupResolver(schema),
   });
+  // This useEffect hook updates form fields when selectedJob changes
+  useEffect(() => {
+    if (job) {
+      setValue("company", job.company || "");
+      setValue("postUrl", job.postUrl || "");
+      setValue("title", job.title || "");
+      setValue("description", job.description || "");
+      setValue("industry", job.industry || "");
+      setValue("location", job.location || "");
+      setValue("salary", job.salary || "");
+      setValue("workLocation", job.workLocation || "");
+      setValue("status", job.status || "");
+    }
+  }, [job]);
 
-  const onSubmit = async (data: any, selectedCategory: any) => {
+  const onSubmit = async (data: any) => {
     try {
-      // Add the selected category as the 'status' field in the job data
-      data.status = selectedCategory;
-      // Call the addJob function to add the job to the correct column
-      await addJob(data, selectedCategory);
-      // Close the modal after adding the job
+      // Make API call to update job data with form values
+      await axios.put(`/api/job/${job.id}`, data); // Pass data to the server
+      console.log("Job updated successfully");
       closeModal();
     } catch (error) {
-      console.error("Error adding job:", error);
+      console.error("Error updating job:", error);
     }
   };
 
@@ -82,10 +93,7 @@ function Modal() {
         onSubmit={handleSubmit(onSubmit)}
         static
       >
-        <div
-          ref={modalRef}
-          className="flex items-center justify-center min-h-full"
-        >
+        <div className="flex items-center justify-center min-h-full">
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-out duration-300"
@@ -110,10 +118,11 @@ function Modal() {
             <div className="fixed inset-0 flex items-center justify-center">
               <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
-                  Add Job
+                  Edit Job
                 </Dialog.Title>
                 <div className="mt-2">
                   <div className="grid gap-4 mb-4 grid-cols-2">
+                    {/* Existing form fields */}
                     <div className="col-span-2">
                       <label
                         htmlFor="company"
@@ -125,8 +134,6 @@ function Modal() {
                         type="text"
                         id="company"
                         {...register("company")}
-                        value={newJobInput.company}
-                        onChange={handleChange}
                         placeholder="Company"
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                         required
@@ -143,67 +150,95 @@ function Modal() {
                         type="text"
                         id="postUrl"
                         {...register("postUrl")}
-                        value={newJobInput.postUrl}
-                        onChange={handleChange}
-                        placeholder="+ add URL"
+                        placeholder="Post URL"
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                         required
                       />
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
+                    <div className="col-span-2">
                       <label
-                        htmlFor="jobTitle"
+                        htmlFor="title"
                         className="block mb-2 text-sm font-medium text-gray-900"
                       >
-                        Job Title
+                        Title
                       </label>
                       <input
                         type="text"
                         id="title"
                         {...register("title")}
-                        value={newJobInput.title}
-                        onChange={handleChange}
-                        placeholder="Job Title"
+                        placeholder="Title"
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                         required
                       />
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <label
-                        htmlFor="category"
-                        className="block mb-2 text-sm font-medium text-gray-900"
-                      >
-                        Category
-                      </label>
-                      <select
-                        id="category"
-                        value={selectedCategory ?? ""}
-                        onChange={handleCategoryChange}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                      >
-                        {Object.entries(iDToColumnText).map(([key, value]) => (
-                          <option key={key} value={key}>
-                            {value}
-                          </option>
-                        ))}
-                      </select>
                     </div>
                     <div className="col-span-2">
                       <label
                         htmlFor="description"
                         className="block mb-2 text-sm font-medium text-gray-900"
                       >
-                        Job Description
+                        Description
                       </label>
                       <textarea
-                        required
                         id="description"
                         rows={4}
                         {...register("description")}
-                        value={newJobInput.description}
-                        onChange={handleChange}
+                        placeholder="Description"
                         className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        required
                       />
+                    </div>
+                    <div className="col-span-2">
+                      <label
+                        htmlFor="location"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        id="location"
+                        {...register("location")}
+                        placeholder="Location"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label
+                        htmlFor="workLocation"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Work Location
+                      </label>
+                      <select
+                        id="workLocation"
+                        {...register("workLocation")}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      >
+                        {Object.values(WorkLocation).map((location) => (
+                          <option key={location} value={location}>
+                            {convertToSentenceCase(location)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <label
+                        htmlFor="status"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Status
+                      </label>
+                      <select
+                        id="status"
+                        {...register("status")}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      >
+                        {Object.values(ApplicationStatus).map((status) => (
+                          <option key={status} value={status}>
+                            {convertToSentenceCase(status)}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -212,7 +247,7 @@ function Modal() {
                     type="submit"
                     className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                   >
-                    Save job
+                    Save Changes
                   </button>
                 </div>
               </div>
@@ -224,4 +259,4 @@ function Modal() {
   );
 }
 
-export default Modal;
+export default EditJobModal;

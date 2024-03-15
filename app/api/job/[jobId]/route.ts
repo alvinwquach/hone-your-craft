@@ -12,6 +12,13 @@ export async function GET(
   const jobId = params.jobId;
 
   try {
+    // Fetching current user
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
     // Attempt to find the job by ID
     const job = await prisma.job.findUnique({
       where: { id: jobId },
@@ -72,9 +79,18 @@ export async function POST(request: NextRequest) {
 // Update job by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } }
 ) {
-  const jobId = params.id;
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    // If the current user is not found, return a 401 Unauthorized response
+    return NextResponse.json(
+      { message: "User not authenticated" },
+      { status: 401 }
+    );
+  }
+  const jobId = params.jobId;
   const jobData = await request.json();
 
   try {
@@ -99,11 +115,20 @@ export async function PUT(
 // Delete job by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } }
 ) {
-  const jobId = params.id;
-
   try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      // If the current user is not found, return a 401 Unauthorized response
+      return NextResponse.json(
+        { message: "User not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const jobId = params.jobId;
     // Attempt to delete the job
     await prisma.job.delete({
       where: { id: jobId },

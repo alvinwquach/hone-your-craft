@@ -34,6 +34,8 @@ function Column({ id, jobs, index }: ColumnProps) {
     openModal(id);
   };
 
+  const renderJobs = jobs.slice().reverse(); // Reverse the order of jobs
+
   return (
     <Draggable draggableId={id} index={index} key={id}>
       {(provided) => (
@@ -48,7 +50,7 @@ function Column({ id, jobs, index }: ColumnProps) {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 className={`p-2 rounded-2xl shadow-sm ${
-                  snapshot.isDraggingOver ? "bg-zinc-600" : "bg-black"
+                  snapshot.isDraggingOver ? "bg-gray-900" : "bg-gray-800"
                 }`}
               >
                 <h2 className="flex justify-between semibold text-base p-2">
@@ -65,7 +67,7 @@ function Column({ id, jobs, index }: ColumnProps) {
                 </h2>
                 <div className="flex justify-center">
                   <button
-                    className="py-1 px-2 my-2 bg-zinc-800 hover:bg-zinc-700 w-full text-center rounded-lg"
+                    className="py-1 px-2 my-2 bg-gray-700 hover:bg-gray-600 w-full text-center rounded-lg"
                     onClick={handleOpenModal}
                   >
                     <HiPlusCircle className="h-10 w-10 text-gray-400 inline-block" />
