@@ -1,4 +1,5 @@
 export const skillKeywords = [
+  "Tailwind CSS",
   "Hubspot",
   "CRM",
   "CRMs",
