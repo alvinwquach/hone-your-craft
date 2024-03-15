@@ -17,11 +17,11 @@ function UserSkillsCard() {
   // If there are no user skills, default to an empty array
   const userSkills = userData?.user?.skills || [];
 
-  const showMoreSkills = () => {
+  const handleShowMore = () => {
     setDisplayedSkills(displayedSkills + 5);
   };
 
-  const showLessSkills = () => {
+  const handleShowLess = () => {
     setDisplayedSkills(displayedSkills - 5);
   };
 
@@ -72,6 +72,9 @@ function UserSkillsCard() {
     }
   };
 
+  const showMoreSkills = userSkills.length > displayedSkills;
+  const showLessSkills = displayedSkills > 10;
+
   return (
     <div className="w-full max-w-md border rounded-lg shadow bg-gray-800 border-gray-700">
       <div className="p-4">
@@ -111,18 +114,20 @@ function UserSkillsCard() {
               </div>
             ))}
         </div>
-        {userSkills.length > displayedSkills && (
+        {(showMoreSkills || showLessSkills) && (
           <div className="mt-4 flex justify-center">
-            <button
-              className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-              onClick={showMoreSkills}
-            >
-              Show more
-            </button>
-            {displayedSkills > 10 && (
+            {showMoreSkills && (
+              <button
+                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                onClick={handleShowMore}
+              >
+                Show more
+              </button>
+            )}
+            {showLessSkills && (
               <button
                 className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
-                onClick={showLessSkills}
+                onClick={handleShowLess}
               >
                 Show less
               </button>
