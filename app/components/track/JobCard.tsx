@@ -62,7 +62,10 @@ function JobCard({
             <div className="absolute top-0 right-0 flex flex-col mr-2 mt-2">
               <button
                 className="text-red-500 hover:text-red-600 border-2 p-0.5 rounded-lg mb-1"
-                onClick={() => handleDeleteJob}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleDeleteJob();
+                }}
               >
                 <HiTrash className="h-4 w-4" />
               </button>
@@ -71,6 +74,7 @@ function JobCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:text-blue-600 border-2 p-0.5 rounded-lg"
+                onClick={(event) => event.stopPropagation()}
               >
                 <HiLink className="h-4 w-4" />
               </a>

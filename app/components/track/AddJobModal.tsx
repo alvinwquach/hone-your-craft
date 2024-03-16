@@ -21,7 +21,17 @@ const schema = yup.object().shape({
   salary: yup.number(),
 });
 
-function AddJobModal() {
+interface AddJobModalProps {
+  isOpen: boolean;
+  closeModal: () => void;
+  selectedCategory: ApplicationStatus;
+}
+
+function AddJobModal({
+  isOpen,
+  closeModal,
+  selectedCategory,
+}: AddJobModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   const [newJobInput, setNewJobInput, addJob] = useBoardStore((state) => [
@@ -29,15 +39,6 @@ function AddJobModal() {
     state.setNewJobInput,
     state.addJob,
   ]);
-
-  const [isOpen, closeModal, selectedCategory, openModal] = useModalStore(
-    (state) => [
-      state.isOpen,
-      state.closeModal,
-      state.selectedCategory,
-      state.openModal,
-    ]
-  );
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -50,8 +51,6 @@ function AddJobModal() {
   const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
     // Extract the selected category from the event
     const category = e.target.value as ApplicationStatus;
-    // Open the modal with the selected category
-    openModal(category);
     console.log(category);
   };
 
