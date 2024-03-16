@@ -110,8 +110,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
         // Retrieve the column with the specified ID
         const column = newColumns.get(columnId);
-
-        // If the column exists, add the created job to its jobs array at the very top
         if (column) {
           column.jobs.unshift(createdJob); // Add the job at the beginning of the array
         }

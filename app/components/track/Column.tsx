@@ -93,7 +93,7 @@ function Column({ id, jobs, index }: ColumnProps) {
                     />
                   )}
                 </div>
-                <div className="mt-4">
+                <div className="overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {jobs.map((job, index) => {
                     // Filter jobs based on the search string
                     if (

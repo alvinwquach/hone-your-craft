@@ -54,6 +54,12 @@ export const getJobsGroupedByColumn = async () => {
         columns.get(job.status)?.jobs.push(job);
       }
     }
+
+    // Reverse the order of jobs in each column
+    columns.forEach((column) => {
+      column.jobs.reverse();
+    });
+
     // Initialize a new board object with columns
     const board: Board = {
       columns: columns,
