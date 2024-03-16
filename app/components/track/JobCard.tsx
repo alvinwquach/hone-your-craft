@@ -34,7 +34,11 @@ function JobCard({
   const handleEditModalOpen = () => {
     setIsEditModalOpen(true);
   };
-  const handleDeleteJob = () => {
+
+  const handleDeleteJob = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    event.stopPropagation();
     deleteJob(index, job, id);
   };
 
@@ -55,17 +59,13 @@ function JobCard({
         <div className="p-4 sm:p-2 flex justify-between items-center text-gray-300 relative">
           <div>
             <p className="text-base mb-2 font-semibold">{job.title}</p>
-
             <span className="text-sm">{job.company}</span>
           </div>
           {isHovering && (
             <div className="absolute top-0 right-0 flex flex-col mr-2 mt-2">
               <button
                 className="text-red-500 hover:text-red-600 border-2 p-0.5 rounded-lg mb-1"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleDeleteJob();
-                }}
+                onClick={handleDeleteJob}
               >
                 <HiTrash className="h-4 w-4" />
               </button>
@@ -82,8 +82,6 @@ function JobCard({
           )}
         </div>
       </div>
-
-      {/* Render EditJobModal conditionally based on state */}
       {isEditModalOpen && (
         <EditJobModal
           isOpen={isEditModalOpen}
