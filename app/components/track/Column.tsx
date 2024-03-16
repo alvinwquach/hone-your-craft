@@ -2,7 +2,9 @@ import { useBoardStore } from "@/store/BoardStore";
 import { useModalStore } from "@/store/ModalStore";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { ApplicationStatus } from "@prisma/client";
+import { useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
+import AddJobModal from "./AddJobModal";
 import JobCard from "./JobCard";
 
 type ColumnProps = {
@@ -27,14 +29,25 @@ function Column({ id, jobs, index }: ColumnProps) {
   const [titleSearchString] = useBoardStore((state) => [
     state.titleSearchString,
   ]);
-  // Get the function to open the modal from the modal store
-  const openModal = useModalStore((state) => state.openModal);
+  // // Get the function to open the modal from the modal store
+  // const openModal = useModalStore((state) => state.openModal);
 
-  const handleOpenModal = () => {
-    openModal(id);
+  // const handleOpenModal = () => {
+  //   openModal(id);
+  //   console.log(id, ApplicationStatus);
+  // };
+
+  // const renderJobs = jobs.slice().reverse(); // Reverse the order of jobs
+
+  const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
+
+  const openAddJobModal = () => {
+    setIsAddJobModalOpen(true);
   };
 
-  const renderJobs = jobs.slice().reverse(); // Reverse the order of jobs
+  const closeAddJobModal = () => {
+    setIsAddJobModalOpen(false);
+  };
 
   return (
     <Draggable draggableId={id} index={index} key={id}>
@@ -68,10 +81,17 @@ function Column({ id, jobs, index }: ColumnProps) {
                 <div className="flex justify-center">
                   <button
                     className="py-1 px-2 my-2 bg-gray-700 hover:bg-gray-600 w-full text-center rounded-lg"
-                    onClick={handleOpenModal}
+                    onClick={openAddJobModal}
                   >
                     <HiPlusCircle className="h-10 w-10 text-gray-400 inline-block" />
                   </button>
+                  {isAddJobModalOpen && (
+                    <AddJobModal
+                      isOpen={isAddJobModalOpen}
+                      closeModal={() => setIsAddJobModalOpen(false)}
+                      selectedCategory={id} // Pass the selected category to the modal
+                    />
+                  )}
                 </div>
                 <div className="mt-4">
                   {jobs.map((job, index) => {
