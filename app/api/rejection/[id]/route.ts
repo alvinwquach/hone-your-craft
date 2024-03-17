@@ -1,3 +1,4 @@
+import getCurrentUser from "@/app/lib/getCurrentUser";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -11,6 +12,12 @@ export async function GET(
   const rejectionId = params.id;
 
   try {
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
     // Attempt to find the rejection by ID
     const rejection = await prisma.rejection.findUnique({
       where: { id: rejectionId },
@@ -39,6 +46,12 @@ export async function GET(
 
 // Create a new rejection
 export async function POST(request: NextRequest) {
+  const currentUser = await getCurrentUser();
+  // If no current user, return an error response
+  if (!currentUser) {
+    return NextResponse.error();
+  }
+
   const { date, initiatedBy, notes, jobId, userId } = await request.json();
 
   try {
@@ -70,6 +83,12 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const currentUser = await getCurrentUser();
+  // If no current user, return an error response
+  if (!currentUser) {
+    return NextResponse.error();
+  }
+
   const rejectionId = params.id;
   const { date, initiatedBy, notes, jobId, userId } = await request.json();
 
@@ -97,6 +116,12 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const currentUser = await getCurrentUser();
+  // If no current user, return an error response
+  if (!currentUser) {
+    return NextResponse.error();
+  }
+
   const rejectionId = params.id;
 
   try {
