@@ -1,3 +1,4 @@
+import getCurrentUser from "@/app/lib/getCurrentUser";
 import { InterviewRound, PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -11,6 +12,13 @@ export async function GET(
   const interviewId = params.id;
 
   try {
+    const currentUser = await getCurrentUser(); // Get the current user
+
+    if (!currentUser) {
+      // If user is not authenticated, return a 401 response
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     // Attempt to find the interview by ID
     const interview = await prisma.interview.findUnique({
       where: { id: interviewId },
@@ -42,21 +50,30 @@ export async function POST(request: NextRequest) {
   const requestBody = await request.json();
 
   try {
+    const currentUser = await getCurrentUser(); // Get the current user
+
+    if (!currentUser) {
+      // If user is not authenticated, return a 401 response
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if interviewDate is provided and not null
+    if (!requestBody.interviewDate) {
+      return NextResponse.json(
+        { message: "interviewDate must not be null" },
+        { status: 400 }
+      );
+    }
+
     // Attempt to create a new interview
     const interview = await prisma.interview.create({
       data: {
-        userId: requestBody.userId,
-        jobId: requestBody.jobId,
+        user: { connect: { id: currentUser.id } }, // Connect the user to the id
+        job: { connect: { id: requestBody.jobId } }, // Connect the interview to the job
         acceptedDate: requestBody.acceptedDate,
         interviewDate: requestBody.interviewDate,
         interviewType: requestBody.interviewType,
-        interviewRounds: {
-          createMany: {
-            data: requestBody.interviewRounds,
-          },
-        },
       },
-      include: { interviewRounds: true }, // Include related interview rounds data
     });
 
     // Return the created interview as a JSON response with a 201 status code
@@ -81,6 +98,13 @@ export async function PUT(
     await request.json(); // Extract interviewType from the request body
 
   try {
+    const currentUser = await getCurrentUser(); // Get the current user
+
+    if (!currentUser) {
+      // If user is not authenticated, return a 401 response
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     // Attempt to update the interview
     const updatedInterview = await prisma.interview.update({
       where: { id: interviewId },
@@ -119,6 +143,13 @@ export async function DELETE(
   const interviewId = params.id;
 
   try {
+    const currentUser = await getCurrentUser(); // Get the current user
+
+    if (!currentUser) {
+      // If user is not authenticated, return a 401 response
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     // Attempt to delete the interview
     await prisma.interview.delete({
       where: { id: interviewId },
@@ -135,6 +166,3 @@ export async function DELETE(
     );
   }
 }
-
-
-
