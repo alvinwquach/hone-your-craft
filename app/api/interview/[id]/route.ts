@@ -72,7 +72,6 @@ export async function POST(request: NextRequest) {
         job: { connect: { id: requestBody.jobId } }, // Connect the interview to the job
         acceptedDate: requestBody.acceptedDate,
         interviewDate: requestBody.interviewDate,
-        interviewTime: requestBody.interviewTime,
         interviewType: requestBody.interviewType,
       },
     });
