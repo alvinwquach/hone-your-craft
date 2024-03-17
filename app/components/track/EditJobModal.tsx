@@ -6,7 +6,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { ApplicationStatus, InterviewType, WorkLocation } from "@prisma/client";
+import {
+  ApplicationStatus,
+  InterviewType,
+  RejectionInitiator,
+  WorkLocation,
+} from "@prisma/client";
 import axios from "axios";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 
@@ -22,17 +27,47 @@ const schema = yup.object().shape({
   status: yup
     .mixed<ApplicationStatus>()
     .oneOf(Object.values(ApplicationStatus)),
-  interviews: yup.array().of(
-    yup.object().shape({
-      date: yup.date().required("Interview date is required"),
-      time: yup.string().required("Interview time is required"),
-      type: yup
-        .mixed<InterviewType>()
-        .oneOf(Object.values(InterviewType))
-        .required("Interview type is required"),
-    })
-  ),
+  rejection: yup.object().shape({
+    date: yup.date().required("Rejection date is required"),
+    initiatedBy: yup
+      .mixed<RejectionInitiator>()
+      .oneOf(Object.values(RejectionInitiator))
+      .required("Initiator is required"),
+    notes: yup.string(),
+  }),
 });
+
+// const schema = yup.object().shape({
+//   company: yup.string().required("Company is required"),
+//   postUrl: yup.string().required("Post URL is required"),
+//   title: yup.string().required("Title is required"),
+//   description: yup.string().required("Description is required"),
+//   industry: yup.string(),
+//   location: yup.string(),
+//   salary: yup.string(),
+//   workLocation: yup.mixed<WorkLocation>().oneOf(Object.values(WorkLocation)),
+//   status: yup
+//     .mixed<ApplicationStatus>()
+//     .oneOf(Object.values(ApplicationStatus)),
+//   // interviews: yup.array().of(
+//   //   yup.object().shape({
+//   //     date: yup.date().required("Interview date is required"),
+//   //     time: yup.string().required("Interview time is required"),
+//   //     type: yup
+//   //       .mixed<InterviewType>()
+//   //       .oneOf(Object.values(InterviewType))
+//   //       .required("Interview type is required"),
+//   //   })
+//   // ),
+//   rejection: yup.object().shape({
+//     date: yup.date().required("Rejection date is required"),
+//     initiatedBy: yup
+//       .mixed<RejectionInitiator>()
+//       .oneOf(Object.values(RejectionInitiator))
+//       .required("Initiator is required"),
+//     notes: yup.string().required("Notes are required"),
+//   }),
+// });
 
 type EditJobModalProps = {
   isOpen: boolean;
@@ -88,6 +123,26 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
 
+      if (data.rejection) {
+        const rejectionData = {
+          userId: job.userId,
+          jobId: job.id,
+          date: new Date().toISOString(), // Get the current date for rejection logging
+          initiatedBy: data.rejection.initiatedBy,
+          notes: data.rejection.notes,
+        };
+
+        console.log("Rejection data:", rejectionData);
+
+        if (job.rejection) {
+          // If rejection already exists, update it
+          await axios.put(`/api/rejection/${id}`, rejectionData);
+        } else {
+          // If rejection doesn't exist, create a new one
+          await axios.post(`/api/rejection/${id}`, rejectionData);
+        }
+      }
+
       if (data.interviews && data.interviews.length > 0) {
         const interviewData = {
           userId: job.userId,
@@ -112,7 +167,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       }
 
       closeModal();
-      console.log("Job and interview updated successfully");
+      console.log("Job and interview and rejection data updated successfully");
     } catch (error) {
       console.error("Error updating job and creating interview:", error);
     }
@@ -290,7 +345,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     />
                   </div>
 
-                  <div>
+                  {/* <div>
                     <label
                       htmlFor="interviewDate"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -303,8 +358,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       {...register("interviews.0.date")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     />
-                  </div>
-                  <div>
+                  </div> */}
+                  {/* <div>
                     <label
                       htmlFor="interviewTime"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -317,8 +372,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       {...register("interviews.0.time")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     />
-                  </div>
-                  <div>
+                  </div> */}
+                  {/* <div>
                     <label
                       htmlFor="interviewType"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -336,9 +391,56 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         </option>
                       ))}
                     </select>
-                  </div>
+                  </div> */}
                 </div>
-
+                <div>
+                  <label
+                    htmlFor="rejectionDate"
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                  >
+                    Rejection Date
+                  </label>
+                  <input
+                    type="date"
+                    id="rejectionDate"
+                    {...register("rejection.date")}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="rejectionInitiatedBy"
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                  >
+                    Rejection Initiated By
+                  </label>
+                  <select
+                    id="rejectionInitiatedBy"
+                    {...register("rejection.initiatedBy")}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                  >
+                    <option value={RejectionInitiator.APPLICANT}>
+                      Applicant
+                    </option>
+                    <option value={RejectionInitiator.COMPANY}>Company</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    htmlFor="rejectionNotes"
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                  >
+                    Rejection Notes
+                  </label>
+                  <textarea
+                    id="rejectionNotes"
+                    rows={4}
+                    {...register("rejection.notes")}
+                    placeholder="Rejection Notes"
+                    className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    required
+                  />
+                </div>
                 <div className="flex justify-end mt-4">
                   <button
                     type="submit"
