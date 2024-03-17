@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { useModalStore } from "@/store/ModalStore";
-import { iDToColumnText } from "./Column";
-
 import { ApplicationStatus, InterviewType, WorkLocation } from "@prisma/client";
 import axios from "axios";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
@@ -28,21 +25,11 @@ const schema = yup.object().shape({
   interviews: yup.array().of(
     yup.object().shape({
       date: yup.date().required("Interview date is required"),
-    })
-  ),
-  InterviewType: yup.array().of(
-    yup.object().shape({
-      date: yup.date().required("Interview date is required"),
-    })
-  ),
-  offers: yup.array().of(
-    yup.object().shape({
-      date: yup.date().required("Offer date is required"),
-    })
-  ),
-  rejections: yup.array().of(
-    yup.object().shape({
-      date: yup.date().required("Rejection date is required"),
+      time: yup.string().required("Interview time is required"),
+      type: yup
+        .mixed<InterviewType>()
+        .oneOf(Object.values(InterviewType))
+        .required("Interview type is required"),
     })
   ),
 });
@@ -63,7 +50,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   } = useForm({
     resolver: yupResolver(schema),
   });
-  // This useEffect hook updates form fields when selectedJob changes
+
+  // Populate form fields with existing job data when job prop changes
   useEffect(() => {
     if (job) {
       setValue("company", job.company || "");
@@ -75,17 +63,58 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       setValue("salary", job.salary || "");
       setValue("workLocation", job.workLocation || "");
       setValue("status", job.status || "");
+      setValue("industry", job.industry || "");
     }
   }, [job]);
 
   const onSubmit = async (data: any) => {
     try {
-      // Make API call to update job data with form values
-      await axios.put(`/api/job/${job.id}`, data); // Pass data to the server
-      console.log("Job updated successfully");
+      console.log("Submitting form data:", data);
+
+      const jobData = {
+        company: data.company,
+        postUrl: data.postUrl,
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        workLocation: data.workLocation,
+        status: data.status,
+        industry: data.industry,
+        salary: data.salary,
+      };
+
+      console.log("Updating job with data:", jobData);
+
+      // Update job data
+      await axios.put(`/api/job/${job.id}`, jobData);
+
+      if (data.interviews && data.interviews.length > 0) {
+        const interviewData = {
+          userId: job.userId,
+          jobId: job.id,
+          interviewDate: new Date(data.interviews[0].date).toISOString(),
+          interviewType: data.interviews[0].type,
+          acceptedDate: new Date().toISOString(),
+        };
+
+        console.log("Interview data:", interviewData);
+
+        if (data.interviews[0].id) {
+          // If interview ID exists, update the interview
+          await axios.put(
+            `/api/interview/${data.interviews[0].id}`,
+            interviewData
+          );
+        } else {
+          // If interview ID doesn't exist, create a new interview
+          await axios.post(`/api/interview/${id}`, interviewData);
+        }
+      }
+
       closeModal();
+      console.log("Job and interview updated successfully");
     } catch (error) {
-      console.error("Error updating job:", error);
+      console.error("Error updating job and creating interview:", error);
     }
   };
 
@@ -225,7 +254,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       ))}
                     </select>
                   </div>
-                  {/* Right side */}
                   <div>
                     <label
                       htmlFor="status"
@@ -233,6 +261,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     >
                       Status
                     </label>
+
                     <select
                       id="status"
                       {...register("status")}
@@ -246,21 +275,46 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     </select>
                   </div>
                   <div>
-                    <h2 className="text-lg font-medium text-gray-900 sr-only">
-                      Logs
-                    </h2>
-                  </div>
-                  <div>
                     <label
-                      htmlFor="interviews"
+                      htmlFor="industry"
                       className="block mb-2 text-sm font-medium text-gray-900"
                     >
-                      Interview
+                      Industry
+                    </label>
+                    <input
+                      type="text"
+                      id="industry"
+                      {...register("industry")}
+                      placeholder="Industry"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="interviewDate"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Interview Date
                     </label>
                     <input
                       type="date"
-                      id="interviews"
+                      id="interviewDate"
                       {...register("interviews.0.date")}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="interviewTime"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Interview Time
+                    </label>
+                    <input
+                      type="time"
+                      id="interviewTime"
+                      {...register("interviews.0.time")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     />
                   </div>
@@ -273,7 +327,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     </label>
                     <select
                       id="interviewType"
-                      {...register("InterviewType")}
+                      {...register("interviews.0.type")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     >
                       {Object.values(InterviewType).map((type) => (
@@ -283,36 +337,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       ))}
                     </select>
                   </div>
-
-                  <div>
-                    <label
-                      htmlFor="offers"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Offer
-                    </label>
-                    <input
-                      type="date"
-                      id="offers"
-                      {...register("offers.0.date")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="rejections"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Rejection
-                    </label>
-                    <input
-                      type="date"
-                      id="rejections"
-                      {...register("rejections.0.date")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    />
-                  </div>
                 </div>
+
                 <div className="flex justify-end mt-4">
                   <button
                     type="submit"

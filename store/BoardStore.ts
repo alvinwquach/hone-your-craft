@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { getJobsGroupedByColumn } from "@/app/lib/getJobsGroupedByColumn";
 import axios from "axios";
 import { ApplicationStatus, Job } from "@prisma/client";
+import deleteJob from "@/app/lib/deleteJob";
 
 export interface BoardState {
   board: Board;
@@ -130,30 +131,52 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       throw error;
     }
   },
-
   deleteJob: async (jobIndex: number, job: Job, id: ApplicationStatus) => {
     try {
-      // Make a DELETE request to delete the job
-      await axios.delete(`/api/job/${job.id}`);
-
-      // If successful, update the state to reflect deletion
-      const newColumns = new Map(get().board.columns);
-      // Remove the job from the specified column
-      newColumns.get(id)?.jobs.splice(jobIndex, 1);
-      // Update the board state
-      set((state) => ({
-        board: {
-          ...state.board,
-          columns: newColumns,
-        },
-      }));
+      // Delete the job by id
+      await deleteJob(job.id);
 
       console.log("Job deleted successfully");
     } catch (error) {
       console.error("Error deleting job:", error);
       throw error;
     }
+
+    // Update the board state to reflect deletion
+    const newColumns = new Map(get().board.columns);
+    // Remove the job from the specified column
+    newColumns.get(id)?.jobs.splice(jobIndex, 1);
+    // Update the board state
+    set((state) => ({
+      board: {
+        ...state.board,
+        columns: newColumns,
+      },
+    }));
   },
+  // deleteJob: async (jobIndex: number, job: Job, id: ApplicationStatus) => {
+  //   try {
+  //     // Make a DELETE request to delete the job
+  //     await axios.delete(`/api/job/${job.id}`);
+
+  //     // If successful, update the state to reflect deletion
+  //     const newColumns = new Map(get().board.columns);
+  //     // Remove the job from the specified column
+  //     newColumns.get(id)?.jobs.splice(jobIndex, 1);
+  //     // Update the board state
+  //     set((state) => ({
+  //       board: {
+  //         ...state.board,
+  //         columns: newColumns,
+  //       },
+  //     }));
+
+  //     console.log("Job deleted successfully");
+  //   } catch (error) {
+  //     console.error("Error deleting job:", error);
+  //     throw error;
+  //   }
+  // },
   // updateJobStatus: async (job, columnId) => {
   //   try {
   //     // Make a PUT request to update the job status
