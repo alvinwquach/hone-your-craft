@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { format, startOfMonth } from "date-fns";
 import {
   MonthlyBody,
   MonthlyDay,
   MonthlyCalendar,
 } from "@zach.codes/react-calendar";
-import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
-import { MonthlyNav } from "../calendar/MonthlyNav";
 import { interviewTypes } from "@/app/lib/interviewTypes";
 import { Interview } from "@prisma/client";
+import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
+import { MonthlyNav } from "./MonthlyNav";
 
 interface InterviewCalendarProps {
   interviews: Interview[];
@@ -25,6 +25,7 @@ const getColorForInterviewType = (type: string) => {
 
 const mapInterviewsToEvents = (interviews: any[]) =>
   interviews.map((interview) => ({
+    id: interview.id,
     date: new Date(interview.interviewDate),
     title: interview.job.title,
     interviewType: interview.interviewType,
@@ -32,8 +33,9 @@ const mapInterviewsToEvents = (interviews: any[]) =>
   }));
 
 const InterviewDay = ({ interview }: { interview: any }) => {
-  const { job, title, interviewType, date } = interview;
+  const { job, title, interviewType, date, id } = interview;
   const { company } = job;
+  const deleteInterview = useContext(DeleteInterviewContext);
 
   return (
     <div
@@ -47,6 +49,7 @@ const InterviewDay = ({ interview }: { interview: any }) => {
         {/* <div>{convertToSentenceCase(interviewType)}</div> */}
         <div>{format(new Date(date), "h:mm a")}</div>
       </div>
+      <button onClick={() => deleteInterview(id)}>Delete</button>{" "}
     </div>
   );
 };
@@ -78,5 +81,6 @@ function InterviewCalendar({ interviews }: InterviewCalendarProps) {
     </div>
   );
 }
+
 
 export default InterviewCalendar;
