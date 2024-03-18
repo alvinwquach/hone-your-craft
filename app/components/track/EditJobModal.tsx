@@ -27,14 +27,23 @@ const schema = yup.object().shape({
   status: yup
     .mixed<ApplicationStatus>()
     .oneOf(Object.values(ApplicationStatus)),
-  rejection: yup.object().shape({
-    date: yup.date().required("Rejection date is required"),
-    initiatedBy: yup
-      .mixed<RejectionInitiator>()
-      .oneOf(Object.values(RejectionInitiator))
-      .required("Initiator is required"),
-    notes: yup.string(),
-  }),
+  // rejection: yup.object().shape({
+  //   date: yup.date().required("Rejection date is required"),
+  //   initiatedBy: yup
+  //     .mixed<RejectionInitiator>()
+  //     .oneOf(Object.values(RejectionInitiator))
+  //     .required("Initiator is required"),
+  //   notes: yup.string(),
+  // }),
+  interviewDate: yup.date(),
+  interviews: yup.array().of(
+    yup.object().shape({
+      type: yup
+        .mixed<InterviewType>()
+        .oneOf(Object.values(InterviewType))
+        .required("Interview type is required"),
+    })
+  ),
 });
 
 // const schema = yup.object().shape({
@@ -142,12 +151,15 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
           await axios.post(`/api/rejection/${id}`, rejectionData);
         }
       }
-
+      const interviewDate = new Date(data.interviewDate).toISOString();
+      console.log(interviewDate);
       if (data.interviews && data.interviews.length > 0) {
         const interviewData = {
           userId: job.userId,
           jobId: job.id,
-          interviewDate: new Date(data.interviews[0].date).toISOString(),
+          interviewDate: interviewDate,
+
+          // interviewDate: new Date(data.interviews[0].date).toISOString(),
           interviewType: data.interviews[0].type,
           acceptedDate: new Date().toISOString(),
         };
@@ -344,6 +356,20 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                     />
                   </div>
+                  <div>
+                    <label
+                      htmlFor="interviewDate"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Interview Date and Time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      id="interviewDate"
+                      {...register("interviewDate")}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                    />
+                  </div>
 
                   {/* <div>
                     <label
@@ -373,7 +399,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     />
                   </div> */}
-                  {/* <div>
+                  <div>
                     <label
                       htmlFor="interviewType"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -391,9 +417,9 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         </option>
                       ))}
                     </select>
-                  </div> */}
+                  </div>
                 </div>
-                <div>
+                {/* <div>
                   <label
                     htmlFor="rejectionDate"
                     className="block mb-2 text-sm font-medium text-gray-900"
@@ -406,8 +432,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     {...register("rejection.date")}
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                   />
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                   <label
                     htmlFor="rejectionInitiatedBy"
                     className="block mb-2 text-sm font-medium text-gray-900"
@@ -424,8 +450,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     </option>
                     <option value={RejectionInitiator.COMPANY}>Company</option>
                   </select>
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                   <label
                     htmlFor="rejectionNotes"
                     className="block mb-2 text-sm font-medium text-gray-900"
@@ -440,7 +466,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     required
                   />
-                </div>
+                </div> */}
                 <div className="flex justify-end mt-4">
                   <button
                     type="submit"

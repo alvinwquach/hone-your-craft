@@ -10,24 +10,10 @@ import {
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { MonthlyNav } from "../calendar/MonthlyNav";
 import { interviewTypes } from "@/app/lib/interviewTypes";
-
-interface Interview {
-  id: string;
-  userId: string | null;
-  jobId: string;
-  acceptedDate: Date;
-  interviewDate: Date;
-  interviewType: string;
-  job: {
-    id: string;
-    userId: string | null;
-    company: string;
-    title: string;
-  };
-}
+import { Interview } from "@prisma/client";
 
 interface InterviewCalendarProps {
-  mappedInterviews: Interview[];
+  interviews: Interview[];
 }
 
 const getColorForInterviewType = (type: string) => {
@@ -40,7 +26,7 @@ const getColorForInterviewType = (type: string) => {
 const mapInterviewsToEvents = (interviews: any[]) =>
   interviews.map((interview) => ({
     date: new Date(interview.interviewDate),
-    title: interview.title,
+    title: interview.job.title,
     interviewType: interview.interviewType,
     job: interview.job,
   }));
@@ -55,17 +41,17 @@ const InterviewDay = ({ interview }: { interview: any }) => {
         interviewType
       )} bg-opacity-80 rounded-md p-2 text-sm`}
     >
-      <div className="text-lg font-bold mb-1">{title}</div>
-      <div className="text-sm mb-1">{company}</div>
-      <div className="text-xs flex justify-between">
-        <div>{convertToSentenceCase(interviewType)}</div>
+      <div className="text-xs font-semibold mt-1">{title} </div>
+      <div className="text-sm mt-1">{company}</div>
+      <div className="text-xs mt-1">
+        {/* <div>{convertToSentenceCase(interviewType)}</div> */}
         <div>{format(new Date(date), "h:mm a")}</div>
       </div>
     </div>
   );
 };
 
-function InterviewCalendar({ mappedInterviews }: InterviewCalendarProps) {
+function InterviewCalendar({ interviews }: InterviewCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     startOfMonth(new Date())
   );
@@ -79,7 +65,7 @@ function InterviewCalendar({ mappedInterviews }: InterviewCalendarProps) {
         <div className="text-white">
           <MonthlyNav />
         </div>
-        <MonthlyBody events={mapInterviewsToEvents(mappedInterviews)}>
+        <MonthlyBody events={mapInterviewsToEvents(interviews)}>
           <MonthlyDay
             renderDay={(data) =>
               data.map((item, index) => (
