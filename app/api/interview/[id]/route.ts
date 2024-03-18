@@ -1,5 +1,5 @@
 import getCurrentUser from "@/app/lib/getCurrentUser";
-import { InterviewRound, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
@@ -22,7 +22,7 @@ export async function GET(
     // Attempt to find the interview by ID
     const interview = await prisma.interview.findUnique({
       where: { id: interviewId },
-      include: { user: true, job: true, interviewRounds: true }, // Include related user, job, and interview rounds data
+      include: { user: true, job: true }, // Include related user, job, and interview rounds data
     });
 
     // If interview is not found, return a 404 response
@@ -94,8 +94,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const interviewId = params.id;
-  const { acceptedDate, interviewDate, interviewRounds, interviewType } =
-    await request.json(); // Extract interviewType from the request body
+  const { acceptedDate, interviewDate, interviewType } = await request.json(); // Extract interviewType from the request body
 
   try {
     const currentUser = await getCurrentUser(); // Get the current user
@@ -112,15 +111,7 @@ export async function PUT(
         acceptedDate,
         interviewDate,
         interviewType,
-        interviewRounds: {
-          upsert: interviewRounds.map((round: InterviewRound) => ({
-            where: { id: round.id }, // Where condition for upsert
-            update: round, // Update the existing round
-            create: round, // Create a new round if it doesn't exist
-          })),
-        },
       },
-      include: { interviewRounds: true },
     });
 
     // Return the updated interview as a JSON response
