@@ -94,23 +94,9 @@ model Interview {
   jobId           String           @db.ObjectId
   acceptedDate    DateTime
   interviewDate   DateTime
-  interviewRounds InterviewRound[]
   interviewType InterviewType 
   
   @@map("interview")
-}
-
-model InterviewRound {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  interviewId String        @db.ObjectId
-  interview   Interview     @relation(fields: [interviewId], references: [id])
-  roundNumber Int
-  notes       String?
-  outcome     RoundOutcome?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  @@map("interview_round")
 }
 
 model Offer {
