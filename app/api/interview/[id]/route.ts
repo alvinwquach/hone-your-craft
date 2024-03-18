@@ -141,13 +141,26 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const interviewId = params.id;
-
   try {
     const currentUser = await getCurrentUser(); // Get the current user
 
     if (!currentUser) {
       // If user is not authenticated, return a 401 response
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if the interview belongs to the current user
+    const interview = await prisma.interview.findUnique({
+      where: { id: interviewId },
+      select: { userId: true },
+    });
+
+    if (!interview || interview.userId !== currentUser.id) {
+      // If the interview does not exist or does not belong to the current user, return a 404 response
+      return NextResponse.json(
+        { message: "Interview not found" },
+        { status: 404 }
+      );
     }
 
     // Attempt to delete the interview
