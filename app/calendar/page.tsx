@@ -12,12 +12,13 @@ import getUserJobInterviews from "../lib/getUserJobInterviews";
 function Calendar() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const interviews = await getUserJobInterviews();
-        setInterviews(interviews);
-        console.log(interviews);
+        const { userInterviews } = await getUserJobInterviews();
+        setInterviews(userInterviews);
+        console.log(userInterviews);
       } catch (error) {
         console.error("Error fetching user job interviews:", error);
       }
@@ -35,7 +36,6 @@ function Calendar() {
       console.error("Error deleting interview:", error);
     }
   };
-
   return (
     <DeleteInterviewContext.Provider value={handleDeleteInterview}>
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
