@@ -122,6 +122,7 @@ function Roles() {
     // Call fetchData function when userSkills change
     fetchData();
   }, [userSkills]);
+
   useEffect(() => {
     // Draw chart when missingSkillsFrequency changes
     if (missingSkillsFrequency.size > 0) {
