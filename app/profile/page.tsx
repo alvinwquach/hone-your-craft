@@ -102,6 +102,7 @@ function Profile() {
             company={rejection.job.company}
             title={rejection.job.title}
             postUrl={rejection.job.postUrl}
+            rejectionId={rejection.id}
           />
         ))}
       </div>
