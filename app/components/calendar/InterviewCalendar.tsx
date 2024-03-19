@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { format, startOfMonth } from "date-fns";
 import {
   MonthlyBody,
@@ -39,6 +39,7 @@ const InterviewDay = ({ interview }: { interview: any }) => {
   const deleteInterview = useContext(DeleteInterviewContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const optionsMenuRef = useRef<HTMLDivElement>(null);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -52,6 +53,23 @@ const InterviewDay = ({ interview }: { interview: any }) => {
     e.stopPropagation();
     setShowOptionsMenu(!showOptionsMenu);
   };
+
+  useEffect(() => {
+    const handleClickOutsideMenu = (e: MouseEvent) => {
+      if (
+        optionsMenuRef.current &&
+        !optionsMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowOptionsMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutsideMenu);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideMenu);
+    };
+  }, []);
 
   const handleEditInterview = () => {
     setIsModalOpen(true);
@@ -69,6 +87,7 @@ const InterviewDay = ({ interview }: { interview: any }) => {
         interviewType
       )} bg-opacity-80 rounded-md p-2 text-sm relative`}
       onClick={openModal}
+      ref={optionsMenuRef}
     >
       {isModalOpen && (
         <EditInterviewModal
@@ -101,16 +120,16 @@ const InterviewDay = ({ interview }: { interview: any }) => {
           </svg>
         </button>
         {showOptionsMenu && (
-          <div className="absolute top-6 right-0 bg-white shadow">
+          <div className="absolute top-6 right-0 bg-white shadow rounded-lg">
             <button
               onClick={handleEditInterview}
-              className="block w-full text-xs text-left px-4 py-1 hover:bg-gray-100"
+              className="block w-full text-xs text-left px-4 py-1 hover:bg-gray-100 rounded-lg"
             >
               Edit
             </button>
             <button
               onClick={handleDeleteInterview}
-              className="block w-full text-xs text-left px-4 py-1 hover:bg-gray-100"
+              className="block w-full text-xs text-left px-4 py-1 hover:bg-gray-100 rounded-lg"
             >
               Delete
             </button>
