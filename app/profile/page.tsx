@@ -118,6 +118,7 @@ function Profile() {
       <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {userRejections.map((rejection) => (
           <RejectionJobCard
+            key={rejection.id}
             company={rejection.job.company}
             title={rejection.job.title}
             postUrl={rejection.job.postUrl}
@@ -129,6 +130,7 @@ function Profile() {
       <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {userOffers.map((offer) => (
           <OfferJobCard
+            key={offer.id}
             company={offer.job.company}
             title={offer.job.title}
             postUrl={offer.job.postUrl}
