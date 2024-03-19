@@ -33,12 +33,6 @@ enum ApplicationStatus {
   REJECTED
 }
 
-enum RoundOutcome {
-  PASS
-  FAIL
-  PENDING
-}
-
 enum RejectionInitiator {
   APPLICANT
   COMPANY
@@ -49,7 +43,6 @@ enum OfferStatus {
   ACCEPTED
   REJECTED
 }
-
 
 model Job {
   id           String            @id @default(auto()) @map("_id") @db.ObjectId
