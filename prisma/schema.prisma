@@ -38,12 +38,6 @@ enum RejectionInitiator {
   COMPANY
 }
 
-enum OfferStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
 model Job {
   id           String            @id @default(auto()) @map("_id") @db.ObjectId
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -101,8 +95,6 @@ model Offer {
   offerDate    DateTime
   acceptedDate DateTime?
   salary       String
-  notes        String
-  status       OfferStatus
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 

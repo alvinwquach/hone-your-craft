@@ -24,9 +24,9 @@ const schema = yup.object().shape({
   location: yup.string(),
   salary: yup.string(),
   workLocation: yup.mixed<WorkLocation>().oneOf(Object.values(WorkLocation)),
-  status: yup
-    .mixed<ApplicationStatus>()
-    .oneOf(Object.values(ApplicationStatus)),
+  // status: yup
+  //   .mixed<ApplicationStatus>()
+  //   .oneOf(Object.values(ApplicationStatus)),
   // rejection: yup.object().shape({
   //   date: yup.date().required("Rejection date is required"),
   //   initiatedBy: yup
@@ -35,7 +35,10 @@ const schema = yup.object().shape({
   //     .required("Initiator is required"),
   //   notes: yup.string(),
   // }),
-  interviewDate: yup.date(),
+  // interviewDate: yup.date(),
+  offerDate: yup.date().required("Offer date is required"),
+  offerSalary: yup.string().required("Salary is required"),
+  // notes: yup.string(),
   interviews: yup.array().of(
     yup.object().shape({
       type: yup
@@ -106,7 +109,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       setValue("location", job.location || "");
       setValue("salary", job.salary || "");
       setValue("workLocation", job.workLocation || "");
-      setValue("status", job.status || "");
+      // setValue("status", job.status || "");
       setValue("industry", job.industry || "");
     }
   }, [job]);
@@ -132,11 +135,30 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
 
+      const offerData = {
+        userId: job.userId,
+        jobId: job.id,
+        offerDate: new Date(data.offerDate).toISOString(),
+        salary: data.offerSalary,
+        status: data.offerStatus,
+      };
+
+      // Check if offer already exists
+      const existingOffer = job.offer;
+
+      if (existingOffer) {
+        // If offer exists, update it
+        await axios.put(`/api/offer/${id}`, offerData);
+      } else {
+        // If offer doesn't exist, create a new one
+        await axios.post(`/api/offer/${id}`, offerData);
+      }
+
       if (data.rejection) {
         const rejectionData = {
           userId: job.userId,
           jobId: job.id,
-          date: new Date().toISOString(), // Get the current date for rejection logging
+          date: new Date().toISOString(),
           initiatedBy: data.rejection.initiatedBy,
           notes: data.rejection.notes,
         };
@@ -145,43 +167,17 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
 
         if (job.rejection) {
           // If rejection already exists, update it
-          await axios.put(`/api/rejection/${id}`, rejectionData);
+          await axios.put(`/api/rejection/${job.id}`, rejectionData);
         } else {
           // If rejection doesn't exist, create a new one
-          await axios.post(`/api/rejection/${id}`, rejectionData);
-        }
-      }
-      const interviewDate = new Date(data.interviewDate).toISOString();
-      console.log(interviewDate);
-      if (data.interviews && data.interviews.length > 0) {
-        const interviewData = {
-          userId: job.userId,
-          jobId: job.id,
-          interviewDate: interviewDate,
-
-          // interviewDate: new Date(data.interviews[0].date).toISOString(),
-          interviewType: data.interviews[0].type,
-          acceptedDate: new Date().toISOString(),
-        };
-
-        console.log("Interview data:", interviewData);
-
-        if (data.interviews[0].id) {
-          // If interview ID exists, update the interview
-          await axios.put(
-            `/api/interview/${data.interviews[0].id}`,
-            interviewData
-          );
-        } else {
-          // If interview ID doesn't exist, create a new interview
-          await axios.post(`/api/interview/${id}`, interviewData);
+          await axios.post(`/api/offer/${id}`, offerData);
         }
       }
 
       closeModal();
-      console.log("Job and interview and rejection data updated successfully");
+      console.log("Job and offer data updated successfully");
     } catch (error) {
-      console.error("Error updating job and creating interview:", error);
+      console.error("Error updating job and offer:", error);
     }
   };
 
@@ -321,7 +317,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       ))}
                     </select>
                   </div>
-                  <div>
+                  {/* <div>
                     <label
                       htmlFor="status"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -340,7 +336,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         </option>
                       ))}
                     </select>
-                  </div>
+                  </div> */}
                   <div>
                     <label
                       htmlFor="industry"
@@ -356,7 +352,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <label
                       htmlFor="interviewDate"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -369,7 +365,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       {...register("interviewDate")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     />
-                  </div>
+                  </div> */}
 
                   {/* <div>
                     <label
@@ -418,6 +414,71 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <label
+                      htmlFor="offerDate"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Offer Date
+                    </label>
+                    <input
+                      type="datetime-local"
+                      id="offerDate"
+                      {...register("offerDate")}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="offerSalary"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Salary
+                    </label>
+                    <input
+                      type="text"
+                      id="salary"
+                      {...register("offerSalary")}
+                      placeholder="Salary"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                      required
+                    />
+                  </div>
+                  {/* <div>
+                    <label
+                      htmlFor="notes"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Notes
+                    </label>
+                    <textarea
+                      id="notes"
+                      rows={4}
+                      {...register("notes")}
+                      placeholder="Notes"
+                      className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div> */}
+                  {/* <div>
+                    <label
+                      htmlFor="status"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Offer Status
+                    </label>
+                    <select
+                      id="status"
+                      {...register("status")}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                    >
+                      {Object.values(OfferStatus).map((status) => (
+                        <option key={status} value={status}>
+                          {convertToSentenceCase(status)}
+                        </option>
+                      ))}
+                    </select>
+                  </div> */}
                 </div>
                 {/* <div>
                   <label
