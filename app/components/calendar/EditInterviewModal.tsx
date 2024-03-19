@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -34,6 +34,26 @@ const EditInterviewModal: React.FC<EditInterviewModalProps> = ({
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        closeModal();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isOpen, closeModal]);
 
   // Populate form fields with existing interview data when interview prop changes
   useEffect(() => {
@@ -98,7 +118,10 @@ const EditInterviewModal: React.FC<EditInterviewModalProps> = ({
             leaveTo="opacity-0 scale-95"
           >
             <div className="fixed inset-0 flex items-center justify-center">
-              <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div
+                className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+                ref={modalRef}
+              >
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                   Edit Interview
                 </Dialog.Title>
