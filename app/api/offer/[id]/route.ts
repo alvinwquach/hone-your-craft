@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
+
 import { NextRequest, NextResponse } from "next/server";
+import getCurrentUser from "@/app/lib/getCurrentUser";
 
 const prisma = new PrismaClient();
 
@@ -11,6 +13,12 @@ export async function GET(
   const offerId = params.id;
 
   try {
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
     // Attempt to find the offer by ID
     const offer = await prisma.offer.findUnique({
       where: { id: offerId },
@@ -39,10 +47,21 @@ export async function POST(request: NextRequest) {
   const offerData = await request.json();
 
   try {
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
     // Attempt to create a new offer
     const offer = await prisma.offer.create({
       data: offerData,
     });
+
+    // // Log the offer creation
+    // await prisma.offer.update({
+    //   where: { id: offer.id },
+    // });
 
     // Return the created offer as a JSON response with a 201 status code
     return NextResponse.json({ offer }, { status: 201 });
@@ -65,6 +84,12 @@ export async function PUT(
   const offerData = await request.json();
 
   try {
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
     // Attempt to update the offer
     const updatedOffer = await prisma.offer.update({
       where: { id: offerId },
@@ -91,6 +116,12 @@ export async function DELETE(
   const offerId = params.id;
 
   try {
+    const currentUser = await getCurrentUser();
+    // If no current user, return an error response
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
     // Attempt to delete the offer
     await prisma.offer.delete({
       where: { id: offerId },
