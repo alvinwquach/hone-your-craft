@@ -7,6 +7,7 @@ interface RejectionJobCardProps {
   title: string;
   postUrl: string;
   rejectionId: string;
+  onDelete: (offerId: string) => void;
 }
 
 function RejectionJobCard({
@@ -14,18 +15,11 @@ function RejectionJobCard({
   title,
   postUrl,
   rejectionId,
+  onDelete,
 }: RejectionJobCardProps) {
-  const handleDeleteRejection = async (id: string) => {
-    try {
-      // Send a DELETE request to delete the rejection by ID
-      await axios.delete(`/api/rejection/${id}`);
-      // Optionally, you can update the UI or show a confirmation message upon successful deletion
-    } catch (error) {
-      console.error("Error deleting rejection:", error);
-      // Handle error
-    }
+  const handleDelete = () => {
+    onDelete(rejectionId);
   };
-
   return (
     <div className="rounded-lg bg-gray-800 p-4 shadow-md mb-4">
       <div className="flex justify-between items-center mb-2">
@@ -46,7 +40,7 @@ function RejectionJobCard({
           <HiOutlineExternalLink className="mr-3 mt-3 h-5 w-5 group-hover:text-gray-200" />
         </a>
         <button
-          onClick={() => handleDeleteRejection(rejectionId)}
+          onClick={handleDelete}
           className="text-gray-400 hover:text-gray-200 absolute top-0 right-0 mt-10"
           aria-label={`Delete rejection for ${title} at ${company}`}
         >
