@@ -11,6 +11,7 @@ import getUserJobRejections from "../lib/getUserJobRejections";
 import RejectionJobCard from "../components/profile/RejectionJobCard";
 import getUserJobOffers from "../lib/getUserJobOffers";
 import OfferJobCard from "../components/profile/OfferJobCard";
+import axios from "axios";
 
 interface JobPosting {
   title: string;
@@ -81,6 +82,25 @@ function Profile() {
     }
     fetchData();
   }, []);
+
+  const handleDeleteRejection = async (id: string) => {
+    try {
+      await axios.delete(`/api/rejection/${id}`);
+    } catch (error) {
+      console.error("Error deleting rejection:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteOffer = async (id: string) => {
+    try {
+      await axios.delete(`/api/offer/${id}`);
+    } catch (error) {
+      console.error("Error deleting offer:", error);
+      throw error;
+    }
+  };
+
   return (
     <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userSkills && (
@@ -96,24 +116,27 @@ function Profile() {
         <UserSkillsCard />
       </div>
       <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {userRejections.map((rejection, index) => (
+        {userRejections.map((rejection) => (
           <RejectionJobCard
-            key={index}
+            key={rejection.id}
             company={rejection.job.company}
             title={rejection.job.title}
             postUrl={rejection.job.postUrl}
             rejectionId={rejection.id}
+            onDelete={handleDeleteRejection}
           />
         ))}
       </div>
       <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {userOffers.map((offer, index) => (
+        {userOffers.map((offer) => (
           <OfferJobCard
-            key={index}
+            key={offer.id}
             company={offer.job.company}
             title={offer.job.title}
             postUrl={offer.job.postUrl}
             salary={offer.salary}
+            offerId={offer.id}
+            onDelete={handleDeleteOffer}
           />
         ))}
       </div>
