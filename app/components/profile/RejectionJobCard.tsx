@@ -1,5 +1,4 @@
 import axios from "axios";
-import { Stringifier } from "postcss";
 import React from "react";
 import { HiOutlineExternalLink, HiOutlineTrash } from "react-icons/hi";
 
