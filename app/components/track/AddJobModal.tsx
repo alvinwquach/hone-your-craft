@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import { ChangeEvent, Fragment, useRef } from "react";
+import { ChangeEvent, Fragment, useRef, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useModalStore } from "@/store/ModalStore";
 import { useBoardStore } from "@/store/BoardStore";
@@ -75,6 +75,23 @@ function AddJobModal({
     }
   };
 
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        closeModal();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isOpen, closeModal]);
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -84,10 +101,7 @@ function AddJobModal({
         onSubmit={handleSubmit(onSubmit)}
         static
       >
-        <div
-          ref={modalRef}
-          className="flex items-center justify-center min-h-full"
-        >
+        <div className="flex items-center justify-center min-h-full">
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-out duration-300"
@@ -110,7 +124,10 @@ function AddJobModal({
             leaveTo="opacity-0 scale-95"
           >
             <div className="fixed inset-0 flex items-center justify-center">
-              <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div
+                className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+                ref={modalRef}
+              >
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                   Add Job
                 </Dialog.Title>
