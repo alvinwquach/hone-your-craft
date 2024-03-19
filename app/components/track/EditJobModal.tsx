@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -98,6 +98,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
     resolver: yupResolver(schema),
   });
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
   // Populate form fields with existing job data when job prop changes
   useEffect(() => {
     if (job) {
@@ -181,6 +183,24 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
     }
   };
 
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        closeModal();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isOpen, closeModal]);
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -213,7 +233,10 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
             leaveTo="opacity-0 scale-95"
           >
             <div className="fixed inset-0 flex items-center justify-center">
-              <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div
+                className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+                ref={modalRef}
+              >
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                   Edit Job
                 </Dialog.Title>
