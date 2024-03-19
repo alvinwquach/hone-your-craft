@@ -9,6 +9,8 @@ import UserSkillsCard from "../components/profile/UserSkillsCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import getUserJobRejections from "../lib/getUserJobRejections";
 import RejectionJobCard from "../components/profile/RejectionJobCard";
+import getUserJobOffers from "../lib/getUserJobOffers";
+import OfferJobCard from "../components/profile/OfferJobCard";
 
 interface JobPosting {
   title: string;
@@ -31,6 +33,7 @@ function Profile() {
   );
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [userRejections, setUserRejections] = useState<any[]>([]);
+  const [userOffers, setUserOffers] = useState<any[]>([]);
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -66,6 +69,18 @@ function Profile() {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const userOffersData = await getUserJobOffers();
+        setUserOffers(userOffersData);
+      } catch (error) {
+        console.error("Error fetching user offers:", error);
+      }
+    }
+    fetchData();
+  }, []);
   return (
     <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userSkills && (
@@ -87,6 +102,17 @@ function Profile() {
             company={rejection.job.company}
             title={rejection.job.title}
             postUrl={rejection.job.postUrl}
+          />
+        ))}
+      </div>
+      <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {userOffers.map((offer, index) => (
+          <OfferJobCard
+            key={index}
+            company={offer.job.company}
+            title={offer.job.title}
+            postUrl={offer.job.postUrl}
+            salary={offer.salary}
           />
         ))}
       </div>
