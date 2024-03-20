@@ -6,16 +6,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import {
-  ApplicationStatus,
-  InterviewType,
-  RejectionInitiator,
-  WorkLocation,
-} from "@prisma/client";
+import { ApplicationStatus, WorkLocation } from "@prisma/client";
 import axios from "axios";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import LogOfferModal from "./LogOfferModal";
 import LogRejectionModal from "./LogRejectionModal";
+import LogInterviewModal from "./LogInterviewModal";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
@@ -29,31 +25,7 @@ const schema = yup.object().shape({
   applicationStatus: yup
     .mixed<ApplicationStatus>()
     .oneOf(Object.values(ApplicationStatus)),
-  // interviewDate: yup.date(),
-  // notes: yup.string(),
-  // interviews: yup.array().of(
-  //   yup.object().shape({
-  //     type: yup
-  //       .mixed<InterviewType>()
-  //       .oneOf(Object.values(InterviewType))
-  //       .required("Interview type is required"),
-  //   })
-  // ),
 });
-
-// const schema = yup.object().shape({
-//   // interviews: yup.array().of(
-//   //   yup.object().shape({
-//   //     date: yup.date().required("Interview date is required"),
-//   //     time: yup.string().required("Interview time is required"),
-//   //     type: yup
-//   //       .mixed<InterviewType>()
-//   //       .oneOf(Object.values(InterviewType))
-//   //       .required("Interview type is required"),
-//   //   })
-//   // ),
-
-// });
 
 type EditJobModalProps = {
   isOpen: boolean;
@@ -73,6 +45,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   });
   const [isLogOfferModalOpen, setIsLogOfferModalOpen] = useState(false);
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+  const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Populate form fields with existing job data when job prop changes
@@ -150,7 +123,15 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   };
 
   const closeRejectionModal = () => {
-    setIsLogOfferModalOpen(false);
+    setIsRejectionModalOpen(false);
+  };
+
+  const openInterviewModal = () => {
+    setIsInterviewModalOpen(true);
+  };
+
+  const closeInterviewModal = () => {
+    setIsInterviewModalOpen(false);
   };
 
   return (
@@ -328,70 +309,12 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       required
                     />
                   </div>
-
-                  {/* <div>
-                    <label
-                      htmlFor="interviewDate"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Interview Date and Time
-                    </label>
-                    <input
-                      type="datetime-local"
-                      id="interviewDate"
-                      {...register("interviewDate")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    />
-                  </div> */}
-
-                  {/* <div>
-                    <label
-                      htmlFor="interviewDate"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Interview Date
-                    </label>
-                    <input
-                      type="date"
-                      id="interviewDate"
-                      {...register("interviews.0.date")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    />
-                  </div> */}
-                  {/* <div>
-                    <label
-                      htmlFor="interviewTime"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Interview Time
-                    </label>
-                    <input
-                      type="time"
-                      id="interviewTime"
-                      {...register("interviews.0.time")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    />
-                  </div> */}
-                  {/* <div>
-                    <label
-                      htmlFor="interviewType"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Interview Type
-                    </label>
-                    <select
-                      id="interviewType"
-                      {...register("interviews.0.type")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    >
-                      {Object.values(InterviewType).map((type) => (
-                        <option key={type} value={type}>
-                          {convertToSentenceCase(type)}
-                        </option>
-                      ))}
-                    </select>
-                  </div> */}
                 </div>
+                <LogInterviewModal
+                  job={job}
+                  isOpen={isInterviewModalOpen}
+                  closeModal={closeInterviewModal}
+                />
                 <LogRejectionModal
                   job={job}
                   isOpen={isRejectionModalOpen}
@@ -404,6 +327,12 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                 />
 
                 <div className="flex justify-end mt-4">
+                  <button
+                    onClick={openInterviewModal}
+                    className="mr-2 text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
+                  >
+                    + Log Interview
+                  </button>
                   <button
                     onClick={openRejectionModal}
                     className="mr-2 text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
