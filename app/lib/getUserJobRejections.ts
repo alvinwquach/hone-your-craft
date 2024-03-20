@@ -2,6 +2,7 @@
 
 import getCurrentUser from "./getCurrentUser";
 import prisma from "./db/prisma";
+import { Rejection } from "@prisma/client";
 
 const getUserJobRejections = async () => {
   try {
@@ -13,12 +14,11 @@ const getUserJobRejections = async () => {
       throw new Error("User not authenticated or user ID not found");
     }
 
-    // Fetch user rejections from the database
-    const userRejections = await prisma.rejection.findMany({
+    // Fetch user rejections from the database along with related job details and rejection initiator, date, and notes
+    const userRejections: Rejection[] = await prisma.rejection.findMany({
       where: {
         userId: currentUser.id,
       },
-      // Include related job details along with rejections
       include: {
         job: {
           select: {
@@ -37,7 +37,6 @@ const getUserJobRejections = async () => {
       },
     });
 
-    console.log(userRejections);
     // Return user rejections
     return userRejections;
   } catch (error) {
