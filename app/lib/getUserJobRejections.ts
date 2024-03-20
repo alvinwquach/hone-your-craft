@@ -13,8 +13,6 @@ const getUserJobRejections = async () => {
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
-
-    // Fetch user rejections from the database along with related job details and rejection initiator, date, and notes
     const userRejections: Rejection[] = await prisma.rejection.findMany({
       where: {
         userId: currentUser.id,
@@ -37,7 +35,6 @@ const getUserJobRejections = async () => {
       },
     });
 
-    // Return user rejections
     return userRejections;
   } catch (error) {
     console.error("Error fetching user rejections:", error);
