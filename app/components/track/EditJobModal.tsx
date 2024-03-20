@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -14,19 +14,20 @@ import {
 } from "@prisma/client";
 import axios from "axios";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+import LogOfferModal from "./LogOfferModal";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
-  postUrl: yup.string().required("Post URL is required"),
   title: yup.string().required("Title is required"),
+  postUrl: yup.string().required("Post URL is required"),
   description: yup.string().required("Description is required"),
   industry: yup.string(),
   location: yup.string(),
   salary: yup.string(),
   workLocation: yup.mixed<WorkLocation>().oneOf(Object.values(WorkLocation)),
-  // status: yup
-  //   .mixed<ApplicationStatus>()
-  //   .oneOf(Object.values(ApplicationStatus)),
+  applicationStatus: yup
+    .mixed<ApplicationStatus>()
+    .oneOf(Object.values(ApplicationStatus)),
   // rejection: yup.object().shape({
   //   date: yup.date().required("Rejection date is required"),
   //   initiatedBy: yup
@@ -36,17 +37,17 @@ const schema = yup.object().shape({
   //   notes: yup.string(),
   // }),
   // interviewDate: yup.date(),
-  offerDate: yup.date().required("Offer date is required"),
-  offerSalary: yup.string().required("Salary is required"),
+  // offerDate: yup.date().required("Offer date is required"),
+  // offerSalary: yup.string().required("Salary is required"),
   // notes: yup.string(),
-  interviews: yup.array().of(
-    yup.object().shape({
-      type: yup
-        .mixed<InterviewType>()
-        .oneOf(Object.values(InterviewType))
-        .required("Interview type is required"),
-    })
-  ),
+  // interviews: yup.array().of(
+  //   yup.object().shape({
+  //     type: yup
+  //       .mixed<InterviewType>()
+  //       .oneOf(Object.values(InterviewType))
+  //       .required("Interview type is required"),
+  //   })
+  // ),
 });
 
 // const schema = yup.object().shape({
@@ -97,7 +98,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   } = useForm({
     resolver: yupResolver(schema),
   });
-
+  const [isLogOfferModalOpen, setIsLogOfferModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Populate form fields with existing job data when job prop changes
@@ -111,7 +112,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       setValue("location", job.location || "");
       setValue("salary", job.salary || "");
       setValue("workLocation", job.workLocation || "");
-      // setValue("status", job.status || "");
+      setValue("applicationStatus", job.status || "");
       setValue("industry", job.industry || "");
     }
   }, [job]);
@@ -137,69 +138,77 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
 
-      const offerData = {
-        userId: job.userId,
-        jobId: job.id,
-        offerDate: new Date(data.offerDate).toISOString(),
-        salary: data.offerSalary,
-        status: data.offerStatus,
-      };
+      // const offerData = {
+      //   userId: job.userId,
+      //   jobId: job.id,
+      //   offerDate: new Date(data.offerDate).toISOString(),
+      //   salary: data.offerSalary,
+      //   status: data.offerStatus,
+      // };
 
-      // Check if offer already exists
-      const existingOffer = job.offer;
+      // // Check if offer already exists
+      // const existingOffer = job.offer;
 
-      if (existingOffer) {
-        // If offer exists, update it
-        await axios.put(`/api/offer/${id}`, offerData);
-      } else {
-        // If offer doesn't exist, create a new one
-        await axios.post(`/api/offer/${id}`, offerData);
-      }
+      // if (existingOffer) {
+      //   // If offer exists, update it
+      //   await axios.put(`/api/offer/${id}`, offerData);
+      // } else {
+      //   // If offer doesn't exist, create a new one
+      //   await axios.post(`/api/offer/${id}`, offerData);
+      // }
 
-      if (data.rejection) {
-        const rejectionData = {
-          userId: job.userId,
-          jobId: job.id,
-          date: new Date().toISOString(),
-          initiatedBy: data.rejection.initiatedBy,
-          notes: data.rejection.notes,
-        };
+      // if (data.rejection) {
+      //   const rejectionData = {
+      //     userId: job.userId,
+      //     jobId: job.id,
+      //     date: new Date().toISOString(),
+      //     initiatedBy: data.rejection.initiatedBy,
+      //     notes: data.rejection.notes,
+      //   };
 
-        console.log("Rejection data:", rejectionData);
+      //   console.log("Rejection data:", rejectionData);
 
-        if (job.rejection) {
-          // If rejection already exists, update it
-          await axios.put(`/api/rejection/${job.id}`, rejectionData);
-        } else {
-          // If rejection doesn't exist, create a new one
-          await axios.post(`/api/offer/${id}`, offerData);
-        }
-      }
+      //   if (job.rejection) {
+      //     // If rejection already exists, update it
+      //     await axios.put(`/api/rejection/${job.id}`, rejectionData);
+      //   } else {
+      //     // If rejection doesn't exist, create a new one
+      //     await axios.post(`/api/offer/${id}`, offerData);
+      //   }
+      // }
 
-      closeModal();
-      console.log("Job and offer data updated successfully");
+      // closeModal();
+      console.log("Job data updated successfully");
     } catch (error) {
-      console.error("Error updating job and offer:", error);
+      console.error("Error updating job:", error);
     }
   };
 
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        closeModal();
-      }
-    };
+  // useEffect(() => {
+  //   const handleOutsideClick = (e: MouseEvent) => {
+  //     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+  //       closeModal();
+  //     }
+  //   };
 
-    if (isOpen) {
-      document.addEventListener("mousedown", handleOutsideClick);
-    } else {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    }
+  //   if (isOpen) {
+  //     document.addEventListener("mousedown", handleOutsideClick);
+  //   } else {
+  //     document.removeEventListener("mousedown", handleOutsideClick);
+  //   }
 
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, [isOpen, closeModal]);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleOutsideClick);
+  //   };
+  // }, [isOpen, closeModal]);
+
+  const openLogOfferModal = () => {
+    setIsLogOfferModalOpen(true);
+  };
+
+  const closeLogOfferModal = () => {
+    setIsLogOfferModalOpen(false);
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -240,8 +249,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                   Edit Job
                 </Dialog.Title>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Left side */}
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label
                       htmlFor="company"
@@ -254,22 +262,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       id="company"
                       {...register("company")}
                       placeholder="Company"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="postUrl"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Post URL
-                    </label>
-                    <input
-                      type="text"
-                      id="postUrl"
-                      {...register("postUrl")}
-                      placeholder="Post URL"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                       required
                     />
@@ -292,18 +284,33 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                   </div>
                   <div>
                     <label
-                      htmlFor="description"
+                      htmlFor="postUrl"
                       className="block mb-2 text-sm font-medium text-gray-900"
                     >
-                      Description
+                      Post URL
                     </label>
-                    <textarea
-                      id="description"
-                      rows={4}
-                      {...register("description")}
-                      placeholder="Description"
-                      className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    <input
+                      type="text"
+                      id="postUrl"
+                      {...register("postUrl")}
+                      placeholder="Post URL"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                       required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="industry"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Industry
+                    </label>
+                    <input
+                      type="text"
+                      id="industry"
+                      {...register("industry")}
+                      placeholder="Industry"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                     />
                   </div>
                   <div>
@@ -340,17 +347,18 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       ))}
                     </select>
                   </div>
-                  {/* <div>
+
+                  <div className="col-span-full">
                     <label
-                      htmlFor="status"
+                      htmlFor="applicationStatus"
                       className="block mb-2 text-sm font-medium text-gray-900"
                     >
-                      Status
+                      Application Status
                     </label>
 
                     <select
                       id="status"
-                      {...register("status")}
+                      {...register("applicationStatus")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     >
                       {Object.values(ApplicationStatus).map((status) => (
@@ -359,22 +367,25 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         </option>
                       ))}
                     </select>
-                  </div> */}
-                  <div>
+                  </div>
+
+                  <div className="col-span-full">
                     <label
-                      htmlFor="industry"
+                      htmlFor="description"
                       className="block mb-2 text-sm font-medium text-gray-900"
                     >
-                      Industry
+                      Description
                     </label>
-                    <input
-                      type="text"
-                      id="industry"
-                      {...register("industry")}
-                      placeholder="Industry"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                    <textarea
+                      id="description"
+                      rows={4}
+                      {...register("description")}
+                      placeholder="Description"
+                      className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      required
                     />
                   </div>
+
                   {/* <div>
                     <label
                       htmlFor="interviewDate"
@@ -418,7 +429,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     />
                   </div> */}
-                  <div>
+                  {/* <div>
                     <label
                       htmlFor="interviewType"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -436,8 +447,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         </option>
                       ))}
                     </select>
-                  </div>
-                  <div>
+                  </div> */}
+                  {/* <div>
                     <label
                       htmlFor="offerDate"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -451,8 +462,8 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                       required
                     />
-                  </div>
-                  <div>
+                  </div> */}
+                  {/* <div>
                     <label
                       htmlFor="offerSalary"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -467,7 +478,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                       required
                     />
-                  </div>
+                  </div> */}
                   {/* <div>
                     <label
                       htmlFor="notes"
@@ -551,7 +562,19 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     required
                   />
                 </div> */}
+                <LogOfferModal
+                  job={job}
+                  isOpen={isLogOfferModalOpen}
+                  closeModal={closeLogOfferModal}
+                />
+
                 <div className="flex justify-end mt-4">
+                  <button
+                    onClick={openLogOfferModal}
+                    className="mr-2 text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
+                  >
+                    + Log Offer
+                  </button>
                   <button
                     type="submit"
                     className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
