@@ -15,6 +15,7 @@ import {
 import axios from "axios";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import LogOfferModal from "./LogOfferModal";
+import LogRejectionModal from "./LogRejectionModal";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
@@ -28,17 +29,7 @@ const schema = yup.object().shape({
   applicationStatus: yup
     .mixed<ApplicationStatus>()
     .oneOf(Object.values(ApplicationStatus)),
-  // rejection: yup.object().shape({
-  //   date: yup.date().required("Rejection date is required"),
-  //   initiatedBy: yup
-  //     .mixed<RejectionInitiator>()
-  //     .oneOf(Object.values(RejectionInitiator))
-  //     .required("Initiator is required"),
-  //   notes: yup.string(),
-  // }),
   // interviewDate: yup.date(),
-  // offerDate: yup.date().required("Offer date is required"),
-  // offerSalary: yup.string().required("Salary is required"),
   // notes: yup.string(),
   // interviews: yup.array().of(
   //   yup.object().shape({
@@ -51,17 +42,6 @@ const schema = yup.object().shape({
 });
 
 // const schema = yup.object().shape({
-//   company: yup.string().required("Company is required"),
-//   postUrl: yup.string().required("Post URL is required"),
-//   title: yup.string().required("Title is required"),
-//   description: yup.string().required("Description is required"),
-//   industry: yup.string(),
-//   location: yup.string(),
-//   salary: yup.string(),
-//   workLocation: yup.mixed<WorkLocation>().oneOf(Object.values(WorkLocation)),
-//   status: yup
-//     .mixed<ApplicationStatus>()
-//     .oneOf(Object.values(ApplicationStatus)),
 //   // interviews: yup.array().of(
 //   //   yup.object().shape({
 //   //     date: yup.date().required("Interview date is required"),
@@ -72,24 +52,16 @@ const schema = yup.object().shape({
 //   //       .required("Interview type is required"),
 //   //   })
 //   // ),
-//   rejection: yup.object().shape({
-//     date: yup.date().required("Rejection date is required"),
-//     initiatedBy: yup
-//       .mixed<RejectionInitiator>()
-//       .oneOf(Object.values(RejectionInitiator))
-//       .required("Initiator is required"),
-//     notes: yup.string().required("Notes are required"),
-//   }),
+
 // });
 
 type EditJobModalProps = {
   isOpen: boolean;
   closeModal: () => void;
   job: Job;
-  id: ApplicationStatus;
 };
 
-function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
+function EditJobModal({ isOpen, closeModal, job }: EditJobModalProps) {
   const {
     register,
     handleSubmit,
@@ -99,6 +71,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
     resolver: yupResolver(schema),
   });
   const [isLogOfferModalOpen, setIsLogOfferModalOpen] = useState(false);
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Populate form fields with existing job data when job prop changes
@@ -138,45 +111,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
 
-      // const offerData = {
-      //   userId: job.userId,
-      //   jobId: job.id,
-      //   offerDate: new Date(data.offerDate).toISOString(),
-      //   salary: data.offerSalary,
-      //   status: data.offerStatus,
-      // };
-
-      // // Check if offer already exists
-      // const existingOffer = job.offer;
-
-      // if (existingOffer) {
-      //   // If offer exists, update it
-      //   await axios.put(`/api/offer/${id}`, offerData);
-      // } else {
-      //   // If offer doesn't exist, create a new one
-      //   await axios.post(`/api/offer/${id}`, offerData);
-      // }
-
-      // if (data.rejection) {
-      //   const rejectionData = {
-      //     userId: job.userId,
-      //     jobId: job.id,
-      //     date: new Date().toISOString(),
-      //     initiatedBy: data.rejection.initiatedBy,
-      //     notes: data.rejection.notes,
-      //   };
-
-      //   console.log("Rejection data:", rejectionData);
-
-      //   if (job.rejection) {
-      //     // If rejection already exists, update it
-      //     await axios.put(`/api/rejection/${job.id}`, rejectionData);
-      //   } else {
-      //     // If rejection doesn't exist, create a new one
-      //     await axios.post(`/api/offer/${id}`, offerData);
-      //   }
-      // }
-
       // closeModal();
       console.log("Job data updated successfully");
     } catch (error) {
@@ -207,6 +141,14 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   };
 
   const closeLogOfferModal = () => {
+    setIsLogOfferModalOpen(false);
+  };
+
+  const openRejectionModal = () => {
+    setIsRejectionModalOpen(true);
+  };
+
+  const closeRejectionModal = () => {
     setIsLogOfferModalOpen(false);
   };
 
@@ -448,120 +390,12 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       ))}
                     </select>
                   </div> */}
-                  {/* <div>
-                    <label
-                      htmlFor="offerDate"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Offer Date
-                    </label>
-                    <input
-                      type="datetime-local"
-                      id="offerDate"
-                      {...register("offerDate")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                      required
-                    />
-                  </div> */}
-                  {/* <div>
-                    <label
-                      htmlFor="offerSalary"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Salary
-                    </label>
-                    <input
-                      type="text"
-                      id="salary"
-                      {...register("offerSalary")}
-                      placeholder="Salary"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                      required
-                    />
-                  </div> */}
-                  {/* <div>
-                    <label
-                      htmlFor="notes"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Notes
-                    </label>
-                    <textarea
-                      id="notes"
-                      rows={4}
-                      {...register("notes")}
-                      placeholder="Notes"
-                      className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    />
-                  </div> */}
-                  {/* <div>
-                    <label
-                      htmlFor="status"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Offer Status
-                    </label>
-                    <select
-                      id="status"
-                      {...register("status")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    >
-                      {Object.values(OfferStatus).map((status) => (
-                        <option key={status} value={status}>
-                          {convertToSentenceCase(status)}
-                        </option>
-                      ))}
-                    </select>
-                  </div> */}
                 </div>
-                {/* <div>
-                  <label
-                    htmlFor="rejectionDate"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Rejection Date
-                  </label>
-                  <input
-                    type="date"
-                    id="rejectionDate"
-                    {...register("rejection.date")}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                  />
-                </div> */}
-                {/* <div>
-                  <label
-                    htmlFor="rejectionInitiatedBy"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Rejection Initiated By
-                  </label>
-                  <select
-                    id="rejectionInitiatedBy"
-                    {...register("rejection.initiatedBy")}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                  >
-                    <option value={RejectionInitiator.APPLICANT}>
-                      Applicant
-                    </option>
-                    <option value={RejectionInitiator.COMPANY}>Company</option>
-                  </select>
-                </div> */}
-                {/* <div>
-                  <label
-                    htmlFor="rejectionNotes"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Rejection Notes
-                  </label>
-                  <textarea
-                    id="rejectionNotes"
-                    rows={4}
-                    {...register("rejection.notes")}
-                    placeholder="Rejection Notes"
-                    className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    required
-                  />
-                </div> */}
+                <LogRejectionModal
+                  job={job}
+                  isOpen={isRejectionModalOpen}
+                  closeModal={closeRejectionModal}
+                />
                 <LogOfferModal
                   job={job}
                   isOpen={isLogOfferModalOpen}
@@ -569,6 +403,12 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                 />
 
                 <div className="flex justify-end mt-4">
+                  <button
+                    onClick={openRejectionModal}
+                    className="mr-2 text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
+                  >
+                    + Log Rejection
+                  </button>
                   <button
                     onClick={openLogOfferModal}
                     className="mr-2 text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
