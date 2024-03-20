@@ -59,9 +59,10 @@ type EditJobModalProps = {
   isOpen: boolean;
   closeModal: () => void;
   job: Job;
+  id: ApplicationStatus;
 };
 
-function EditJobModal({ isOpen, closeModal, job }: EditJobModalProps) {
+function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   const {
     register,
     handleSubmit,
