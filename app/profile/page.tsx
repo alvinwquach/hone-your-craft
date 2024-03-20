@@ -8,7 +8,7 @@ import ProfileCard from "../components/profile/ProfileCard";
 import UserSkillsCard from "../components/profile/UserSkillsCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import getUserJobRejections from "../lib/getUserJobRejections";
-import RejectionJobCard from "../components/profile/RejectionJobCard";
+import JobRejectionCard from "../components/profile/JobRejectionCard";
 import getUserJobOffers from "../lib/getUserJobOffers";
 import JobOfferCard from "../components/profile/JobOfferCard";
 import axios from "axios";
@@ -117,12 +117,14 @@ function Profile() {
       </div>
       <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {userRejections.map((rejection) => (
-          <RejectionJobCard
+          <JobRejectionCard
             key={rejection.id}
             company={rejection.job.company}
             title={rejection.job.title}
-            postUrl={rejection.job.postUrl}
             rejectionId={rejection.id}
+            date={rejection.date}
+            initiatedBy={rejection.initiatedBy}
+            notes={rejection.notes}
             onDelete={handleDeleteRejection}
           />
         ))}
