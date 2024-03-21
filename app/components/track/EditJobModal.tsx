@@ -75,7 +75,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
         description: data.description,
         location: data.location,
         workLocation: data.workLocation,
-        status: data.status,
+        status: data.applicationStatus,
         industry: data.industry,
         salary: data.salary,
       };
