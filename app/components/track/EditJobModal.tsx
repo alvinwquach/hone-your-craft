@@ -75,7 +75,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
         description: data.description,
         location: data.location,
         workLocation: data.workLocation,
-        status: data.status,
+        status: data.applicationStatus,
         industry: data.industry,
         salary: data.salary,
       };
@@ -85,7 +85,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
 
-      // closeModal();
+      closeModal();
       console.log("Job data updated successfully");
     } catch (error) {
       console.error("Error updating job:", error);
