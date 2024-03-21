@@ -51,7 +51,7 @@ function Metrics(): JSX.Element {
         console.error("Error fetching user job interviews:", error);
       }
     };
-
+    console.log(interviewTypeFrequency);
     fetchData();
   }, []);
 
@@ -140,10 +140,13 @@ function Metrics(): JSX.Element {
         });
 
         const labels = interviewTypes.map((interview) =>
-          convertToSentenceCase(interview.type)
+          convertToSentenceCase(interview.label)
         );
         const backgroundColor = interviewTypes.map(
           (interview) => chartColors[interview.type]
+        );
+        const data = interviewTypes.map(
+          (interview) => interviewTypeFrequency[interview.type] || 0
         );
 
         const chart = new Chart(chartContainer as HTMLCanvasElement, {
@@ -153,7 +156,7 @@ function Metrics(): JSX.Element {
             datasets: [
               {
                 label: "Interview Type Frequency",
-                data: Object.values(interviewTypeFrequency),
+                data: data,
                 backgroundColor: backgroundColor,
               },
             ],
