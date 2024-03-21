@@ -46,6 +46,14 @@ export async function GET(
 export async function POST(request: NextRequest) {
   const offerData = await request.json();
 
+  // Check if the salary field is provided and not empty
+  if (!offerData.salary) {
+    return NextResponse.json(
+      { message: "Salary is required" },
+      { status: 400 }
+    );
+  }
+
   try {
     const currentUser = await getCurrentUser();
     // If no current user, return an error response
@@ -82,6 +90,14 @@ export async function PUT(
 ) {
   const offerId = params.id;
   const offerData = await request.json();
+
+  // Check if the salary field is provided and not empty
+  if (!offerData.salary) {
+    return NextResponse.json(
+      { message: "Salary is required" },
+      { status: 400 }
+    );
+  }
 
   try {
     const currentUser = await getCurrentUser();
