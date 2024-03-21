@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { RejectionInitiator } from "@prisma/client";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { convertToSentenceCase } from "../../lib/convertToSentenceCase";
+import axios from "axios";
 
 interface JobRejectionCardProps {
   company: string;
@@ -19,15 +20,48 @@ function JobRejectionCard({
   rejectionId,
   date,
   initiatedBy,
-  notes,
+  notes: initialNotes,
   onDelete,
 }: JobRejectionCardProps) {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notes, setNotes] = useState(initialNotes);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleDelete = () => {
     onDelete(rejectionId);
     setShowOptionsMenu(false);
+  };
+
+  const handleEditNotes = () => {
+    setShowOptionsMenu(false);
+    setEditingNotes(true);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  const handleNotesChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNotes(event.target.value);
+  };
+
+  const handleSubmitNotes = async () => {
+    try {
+      await axios.put(`/api/rejection/${rejectionId}`, {
+        notes: notes,
+      });
+      setEditingNotes(false);
+    } catch (error) {
+      console.error("Error updating notes:", error);
+    }
+  };
+
+  const handleKeyPress = async (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      await handleSubmitNotes();
+    }
   };
 
   useEffect(() => {
@@ -81,6 +115,12 @@ function JobRejectionCard({
         <div className="absolute top-8 right-0 mt-2 mr-2" ref={optionsMenuRef}>
           <div className="bg-white shadow rounded-lg">
             <button
+              onClick={handleEditNotes}
+              className="block w-full text-xs text-left px-4 py-2 text-black hover:bg-gray-100 rounded-lg"
+            >
+              Edit Notes
+            </button>
+            <button
               onClick={handleDelete}
               className="block w-full text-xs text-left px-4 py-2 text-black hover:bg-gray-100 rounded-lg"
             >
@@ -91,10 +131,14 @@ function JobRejectionCard({
       )}
       <div className="mb-4">
         <textarea
+          ref={textareaRef}
           value={notes}
+          onChange={handleNotesChange}
+          readOnly={!editingNotes}
           className="block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           rows={4}
           placeholder="Notes"
+          onKeyPress={handleKeyPress}
         />
       </div>
     </div>
