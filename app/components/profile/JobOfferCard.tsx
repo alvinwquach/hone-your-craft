@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { HiOutlineDotsHorizontal } from "react-icons/hi";
+import { HiCurrencyDollar, HiOutlineDotsHorizontal } from "react-icons/hi";
 import axios from "axios";
 
 interface JobOfferCardProps {
@@ -52,6 +52,20 @@ function JobOfferCard({
     }
   };
 
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+
+    // Remove non-numeric characters and parse the numeric value
+    const numericValue = parseFloat(inputValue.replace(/[^\d.]/g, ""));
+
+    // Check if the parsed numeric value is a valid number
+    if (!isNaN(numericValue)) {
+      // Format the numeric value with commas for thousands separators
+      const formattedNumericValue = numericValue.toLocaleString();
+      setSalary(formattedNumericValue);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutsideMenu = (e: MouseEvent) => {
       if (
@@ -72,17 +86,22 @@ function JobOfferCard({
   return (
     <div className="rounded-lg bg-gray-800 p-4 shadow-md mb-4 relative">
       <div className="flex justify-between items-center mb-2">
-        <input
-          value={salary}
-          type="text"
-          className={`block w-1/3 max-w-lg p-4 text-sm text-gray-900 border ${
-            editingSalary ? "border-gray-300" : "border-none"
-          } rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500`}
-          readOnly={!editingSalary}
-          onChange={(e) => setSalary(e.target.value)}
-          onKeyPress={handleKeyPress}
-          ref={salaryInputRef}
-        />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+            <HiCurrencyDollar className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          </div>
+          <input
+            value={salary}
+            type="text"
+            className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-10 ${
+              editingSalary ? "border-gray-300" : "border-none"
+            } dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500`}
+            readOnly={!editingSalary}
+            onChange={handleSalaryChange}
+            onKeyPress={handleKeyPress}
+            ref={salaryInputRef}
+          />
+        </div>
         <button
           onClick={() => setShowOptionsMenu(!showOptionsMenu)}
           className="inline-block text-gray-400  hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-700 rounded-lg text-xs md:text-sm p-1.5"
@@ -95,7 +114,7 @@ function JobOfferCard({
         <p className="text-white">{company}</p>
         {showOptionsMenu && (
           <div
-            className="absolute top-8 right-0 mt-2 mr-5"
+            className="absolute top-12 right-0 mt-2 mr-5"
             ref={optionsMenuRef}
           >
             <div className="bg-white shadow rounded-lg">
