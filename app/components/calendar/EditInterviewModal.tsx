@@ -124,7 +124,7 @@ type EditInterviewModalProps = {
                   <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                     Edit Interview
                   </Dialog.Title>
-                  <div>
+                  <div className="grid grid-cols-1 gap-2">
                     <label
                       htmlFor="interviewDate"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -135,37 +135,37 @@ type EditInterviewModalProps = {
                       type="datetime-local"
                       id="interviewDate"
                       {...register("interviewDate")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
                     />
                     {errors.interviewDate && (
                       <p className="text-red-500 text-sm mt-1">
                         {errors.interviewDate.message}
                       </p>
                     )}
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="interviewType"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Interview Type
-                    </label>
-                    <select
-                      id="interviewType"
-                      {...register("interviewType")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                    >
-                      {Object.values(InterviewType).map((type) => (
-                        <option key={type} value={type}>
-                          {convertToSentenceCase(type)}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.interviewType && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.interviewType.message}
-                      </p>
-                    )}
+                    <div>
+                      <label
+                        htmlFor="interviewType"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Interview Type
+                      </label>
+                      <select
+                        id="interviewType"
+                        {...register("interviewType")}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
+                      >
+                        {Object.values(InterviewType).map((type) => (
+                          <option key={type} value={type}>
+                            {convertToSentenceCase(type)}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.interviewType && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.interviewType.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="flex justify-end mt-4">
                     <button
