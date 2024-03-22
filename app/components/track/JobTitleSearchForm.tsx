@@ -15,7 +15,7 @@ function JobTitleSearchForm({
   };
 
   return (
-    <form className="max-w-44 md:max-w-6xl mx-auto relative ">
+    <form className="mx-auto relative w-full mt-5">
       <label
         htmlFor="job-title-search"
         className="mb-2 text-sm font-medium text-gray-400 sr-only dark:text-white"
