@@ -116,7 +116,7 @@ function LogRejectionModal({
                     type="date"
                     id="rejectionDate"
                     {...register("rejection.date")}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
                   />
                   {errors.rejection?.date && (
                     <p className="text-red-500 text-sm">
@@ -133,8 +133,12 @@ function LogRejectionModal({
                     <select
                       id="rejectionInitiatedBy"
                       {...register("rejection.initiatedBy")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
+                      defaultValue=""
                     >
+                      <option value="" disabled>
+                        Select an initiator
+                      </option>
                       {Object.values(RejectionInitiator).map((initiator) => (
                         <option key={initiator} value={initiator}>
                           {convertToSentenceCase(initiator)}

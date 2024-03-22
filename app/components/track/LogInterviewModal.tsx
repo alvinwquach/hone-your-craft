@@ -126,7 +126,7 @@ function LogInterviewModal({
                     type="datetime-local"
                     id="interviewDate"
                     {...register("interviewDate")}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
                     required
                   />
                   {errors.interviewDate && (
@@ -144,8 +144,12 @@ function LogInterviewModal({
                     <select
                       id="interviewType"
                       {...register("interviews.0.type")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
+                      defaultValue=""
                     >
+                      <option value="" disabled>
+                        Select an interview type
+                      </option>
                       {Object.values(InterviewType).map((type) => (
                         <option key={type} value={type}>
                           {convertToSentenceCase(type)}
