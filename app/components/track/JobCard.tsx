@@ -45,35 +45,42 @@ function JobCard({
   return (
     <div>
       <div
-        className="relative bg-gray-700 rounded-lg shadow-md mb-8"
+        className="relative bg-gray-700 rounded-lg shadow-md mb-2"
         {...draggableProps}
         {...draghandleProps}
         ref={innerRef}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         onClick={handleEditModalOpen}
+        tabIndex={0}
+        role="button"
       >
         {isHovering && (
           <div className="absolute inset-0 border-2 border-sky-600 rounded-lg pointer-events-none"></div>
         )}
         <div className="p-4 sm:p-2 flex justify-between items-center text-gray-300 relative">
           <div>
-            <p className="text-base mb-2 font-semibold">{job.title}</p>
+            <p className="text-base mb-2 font-semibold ">{job.title}</p>
             <span className="text-sm">{job.company}</span>
           </div>
-          {isHovering && (
-            <div className="absolute top-0 right-0 flex flex-col mr-2 mt-2">
+          <div className="absolute top-0 right-0 mr-2 mt-2">
+            {isHovering && (
               <button
-                className="text-red-500 hover:text-red-600 border-2 p-0.5 rounded-lg mb-1"
+                className="text-gray-400 hover:text-gray-500 border-2 p-0.5 rounded-lg"
                 onClick={handleDeleteJob}
               >
                 <HiTrash className="h-4 w-4" />
               </button>
+            )}
+          </div>
+          {isHovering && (
+            <div className="absolute bottom-0 right-0 flex flex-col mr-2 mb-2">
               <a
                 href={job.postUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-600 border-2 p-0.5 rounded-lg"
+                aria-label={`View job posting for ${job.title} at ${job.company}`}
+                className=" text-gray-400 hover:text-gray-500 border-2 p-0.5 rounded-lg"
                 onClick={(event) => event.stopPropagation()}
               >
                 <HiLink className="h-4 w-4" />

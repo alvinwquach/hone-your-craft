@@ -124,7 +124,7 @@ function Board() {
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="grid grid-cols-1 md:grid-cols-5 gap-5 mx-auto justify-center"
+            className="grid grid-cols-1 md:grid-cols-5 gap-5 mx-auto justify-center mt-4"
           >
             {Array.from(board.columns.entries()).map(([id, column], index) => (
               <Column key={id} id={id} jobs={column.jobs} index={index} />
