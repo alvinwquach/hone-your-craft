@@ -7,5 +7,5 @@ export const interviewTypes = [
   { type: "ASSESSMENT", label: "Assessment", color: "bg-pink-400" },
   { type: "VIDEO_INTERVIEW", label: "Video Interview", color: "bg-indigo-400" },
   { type: "ON_SITE", label: "On Site", color: "bg-green-400" },
-  { type: "INTERVIEW", label: "Interview", color: "bg-gray-300" },
+  { type: "INTERVIEW", label: "Interview", color: "bg-slate-400" },
 ];

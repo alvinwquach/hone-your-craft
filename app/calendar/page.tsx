@@ -41,7 +41,6 @@ function Calendar() {
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
         <div className="flex flex-wrap">
           <div className="w-full md:w-1/5 pr-4">
-            <div className="text-lg font-bold ">Legend</div>
             <Legend interviewTypes={interviewTypes} />
           </div>
           <div className="w-full md:w-4/5">

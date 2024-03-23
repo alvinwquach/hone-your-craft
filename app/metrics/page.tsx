@@ -15,7 +15,7 @@ const interviewTypes = [
   { type: "VIDEO_INTERVIEW", label: "Video Interview", color: "#818cf8" },
   { type: "ON_SITE", label: "On Site", color: "#4ade80" },
   { type: "INTERVIEW", label: "Interview", color: "#9ca3af" },
-  { type: "FOLLOW_UP", label: "Follow Up", color: "#fb923c" },
+  { type: "FOLLOW_UP", label: "Follow Up", color: "#94a3b8" },
 ];
 
 function Metrics(): JSX.Element {

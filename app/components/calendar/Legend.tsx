@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { RiMenuLine, RiCloseLine } from "react-icons/ri";
 
 interface InterviewType {
   color: string;
@@ -21,9 +22,28 @@ function LegendItem({ color, label }: InterviewType) {
 }
 
 function Legend({ interviewTypes }: LegendProps) {
+  const [showLegend, setShowLegend] = useState(false);
+
   return (
     <div className="text-xs font-bold mb-4">
-      <div className="grid grid-cols-3 md:block">
+      <div className="md:hidden flex justify-start mt-5 ">
+        {!showLegend ? (
+          <RiMenuLine
+            className="text-gray-500 h-5 w-5 cursor-pointer mr-2"
+            onClick={() => setShowLegend(true)}
+          />
+        ) : (
+          <RiCloseLine
+            className="text-gray-500 h-5 w-5 cursor-pointer mr-2"
+            onClick={() => setShowLegend(false)}
+          />
+        )}
+      </div>
+      <div
+        className={`grid grid-cols-3 md:block ${
+          showLegend ? "block" : "hidden"
+        }`}
+      >
         {interviewTypes.map((type) => (
           <LegendItem key={type.label} color={type.color} label={type.label} />
         ))}

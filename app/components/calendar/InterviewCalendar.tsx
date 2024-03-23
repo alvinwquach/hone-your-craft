@@ -12,6 +12,7 @@ import { Interview } from "@prisma/client";
 import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import { MonthlyNav } from "./MonthlyNav";
 import EditInterviewModal from "./EditInterviewModal";
+import { FaEllipsisV } from "react-icons/fa";
 
 interface InterviewCalendarProps {
   interviews: Interview[];
@@ -40,10 +41,6 @@ const InterviewDay = ({ interview }: { interview: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
-
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -86,17 +83,8 @@ const InterviewDay = ({ interview }: { interview: any }) => {
       className={`flex flex-col ${getColorForInterviewType(
         interviewType
       )} bg-opacity-80 rounded-md p-2 text-sm relative`}
-      onClick={openModal}
-      ref={optionsMenuRef}
     >
-      {isModalOpen && (
-        <EditInterviewModal
-          isOpen={isModalOpen}
-          closeModal={closeModal}
-          interview={interview}
-        />
-      )}
-      <div className="text-xs font-semibold mt-1">{title} </div>
+      <div className="text-xs font-semibold mt-1">{title}</div>
       <div className="text-sm mt-1">{company}</div>
       <div className="text-xs mt-1">
         <div>{format(new Date(date), "h:mm a")}</div>
@@ -104,23 +92,16 @@ const InterviewDay = ({ interview }: { interview: any }) => {
       <div className="absolute top-0 right-0">
         <button
           onClick={toggleOptionsMenu}
-          className="focus:outline-none text-white mr-1 mt-1"
+          className="focus:outline-none text-white "
         >
           <span className="sr-only">Open dropdown</span>
-          <svg
-            className="w-5 h-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 16 1"
-          >
-            <circle cx="2" cy="0.5" r="1" />
-            <circle cx="8" cy="0.5" r="1" />
-            <circle cx="14" cy="0.5" r="1" />
-          </svg>
+          <FaEllipsisV className="w-5 h-5 ml-2 mt-2" />
         </button>
         {showOptionsMenu && (
-          <div className="absolute top-6 right-0 bg-white shadow rounded-lg">
+          <div
+            className="absolute top-8 right-0 bg-white shadow rounded-lg"
+            ref={optionsMenuRef}
+          >
             <button
               onClick={handleEditInterview}
               className="block w-full text-xs text-left px-4 py-1 hover:bg-gray-100 rounded-lg"
@@ -136,6 +117,13 @@ const InterviewDay = ({ interview }: { interview: any }) => {
           </div>
         )}
       </div>
+      {isModalOpen && (
+        <EditInterviewModal
+          isOpen={isModalOpen}
+          closeModal={closeModal}
+          interview={interview}
+        />
+      )}
     </div>
   );
 };
