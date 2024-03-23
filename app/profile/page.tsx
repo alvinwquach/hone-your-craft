@@ -3,19 +3,19 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
+import axios from "axios";
+import { Chart } from "chart.js/auto";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import ProfileCard from "../components/profile/ProfileCard";
 import UserSkillsCard from "../components/profile/UserSkillsCard";
+import JobRejectionCard from "../components/profile/JobRejectionCard";
+import JobOfferCard from "../components/profile/JobOfferCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import getUserJobRejections from "../lib/getUserJobRejections";
-import JobRejectionCard from "../components/profile/JobRejectionCard";
 import getUserJobOffers from "../lib/getUserJobOffers";
-import JobOfferCard from "../components/profile/JobOfferCard";
-import axios from "axios";
+import getUserJobInterviews from "../lib/getUserJobInterviews";
 import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
-import { Chart } from "chart.js/auto";
-import getUserJobInterviews from "../lib/getUserJobInterviews";
 
 interface JobPosting {
   title: string;
@@ -109,7 +109,7 @@ function Profile() {
     async function fetchData() {
       try {
         const { percentages } = await getJobsByApplicationStatus();
-        setStatusPercentages(new Map(Array.from(percentages.entries())));
+        setStatusPercentages(percentages);
       } catch (error) {
         console.error("Error fetching application status:", error);
       }
@@ -122,111 +122,86 @@ function Profile() {
       try {
         const { interviewTypeFrequency } = await getUserJobInterviews();
         setInterviewTypeFrequency(interviewTypeFrequency);
-        console.log(interviewTypeFrequency);
       } catch (error) {
         console.error("Error fetching user job interviews:", error);
       }
     };
-    console.log(interviewTypeFrequency);
     fetchData();
   }, []);
 
   useEffect(() => {
-    // Draw chart when statusPercentages change
-    if (statusPercentages.size > 0) {
-      const chartContainer = document.getElementById("applicationStatusChart");
-      if (chartContainer instanceof HTMLCanvasElement) {
-        const chart = new Chart(chartContainer, {
-          type: "bar",
-          data: {
-            labels: Array.from(statusPercentages.keys()).map((status) =>
-              convertToSentenceCase(status.toLowerCase())
-            ),
-            datasets: [
-              {
-                data: Array.from(statusPercentages.values()),
-                backgroundColor: [
-                  "rgba(255, 99, 132, 0.2)",
-                  "rgba(54, 162, 235, 0.2)",
-                  "rgba(255, 206, 86, 0.2)",
-                  "rgba(75, 192, 192, 0.2)",
-                  "rgba(153, 102, 255, 0.2)",
-                ],
-                borderColor: [
-                  "rgba(255, 99, 132, 1)",
-                  "rgba(54, 162, 235, 1)",
-                  "rgba(255, 206, 86, 1)",
-                  "rgba(75, 192, 192, 1)",
-                  "rgba(153, 102, 255, 1)",
-                ],
-                borderWidth: 1,
-                label: "Job Percentage",
-              },
-            ],
-          },
-          options: {
-            plugins: {
-              legend: {
-                display: false,
-              },
-              tooltip: {
-                callbacks: {
-                  label: function (context) {
-                    let label = context.dataset.label || "";
-                    if (label) {
-                      label += ": ";
-                    }
-                    if (context.parsed.y !== null) {
-                      const value = context.parsed.y;
-                      label += Number.isInteger(value)
-                        ? value.toFixed(0) + "%"
-                        : value.toFixed(2) + "%";
-                    }
-                    return label;
-                  },
-                },
-              },
+    // Draw application status chart
+    const chartContainer = document.getElementById("applicationStatusChart");
+    if (chartContainer instanceof HTMLCanvasElement) {
+      const chart = new Chart(chartContainer, {
+        type: "bar",
+        data: {
+          labels: Array.from(statusPercentages.keys()),
+          datasets: [
+            {
+              label: "Job Percentage",
+              data: Array.from(statusPercentages.values()),
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.2)",
+                "rgba(54, 162, 235, 0.2)",
+                "rgba(255, 206, 86, 0.2)",
+                "rgba(75, 192, 192, 0.2)",
+                "rgba(153, 102, 255, 0.2)",
+              ],
+              borderColor: [
+                "rgba(255, 99, 132, 1)",
+                "rgba(54, 162, 235, 1)",
+                "rgba(255, 206, 86, 1)",
+                "rgba(75, 192, 192, 1)",
+                "rgba(153, 102, 255, 1)",
+              ],
+              borderWidth: 1,
             },
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: "Percentage",
-                  color: "white",
+          ],
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  let label = context.dataset.label || "";
+                  if (label) label += ": ";
+                  if (context.parsed.y !== null) {
+                    const value = context.parsed.y;
+                    label += Number.isInteger(value)
+                      ? value.toFixed(0) + "%"
+                      : value.toFixed(2) + "%";
+                  }
+                  return label;
                 },
-                ticks: {
-                  color: "white",
-                  maxTicksLimit: 5,
-                },
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: "Application Status",
-                  color: "white",
-                },
-                ticks: {
-                  color: "white",
-                },
-              },
-            },
-            layout: {
-              padding: {
-                left: 10,
-                right: 10,
-                top: 10,
-                bottom: 10,
               },
             },
           },
-        });
-        return () => {
-          chart.destroy();
-        };
-      }
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Percentage", color: "white" },
+              ticks: { color: "white", maxTicksLimit: 5 },
+            },
+            x: {
+              title: {
+                display: true,
+                text: "Application Status",
+                color: "white",
+              },
+              ticks: { color: "white" },
+            },
+          },
+          layout: { padding: { left: 10, right: 10, top: 10, bottom: 10 } },
+        },
+      });
+
+      return () => {
+        chart.destroy();
+      };
     }
   }, [statusPercentages]);
 
@@ -345,15 +320,20 @@ function Profile() {
         />
         <UserSkillsCard />
       </div>
+
       <div className="">
         <div className="w-full h-[550px] mt-2">
           <canvas id="applicationStatusChart"></canvas>
         </div>
+      </div>
+
+      {Object.keys(interviewTypeFrequency).length > 0 && (
         <div className="w-full h-[550px] mt-2">
           <canvas id="interviewTypeFrequencyChart"></canvas>
         </div>
-      </div>
-      {/* <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      )}
+
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {userRejections.map((rejection) => (
           <JobRejectionCard
             key={rejection.id}
@@ -366,8 +346,8 @@ function Profile() {
             onDelete={handleDeleteRejection}
           />
         ))}
-      </div> */}
-      {/* <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {userOffers.map((offer) => (
           <JobOfferCard
             key={offer.id}
@@ -378,9 +358,10 @@ function Profile() {
             onDelete={handleDeleteOffer}
           />
         ))}
-      </div> */}
+      </div>
     </section>
   );
 }
 
 export default Profile;
+  
