@@ -29,7 +29,7 @@ function SuggestedSkillsCard({
   };
 
   return (
-    <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg mx-auto">
       <h2 className="text-xl font-bold text-gray-200 mb-4">Suggested Skills</h2>
       <p className="text-gray-300 mb-4">
         Based on the roles you&apos;ve applied to, here are some skills we
