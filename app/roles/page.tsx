@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
-import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
 import { Chart } from "chart.js/auto";
@@ -37,18 +36,6 @@ function Roles() {
   const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
     Map<string, number>
   >(new Map());
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const { percentages } = await getJobsByApplicationStatus();
-        setStatusPercentages(new Map(Array.from(percentages.entries())));
-      } catch (error) {
-        console.error("Error fetching application status:", error);
-      }
-    }
-    fetchData();
-  }, []);
 
   useEffect(() => {
     // Define an asynchronous function to fetch user job postings
@@ -112,10 +99,7 @@ function Roles() {
         }
       } catch (error) {
         // Handle error if fetching fails
-        console.error(
-          "Error fetching user jobs and application status:",
-          error
-        );
+        console.error("Error fetching user jobs", error);
       }
     }
 
@@ -295,9 +279,6 @@ function Roles() {
 
   return (
     <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
-      <div className="w-full h-[550px] mt-2">
-        <canvas id="applicationStatusChart"></canvas>
-      </div>
       <div className="w-full h-[550px] mb-4">
         <canvas id="missingSkillsChart"></canvas>
       </div>
