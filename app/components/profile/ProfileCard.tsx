@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -105,8 +105,11 @@ function ProfileCard() {
   }, []);
 
   return (
-    <div className="w-full max-w-md border rounded-lg shadow bg-gray-800 border-gray-700">
-      <div className="flex justify-end px-4 pt-4 relative" ref={optionsMenuRef}>
+    <div className="w-full max-w-lg border rounded-lg shadow bg-gray-800 border-gray-700 mx-auto">
+      <div
+        className="flex justify-end px-4 pt-4 relative w-full"
+        ref={optionsMenuRef}
+      >
         <button
           id="dropdownButton"
           onClick={toggleOptionsMenu}
@@ -244,3 +247,4 @@ function ProfileCard() {
 }
 
 export default ProfileCard;
+

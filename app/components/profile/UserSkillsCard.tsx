@@ -76,9 +76,9 @@ function UserSkillsCard() {
   const showLessSkills = displayedSkills > 10;
 
   return (
-    <div className="w-full max-w-md border rounded-lg shadow bg-gray-800 border-gray-700">
+    <div className="w-full  border rounded-lg shadow bg-gray-800 border-gray-700">
       <div className="p-4">
-        <div className=" mt-4">
+        <div className="mt-4">
           <div className="relative mb-4">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <GiStoneCrafting className="h-4 w-4 text-gray-100" />

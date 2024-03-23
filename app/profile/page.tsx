@@ -102,20 +102,16 @@ function Profile() {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      {userSkills && (
-        <div className="flex justify-center items-center mt-5">
-          <SuggestedSkillsCard
-            userSkills={userSkills}
-            suggestedSkills={suggestedSkills}
-          />
-        </div>
-      )}
-      <div className="flex flex-col md:flex-row justify-center items-start gap-5 mt-5">
+    <section className="max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+      <div className="grid grid-cols-1 gap-3  lg:grid-cols-3">
         <ProfileCard />
+        <SuggestedSkillsCard
+          userSkills={userSkills}
+          suggestedSkills={suggestedSkills}
+        />
         <UserSkillsCard />
       </div>
-      <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {userRejections.map((rejection) => (
           <JobRejectionCard
             key={rejection.id}
@@ -129,7 +125,7 @@ function Profile() {
           />
         ))}
       </div>
-      <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {userOffers.map((offer) => (
           <JobOfferCard
             key={offer.id}
@@ -146,4 +142,3 @@ function Profile() {
 }
 
 export default Profile;
-
