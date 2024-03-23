@@ -48,10 +48,13 @@ export const getJobsByApplicationStatus = async () => {
       percentages.set(status, roundedPercentage);
     });
 
-    return { userJobs, percentages };
+    const applicationStatuses = Array.from(statusCounts.keys());
+
+    return { userJobs, percentages, applicationStatuses };
   } catch (error) {
     console.error("Error fetching user jobs or application status:", error);
     throw new Error("Failed to fetch user jobs or application status");
   }
 };
+
 
