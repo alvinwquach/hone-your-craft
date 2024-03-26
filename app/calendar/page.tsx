@@ -1,36 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import axios from "axios";
 import { Interview } from "@prisma/client";
 import { interviewTypes } from "@/app/lib/interviewTypes";
 import DeleteInterviewContext from "../../context/DeleteInterviewContext";
 import InterviewCalendar from "../components/calendar/InterviewCalendar";
 import Legend from "../components/calendar/Legend";
-import getUserJobInterviews from "../lib/getUserJobInterviews";
+import useSWR, { mutate } from "swr";
+
+const fetcher = async (url: string, ...args: any[]) => {
+  const response = await fetch(url, ...args);
+  return response.json();
+};
 
 function Calendar() {
-  const [interviews, setInterviews] = useState<Interview[]>([]);
-
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { userInterviews } = await getUserJobInterviews();
-        setInterviews(userInterviews);
-        console.log(userInterviews);
-      } catch (error) {
-        console.error("Error fetching user job interviews:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  // const [interviews, setInterviews] = useState<Interview[]>([]);
+  const { data: interviews, error } = useSWR<Interview[]>(
+    "/api/interviews",
+    fetcher
+  );
+  if (!interviews) return <div>Loading...</div>;
+  if (error) return <div>Error fetching interviews</div>;
 
   const handleDeleteInterview = async (id: string) => {
     try {
       await axios.delete(`/api/interview/${id}`);
-      setInterviews(interviews.filter((interview) => interview.id !== id));
+      mutate("/api/interviews");
       console.log("Interview deleted successfully");
     } catch (error) {
       console.error("Error deleting interview:", error);
