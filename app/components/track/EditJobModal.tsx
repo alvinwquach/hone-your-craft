@@ -64,7 +64,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       setValue("applicationStatus", job.status || "");
       setValue("industry", job.industry || "");
     }
-  }, [job]);
+  }, [job, setValue]);
 
   const onSubmit = async (data: any) => {
     try {
