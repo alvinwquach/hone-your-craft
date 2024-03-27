@@ -118,7 +118,7 @@ export async function DELETE(
   try {
     const currentUser = await getCurrentUser();
 
-    if (!currentUser) {
+    if (!currentUser?.id) {
       // If the current user is not found, return a 401 Unauthorized response
       return NextResponse.json(
         { message: "User not authenticated" },
@@ -127,13 +127,37 @@ export async function DELETE(
     }
 
     const jobId = params.jobId;
-    // Attempt to delete the job
-    await prisma.job.delete({
+
+    // Fetch the job to be deleted along with its associated data
+    const job = await prisma.job.findUnique({
       where: { id: jobId },
+      include: {
+        jobSkills: true,
+        interviews: true,
+        offer: true,
+        rejection: true,
+      },
     });
 
+    if (!job) {
+      throw new Error("Job not found");
+    }
+
+    // Delete associated data (job skills, interviews, offers, rejections)
+    await Promise.all([
+      prisma.jobSkill.deleteMany({ where: { jobId } }),
+      prisma.interview.deleteMany({ where: { jobId } }),
+      prisma.offer.deleteMany({ where: { jobId } }),
+      prisma.rejection.deleteMany({ where: { jobId } }),
+    ]);
+
+    // Delete the job itself
+    await prisma.job.delete({ where: { id: jobId } });
+
     // Return a success message as a JSON response
-    return NextResponse.json({ message: "Job deleted successfully" });
+    return NextResponse.json({
+      message: "Job and associated data deleted successfully",
+    });
   } catch (error) {
     // Handle errors and return a 500 response
     console.error("Error deleting job:", error);
