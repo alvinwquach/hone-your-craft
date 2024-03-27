@@ -1,13 +1,14 @@
 "use client";
 
-import { useBoardStore } from "@/store/BoardStore";
 import {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
 } from "@hello-pangea/dnd";
 import { ApplicationStatus } from "@prisma/client";
+import axios from "axios";
 import { useState } from "react";
 import { HiTrash, HiLink } from "react-icons/hi";
+import { mutate } from "swr";
 import EditJobModal from "./EditJobModal";
 
 type JobCardProps = {
@@ -29,17 +30,21 @@ function JobCard({
 }: JobCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  const deleteJob = useBoardStore((state) => state.deleteJob);
 
   const handleEditModalOpen = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteJob = (
+  const handleDeleteJob = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.stopPropagation();
-    deleteJob(index, job, id);
+    try {
+      await axios.delete(`/api/job/${job.id}`);
+      mutate("/api/jobs");
+    } catch (error) {
+      console.error("Error deleting job:", error);
+    }
   };
 
   return (

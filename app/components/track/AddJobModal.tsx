@@ -4,12 +4,22 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import { ChangeEvent, Fragment, useRef, useEffect } from "react";
+import { ChangeEvent, Fragment, useRef, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { useModalStore } from "@/store/ModalStore";
-import { useBoardStore } from "@/store/BoardStore";
 import { iDToColumnText } from "./Column";
 import { ApplicationStatus } from "@prisma/client";
+import { mutate } from "swr";
+import axios from "axios";
+
+interface FormData {
+  company: string;
+  postUrl: string;
+  title: string;
+  description: string;
+  industry?: string;
+  location?: string;
+  salary?: number;
+}
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
@@ -34,18 +44,21 @@ function AddJobModal({
 }: AddJobModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [newJobInput, setNewJobInput, addJob] = useBoardStore((state) => [
-    state.newJobInput,
-    state.setNewJobInput,
-    state.addJob,
-  ]);
+  const [newJobInput, setNewJobInput] = useState<FormData>({
+    company: "",
+    postUrl: "",
+    title: "",
+    description: "",
+  });
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    // Set the state of the 'newJobInput' object by spreading its current properties and updating or adding a property based on the 'name' extracted from the event and its corresponding 'value'.
-    setNewJobInput({ ...newJobInput, [name]: value });
+    setNewJobInput((prevJobInput) => ({
+      ...prevJobInput,
+      [name]: value,
+    }));
   };
 
   const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -62,13 +75,11 @@ function AddJobModal({
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: any, columnId: any) => {
+  const onSubmit = async (data: any) => {
     try {
-      // Add the selected category as the 'status' field in the job data
       data.status = selectedCategory;
-      // Call the addJob function to add the job to the correct column
-      await addJob(data, columnId);
-      // Close the modal after adding the job
+      await axios.post(`/api/job/${data.id}`, data);
+      mutate("/api/jobs");
       closeModal();
     } catch (error) {
       console.error("Error adding job:", error);
