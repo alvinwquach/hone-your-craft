@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
+import Confetti from "react-confetti";
 
 const schema = yup.object().shape({
   offerDate: yup.date().required("Offer date is required"),
@@ -27,6 +28,15 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowConfetti(true);
+    } else {
+      setShowConfetti(false);
+    }
+  }, [isOpen]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -95,6 +105,7 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                   Log Offer
                 </Dialog.Title>
+                {showConfetti && <Confetti />}
                 <div>
                   <label
                     htmlFor="offerDate"
