@@ -1,19 +1,6 @@
 import getCurrentUser from "@/app/lib/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
-import * as yup from "yup";
-
-const schema = yup.object().shape({
-  company: yup.string().required(),
-  postUrl: yup.string().required(),
-  title: yup.string().required(),
-  description: yup.string().required(),
-  industry: yup.string().notRequired(),
-  location: yup.string().notRequired(),
-  salary: yup.string().notRequired(),
-  workLocation: yup.mixed().notRequired(),
-  applicationStatus: yup.mixed().notRequired(),
-});
 
 // Get job by ID
 export async function GET(
@@ -56,7 +43,6 @@ export async function POST(request: NextRequest) {
   const jobData = await request.json();
 
   try {
-    await schema.validate(jobData);
     // Retrieve the current user from the session
     const currentUser = await getCurrentUser();
 
@@ -106,8 +92,6 @@ export async function PUT(
   const jobData = await request.json();
 
   try {
-    await schema.validate(jobData);
-
     // Attempt to update the job
     const updatedJob = await prisma.job.update({
       where: { id: jobId },

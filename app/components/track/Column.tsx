@@ -1,5 +1,4 @@
 import { useBoardStore } from "@/store/BoardStore";
-import { useModalStore } from "@/store/ModalStore";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { ApplicationStatus } from "@prisma/client";
 import { useState } from "react";
@@ -12,7 +11,6 @@ type ColumnProps = {
   jobs: Job[];
   index: number;
 };
-
 // A mapping of column IDs to their corresponding display text
 export const iDToColumnText: {
   [key in ApplicationStatus]: string;
@@ -29,15 +27,6 @@ function Column({ id, jobs, index }: ColumnProps) {
   const [titleSearchString] = useBoardStore((state) => [
     state.titleSearchString,
   ]);
-  // // Get the function to open the modal from the modal store
-  // const openModal = useModalStore((state) => state.openModal);
-
-  // const handleOpenModal = () => {
-  //   openModal(id);
-  //   console.log(id, ApplicationStatus);
-  // };
-
-  // const renderJobs = jobs.slice().reverse(); // Reverse the order of jobs
 
   const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
 
@@ -45,9 +34,6 @@ function Column({ id, jobs, index }: ColumnProps) {
     setIsAddJobModalOpen(true);
   };
 
-  const closeAddJobModal = () => {
-    setIsAddJobModalOpen(false);
-  };
 
   return (
     <Draggable draggableId={id} index={index} key={id}>
@@ -89,18 +75,17 @@ function Column({ id, jobs, index }: ColumnProps) {
                     <AddJobModal
                       isOpen={isAddJobModalOpen}
                       closeModal={() => setIsAddJobModalOpen(false)}
-                      selectedCategory={id} // Pass the selected category to the modal
+                      selectedCategory={id} 
                     />
                   )}
                 </div>
                 <div className="overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {jobs.map((job, index) => {
-                    // Filter jobs based on the search string
                     if (
                       titleSearchString &&
                       !job.title.toLowerCase().includes(titleSearchString)
                     ) {
-                      return null; // Skip rendering if job doesn't match search
+                      return null; 
                     }
                     return (
                       <Draggable
