@@ -14,7 +14,6 @@ const fetcher = async (url: string, ...args: any[]) => {
 };
 
 function Calendar() {
-  // const [interviews, setInterviews] = useState<Interview[]>([]);
   const { data: interviews, error } = useSWR<Interview[]>(
     "/api/interviews",
     fetcher
