@@ -11,10 +11,10 @@ import UserSkillsCard from "../components/profile/UserSkillsCard";
 import JobRejectionCard from "../components/profile/JobRejectionCard";
 import JobOfferCard from "../components/profile/JobOfferCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
-import getUserJobRejections from "../lib/getUserJobRejections";
 import getUserJobInterviews from "../lib/getUserJobInterviews";
 import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
+import { RejectionInitiator } from "@prisma/client";
 
 interface JobPosting {
   title: string;
@@ -52,6 +52,29 @@ interface Offer {
   };
 }
 
+interface Rejection {
+  id: string;
+  userId: string;
+  companyId: string;
+  date: Date;
+  initiatedBy: RejectionInitiator;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+  job: {
+    id: string;
+    userId: string;
+    company: string;
+    title: string;
+    description: string;
+    industry: string | null;
+    location: string | null;
+    workLocation: string | null;
+    updatedAt: string;
+    postUrl: string;
+  };
+}
+
 const interviewTypes = [
   { type: "FINAL_ROUND", label: "Final Round", color: "#f87171" },
   { type: "TECHNICAL", label: "Technical", color: "#c084fc" },
@@ -79,10 +102,15 @@ function Profile() {
   const { data: userOffers } = useSWR("/api/offers", (url) =>
     axios.get(url).then((res) => res.data)
   );
+  const { data: userRejections } = useSWR("/api/rejections", (url) =>
+    axios.get(url).then((res) => res.data)
+  );
+  // If there are no user offers, default to an empty array
   const jobOffers = userOffers || [];
+  // If there are no user rejections, default to an empty array
+  const jobRejections = userRejections || [];
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
-  const [userRejections, setUserRejections] = useState<any[]>([]);
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
@@ -112,18 +140,6 @@ function Profile() {
         : []
     )
   );
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const userRejectionsData = await getUserJobRejections();
-        setUserRejections(userRejectionsData);
-      } catch (error) {
-        console.error("Error fetching user rejections:", error);
-      }
-    }
-    fetchData();
-  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -315,6 +331,7 @@ function Profile() {
   const handleDeleteRejection = async (id: string) => {
     try {
       await axios.delete(`/api/rejection/${id}`);
+      mutate("/api/rejections");
     } catch (error) {
       console.error("Error deleting rejection:", error);
       throw error;
@@ -355,7 +372,7 @@ function Profile() {
       )}
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {userRejections.map((rejection) => (
+        {jobRejections.map((rejection: Rejection) => (
           <JobRejectionCard
             key={rejection.id}
             company={rejection.job.company}

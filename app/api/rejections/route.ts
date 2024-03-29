@@ -1,17 +1,16 @@
-"use server";
-
-import getCurrentUser from "./getCurrentUser";
-import prisma from "./db/prisma";
+import getCurrentUser from "@/app/lib/getCurrentUser";
+import prisma from "@/app/lib/db/prisma";
+import { NextRequest, NextResponse } from "next/server";
 import { Rejection } from "@prisma/client";
 
-const getUserJobRejections = async () => {
+export async function GET(request: NextRequest) {
   try {
-    // Retrieve the current user
+    // Get the current user
     const currentUser = await getCurrentUser();
 
-    // Throw an error if the user is not authenticated or user ID is not found
-    if (!currentUser?.id) {
-      throw new Error("User not authenticated or user ID not found");
+    // If user is not authenticated, return a 401 response
+    if (!currentUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     const userRejections: Rejection[] = await prisma.rejection.findMany({
       where: {
@@ -35,11 +34,9 @@ const getUserJobRejections = async () => {
       },
     });
 
-    return userRejections;
+    return NextResponse.json(userRejections);
   } catch (error) {
-    console.error("Error fetching user rejections:", error);
-    throw new Error("Failed to fetch user rejections");
+    console.error("Error fetching user's jobs:", error);
+    return NextResponse.error();
   }
-};
-
-export default getUserJobRejections;
+}

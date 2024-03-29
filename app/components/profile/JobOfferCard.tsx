@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { HiCurrencyDollar, HiOutlineDotsHorizontal } from "react-icons/hi";
 import axios from "axios";
+import { mutate } from "swr";
 
 interface JobOfferCardProps {
   company: string;
@@ -41,6 +42,7 @@ function JobOfferCard({
     try {
       await axios.put(`/api/offer/${offerId}`, { salary });
       setEditingSalary(false);
+      mutate("api/offers");
     } catch (error) {
       console.error("Error updating salary:", error);
     }
