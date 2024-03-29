@@ -69,6 +69,18 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
     }
   };
 
+  const drawDollarBill = (ctx: CanvasRenderingContext2D) => {
+    const billWidth = 80;
+    const billHeight = 40;
+    ctx.fillStyle = "#008000";
+    ctx.fillRect(-billWidth / 2, -billHeight / 2, billWidth, billHeight);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 16px serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("$", 0, 0);
+  };
+
   return (
     <Transition appear show={isOpen}>
       <Dialog
@@ -105,7 +117,16 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                   Log Offer
                 </Dialog.Title>
-                {showConfetti && <Confetti />}
+                {showConfetti && (
+                  <div>
+                    <Confetti />
+                    <Confetti drawShape={drawDollarBill} numberOfPieces={10} />
+                  </div>
+                )}
+                <div>
+                  <Confetti numberOfPieces={100} />
+                </div>
+
                 <div>
                   <label
                     htmlFor="offerDate"
@@ -172,3 +193,4 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
 }
 
 export default LogOfferModal;
+
