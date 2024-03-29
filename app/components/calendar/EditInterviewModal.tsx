@@ -7,6 +7,7 @@ import axios from "axios";
 import { mutate } from "swr";
 import { Interview, InterviewType } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+
 const schema = yup.object().shape({
   interviewDate: yup.date().required("Interview date is required"),
   interviewType: yup
@@ -62,7 +63,7 @@ function EditInterviewModal({
       setValue("interviewDate", date);
       setValue("interviewType", interview.interviewType || "");
     }
-  }, [interview]);
+  }, [interview, setValue]);
 
   const onSubmit = async (data: any) => {
     try {

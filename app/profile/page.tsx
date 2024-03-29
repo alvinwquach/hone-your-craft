@@ -76,15 +76,15 @@ interface Rejection {
 }
 
 const interviewTypes = [
-  { type: "FINAL_ROUND", label: "Final Round", color: "#f87171" },
+  { type: "FOLLOW_UP", label: "Follow Up", color: "#94a3b8" },
+  { type: "PHONE_SCREEN", label: "Phone Screen", color: "#facc15" },
+  { type: "ON_SITE", label: "On Site", color: "#4ade80" },
+  { type: "VIDEO_INTERVIEW", label: "Video Interview", color: "#818cf8" },
+  { type: "INTERVIEW", label: "Interview", color: "#9ca3af" },
+  { type: "ASSESSMENT", label: "Assessment", color: "#f472b6" },
   { type: "TECHNICAL", label: "Technical", color: "#c084fc" },
   { type: "PANEL", label: "Panel", color: "#60a5fa" },
-  { type: "PHONE_SCREEN", label: "Phone Screen", color: "#facc15" },
-  { type: "ASSESSMENT", label: "Assessment", color: "#f472b6" },
-  { type: "VIDEO_INTERVIEW", label: "Video Interview", color: "#818cf8" },
-  { type: "ON_SITE", label: "On Site", color: "#4ade80" },
-  { type: "INTERVIEW", label: "Interview", color: "#9ca3af" },
-  { type: "FOLLOW_UP", label: "Follow Up", color: "#94a3b8" },
+  { type: "FINAL_ROUND", label: "Final Round", color: "#f87171" },
 ];
 
 const fetcher = async (url: string, options: RequestInit) => {
@@ -169,31 +169,43 @@ function Profile() {
     // Draw application status chart
     const chartContainer = document.getElementById("applicationStatusChart");
     if (chartContainer instanceof HTMLCanvasElement) {
+      const applicationStatuses = [
+        "Saved",
+        "Applied",
+        "Interview",
+        "Offer",
+        "Rejected",
+      ];
+      const labels = applicationStatuses.map(
+        (applicationStatus) => applicationStatus
+      );
+      const datasets = [
+        {
+          label: "Job Percentage",
+          data: labels.map((label) => statusPercentages.get(label) || 0),
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+            "rgba(75, 192, 192, 0.2)",
+            "rgba(153, 102, 255, 0.2)",
+          ],
+          borderColor: [
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 206, 86, 1)",
+            "rgba(75, 192, 192, 1)",
+            "rgba(153, 102, 255, 1)",
+          ],
+          borderWidth: 1,
+        },
+      ];
+
       const chart = new Chart(chartContainer, {
         type: "bar",
         data: {
-          labels: Array.from(statusPercentages.keys()),
-          datasets: [
-            {
-              label: "Job Percentage",
-              data: Array.from(statusPercentages.values()),
-              backgroundColor: [
-                "rgba(255, 99, 132, 0.2)",
-                "rgba(54, 162, 235, 0.2)",
-                "rgba(255, 206, 86, 0.2)",
-                "rgba(75, 192, 192, 0.2)",
-                "rgba(153, 102, 255, 0.2)",
-              ],
-              borderColor: [
-                "rgba(255, 99, 132, 1)",
-                "rgba(54, 162, 235, 1)",
-                "rgba(255, 206, 86, 1)",
-                "rgba(75, 192, 192, 1)",
-                "rgba(153, 102, 255, 1)",
-              ],
-              borderWidth: 1,
-            },
-          ],
+          labels: labels,
+          datasets: datasets,
         },
         options: {
           plugins: {
