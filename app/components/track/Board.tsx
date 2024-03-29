@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useBoardStore } from "@/store/BoardStore";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import Column from "./Column";
 import { mutate } from "swr";
 import axios from "axios";
+import Confetti from "react-confetti";
 
 function Board({ userJobs }: any) {
   const [board, getBoard, setBoardState] = useBoardStore((state) => [
@@ -17,6 +18,7 @@ function Board({ userJobs }: any) {
   useEffect(() => {
     getBoard();
   }, [getBoard]);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const initialColumns = userJobs.columns;
 
@@ -86,6 +88,14 @@ function Board({ userJobs }: any) {
 
       // Remove the job at the index specified by the source from the newJobs array
       const [jobMoved] = newJobs.splice(source.index, 1);
+
+      if (finishCol.id === "OFFER") {
+        setShowConfetti(true);
+      }
+
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 5000);
 
       // If the drag is within the same column */
       if (startCol.id === finishCol.id) {
@@ -243,6 +253,8 @@ function Board({ userJobs }: any) {
 
   return (
     <DragDropContext onDragEnd={handleOnDragEnd}>
+      {showConfetti && <Confetti />}
+
       <Droppable droppableId="board" type="column" direction="horizontal">
         {(provided) => (
           <div
