@@ -3,6 +3,7 @@ import { RejectionInitiator } from "@prisma/client";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { convertToSentenceCase } from "../../lib/convertToSentenceCase";
 import axios from "axios";
+import { mutate } from "swr";
 
 interface JobRejectionCardProps {
   company: string;
@@ -52,6 +53,7 @@ function JobRejectionCard({
         notes: notes,
       });
       setEditingNotes(false);
+      mutate("/api/rejections");
     } catch (error) {
       console.error("Error updating notes:", error);
     }
@@ -112,7 +114,7 @@ function JobRejectionCard({
         </div>
       </div>
       {showOptionsMenu && (
-        <div className="absolute top-8 right-0 mt-2 mr-2" ref={optionsMenuRef}>
+        <div className="absolute top-12 right-0 mt-2 mr-2" ref={optionsMenuRef}>
           <div className="bg-white shadow rounded-lg">
             <button
               onClick={handleEditNotes}
