@@ -81,6 +81,11 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
     ctx.fillText("$", 0, 0);
   };
 
+  const formatSalary = (value: string) => {
+    // Remove non-numeric characters and format with commas for thousands
+    return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   return (
     <Transition appear show={isOpen}>
       <Dialog
@@ -158,6 +163,10 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                     type="text"
                     id="offerSalary"
                     {...register("offerSalary")}
+                    onChange={(e) => {
+                      const formattedValue = formatSalary(e.target.value);
+                      setValue("offerSalary", formattedValue);
+                    }}
                     placeholder="Salary"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                     required

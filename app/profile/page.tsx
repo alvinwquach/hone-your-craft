@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import axios from "axios";
 import { Chart } from "chart.js/auto";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
@@ -12,7 +12,6 @@ import JobRejectionCard from "../components/profile/JobRejectionCard";
 import JobOfferCard from "../components/profile/JobOfferCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import getUserJobRejections from "../lib/getUserJobRejections";
-import getUserJobOffers from "../lib/getUserJobOffers";
 import getUserJobInterviews from "../lib/getUserJobInterviews";
 import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
@@ -22,6 +21,35 @@ interface JobPosting {
   company: string;
   postUrl: string;
   skills: string[];
+}
+
+interface Offer {
+  id: string;
+  company: string;
+  title: string;
+  salary: string;
+  job: {
+    id: string;
+    userId: string;
+    company: string;
+    title: string;
+    description: string;
+    industry: string | null;
+    location: string | null;
+    workLocation: string | null;
+    updatedAt: string;
+    postUrl: string;
+    offer: {
+      id: string;
+      userId: string;
+      jobId: string;
+      offerDate: string;
+      salary: string;
+      createdAt: string;
+      updatedAt: string;
+    }[];
+    salary: string | null;
+  };
 }
 
 const interviewTypes = [
@@ -48,9 +76,13 @@ function Profile() {
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
+  const { data: userOffers } = useSWR("/api/offers", (url) =>
+    axios.get(url).then((res) => res.data)
+  );
+  const jobOffers = userOffers || [];
+
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [userRejections, setUserRejections] = useState<any[]>([]);
-  const [userOffers, setUserOffers] = useState<any[]>([]);
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
@@ -88,18 +120,6 @@ function Profile() {
         setUserRejections(userRejectionsData);
       } catch (error) {
         console.error("Error fetching user rejections:", error);
-      }
-    }
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const userOffersData = await getUserJobOffers();
-        setUserOffers(userOffersData);
-      } catch (error) {
-        console.error("Error fetching user offers:", error);
       }
     }
     fetchData();
@@ -304,6 +324,7 @@ function Profile() {
   const handleDeleteOffer = async (id: string) => {
     try {
       await axios.delete(`/api/offer/${id}`);
+      mutate("/api/offers");
     } catch (error) {
       console.error("Error deleting offer:", error);
       throw error;
@@ -348,7 +369,7 @@ function Profile() {
         ))}
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {userOffers.map((offer) => (
+        {jobOffers.map((offer: Offer) => (
           <JobOfferCard
             key={offer.id}
             company={offer.job.company}
