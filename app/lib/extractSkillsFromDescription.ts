@@ -34,6 +34,24 @@ export const extractSkillsFromDescription = (description: string): string[] => {
       return false;
     }
 
+    if (
+      lowercaseSkill === "expo" &&
+      (lowercaseDescription.includes("expose") ||
+        lowercaseDescription.includes("exponential") ||
+        lowercaseDescription.includes("exposure"))
+    ) {
+      return false;
+    }
+
+    if (
+      lowercaseSkill === "DeFi" &&
+      (lowercaseDescription.includes("definition") ||
+        lowercaseDescription.includes("definite"))
+    ) {
+      return false;
+    }
+
+
     // Check if the description includes the lowercase skill
     return lowercaseDescription.includes(lowercaseSkill);
   });
