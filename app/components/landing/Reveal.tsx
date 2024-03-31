@@ -13,6 +13,8 @@ const Container = styled("div", {
   gap: 10,
   marginBottom: 40,
   marginTop: 10,
+  justifyContent: "center",
+  alignItems: "center",
 });
 
 const Box = styled("div", {
