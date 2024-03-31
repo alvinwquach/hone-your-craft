@@ -128,9 +128,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                     <Confetti drawShape={drawDollarBill} numberOfPieces={10} />
                   </div>
                 )}
-                <div>
-                  <Confetti numberOfPieces={100} />
-                </div>
 
                 <div>
                   <label
