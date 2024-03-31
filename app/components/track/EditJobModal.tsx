@@ -14,6 +14,7 @@ import LogInterviewModal from "./LogInterviewModal";
 import { RiCloseCircleLine, RiCalendarCheckLine } from "react-icons/ri";
 import { LuCircleDollarSign } from "react-icons/lu";
 import { ApplicationStatus, WorkLocation } from "@prisma/client";
+import { mutate } from "swr";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
@@ -85,7 +86,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
 
       // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
-
+      mutate("api/jobs");
       // closeModal();
       console.log("Job data updated successfully");
     } catch (error) {

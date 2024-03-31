@@ -85,7 +85,7 @@ function JobPostingCard({
       <p className="text-gray-400 mt-2 mb-4 text-lg font-bold ">{company}</p>
       <div className="mb-4">
         <p className="text-gray-400 mb-2">
-          Match Percentage: {/* Handle case for NaN %  */}
+          Match Percentage:
           <span className={determineMatchClass()}>
             {isNaN(matchPercentage) ? "0%" : `${matchPercentage.toFixed(2)}%`}
           </span>
