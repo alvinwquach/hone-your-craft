@@ -1,6 +1,5 @@
 import Image from "next/image";
 import suggestedSkillsImage from "../../../public/images/landing/suggestedskills.png";
-import { rubik_scribble } from "@/utils/fonts";
 
 function GetReadyToHoneYourCraft() {
   return (
@@ -8,28 +7,26 @@ function GetReadyToHoneYourCraft() {
       <div className="grid grid-cols-1 items-center gap-y-2 sm:gap-y-6 lg:grid-cols-12 lg:pt-0">
         <div className="px-5 flex flex-col pb-4 lg:-mt-[1rem] lg:col-span-5 items-center lg:items-start animate-fade-in-up overflow-visible">
           <h1
-            className={`${rubik_scribble.className} text-4xl sm:text-6xl text-white uppercase leading-normal sm:leading-none"`}
+            className={`text-4xl sm:text-6xl text-white uppercase leading-normal sm:leading-none"`}
           >
             {"Get"} <strong className={` font-semibold`}>ready</strong>
           </h1>
           <h2
-            className={`${rubik_scribble.className} font-title text-4xl sm:text-6xl text-white uppercase py-4 sm:py-8"`}
+            className={`font-title text-4xl sm:text-6xl text-white uppercase py-4 sm:py-8"`}
           >
             to
           </h2>
           <h1
-            className={`${rubik_scribble.className} uppercase text-4xl sm:text-6xl text-white uppercase"`}
+            className={` uppercase text-4xl sm:text-6xl text-white uppercase"`}
           >
             <strong className="font-semibold">hone</strong>
           </h1>
           <h1
-            className={`${rubik_scribble.className} text-4xl sm:text-6xl text-white uppercase py-4 sm:py-8"`}
+            className={` text-4xl sm:text-6xl text-white uppercase py-4 sm:py-8"`}
           >
             your
           </h1>
-          <h1
-            className={` ${rubik_scribble.className} text-4xl sm:text-6xl text-white uppercase`}
-          >
+          <h1 className={`  text-4xl sm:text-6xl text-white uppercase`}>
             <strong className="font-semibold">craft</strong>
           </h1>
           <h3 className="font-light pt-8 text-xl sm:text-2xl relative">
