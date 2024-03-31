@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <SessionProvider>
           <Header />
-          <main className="bg-slate-700">{children}</main>
+          <main className="">{children}</main>
         </SessionProvider>
       </body>
     </html>

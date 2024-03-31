@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-
 import { StaticImageData } from "next/image";
 import { TbConfetti } from "react-icons/tb";
 import { BsBriefcase } from "react-icons/bs";
@@ -23,60 +22,80 @@ interface CarouselItem {
   icon: React.ElementType;
   image: StaticImageData;
   outlineColor: string;
+  heading: string;
+  description: string;
 }
 
-const ImageCarousel: React.FC = () => {
-  const carouselItem: CarouselItem[] = [
+function ImageCarousel() {
+  const carouselItems: CarouselItem[] = [
     {
-      text: "Job Tracker",
+      text: "Tracker",
       icon: BsBriefcase,
       image: trackImage,
       outlineColor: "border border-solid border-red-500",
+      heading: "Built For The Job Search",
+      description:
+        "Seamlessly manage your job applications with ease using our intuitive tracker feature, ensuring you never miss an opportunity.",
     },
     {
       text: "Calendar",
       icon: FiCalendar,
       image: calendarImage,
       outlineColor: "border border-solid border-green-500",
+      heading: "Color Coded Calendar",
+      description:
+        "Effortlessly plan and prepare for upcoming interviews by visualizing them with color-coded clarity, helping you manage your schedule with ease.",
     },
     {
       text: "Metrics",
       icon: SiBaremetrics,
       image: metricsImage,
       outlineColor: "border border-solid border-blue-500",
+      description:
+        "Analyze skills demand and application trends to understand market requirements to better hone your craft.",
+      heading: "Unlock The Necessary skills",
     },
     {
       text: "Match",
       icon: GiSkills,
       image: jobpostingcardsImage,
       outlineColor: "border border-solid border-yellow-500",
+      description:
+        "Evaluate your skill set against job requirements to identify the best-fit opportunities, empowering you to make informed career decisions.",
+      heading: "Job Requirement Matching",
     },
     {
       text: "Offer",
       icon: TbConfetti,
       image: offerconfettiImage,
       outlineColor: "border border-solid border-purple-500",
+      description:
+        "Celebrate the thrilling moment of receiving a job offer with a joyous feature, marking the beginning of your exciting journey.",
+      heading: "Celebrate Your Offer!",
     },
     {
       text: "Salary",
       icon: HiCurrencyDollar,
       image: moneyconfettiImage,
       outlineColor: "border border-solid border-orange-500",
+      description:
+        "Log and celebrate your job offer with a celebratory display, marking the milestone with joy and excitement. Congratulations, you did it!",
+      heading: "The Celebration Continues!",
     },
   ];
 
   const [currentImage, setCurrentImage] = useState<CarouselItem>(
-    carouselItem[0]
+    carouselItems[0]
   );
 
-  const handleImageClick = (image: CarouselItem) => {
-    setCurrentImage(image);
+  const handleImageClick = (item: CarouselItem) => {
+    setCurrentImage(item);
   };
 
   return (
     <div className="flex flex-col items-center">
       <div className="grid grid-cols-3 md:flex md:flex-row md:justify-center justify-center sm:justify-start">
-        {carouselItem.map((item, index) => (
+        {carouselItems.map((item, index) => (
           <button
             key={index}
             className={`px-4 py-1 m-1 rounded-md flex items-center justify-center focus:outline-none ${
@@ -90,7 +109,7 @@ const ImageCarousel: React.FC = () => {
         ))}
       </div>
       <div className="bg-gray-800 p-4 rounded-lg">
-        <div className="w-full max-w-2xl mx-auto rounded-">
+        <div className="w-full max-w-2xl mx-auto rounded">
           <Image
             src={currentImage.image}
             alt={currentImage.text}
@@ -98,7 +117,20 @@ const ImageCarousel: React.FC = () => {
             height={800}
           />
         </div>
+        <button
+          className={`border border-solid rounded-lg px-4 py-3 mt-4 focus:outline-none w-72 ${currentImage.outlineColor}`}
+        >
+          <p className="font-semibold text-left text-lg text-white">
+            {currentImage.heading}
+          </p>
+          <p className="text-left text-white text-sm">
+            {currentImage.description}
+          </p>
+        </button>
       </div>
+      <p className="text-lg font-semibold">
+        Unlock some top industry skills below!
+      </p>
     </div>
   );
 };

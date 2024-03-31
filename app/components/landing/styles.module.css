@@ -11,16 +11,15 @@
   .deck {
     position: absolute;
     width: 250px;
-    height: 350px;
+    height: 250px;
     will-change: transform;
     display: flex;
     align-items: center;
     justify-content: center;
     touch-action: none;
-      top: 58%; 
+    top: 10%;
     
   }
-  
   .deck > div {
     background-color: white;
     width: 60vw;
@@ -31,5 +30,4 @@
     border-radius: 10px;
     box-shadow: 0 12.5px 100px -10px rgba(50, 50, 73, 0.4), 0 10px 10px -10px rgba(50, 50, 73, 0.3);
   }
-  
   

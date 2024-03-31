@@ -1,20 +1,38 @@
 import ImageCarousel from "./components/landing/ImageCarousel";
 import Reveal from "./components/landing/Reveal";
 import MockJobDeck from "./components/landing/MockJobDeck";
+import Tool from "./components/landing/Tool";
+import WhyHoneYourCraft from "./components/landing/WhyHoneYourCraft";
+import GetReadyToHoneYourCraft from "./components/landing/GetReadyToHoneYourCraft";
+import Section from "./components/common/Section";
 
 const words = ["angular", "react", "vue"];
 
 export default function Home() {
   return (
-    <main className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
-      <ImageCarousel />
-
-      {words.map((word, index) => (
-        <div key={index}>
-          <Reveal word={word} />
-        </div>
-      ))}
-      <MockJobDeck />
+    <main>
+      <Section bg={Section.Colors.Dark}>
+        <GetReadyToHoneYourCraft />
+      </Section>
+      <Section bg={Section.Colors.Light}>
+        <WhyHoneYourCraft />
+      </Section>
+      <Section bg={Section.Colors.Dark}>
+        <Tool />
+      </Section>
+      <Section bg={Section.Colors.Dark} className="!py-16">
+        <ImageCarousel />
+      </Section>
+      <Section bg={Section.Colors.Light}>
+        {words.map((word, index) => (
+          <div key={index}>
+            <Reveal word={word} />
+          </div>
+        ))}
+      </Section>
+      <div className="flex items-center justify-center h-[44rem] lg:h-[55rem] relative bg-gray-800">
+        <MockJobDeck />
+      </div>
     </main>
   );
 }
