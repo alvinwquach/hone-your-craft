@@ -24,6 +24,9 @@ export default function Home() {
         <ImageCarousel />
       </Section>
       <Section bg={Section.Colors.Light}>
+        <p className="text-lg font-semibold text-center">
+          Unlock some top industry skills below!
+        </p>
         {words.map((word, index) => (
           <div key={index}>
             <Reveal word={word} />
