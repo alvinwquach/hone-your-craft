@@ -51,10 +51,10 @@ export default function CustomNavigation() {
         </div>
       </header>
 
-      <div className="xl:hidden">
+      <div className="2xl:hidden">
         <BottomNavigation />
       </div>
-      <div className="hidden xl:block">
+      <div className="hidden 2xl:block">
         <Sidebar />
       </div>
     </>
