@@ -32,7 +32,7 @@ function Calendar() {
   };
   return (
     <DeleteInterviewContext.Provider value={handleDeleteInterview}>
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
+      <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
         <div className="flex flex-wrap">
           <div className="w-full md:w-1/5 pr-4">
             <Legend interviewTypes={interviewTypes} />

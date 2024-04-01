@@ -30,7 +30,7 @@ function Track() {
   console.log(userJobs);
 
   return (
-    <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+    <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <JobTitleSearchForm
         titleSearchString={titleSearchString}
         setTitleSearchString={setTitleSearchString}
