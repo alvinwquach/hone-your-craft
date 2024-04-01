@@ -5,7 +5,6 @@
   align-items: center;
   height: 100%;
   justify-content: center;
-  overflow-x: hidden;
 
 }
 
@@ -20,6 +19,7 @@
   touch-action: none;
   top: 10%;
 }
+
 .deck > div {
   background-color: white;
   width: 60vw;
