@@ -335,7 +335,8 @@ function Metrics(): JSX.Element {
         };
       }
     }
-  }, []);
+  }, [sortedSkills, sortedFrequencies]); 
+  
   return (
     <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
       <div className="w-full h-[550px] mt-2">
