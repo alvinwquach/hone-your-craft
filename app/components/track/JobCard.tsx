@@ -47,10 +47,46 @@ function JobCard({
     }
   };
 
+  const truncateTitle = (title: string, maxLength: number) => {
+    let truncatedTitle = title;
+
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+
+    switch (true) {
+      case screenWidth === 1024 && screenHeight === 1366: // iPad Pro
+        truncatedTitle = title.length > 18 ? `${title.slice(0, 17)}...` : title;
+        break;
+      case screenWidth === 768 && screenHeight === 1024: // iPad Mini
+        truncatedTitle = title.length > 12 ? `${title.slice(0, 11)}...` : title;
+        break;
+      case screenWidth === 820 && screenHeight === 1180: // iPad Air
+        truncatedTitle = title.length > 18 ? `${title.slice(0, 13)}...` : title;
+        break;
+      case screenWidth === 912 && screenHeight === 1368: // Surface Pro 7
+        truncatedTitle = title.length > 16 ? `${title.slice(0, 15)}...` : title;
+        break;
+      case screenWidth === 853 && screenHeight === 1280: // Asus Zenbook Fold
+        truncatedTitle = title.length > 14 ? `${title.slice(0, 13)}...` : title;
+        break;
+      case screenWidth === 1024 && screenHeight === 600: // Nest Hub
+        truncatedTitle = title.length > 18 ? `${title.slice(0, 17)}...` : title;
+        break;
+      case screenWidth === 1280 && screenHeight === 800: // Nest Hub Max
+        truncatedTitle = title.length > 26 ? `${title.slice(0, 25)}...` : title;
+        break;
+      default:
+        truncatedTitle =
+          title.length > maxLength ? `${title.slice(0, maxLength)}...` : title;
+    }
+
+    return truncatedTitle;
+  };
+
   return (
     <div>
       <div
-        className="relative bg-gray-700 rounded-lg shadow-md mb-2"
+        className="relative bg-gray-700 rounded-lg shadow-md mb-2 "
         {...draggableProps}
         {...draghandleProps}
         ref={innerRef}
@@ -65,7 +101,9 @@ function JobCard({
         )}
         <div className="p-4 sm:p-2 flex justify-between items-center text-gray-300 relative">
           <div>
-            <p className="text-base mb-2 font-semibold ">{job.title}</p>
+            <p className="text-sm mb-2 font-semibold">
+              {truncateTitle(job.title, 27)}
+            </p>
             <span className="text-sm">{job.company}</span>
           </div>
           <div className="absolute top-0 right-0 mr-2 mt-2">
