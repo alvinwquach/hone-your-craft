@@ -128,9 +128,6 @@ function ImageCarousel() {
           </p>
         </button>
       </div>
-      <p className="text-lg font-semibold">
-        Unlock some top industry skills below!
-      </p>
     </div>
   );
 };
