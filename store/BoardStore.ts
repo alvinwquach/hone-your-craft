@@ -10,5 +10,4 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   titleSearchString: "",
   // Update title search search string
   setTitleSearchString: (titleSearchString) => set({ titleSearchString }),
-  // Set the entire board state
 }));
