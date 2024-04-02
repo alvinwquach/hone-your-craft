@@ -15,6 +15,7 @@ import getUserJobInterviews from "../lib/getUserJobInterviews";
 import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
 import { RejectionInitiator } from "@prisma/client";
+import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 
 interface JobPosting {
   title: string;
@@ -105,10 +106,17 @@ function Profile() {
   const { data: userRejections } = useSWR("/api/rejections", (url) =>
     axios.get(url).then((res) => res.data)
   );
+
+  const { data: userInterviews } = useSWR("/api/interviews", (url) =>
+    axios.get(url).then((res) => res.data)
+  );
   // If there are no user offers, default to an empty array
   const jobOffers = userOffers || [];
   // If there are no user rejections, default to an empty array
   const jobRejections = userRejections || [];
+
+  // If there are no user interviews, default to an empty array
+  const jobInterviews = userInterviews || [];
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [statusPercentages, setStatusPercentages] = useState<
@@ -370,7 +378,9 @@ function Profile() {
         />
         <UserSkillsCard />
       </div>
-
+      <div className="mt-5">
+        <UpcomingInterviews jobInterviews={jobInterviews} />
+      </div>
       <div className="">
         <div className="w-full h-[550px] mt-2">
           <canvas id="applicationStatusChart"></canvas>
