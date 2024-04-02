@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import SessionProvider from "./SessionProvider";
 import "./globals.css";
 import Header from "./components/common/Header";
+import NavigationDock from "./components/common/BottomNavigationDock";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <SessionProvider>
           <Header />
           <main className="bg-slate-700">{children}</main>
+          <BottomNavigationDock />
         </SessionProvider>
       </body>
     </html>
