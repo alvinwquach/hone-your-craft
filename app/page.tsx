@@ -5,6 +5,7 @@ import Tool from "./components/landing/Tool";
 import WhyHoneYourCraft from "./components/landing/WhyHoneYourCraft";
 import GetReadyToHoneYourCraft from "./components/landing/GetReadyToHoneYourCraft";
 import Section from "./components/common/Section";
+import Pricing from "./components/landing/Pricing";
 
 const words = ["angular", "react", "vue"];
 
@@ -22,6 +23,9 @@ export default function Home() {
       </Section>
       <Section bg={Section.Colors.Dark} className="!py-16">
         <ImageCarousel />
+      </Section>
+      <Section bg={Section.Colors.Light}>
+        <Pricing />
       </Section>
       <Section bg={Section.Colors.Light}>
         <p className="text-lg font-semibold text-center">
