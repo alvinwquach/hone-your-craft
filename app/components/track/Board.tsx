@@ -1,255 +1,124 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useBoardStore } from "@/store/BoardStore";
+import { useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import Column from "./Column";
 import { mutate } from "swr";
 import axios from "axios";
 import Confetti from "react-confetti";
+import { ApplicationStatus } from "@prisma/client";
+
+interface ColumnType {
+  id: ApplicationStatus;
+  jobs: Job[];
+}
 
 function Board({ userJobs }: any) {
-  const [board, getBoard, setBoardState] = useBoardStore((state) => [
-    state.board,
-    state.getBoard,
-    state.setBoardState,
-  ]);
-
-  useEffect(() => {
-    getBoard();
-  }, [getBoard]);
+  const [board, setBoard] = useState(userJobs);
   const [showConfetti, setShowConfetti] = useState(false);
-
-  const initialColumns = userJobs.columns;
-
-  // Create a new Map to hold the merged columns
-  const mergedColumns = new Map();
-
-  // Merge the initial columns with the columns from the board state
-  initialColumns.forEach((column: any, id: any) => {
-    // Get the corresponding column from the board state
-    const existingColumn = board.columns.get(id);
-    // Combine jobs from both sources
-    const mergedJobs = [...column.jobs, ...(existingColumn?.jobs || [])];
-    // Add the merged column to the new map
-    mergedColumns.set(id, { ...column, jobs: mergedJobs });
-  });
 
   const handleOnDragEnd = async (result: DropResult) => {
     const { destination, source, type } = result;
 
+    // If there's no destination, return early
     if (!destination) return;
 
+    // If the type is column, reorder the columns
     if (type === "column") {
-      // Convert the columns map to an array of key-value pairs
-      const entries = Array.from(board.columns.entries());
-      // Remove the column being dragged from its original position
-      const [removed] = entries.splice(source.index, 1);
-      // Insert the removed column at the new destination index
-      entries.splice(destination.index, 0, removed);
-      // Convert the rearranged array back to a Map
-      const rearrangedColumns = new Map(entries);
-      // Update the board state with the rearranged columns
-      setBoardState({
+      // Create a copy of the columns array
+      const newColumns = [...board.columns];
+      // Remove the item from the source index
+      const [removed] = newColumns.splice(source.index, 1);
+      // Insert the removed item at the destination index
+      newColumns.splice(destination.index, 0, removed);
+
+      // Update the board state with the new columns
+      setBoard({
         ...board,
-        columns: rearrangedColumns,
+        columns: newColumns,
       });
     } else {
-      // Convert the columns Map to an array
-      const columns = Array.from(board.columns);
-      // Get the index of the starting column based on the source droppableId
-      const startColIndex = columns[Number(source.droppableId)];
-      // Get the index of the finished column based on the destination droppableId
-      const finishColIndex = columns[Number(destination.droppableId)];
+      // Otherwise, handle job movement between columns
+      const startCol = board.columns[source.droppableId];
+      const finishCol = board.columns[destination.droppableId];
 
-      /* Create a starting column object
-         Get the ID of the starting column from the first element of startColIndex
-         Get the jobs array of the starting column from the second element of StartColIndex, and access its 'jobs' property */
-      const startCol: Column = {
-        id: startColIndex[0],
-        jobs: startColIndex[1].jobs,
-      };
-      /* Create a finished column object
-         Get the ID of the starting column from the first element of startColIndex
-         Get the jobs array of the starting column from the second element of StartColIndex, and access its 'jobs' property */
-      const finishCol: Column = {
-        id: finishColIndex[0],
-        jobs: finishColIndex[1].jobs,
-      };
-
-      // If there's no start or finish column, return
+      // Check if startCol and finishCol exist
       if (!startCol || !finishCol) return;
 
-      // If the source and destination are the same and the columns are the same, return
+      // Check if the drag and drop is within the same column and index
       if (source.index === destination.index && startCol === finishCol) return;
 
-      // Extract the job being moved from the starting column
-      const newJobs = startCol.jobs;
-
-      // Remove the job at the index specified by the source from the newJobs array
+      // Create a copy of the jobs array in the start column
+      const newJobs = [...startCol.jobs];
+      // Remove the job being moved from the start column
       const [jobMoved] = newJobs.splice(source.index, 1);
 
+      // If the job is moved to the "OFFER" column, show confetti
       if (finishCol.id === "OFFER") {
         setShowConfetti(true);
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 5000); // Hide confetti after 5 seconds
       }
 
-      setTimeout(() => {
-        setShowConfetti(false);
-      }, 5000);
-
-      // If the drag is within the same column */
+      // If the job is moved within the same column
       if (startCol.id === finishCol.id) {
-        // Insert the job into the new position within the same column
+        // Insert the job at the destination index
         newJobs.splice(destination.index, 0, jobMoved);
-        // Create a new column object with the updated jobs
+        // Create a new column object with updated jobs
         const newCol = {
-          id: startCol.id,
+          ...startCol,
           jobs: newJobs,
         };
-        // Update the columns map with the modified column
-        const newColumns = new Map(board.columns);
-        newColumns.set(startCol.id, newCol);
-        // Update the board state with the modified columns
-        setBoardState({ ...board, columns: newColumns });
-      } else {
-        /* If the drag moves the job to another column 
-           Clone the jobs array of the finishing column and insert the moved job */
-        const finishJobs = Array.from(finishCol.jobs);
-
-        // Insert the moved job into the cloned array at the specified destination index
-        finishJobs.splice(destination.index, 0, jobMoved);
-
-        // Clone the columns map and update the starting column with the modified jobs
-        const newColumns = new Map(board.columns);
-        const newCol = {
-          id: startCol.id,
-          jobs: newJobs,
-        };
-
-        // Create a new entry in the newColumns map with the starting column ID as the key and the newCol object as the value
-        newColumns.set(startCol.id, newCol);
-
-        // Update the finished column with the modified jobs and update the job status
-        newColumns.set(finishCol.id, {
-          id: finishCol.id,
-          jobs: finishJobs,
+        // Create a copy of the columns array
+        const newColumns = [...board.columns];
+        // Update the column at the source droppableId index
+        const droppableIdNum = parseInt(source.droppableId);
+        newColumns[droppableIdNum] = newCol;
+        // Update the board state with the new columns
+        setBoard({
+          ...board,
+          columns: newColumns,
         });
-
+      } else {
+        // If the job is moved to a different column
+        // Create a copy of the jobs array in the finish column
+        const finishJobs = [...finishCol.jobs];
+        // Insert the job at the destination index in the finish column
+        finishJobs.splice(destination.index, 0, jobMoved);
+        // Create a copy of the columns array
+        const newColumns = [...board.columns];
+        // Update the start column with the updated jobs
+        newColumns[
+          board.columns.findIndex((col: ColumnType) => col.id === startCol.id)
+        ] = {
+          ...startCol,
+          jobs: newJobs,
+        };
+        // Update the finish column with the updated jobs
+        newColumns[
+          board.columns.findIndex((col: ColumnType) => col.id === finishCol.id)
+        ] = {
+          ...finishCol,
+          jobs: finishJobs,
+        };
         try {
-          // Make a PUT request to update the job status
           await axios.put(`/api/job/${jobMoved.id}`, {
             status: finishCol.id,
           });
-          // If the update was successful, return the updated job
-          // Update the job status in the SWR cache (if you're using SWR)
           mutate("/api/jobs");
         } catch (error) {
           console.error("Error updating job:", error);
         }
 
-        // Update the board state with the modified columns
-        setBoardState({ ...board, columns: newColumns });
+        // Update the board state with the new columns
+        setBoard({
+          ...board,
+          columns: newColumns,
+        });
       }
     }
   };
-
-  // const handleOnDragEnd = (result: DropResult) => {
-  //   const { destination, source, type } = result;
-
-  //   if (!destination) return;
-
-  //   if (type === "column") {
-  //     // Convert the columns map to an array of key-value pairs
-  //     const entries = Array.from(board.columns.entries());
-  //     // Remove the column being dragged from its original position
-  //     const [removed] = entries.splice(source.index, 1);
-  //     // Insert the removed column at the new destination index
-  //     entries.splice(destination.index, 0, removed);
-  //     // Convert the rearranged array back to a Map
-  //     const rearrangedColumns = new Map(entries);
-  //     // Update the board state with the rearranged columns
-  //     setBoardState({
-  //       ...board,
-  //       columns: rearrangedColumns,
-  //     });
-  //   }
-  //   // Convert the columns Map to an array
-  //   const columns = Array.from(board.columns);
-  //   // Get the index of the starting column based on the source droppableId
-  //   const startColIndex = columns[Number(source.droppableId)];
-  //   // Get the index of the finished column based on the destination droppableId
-  //   const finishColIndex = columns[Number(destination.droppableId)];
-  //   /* Create a starting column object
-  //    Get the ID of the starting column from the first element of startColIndex
-  //    Get the jobs array of the starting column from the second element of StartColIndex, and access its 'jobs' property */
-  //   const startCol: Column = {
-  //     id: startColIndex[0],
-  //     jobs: startColIndex[1].jobs,
-  //   };
-  //   /* Create a finished column object
-  //    Get the ID of the starting column from the first element of startColIndex
-  //   Get the jobs array of the starting column from the second element of StartColIndex, and access its 'jobs' property */
-  //   const finishCol: Column = {
-  //     id: finishColIndex[0],
-  //     jobs: finishColIndex[1].jobs,
-  //   };
-
-  //   // If there's no start or finish column, return
-  //   if (!startCol || !finishCol) return;
-
-  //   // If the source and destination are the same and the columns are the same, return
-  //   if (source.index === destination.index && startCol === finishCol) return;
-
-  //   // Extract the job being moved from the starting column
-  //   const newJobs = startCol.jobs;
-
-  //   // Remove the job at the index specified by the source from the newJobs array
-  //   const [jobMoved] = newJobs.splice(source.index, 1);
-
-  //   // If the drag is within the same column */
-  //   if (startCol.id === finishCol.id) {
-  //     // Insert the job into the new position within the same column
-  //     newJobs.splice(destination.index, 0, jobMoved);
-  //     // Create a new column object with the updated jobs
-  //     const newCol = {
-  //       id: startCol.id,
-  //       jobs: newJobs,
-  //     };
-  //     // Update the columns map with the modified column
-  //     const newColumns = new Map(board.columns);
-
-  //     newColumns.set(startCol.id, newCol);
-  //     // Update the board state with the modified columns
-  //     setBoardState({ ...board, columns: newColumns });
-  //   } else {
-  //     /* If the drag moves the job to another column
-  //     Clone the jobs array of the finishing column and insert the moved job */
-  //     const finishJobs = Array.from(finishCol.jobs);
-
-  //     // Insert the moved job into the cloned array at the specified destination index
-  //     finishJobs.splice(destination.index, 0, jobMoved);
-
-  //     // Clone the columns map and update the starting column with the modified jobs
-  //     const newColumns = new Map(board.columns);
-  //     const newCol = {
-  //       id: startCol.id,
-  //       jobs: newJobs,
-  //     };
-
-  //     // Create a new entry in the newColumns map with the starting column ID as the key and the newCol object as the value
-  //     newColumns.set(startCol.id, newCol);
-
-  //     // Update the finished column with the modified jobs and update the job status
-  //     newColumns.set(finishCol.id, {
-  //       id: finishCol.id,
-  //       jobs: finishJobs,
-  //     });
-  //     // Update the job status in the database
-  //     updateJobStatus(jobMoved, finishCol.id);
-  //     // Update the board state with the modified columns
-  //     setBoardState({ ...board, columns: newColumns });
-  //   }
-  // };
 
   return (
     <DragDropContext onDragEnd={handleOnDragEnd}>
@@ -262,7 +131,7 @@ function Board({ userJobs }: any) {
             ref={provided.innerRef}
             className="grid grid-cols-1 md:grid-cols-5 gap-5 mx-auto justify-center mt-4"
           >
-            {Array.from(mergedColumns.entries()).map(([id, column], index) => (
+            {board.columns.map((column: ColumnType, index: number) => (
               <Column
                 key={column.id}
                 id={column.id}
@@ -270,6 +139,7 @@ function Board({ userJobs }: any) {
                 index={index}
               />
             ))}
+            {/* Render the placeholder for dropped items */}
             {provided.placeholder}
           </div>
         )}

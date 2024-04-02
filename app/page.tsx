@@ -25,9 +25,6 @@ export default function Home() {
         <ImageCarousel />
       </Section>
       <Section bg={Section.Colors.Light}>
-        <Pricing />
-      </Section>
-      <Section bg={Section.Colors.Light}>
         <p className="text-lg font-semibold text-center">
           Unlock some top industry skills below!
         </p>
@@ -40,6 +37,9 @@ export default function Home() {
       <div className="flex items-center justify-center h-[44rem] lg:h-[55rem] relative bg-gray-800">
         <MockJobDeck />
       </div>
+      <Section bg={Section.Colors.Light}>
+        <Pricing />
+      </Section>
     </main>
   );
 }
