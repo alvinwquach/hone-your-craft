@@ -12,7 +12,7 @@ function WhyHoneYourCraft() {
       </div>
       <div className="mt-6 text-xl text-gray-200 font-light">
         Hone Your Craft is an application tracker designed to empower users
-        throughout their job search journey. Here&aposs why users choose us:
+        throughout their job search journey. Here&apos;s why users choose us:
       </div>
 
       <div className="flex">
