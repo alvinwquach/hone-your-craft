@@ -35,6 +35,39 @@ function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
     );
   });
 
+  if (upcomingInterviews.length === 0) {
+    return (
+      <div className="relative overflow-x-auto">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-400">
+          <thead className="text-xs uppercase bg-gray-900 text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">
+                Interview Date
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Company
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Job Title
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Interview Type
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b bg-gray-800 border-gray-700">
+              <td className="px-6 py-4">N/A</td>
+              <td className="px-6 py-4">N/A</td>
+              <td className="px-6 py-4">N/A</td>
+              <td className="px-6 py-4">N/A</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
     <div className="relative overflow-x-auto">
       <table className="w-full text-sm text-left rtl:text-right text-gray-400">
