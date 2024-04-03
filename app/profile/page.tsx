@@ -36,8 +36,9 @@ function Profile() {
   const { data: userRejections } = useSWR("/api/rejections", (url) =>
     axios.get(url).then((res) => res.data)
   );
-  const { data: userInterviews } = useSWR("/api/interviews", (url) =>
-    axios.get(url).then((res) => res.data)
+  const { data: userInterviews, isLoading: userInterviewsLoading } = useSWR(
+    "/api/interviews",
+    (url) => axios.get(url).then((res) => res.data)
   );
   // If there are no user offers, default to an empty array
   const jobOffers = userOffers || [];
@@ -50,6 +51,8 @@ function Profile() {
   const userSkills = userData?.user?.skills || [];
 
   const loadingUserSkills = !userSkills || userDataLoading;
+
+  const loadingUserInterviews = !userInterviews || userInterviewsLoading;
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
 
@@ -119,7 +122,13 @@ function Profile() {
         )}
       </div>
       <div className="mt-5">
-        <UpcomingInterviews jobInterviews={jobInterviews} />
+        {loadingUserInterviews ? (
+          <div>
+            <UpcomingInterviews jobInterviews={[]} />
+          </div>
+        ) : (
+          <UpcomingInterviews jobInterviews={jobInterviews} />
+        )}
       </div>
       <div className="mt-5">
         <JobOffers jobOffers={jobOffers} onDelete={handleDeleteOffer} />
