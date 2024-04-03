@@ -24,10 +24,14 @@ function Track() {
     state.setTitleSearchString,
   ]);
 
-  const { data: userJobs, error } = useSWR<UserJobs>("/api/jobs", fetcher);
-  if (!userJobs) return <div>Loading...</div>;
+  const {
+    data: userJobs,
+    isLoading: userJobsLoading,
+    error,
+  } = useSWR<UserJobs>("/api/jobs", fetcher);
+
+  const loadingUserJobs = !userJobs || userJobsLoading;
   if (error) return <div>Error loading user&apos;s jobs</div>;
-  console.log(userJobs);
 
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
@@ -35,7 +39,13 @@ function Track() {
         titleSearchString={titleSearchString}
         setTitleSearchString={setTitleSearchString}
       />
-      <Board userJobs={userJobs} />
+      {loadingUserJobs ? (
+        <div>
+          <Board userJobs={[]} />
+        </div>
+      ) : (
+        <Board userJobs={userJobs} />
+      )}
     </div>
   );
 }
