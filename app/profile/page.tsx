@@ -26,8 +26,7 @@ const fetcher = async (url: string, options: RequestInit) => {
 
 function Profile() {
   const { data: session } = useSession();
-
-  const { data: userSkills, isLoading: userSkillsLoading } = useSWR(
+  const { data: userData, isLoading: userDataLoading } = useSWR(
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
@@ -37,7 +36,6 @@ function Profile() {
   const { data: userRejections } = useSWR("/api/rejections", (url) =>
     axios.get(url).then((res) => res.data)
   );
-
   const { data: userInterviews } = useSWR("/api/interviews", (url) =>
     axios.get(url).then((res) => res.data)
   );
@@ -48,8 +46,10 @@ function Profile() {
 
   // If there are no user interviews, default to an empty array
   const jobInterviews = userInterviews || [];
+  // If there are no user skills, default to an empty array
+  const userSkills = userData?.user?.skills || [];
 
-  const loadingUserSkills = !userSkills || userSkillsLoading;
+  const loadingUserSkills = !userSkills || userDataLoading;
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
 
@@ -110,7 +110,13 @@ function Profile() {
             suggestedSkills={suggestedSkills}
           />
         )}
-        <UserSkillsCard />
+        {loadingUserSkills ? (
+          <div>
+            <UserSkillsCard userSkills={[]} />
+          </div>
+        ) : (
+          <UserSkillsCard userSkills={userSkills} />
+        )}
       </div>
       <div className="mt-5">
         <UpcomingInterviews jobInterviews={jobInterviews} />
