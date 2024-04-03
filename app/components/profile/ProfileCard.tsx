@@ -9,6 +9,7 @@ import axios from "axios";
 import Image from "next/image";
 import { FiUser } from "react-icons/fi";
 import { useSession } from "next-auth/react";
+import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 
 const schema = yup.object().shape({
   role: yup.string(),
@@ -147,7 +148,7 @@ function ProfileCard() {
           <Suspense fallback={<p>Loading user...</p>}>
             <Image
               className="w-24 h-24 mb-3 rounded-full shadow-lg"
-              src={session?.user?.image || ""}
+              src={session?.user?.image || defaultPfp}
               alt={`${session?.user?.name}'s profile picture`}
               height={96}
               width={96}

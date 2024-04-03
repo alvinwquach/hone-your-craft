@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
 import axios from "axios";
-import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import ProfileCard from "../components/profile/ProfileCard";
+import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import UserSkillsCard from "../components/profile/UserSkillsCard";
-import JobRejectionCard from "../components/profile/JobRejections";
 import getUserJobPostings from "../lib/getUserJobPostings";
-import { RejectionInitiator } from "@prisma/client";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
 import JobRejections from "../components/profile/JobRejections";
@@ -19,58 +17,6 @@ interface JobPosting {
   company: string;
   postUrl: string;
   skills: string[];
-}
-
-interface Offer {
-  id: string;
-  company: string;
-  title: string;
-  salary: string;
-  job: {
-    id: string;
-    userId: string;
-    company: string;
-    title: string;
-    description: string;
-    industry: string | null;
-    location: string | null;
-    workLocation: string | null;
-    updatedAt: string;
-    postUrl: string;
-    offer: {
-      id: string;
-      userId: string;
-      jobId: string;
-      offerDate: Date;
-      offerDeadline: Date;
-      salary: string;
-      createdAt: string;
-      updatedAt: string;
-    }[];
-  };
-}
-
-interface Rejection {
-  id: string;
-  userId: string;
-  companyId: string;
-  date: Date;
-  initiatedBy: RejectionInitiator;
-  notes: string;
-  createdAt: string;
-  updatedAt: string;
-  job: {
-    id: string;
-    userId: string;
-    company: string;
-    title: string;
-    description: string;
-    industry: string | null;
-    location: string | null;
-    workLocation: string | null;
-    updatedAt: string;
-    postUrl: string;
-  };
 }
 
 const fetcher = async (url: string, options: RequestInit) => {
