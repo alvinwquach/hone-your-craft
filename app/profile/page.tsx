@@ -30,15 +30,16 @@ function Profile() {
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
+  const { data: userInterviews, isLoading: userInterviewsLoading } = useSWR(
+    "/api/interviews",
+    (url) => axios.get(url).then((res) => res.data)
+  );
   const { data: userOffers, isLoading: userOffersLoading } = useSWR(
     "/api/offers",
     (url) => axios.get(url).then((res) => res.data)
   );
-  const { data: userRejections } = useSWR("/api/rejections", (url) =>
-    axios.get(url).then((res) => res.data)
-  );
-  const { data: userInterviews, isLoading: userInterviewsLoading } = useSWR(
-    "/api/interviews",
+  const { data: userRejections, isLoading: userRejectionsLoading } = useSWR(
+    "/api/rejections",
     (url) => axios.get(url).then((res) => res.data)
   );
   // If there are no user offers, default to an empty array
@@ -56,6 +57,8 @@ function Profile() {
   const loadingUserInterviews = !userInterviews || userInterviewsLoading;
 
   const loadingUserOffers = !userOffers || userOffersLoading;
+
+  const loadingUserRejections = !userRejections || userRejectionsLoading;
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
 
@@ -104,7 +107,7 @@ function Profile() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <ProfileCard />
         {loadingUserSkills ? (
           <div>
@@ -124,7 +127,7 @@ function Profile() {
           <UserSkillsCard userSkills={userSkills} />
         )}
       </div>
-      <div className="mt-5">
+      <div className="mt-4">
         {loadingUserInterviews ? (
           <div>
             <UpcomingInterviews jobInterviews={[]} />
@@ -133,7 +136,7 @@ function Profile() {
           <UpcomingInterviews jobInterviews={jobInterviews} />
         )}
       </div>
-      <div className="mt-5">
+      <div className="mt-4">
         {loadingUserOffers ? (
           <div>
             <JobOffers jobOffers={[]} onDelete={handleDeleteOffer} />
@@ -142,12 +145,20 @@ function Profile() {
           <JobOffers jobOffers={jobOffers} onDelete={handleDeleteOffer} />
         )}
       </div>
-
-      <div className="mt-5">
-        <JobRejections
-          jobRejections={jobRejections}
-          onDelete={handleDeleteRejection}
-        />
+      <div className="mt-4">
+        {loadingUserRejections ? (
+          <div>
+            <JobRejections
+              jobRejections={[]}
+              onDelete={handleDeleteRejection}
+            />
+          </div>
+        ) : (
+          <JobRejections
+            jobRejections={jobRejections}
+            onDelete={handleDeleteRejection}
+          />
+        )}
       </div>
     </section>
   );
