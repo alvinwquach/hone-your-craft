@@ -7,11 +7,12 @@ import axios from "axios";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import ProfileCard from "../components/profile/ProfileCard";
 import UserSkillsCard from "../components/profile/UserSkillsCard";
-import JobRejectionCard from "../components/profile/JobRejectionCard";
+import JobRejectionCard from "../components/profile/JobRejections";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import { RejectionInitiator } from "@prisma/client";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
+import JobRejections from "../components/profile/JobRejections";
 
 interface JobPosting {
   title: string;
@@ -174,19 +175,11 @@ function Profile() {
           />
         ))}
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {jobRejections.map((rejection: Rejection) => (
-          <JobRejectionCard
-            key={rejection.id}
-            company={rejection.job.company}
-            title={rejection.job.title}
-            rejectionId={rejection.id}
-            date={rejection.date}
-            initiatedBy={rejection.initiatedBy}
-            notes={rejection.notes}
-            onDelete={handleDeleteRejection}
-          />
-        ))}
+      <div className="mt-5">
+        <JobRejections
+          jobRejections={jobRejections}
+          onDelete={handleDeleteRejection}
+        />
       </div>
     </section>
   );
