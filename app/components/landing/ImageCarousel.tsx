@@ -108,8 +108,8 @@ function ImageCarousel() {
           </button>
         ))}
       </div>
-      <div className="bg-gray-800 p-4 rounded-lg">
-        <div className="w-full max-w-2xl mx-auto rounded">
+      <div className=" ">
+        <div className="w-full max-w-2xl mx-auto rounded-lg bg-zinc-800 pt-4 pr-4 pl-4">
           <Image
             src={currentImage.image}
             alt={currentImage.text}
