@@ -30,8 +30,9 @@ function Profile() {
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
-  const { data: userOffers } = useSWR("/api/offers", (url) =>
-    axios.get(url).then((res) => res.data)
+  const { data: userOffers, isLoading: userOffersLoading } = useSWR(
+    "/api/offers",
+    (url) => axios.get(url).then((res) => res.data)
   );
   const { data: userRejections } = useSWR("/api/rejections", (url) =>
     axios.get(url).then((res) => res.data)
@@ -53,6 +54,8 @@ function Profile() {
   const loadingUserSkills = !userSkills || userDataLoading;
 
   const loadingUserInterviews = !userInterviews || userInterviewsLoading;
+
+  const loadingUserOffers = !userOffers || userOffersLoading;
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
 
@@ -131,8 +134,15 @@ function Profile() {
         )}
       </div>
       <div className="mt-5">
-        <JobOffers jobOffers={jobOffers} onDelete={handleDeleteOffer} />
+        {loadingUserOffers ? (
+          <div>
+            <JobOffers jobOffers={[]} onDelete={handleDeleteOffer} />
+          </div>
+        ) : (
+          <JobOffers jobOffers={jobOffers} onDelete={handleDeleteOffer} />
+        )}
       </div>
+
       <div className="mt-5">
         <JobRejections
           jobRejections={jobRejections}
