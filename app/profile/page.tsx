@@ -27,7 +27,7 @@ const fetcher = async (url: string, options: RequestInit) => {
 function Profile() {
   const { data: session } = useSession();
 
-  const { data: userSkills } = useSWR(
+  const { data: userSkills, isLoading: userSkillsLoading } = useSWR(
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
@@ -48,6 +48,8 @@ function Profile() {
 
   // If there are no user interviews, default to an empty array
   const jobInterviews = userInterviews || [];
+
+  const loadingUserSkills = !userSkills || userSkillsLoading;
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
 
@@ -98,10 +100,16 @@ function Profile() {
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <ProfileCard />
-        <SuggestedSkillsCard
-          userSkills={userSkills}
-          suggestedSkills={suggestedSkills}
-        />
+        {loadingUserSkills ? (
+          <div>
+            <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+          </div>
+        ) : (
+          <SuggestedSkillsCard
+            userSkills={userSkills}
+            suggestedSkills={suggestedSkills}
+          />
+        )}
         <UserSkillsCard />
       </div>
       <div className="mt-5">
