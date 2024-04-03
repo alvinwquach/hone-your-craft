@@ -8,10 +8,10 @@ import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import ProfileCard from "../components/profile/ProfileCard";
 import UserSkillsCard from "../components/profile/UserSkillsCard";
 import JobRejectionCard from "../components/profile/JobRejectionCard";
-import JobOfferCard from "../components/profile/JobOfferCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import { RejectionInitiator } from "@prisma/client";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
+import JobOffers from "../components/profile/JobOffers";
 
 interface JobPosting {
   title: string;
@@ -40,12 +40,12 @@ interface Offer {
       id: string;
       userId: string;
       jobId: string;
-      offerDate: string;
+      offerDate: Date;
+      offerDeadline: Date;
       salary: string;
       createdAt: string;
       updatedAt: string;
     }[];
-    salary: string | null;
   };
 }
 
@@ -149,7 +149,7 @@ function Profile() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      <div className="grid grid-cols-1 gap-3  lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <ProfileCard />
         <SuggestedSkillsCard
           userSkills={userSkills}
@@ -160,7 +160,20 @@ function Profile() {
       <div className="mt-5">
         <UpcomingInterviews jobInterviews={jobInterviews} />
       </div>
-
+      <div className="mt-5">
+        {jobOffers.map((offer: Offer) => (
+          <JobOffers
+            key={offer.id}
+            company={offer.job.company}
+            title={offer.job.title}
+            salary={offer.salary}
+            offerId={offer.id}
+            offerDate={offer.job.offer[0].offerDate}
+            offerDeadline={offer.job.offer[0].offerDeadline}
+            onDelete={handleDeleteOffer}
+          />
+        ))}
+      </div>
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {jobRejections.map((rejection: Rejection) => (
           <JobRejectionCard
@@ -172,18 +185,6 @@ function Profile() {
             initiatedBy={rejection.initiatedBy}
             notes={rejection.notes}
             onDelete={handleDeleteRejection}
-          />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {jobOffers.map((offer: Offer) => (
-          <JobOfferCard
-            key={offer.id}
-            company={offer.job.company}
-            title={offer.job.title}
-            salary={offer.salary}
-            offerId={offer.id}
-            onDelete={handleDeleteOffer}
           />
         ))}
       </div>

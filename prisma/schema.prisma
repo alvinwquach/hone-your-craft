@@ -93,6 +93,7 @@ model Offer {
   job          Job         @relation(fields: [jobId], references: [id])
   jobId        String      @db.ObjectId
   offerDate    DateTime
+  offerDeadline DateTime?
   salary       String
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt

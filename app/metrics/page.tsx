@@ -498,12 +498,7 @@ function Metrics(): JSX.Element {
           </div>
         )}
       </div>
-      {/* <div className="w-full h-[550px] mt-2">
-        <canvas id="skillFrequencyChart"></canvas>
-      </div>
-      <div className="w-full h-[550px] mb-4">
-        <canvas id="missingSkillsChart"></canvas>
-      </div> */}
+
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {jobPostings.map((job, index) => (
           <JobPostingCard
