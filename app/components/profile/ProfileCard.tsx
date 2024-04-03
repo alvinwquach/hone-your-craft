@@ -149,7 +149,10 @@ function ProfileCard() {
             <Image
               className="w-24 h-24 mb-3 rounded-full shadow-lg"
               src={session?.user?.image || defaultPfp}
-              alt={`${session?.user?.name}'s profile picture`}
+              alt={
+                `${session?.user?.name}'s profile picture` ||
+                "A default profile picture"
+              }
               height={96}
               width={96}
               priority
