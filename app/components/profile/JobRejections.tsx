@@ -74,13 +74,13 @@ function JobRejections({ jobRejections, onDelete }: JobRejectionsProps) {
                 Rejection Date
               </th>
               <th scope="col" className="px-6 py-3">
+                Initiated By
+              </th>
+              <th scope="col" className="px-6 py-3">
                 Company
               </th>
               <th scope="col" className="px-6 py-3">
-                Job Title
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Initiated By
+                Title
               </th>
               <th scope="col" className="px-6 py-3">
                 Notes
@@ -114,13 +114,13 @@ function JobRejections({ jobRejections, onDelete }: JobRejectionsProps) {
               Rejection Date
             </th>
             <th scope="col" className="px-6 py-3">
+              Initiated By
+            </th>
+            <th scope="col" className="px-6 py-3">
               Company
             </th>
             <th scope="col" className="px-6 py-3">
-              Job Title
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Initiated By
+              Title
             </th>
             <th scope="col" className="px-6 py-3">
               Notes
@@ -137,13 +137,18 @@ function JobRejections({ jobRejections, onDelete }: JobRejectionsProps) {
               className="border-b bg-gray-800 border-gray-700"
             >
               <td className="px-6 py-4">
-                {format(rejection.date, "MM/dd/yy h:mm a")}
+                <span className="md:hidden">
+                  {format(new Date(rejection.date), "MM/dd/yy h:mm a")}
+                </span>
+                <span className="hidden md:inline">
+                  {format(new Date(rejection.date), "MM/dd/yy @ h:mm a")}
+                </span>
               </td>
-              <td className="px-6 py-4">{rejection.job.company}</td>
-              <td className="px-6 py-4">{rejection.job.title}</td>
               <td className="px-6 py-4">
                 {convertToSentenceCase(rejection.initiatedBy)}
               </td>
+              <td className="px-6 py-4">{rejection.job.company}</td>
+              <td className="px-6 py-4">{rejection.job.title}</td>
               <td className="px-6 py-4">
                 <div className="relative">
                   <textarea
