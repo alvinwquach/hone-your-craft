@@ -18,7 +18,7 @@ function Calendar() {
     "/api/interviews",
     fetcher
   );
-  if (!interviews) return <div>Loading...</div>;
+  const isLoading = !interviews;
   if (error) return <div>Error fetching interviews</div>;
 
   const handleDeleteInterview = async (id: string) => {
@@ -38,7 +38,13 @@ function Calendar() {
             <Legend interviewTypes={interviewTypes} />
           </div>
           <div className="w-full md:w-4/5">
-            <InterviewCalendar interviews={interviews} />
+            {isLoading ? (
+              <div>
+                <InterviewCalendar interviews={[]} />
+              </div>
+            ) : (
+              <InterviewCalendar interviews={interviews} />
+            )}
           </div>
         </div>
       </div>
