@@ -17,6 +17,11 @@ function Board({ userJobs }: any) {
   const [board, setBoard] = useState(userJobs);
   const [showConfetti, setShowConfetti] = useState(false);
 
+  // Check if userJobs array is empty
+  const isEmptyBoard = Object.values(userJobs).every(
+    (jobsArray: any) => jobsArray.length === 0
+  );
+
   const handleOnDragEnd = async (result: DropResult) => {
     const { destination, source, type } = result;
 
@@ -119,6 +124,21 @@ function Board({ userJobs }: any) {
       }
     }
   };
+
+  if (isEmptyBoard) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mx-auto justify-center mt-4">
+        {Object.keys(userJobs).map((status: string, index: number) => (
+          <Column
+            key={status}
+            id={status as ApplicationStatus}
+            jobs={[]}
+            index={index}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <DragDropContext onDragEnd={handleOnDragEnd}>
