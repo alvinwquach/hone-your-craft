@@ -9,8 +9,7 @@ function TheWeekAhead() {
       <Image
         src={upcomingInterviews}
         alt="Image of upcoming interviews"
-        layout="responsive"
-        objectFit="cover"
+        style={{ objectFit: "contain" }}
         width={800}
         height={800}
       />
