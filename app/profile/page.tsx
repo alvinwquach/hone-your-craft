@@ -162,18 +162,7 @@ function Profile() {
         <UpcomingInterviews jobInterviews={jobInterviews} />
       </div>
       <div className="mt-5">
-        {jobOffers.map((offer: Offer) => (
-          <JobOffers
-            key={offer.id}
-            company={offer.job.company}
-            title={offer.job.title}
-            salary={offer.salary}
-            offerId={offer.id}
-            offerDate={offer.job.offer[0].offerDate}
-            offerDeadline={offer.job.offer[0].offerDeadline}
-            onDelete={handleDeleteOffer}
-          />
-        ))}
+        <JobOffers jobOffers={jobOffers} onDelete={handleDeleteOffer} />
       </div>
       <div className="mt-5">
         <JobRejections
