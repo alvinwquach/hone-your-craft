@@ -14,11 +14,12 @@ const fetcher = async (url: string, ...args: any[]) => {
 };
 
 function Calendar() {
-  const { data: interviews, error } = useSWR<Interview[]>(
-    "/api/interviews",
-    fetcher
-  );
-  if (!interviews) return <div>Loading...</div>;
+  const {
+    data: interviews,
+    isLoading: interviewsLoading,
+    error,
+  } = useSWR<Interview[]>("/api/interviews", fetcher);
+  const loadingInterviews = !interviews || interviewsLoading;
   if (error) return <div>Error fetching interviews</div>;
 
   const handleDeleteInterview = async (id: string) => {
@@ -38,7 +39,13 @@ function Calendar() {
             <Legend interviewTypes={interviewTypes} />
           </div>
           <div className="w-full md:w-4/5">
-            <InterviewCalendar interviews={interviews} />
+            {loadingInterviews ? (
+              <div>
+                <InterviewCalendar interviews={[]} />
+              </div>
+            ) : (
+              <InterviewCalendar interviews={interviews} />
+            )}
           </div>
         </div>
       </div>
