@@ -1,21 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
+import { mutate } from "swr";
 import axios from "axios";
 import { FiX } from "react-icons/fi";
 import { GiStoneCrafting } from "react-icons/gi";
 import { useSession } from "next-auth/react";
 
-function UserSkillsCard() {
+interface UserSkillsCardProps {
+  userSkills?: string[];
+}
+
+function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
   const { data: session } = useSession();
-  const { data: userData, mutate } = useSWR(
-    `/api/user/${session?.user?.email}`
-  );
   const [displayedSkills, setDisplayedSkills] = useState(10);
   const [newSkill, setNewSkill] = useState("");
-  // If there are no user skills, default to an empty array
-  const userSkills = userData?.user?.skills || [];
 
   const handleShowMore = () => {
     setDisplayedSkills(displayedSkills + 5);
@@ -40,7 +39,13 @@ function UserSkillsCard() {
               skill: skill.trim(), // Trimmed skill
             });
             // Prepend the new skill to the beginning of the userSkills array
-            mutate({ user: { skills: [skill.trim(), ...userSkills] } }, false);
+            mutate(
+              `/api/user/${session?.user?.email}`,
+              {
+                user: { skills: [skill.trim(), ...userSkills] },
+              },
+              false
+            );
           } catch (error) {
             // Log error if adding skill fails
             console.error("Error adding skill:", error);
@@ -55,7 +60,7 @@ function UserSkillsCard() {
   const handleRemoveSkill = async (skillToRemove: string) => {
     try {
       // Filter out the skill to remove from the userSkills array
-      const updatedSkills = userSkills.filter(
+      const updatedSkills = userSkills?.filter(
         (skill: string) => skill !== skillToRemove
       );
 
@@ -64,8 +69,7 @@ function UserSkillsCard() {
         skills: updatedSkills, // Updated skills array
       });
 
-      // Update data using SWR's mutate function
-      mutate();
+      mutate(`/api/user/${session?.user?.email}`);
     } catch (error) {
       // Log error if updating user skills fails
       console.error("Error updating user skills:", error);
