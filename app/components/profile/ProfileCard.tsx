@@ -51,9 +51,6 @@ function ProfileCard() {
     setEditing(true);
   };
 
-  const exportUserDataToCsv = () => {
-    setShowOptionsMenu(false);
-  };
 
   const onSubmit = async (data: any) => {
     try {
@@ -131,25 +128,16 @@ function ProfileCard() {
           <div
             id="dropdown"
             className="z-10 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow absolute right-0 mt-10"
+            ref={optionsMenuRef}
           >
-            <ul className="py-2" aria-labelledby="dropdownButton">
-              <li>
-                <button
-                  className="block px-4 py-2 text-sm text-black transition-colors hover:bg-gray-100 hover:text-gray-900"
-                  onClick={handleEditRole}
-                >
-                  Edit
-                </button>
-              </li>
-              <li>
-                <button
-                  className="block px-4 py-2 text-sm text-black transition-colors hover:bg-gray-100 hover:text-gray-900"
-                  onClick={exportUserDataToCsv}
-                >
-                  Export Data
-                </button>
-              </li>
-            </ul>
+            <div className="bg-white shadow rounded-lg mr-4">
+              <button
+                onClick={handleEditRole}
+                className="block w-full text-xs text-left px-4 py-2 text-black hover:bg-gray-100 rounded-lg"
+              >
+                Edit Role
+              </button>
+            </div>
           </div>
         )}
       </div>
