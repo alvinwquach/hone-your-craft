@@ -10,6 +10,7 @@ import Confetti from "react-confetti";
 
 const schema = yup.object().shape({
   offerDate: yup.date().required("Offer date is required"),
+  offerDeadline: yup.date(),
   offerSalary: yup.string().required("Salary is required"),
 });
 
@@ -46,6 +47,7 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
         userId: job.userId,
         jobId: job.id,
         offerDate: new Date(data.offerDate).toISOString(),
+        offerDeadline: data.offerDeadline,
         salary: data.offerSalary,
       };
 
@@ -149,6 +151,25 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                     </p>
                   )}
                 </div>
+                <div>
+                  <label
+                    htmlFor="offerDeadline"
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                  >
+                    Offer Deadline
+                  </label>
+                  <input
+                    type="datetime-local"
+                    id="offerDeadline"
+                    {...register("offerDeadline")}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                  />
+                </div>
+                {errors.offerDeadline && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.offerDeadline.message}
+                  </p>
+                )}
                 <div>
                   <label
                     htmlFor="offerSalary"

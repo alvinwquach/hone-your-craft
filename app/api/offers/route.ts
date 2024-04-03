@@ -28,7 +28,12 @@ export async function GET(request: NextRequest) {
             workLocation: true,
             updatedAt: true,
             postUrl: true,
-            offer: true,
+            offer: {
+              select: {
+                offerDate: true,
+                offerDeadline: true,
+              },
+            },
             salary: true,
           },
         },
