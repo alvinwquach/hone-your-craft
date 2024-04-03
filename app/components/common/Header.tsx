@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 import { IconType } from "react-icons";
 import { AiOutlineHome } from "react-icons/ai";
 import { BsBriefcase } from "react-icons/bs";
@@ -13,6 +13,7 @@ import { FiCalendar, FiUser } from "react-icons/fi";
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { SiBaremetrics } from "react-icons/si";
 import { MdAssignmentInd } from "react-icons/md";
+import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
@@ -23,31 +24,18 @@ const navigation = [
   // { href: "/roles", text: "Roles", icon: MdAssignmentInd },
 ];
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
+// function classNames(...classes: string[]) {
+//   return classes.filter(Boolean).join(" ");
+// }
 
 export default function CustomNavigation() {
-  const { data: session } = useSession();
-  const user = session?.user;
-
+  // const { data: session } = useSession();
   return (
     <>
       <header className="fixed top-0 right-0 bg-gray-800 w-full h-20 flex items-center z-50 border-b border-gray-700">
         <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
         <div className="mr-6">
-          {user ? (
-            <ProfileMenu user={user} />
-          ) : (
-            <div className="flex justify-between items-end space-x-4">
-              <Link
-                href="/login"
-                className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 bg-gray-700 hover:bg-gray-600 text-gray-200 font-semibold px-4 py-2 rounded-lg"
-              >
-                Log in
-              </Link>
-            </div>
-          )}
+          <ProfileMenu />
         </div>
       </header>
 
@@ -61,18 +49,10 @@ export default function CustomNavigation() {
   );
 }
 
-interface User {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  userId?: number | null;
-}
+function ProfileMenu() {
+  const { data: session } = useSession();
+  const user = session?.user;
 
-interface ProfileMenuProps {
-  user: User;
-}
-
-function ProfileMenu({ user }: ProfileMenuProps) {
   return (
     <div className="flex items-center space-x-4">
       <Menu as="div" className="relative">
@@ -80,14 +60,19 @@ function ProfileMenu({ user }: ProfileMenuProps) {
           <Menu.Button className="rounded-lg px-2 py-3 hover:bg-gray-700">
             <span className="sr-only">Open user menu</span>
             <div className="flex items-center">
-              <Image
-                src={user?.image || ""}
-                alt={`${user?.name}'s profile picture`}
-                height={40}
-                width={40}
-                className="rounded-full"
-                priority
-              />
+              <Suspense fallback={<p>Loading user...</p>}>
+                <Image
+                  src={user?.image || defaultPfp}
+                  alt={
+                    `${user?.name}'s profile picture` ||
+                    "A default profile picture"
+                  }
+                  height={40}
+                  width={40}
+                  className="rounded-full"
+                  priority
+                />
+              </Suspense>
               <HiOutlineChevronDown className="w-6 h-6 ml-1 text-gray-500 transition-colors group-hover:text-gray-700" />
             </div>
           </Menu.Button>
@@ -114,7 +99,7 @@ function ProfileMenu({ user }: ProfileMenuProps) {
                       width={40}
                       className="rounded-full"
                     />
-                    <span className="text-sm text-gray-700 mb-3 font-semibold ">
+                    <span className="text-sm text-gray-700 mb-3 font-semibold">
                       {user.name}
                     </span>
                   </div>
@@ -125,10 +110,9 @@ function ProfileMenu({ user }: ProfileMenuProps) {
                   {({ active }) => (
                     <Link
                       href="/profile"
-                      className={classNames(
-                        active ? "bg-gray-100" : "",
-                        "block px-4 py-2 text-sm text-gray-700 w-full text-left"
-                      )}
+                      className={`${
+                        active ? "bg-gray-100" : ""
+                      } block px-4 py-2 text-sm text-gray-700 w-full text-left`}
                     >
                       Edit Profile
                     </Link>
@@ -141,17 +125,25 @@ function ProfileMenu({ user }: ProfileMenuProps) {
                   {({ active }) => (
                     <button
                       onClick={() => signOut()}
-                      className={classNames(
-                        active ? "bg-gray-100" : "",
-                        "block px-4 py-2 text-sm text-gray-700 w-full text-left"
-                      )}
+                      className={`${
+                        active ? "bg-gray-100" : ""
+                      } block px-4 py-2 text-sm text-gray-700 w-full text-left`}
                     >
                       Log out
                     </button>
                   )}
                 </Menu.Item>
               </>
-            ) : null}
+            ) : (
+              <Menu.Item>
+                <Link
+                  href="/login"
+                  className="block px-4 py-2 text-sm text-gray-700 w-full text-left"
+                >
+                  Log in
+                </Link>
+              </Menu.Item>
+            )}
           </Menu.Items>
         </Transition>
       </Menu>
@@ -159,120 +151,120 @@ function ProfileMenu({ user }: ProfileMenuProps) {
   );
 }
 
-function Sidebar() {
-  return (
-    <nav className="fixed inset-y-0 left-0 z-50">
-      <div className="fixed inset-y-0 left-0 w-24 bg-gray-800 z-40">
-        <div className="h-full ">
-          <div className="px-4 py-10 mt-10">
-            <ul className="space-y-4">
-              {navigation.map((item, index) => (
-                <SidebarItem
-                  key={index}
-                  href={item.href}
-                  text={item.text}
-                  icon={item.icon}
-                />
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-}
+// function Sidebar() {
+//   return (
+//     <nav className="fixed inset-y-0 left-0 z-50">
+//       <div className="fixed inset-y-0 left-0 w-24 bg-gray-800 z-40">
+//         <div className="h-full ">
+//           <div className="px-4 py-10 mt-10">
+//             <ul className="space-y-4">
+//               {navigation.map((item, index) => (
+//                 <SidebarItem
+//                   key={index}
+//                   href={item.href}
+//                   text={item.text}
+//                   icon={item.icon}
+//                 />
+//               ))}
+//             </ul>
+//           </div>
+//         </div>
+//       </div>
+//     </nav>
+//   );
+// }
 
-interface SidebarItemProps {
-  href: string;
-  text: string;
-  icon: IconType;
-}
+// interface SidebarItemProps {
+//   href: string;
+//   text: string;
+//   icon: IconType;
+// }
 
-function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
-  const pathname = usePathname();
-  const isActive = pathname === href;
+// function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
+//   const pathname = usePathname();
+//   const isActive = pathname === href;
 
-  return (
-    <li>
-      <Link
-        href={href}
-        className={`flex flex-col items-center p-3 rounded-lg ${
-          isActive
-            ? "bg-gray-700"
-            : "hover:bg-gray-700 hover:underline hover:text-gray-400"
-        }`}
-      >
-        <Icon
-          className={`w-6 h-6 ${isActive ? "text-blue-500" : "text-gray-300"}`}
-        />
-        <span
-          className={`mt-1 text-xs ${
-            isActive ? "text-blue-500" : "text-gray-300"
-          }`}
-        >
-          {text}
-        </span>
-      </Link>
-    </li>
-  );
-}
+//   return (
+//     <li>
+//       <Link
+//         href={href}
+//         className={`flex flex-col items-center p-3 rounded-lg ${
+//           isActive
+//             ? "bg-gray-700"
+//             : "hover:bg-gray-700 hover:underline hover:text-gray-400"
+//         }`}
+//       >
+//         <Icon
+//           className={`w-6 h-6 ${isActive ? "text-blue-500" : "text-gray-300"}`}
+//         />
+//         <span
+//           className={`mt-1 text-xs ${
+//             isActive ? "text-blue-500" : "text-gray-300"
+//           }`}
+//         >
+//           {text}
+//         </span>
+//       </Link>
+//     </li>
+//   );
+// }
 
-function BottomNavigation() {
-  return (
-    <div className="fixed bottom-0 z-50 w-full bg-gray-800 border-t border-gray-600 ">
-      <div className="flex justify-around  my-2">
-        {navigation.map((item, index) => (
-          <BottomNavigationItem
-            key={index}
-            href={item.href}
-            text={item.text}
-            icon={item.icon}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+// function BottomNavigation() {
+//   return (
+//     <div className="fixed bottom-0 z-50 w-full bg-gray-800 border-t border-gray-600 ">
+//       <div className="flex justify-around  my-2">
+//         {navigation.map((item, index) => (
+//           <BottomNavigationItem
+//             key={index}
+//             href={item.href}
+//             text={item.text}
+//             icon={item.icon}
+//           />
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
 
-interface BottomNavigationItemProps {
-  href: string;
-  text: string;
-  icon: IconType;
-}
+// interface BottomNavigationItemProps {
+//   href: string;
+//   text: string;
+//   icon: IconType;
+// }
 
-function BottomNavigationItem({
-  href,
-  text,
-  icon: Icon,
-}: BottomNavigationItemProps) {
-  const pathname = usePathname();
-  const isActive = pathname === href;
+// function BottomNavigationItem({
+//   href,
+//   text,
+//   icon: Icon,
+// }: BottomNavigationItemProps) {
+//   const pathname = usePathname();
+//   const isActive = pathname === href;
 
-  return (
-    <Link href={href}>
-      <button
-        className={`inline-flex flex-col items-center justify-center rounded-lg group ${
-          isActive
-            ? "bg-gray-700 "
-            : "hover:bg-gray-700 hover:underline hover:text-gray-400"
-        }`}
-      >
-        <Icon
-          className={`w-5 h-5 mt-1 ${
-            isActive ? "text-blue-500" : "text-gray-400"
-          }`}
-        />
-        <span
-          className={`text-xs  ${
-            isActive ? "text-blue-500" : "text-gray-400 "
-          }`}
-        >
-          <span className="text-xs">{text}</span>
-        </span>
-      </button>
-    </Link>
-  );
-}
+//   return (
+//     <Link href={href}>
+//       <button
+//         className={`inline-flex flex-col items-center justify-center rounded-lg group ${
+//           isActive
+//             ? "bg-gray-700 "
+//             : "hover:bg-gray-700 hover:underline hover:text-gray-400"
+//         }`}
+//       >
+//         <Icon
+//           className={`w-5 h-5 mt-1 ${
+//             isActive ? "text-blue-500" : "text-gray-400"
+//           }`}
+//         />
+//         <span
+//           className={`text-xs  ${
+//             isActive ? "text-blue-500" : "text-gray-400 "
+//           }`}
+//         >
+//           <span className="text-xs">{text}</span>
+//         </span>
+//       </button>
+//     </Link>
+//   );
+// }
 
 
 
