@@ -4,6 +4,7 @@ import SessionProvider from "./SessionProvider";
 import "./globals.css";
 import Header from "./components/common/Header";
 import BottomNavigationDock from "./components/common/BottomNavigationDock";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +21,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <GoogleTagManager
+        gtmId={`${process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID ?? ""}`}
+      />
       <body className={inter.className}>
         <SessionProvider>
           <Header />
