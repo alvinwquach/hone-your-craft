@@ -12,7 +12,7 @@ interface Job {
 
 interface JobRejection {
   job: Job;
-  rejectionId: string;
+  id: string;
   date: Date;
   initiatedBy: RejectionInitiator;
   notes: string;
@@ -20,8 +20,12 @@ interface JobRejection {
 
 interface JobRejectionsProps {
   jobRejections: JobRejection[];
+  onDeleteRejection: (id: string) => void;
 }
-function JobRejections({ jobRejections }: JobRejectionsProps) {
+function JobRejections({
+  jobRejections,
+  onDeleteRejection,
+}: JobRejectionsProps) {
   if (jobRejections.length == 0) {
     return (
       <div className="relative overflow-x-auto">
@@ -43,10 +47,14 @@ function JobRejections({ jobRejections }: JobRejectionsProps) {
               <th scope="col" className="px-6 py-3">
                 Notes
               </th>
+              <th scope="col" className="px-6 py-3">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-b bg-gray-800 border-gray-700">
+              <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
@@ -79,13 +87,16 @@ function JobRejections({ jobRejections }: JobRejectionsProps) {
             <th scope="col" className="px-6 py-3">
               Notes
             </th>
+            <th scope="col" className="px-6 py-3">
+              Action
+            </th>
           </tr>
         </thead>
         <tbody>
           {jobRejections.map((rejection) => (
             <tr
               className="border-b bg-gray-800 border-gray-700"
-              key={rejection.rejectionId}
+              key={rejection.id}
             >
               <td className="px-6 py-4">
                 <span className="md:hidden">
@@ -101,6 +112,11 @@ function JobRejections({ jobRejections }: JobRejectionsProps) {
               <td className="px-6 py-4">{rejection.job.company}</td>
               <td className="px-6 py-4">{rejection.job.title}</td>
               <td className="px-6 py-4">{rejection.notes}</td>
+              <td>
+                <button onClick={() => onDeleteRejection(rejection.id)}>
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
