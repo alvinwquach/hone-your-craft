@@ -86,6 +86,16 @@ function Profile() {
     )
   );
 
+  const handleDeleteRejection = async (id: string) => {
+    try {
+      await axios.delete(`/api/rejection/${id}`);
+      mutate("/api/rejections");
+    } catch (error) {
+      console.error("Error deleting rejection:", error);
+      throw error;
+    }
+  };
+
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -164,12 +174,32 @@ function Profile() {
 
       <div className="mt-4">
         {loadingUserRejections ? (
-          <Suspense fallback={<JobRejections jobRejections={[]} />}>
-            <JobRejections jobRejections={[]} />
+          <Suspense
+            fallback={
+              <JobRejections
+                jobRejections={[]}
+                onDeleteRejection={handleDeleteRejection}
+              />
+            }
+          >
+            <JobRejections
+              jobRejections={[]}
+              onDeleteRejection={handleDeleteRejection}
+            />
           </Suspense>
         ) : (
-          <Suspense fallback={<JobRejections jobRejections={[]} />}>
-            <JobRejections jobRejections={jobRejections} />
+          <Suspense
+            fallback={
+              <JobRejections
+                jobRejections={[]}
+                onDeleteRejection={handleDeleteRejection}
+              />
+            }
+          >
+            <JobRejections
+              jobRejections={jobRejections}
+              onDeleteRejection={handleDeleteRejection}
+            />
           </Suspense>
         )}
       </div>
