@@ -8,8 +8,9 @@ import Section from "./components/common/Section";
 import Pricing from "./components/landing/Pricing";
 import TheWeekAhead from "./components/landing/TheWeekAhead";
 import Testimonials from "./components/landing/Testimonials";
+import { Suspense } from "react";
 
-const words = ["angular", "react", "vue"];
+const words = ["vue", "kubernetes", "angular", "react", "docker"];
 
 const testimonials = [
   {
@@ -33,10 +34,10 @@ export default function Home() {
         <GetReadyToHoneYourCraft />
       </Section>
       <Section bg={Section.Colors.Light}>
-        <WhyHoneYourCraft />
-      </Section>
-      <Section bg={Section.Colors.Dark}>
         <Tool />
+      </Section>
+      <Section bg={Section.Colors.Dark} className="!py-16">
+        <TheWeekAhead />
       </Section>
       <Section bg={Section.Colors.Light}>
         <Pricing />
@@ -44,16 +45,15 @@ export default function Home() {
       <Section bg={Section.Colors.Dark} className="!py-16">
         <ImageCarousel />
       </Section>
-      <Section bg={Section.Colors.Light} className="!py-16">
-        <TheWeekAhead />
-      </Section>
-      <Section bg={Section.Colors.Dark}>
+      <Section bg={Section.Colors.Light}>
         <p className="text-lg font-semibold text-center">
-          Unlock some top industry skills below!
+          Unlock top industry skills below!
         </p>
         {words.map((word, index) => (
           <div key={index}>
-            <Reveal word={word} />
+            <Suspense fallback={<Reveal word={[]} />}>
+              <Reveal word={word} />
+            </Suspense>
           </div>
         ))}
       </Section>
