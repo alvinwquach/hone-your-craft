@@ -12,6 +12,7 @@ export const extractSkillsFromDescription = (description: string): string[] => {
       lowercaseSkill === "chai" &&
       (lowercaseDescription.includes("blockchains") ||
         lowercaseDescription.includes("blockchain") ||
+        lowercaseDescription.includes("archaic") ||
         lowercaseDescription.includes("chain") ||
         lowercaseDescription.includes("chains"))
     ) {
