@@ -85,16 +85,6 @@ function Profile() {
     )
   );
 
-  const handleDeleteOffer = async (id: string) => {
-    try {
-      await axios.delete(`/api/offer/${id}`);
-      mutate("/api/offers");
-    } catch (error) {
-      console.error("Error deleting offer:", error);
-      throw error;
-    }
-  };
-
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -129,10 +119,10 @@ function Profile() {
       <div className="mt-4">
         {loadingUserOffers ? (
           <div>
-            <JobOffers jobOffers={[]} onDelete={handleDeleteOffer} />
+            <JobOffers jobOffers={[]} />
           </div>
         ) : (
-          <JobOffers jobOffers={jobOffers} onDelete={handleDeleteOffer} />
+          <JobOffers jobOffers={jobOffers} />
         )}
       </div>
       <div className="mt-4">
