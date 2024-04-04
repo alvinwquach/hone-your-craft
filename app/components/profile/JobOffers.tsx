@@ -39,6 +39,14 @@ interface JobOffersProps {
 }
 
 function JobOffers({ jobOffers }: JobOffersProps) {
+
+  jobOffers.sort((a, b) => {
+    return (
+      new Date(a.offerDeadline).getTime() - new Date(b.offerDeadline).getTime()
+    );
+  });
+
+
   if (jobOffers.length == 0) {
     return (
       <div className="relative overflow-x-auto">
