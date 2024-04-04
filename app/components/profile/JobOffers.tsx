@@ -36,16 +36,15 @@ interface JobOffer {
 
 interface JobOffersProps {
   jobOffers: JobOffer[];
+  onDeleteOffer: (offerId: string) => void;
 }
 
-function JobOffers({ jobOffers }: JobOffersProps) {
-
+function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
   jobOffers.sort((a, b) => {
     return (
       new Date(a.offerDeadline).getTime() - new Date(b.offerDeadline).getTime()
     );
   });
-
 
   if (jobOffers.length == 0) {
     return (
@@ -68,10 +67,14 @@ function JobOffers({ jobOffers }: JobOffersProps) {
               <th scope="col" className="px-6 py-3">
                 Salary
               </th>
+              <th scope="col" className="px-6 py-3">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-b bg-gray-800 border-gray-700">
+              <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
@@ -104,6 +107,9 @@ function JobOffers({ jobOffers }: JobOffersProps) {
             <th scope="col" className="px-6 py-3">
               Salary
             </th>
+            <th scope="col" className="px-6 py-3">
+              Action
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -131,6 +137,9 @@ function JobOffers({ jobOffers }: JobOffersProps) {
               <td className="px-6 py-4">{offer.job.company}</td>
               <td className="px-6 py-4">{offer.job.title}</td>
               <td className="px-6 py-4">${offer.salary}</td>
+              <td className="px-6 py-4">
+                <button onClick={() => onDeleteOffer(offer.id)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>

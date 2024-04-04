@@ -87,7 +87,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
       mutate("api/jobs");
-      closeModal();
+      // closeModal();
       console.log("Job data updated successfully");
     } catch (error) {
       console.error("Error updating job:", error);
@@ -162,7 +162,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
             <div className="fixed inset-0 flex items-center justify-center">
               <div
                 className="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 flex flex-col md:flex-row"
-                ref={modalRef}
+                // ref={modalRef}
               >
                 <div className="flex-grow flex flex-col mr-2">
                   <Dialog.Title className="text-lg font-medium text-center text-gray-900 ">
