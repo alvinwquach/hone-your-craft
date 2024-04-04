@@ -85,16 +85,6 @@ function Profile() {
     )
   );
 
-  const handleDeleteRejection = async (id: string) => {
-    try {
-      await axios.delete(`/api/rejection/${id}`);
-      mutate("/api/rejections");
-    } catch (error) {
-      console.error("Error deleting rejection:", error);
-      throw error;
-    }
-  };
-
   const handleDeleteOffer = async (id: string) => {
     try {
       await axios.delete(`/api/offer/${id}`);
@@ -148,16 +138,10 @@ function Profile() {
       <div className="mt-4">
         {loadingUserRejections ? (
           <div>
-            <JobRejections
-              jobRejections={[]}
-              onDelete={handleDeleteRejection}
-            />
+            <JobRejections jobRejections={[]} />
           </div>
         ) : (
-          <JobRejections
-            jobRejections={jobRejections}
-            onDelete={handleDeleteRejection}
-          />
+          <JobRejections jobRejections={jobRejections} />
         )}
       </div>
     </section>
