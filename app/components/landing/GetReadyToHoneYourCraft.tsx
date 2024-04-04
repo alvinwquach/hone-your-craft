@@ -36,29 +36,10 @@ function GetReadyToHoneYourCraft() {
             <strong className="font-semibold">craft</strong>
           </h1>
           <h3 className="font-light pt-8 text-xl sm:text-2xl relative">
-            Apply. Work smarter, not harder. Get closer to your{" "}
+            Apply. Work smarter, not harder. Get closer to your dream role as a{" "}
             <span className="font-bold text-primary relative">
-              <em>dream role.</em>
+              <em>technical writer</em> / <em>engineer.</em>
             </span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 1000 100"
-              preserveAspectRatio="none"
-              className="w-full"
-            >
-              <path
-                d="M 0 40 
-       C 100 10 200 50 300 40 
-       S 400 70 500 30 
-       S 600 60 700 40 
-       S 800 20 900 40 
-       S 1000 70 1100 50 
-       S 1200 40 1300 70"
-                stroke="black"
-                stroke-width="3"
-                fill="none"
-              />
-            </svg>
           </h3>
         </div>
 
