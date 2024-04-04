@@ -7,6 +7,7 @@ import DeleteInterviewContext from "../../context/DeleteInterviewContext";
 import InterviewCalendar from "../components/calendar/InterviewCalendar";
 import Legend from "../components/calendar/Legend";
 import useSWR, { mutate } from "swr";
+import { Suspense } from "react";
 
 const fetcher = async (url: string, ...args: any[]) => {
   const response = await fetch(url, ...args);
@@ -41,10 +42,14 @@ function Calendar() {
           <div className="w-full md:w-4/5">
             {loadingInterviews ? (
               <div>
-                <InterviewCalendar interviews={[]} />
+                <Suspense fallback={<InterviewCalendar interviews={[]} />}>
+                  <InterviewCalendar interviews={[]} />
+                </Suspense>
               </div>
             ) : (
-              <InterviewCalendar interviews={interviews} />
+              <Suspense fallback={<InterviewCalendar interviews={[]} />}>
+                <InterviewCalendar interviews={interviews} />
+              </Suspense>
             )}
           </div>
         </div>
