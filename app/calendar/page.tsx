@@ -40,7 +40,7 @@ function Calendar() {
             <Legend interviewTypes={interviewTypes} />
           </div>
           <div className="w-full md:w-4/5">
-            {loadingInterviews ? (
+            {/* {loadingInterviews ? (
               <div>
                 <Suspense fallback={<InterviewCalendar interviews={[]} />}>
                   <InterviewCalendar interviews={[]} />
@@ -50,7 +50,7 @@ function Calendar() {
               <Suspense fallback={<InterviewCalendar interviews={[]} />}>
                 <InterviewCalendar interviews={interviews} />
               </Suspense>
-            )}
+            )} */}
           </div>
         </div>
       </div>

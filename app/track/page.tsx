@@ -4,6 +4,7 @@ import { useBoardStore } from "@/store/BoardStore";
 import JobTitleSearchForm from "../components/track/JobTitleSearchForm";
 import Board from "../components/track/Board";
 import useSWR from "swr";
+import { Suspense } from "react";
 
 const fetcher = async (url: string, ...args: any[]) => {
   const response = await fetch(url, ...args);
@@ -41,10 +42,14 @@ function Track() {
       />
       {loadingUserJobs ? (
         <div>
-          <Board userJobs={[]} />
+          <Suspense fallback={<Board userJobs={[]} />}>
+            <Board userJobs={[]} />
+          </Suspense>
         </div>
       ) : (
-        <Board userJobs={userJobs} />
+        <Suspense fallback={<Board userJobs={[]} />}>
+          <Board userJobs={userJobs} />
+        </Suspense>
       )}
     </div>
   );
