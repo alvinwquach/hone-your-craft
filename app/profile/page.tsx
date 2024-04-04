@@ -120,7 +120,7 @@ function Profile() {
         {loadingUserSkills ? (
           <div className="mt-4">
             <Suspense fallback={<UserSkillsCard userSkills={[]} />}>
-              <UserSkillsCard userSkills={[]} />{" "}
+              <UserSkillsCard userSkills={[]} />
             </Suspense>
           </div>
         ) : (

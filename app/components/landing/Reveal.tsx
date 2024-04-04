@@ -5,7 +5,7 @@ import { styled } from "@stitches/react";
 import { useTrail, animated } from "@react-spring/web";
 
 interface RevealProps {
-  word: string;
+  word: string | string[];
 }
 
 const Container = styled("div", {
@@ -50,7 +50,9 @@ const BackBox = styled(animated.div, {
 });
 
 export default function Reveal({ word }: RevealProps) {
-  const items = word.toUpperCase().split("");
+  const items = Array.isArray(word)
+    ? word.map((w) => w.toUpperCase())
+    : word.toUpperCase();
 
   const [trail, api] = useTrail(items.length, () => ({
     rotateX: 0,
