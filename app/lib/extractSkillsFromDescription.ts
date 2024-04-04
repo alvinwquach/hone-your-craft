@@ -44,9 +44,18 @@ export const extractSkillsFromDescription = (description: string): string[] => {
     }
 
     if (
-      lowercaseSkill === "DeFi" &&
+      lowercaseSkill === "defi" &&
       (lowercaseDescription.includes("definition") ||
         lowercaseDescription.includes("definite"))
+    ) {
+      return false;
+    }
+
+    if (
+      lowercaseSkill === "scala" &&
+      (lowercaseDescription.includes("unscalable") ||
+        lowercaseDescription.includes("scalable") ||
+        lowercaseDescription.includes("scalability"))
     ) {
       return false;
     }
