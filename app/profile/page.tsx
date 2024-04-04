@@ -11,6 +11,7 @@ import getUserJobPostings from "../lib/getUserJobPostings";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
 import JobRejections from "../components/profile/JobRejections";
+import { Suspense } from "react";
 
 interface JobPosting {
   title: string;
@@ -89,49 +90,87 @@ function Profile() {
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <ProfileCard />
+
+        {/* Suggested Skills */}
         {loadingUserSkills ? (
-          <div>
-            <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+          <div className="mt-4">
+            <Suspense
+              fallback={
+                <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+              }
+            >
+              <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+            </Suspense>
           </div>
         ) : (
-          <SuggestedSkillsCard
-            userSkills={userSkills}
-            suggestedSkills={suggestedSkills}
-          />
+          <Suspense
+            fallback={
+              <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+            }
+          >
+            <SuggestedSkillsCard
+              userSkills={userSkills}
+              suggestedSkills={suggestedSkills}
+            />
+          </Suspense>
         )}
+
+        {/* User Skills */}
+
         {loadingUserSkills ? (
-          <div>
-            <UserSkillsCard userSkills={[]} />
+          <div className="mt-4">
+            <Suspense fallback={<UserSkillsCard userSkills={[]} />}>
+              <UserSkillsCard userSkills={[]} />{" "}
+            </Suspense>
           </div>
         ) : (
-          <UserSkillsCard userSkills={userSkills} />
+          <Suspense fallback={<UserSkillsCard userSkills={[]} />}>
+            <UserSkillsCard userSkills={userSkills} />
+          </Suspense>
         )}
       </div>
+
+      {/* User Interviews */}
+
       <div className="mt-4">
         {loadingUserInterviews ? (
           <div>
-            <UpcomingInterviews jobInterviews={[]} />
+            <Suspense fallback={<UpcomingInterviews jobInterviews={[]} />}>
+              <UpcomingInterviews jobInterviews={[]} />
+            </Suspense>
           </div>
         ) : (
-          <UpcomingInterviews jobInterviews={jobInterviews} />
+          <Suspense fallback={<UpcomingInterviews jobInterviews={[]} />}>
+            <UpcomingInterviews jobInterviews={jobInterviews} />
+          </Suspense>
         )}
       </div>
+
+      {/* User Offers */}
+
       <div className="mt-4">
         {loadingUserOffers ? (
-          <div>
+          <Suspense fallback={<JobOffers jobOffers={[]} />}>
             <JobOffers jobOffers={[]} />
-          </div>
+          </Suspense>
         ) : (
-          <JobOffers jobOffers={jobOffers} />
+          <Suspense fallback={<JobOffers jobOffers={[]} />}>
+            <JobOffers jobOffers={jobOffers} />
+          </Suspense>
         )}
       </div>
+
+      {/* User Rejections */}
+
       <div className="mt-4">
         {loadingUserRejections ? (
-          <div>
+          <Suspense fallback={<JobRejections jobRejections={[]} />}>
             <JobRejections jobRejections={[]} />
-          </div>
+          </Suspense>
         ) : (
-          <JobRejections jobRejections={jobRejections} />
+          <Suspense fallback={<JobRejections jobRejections={[]} />}>
+            <JobRejections jobRejections={jobRejections} />
+          </Suspense>
         )}
       </div>
     </section>
