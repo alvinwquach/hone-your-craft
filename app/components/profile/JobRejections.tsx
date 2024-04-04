@@ -83,7 +83,10 @@ function JobRejections({ jobRejections }: JobRejectionsProps) {
         </thead>
         <tbody>
           {jobRejections.map((rejection) => (
-            <tr className="border-b bg-gray-800 border-gray-700">
+            <tr
+              className="border-b bg-gray-800 border-gray-700"
+              key={rejection.rejectionId}
+            >
               <td className="px-6 py-4">
                 <span className="md:hidden">
                   {format(new Date(rejection.date), "MM/dd/yy h:mm a")}

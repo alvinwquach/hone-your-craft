@@ -158,7 +158,10 @@ function JobOffers({ jobOffers, onDelete }: JobOffersProps) {
         </thead>
         <tbody>
           {jobOffers.map((offer) => (
-            <tr className="border-b bg-gray-800 border-gray-700">
+            <tr
+              className="border-b bg-gray-800 border-gray-700"
+              key={offer.offerId}
+            >
               <td className="px-6 py-4">
                 {format(offer.offerDate, "MM/dd/yy h:mm a")}
               </td>
