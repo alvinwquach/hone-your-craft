@@ -29,6 +29,13 @@ export async function GET(request: NextRequest) {
             workLocation: true,
             updatedAt: true,
             postUrl: true,
+            rejection: {
+              select: {
+                date: true,
+                initiatedBy: true,
+                notes: true,
+              },
+            },
           },
         },
       },
