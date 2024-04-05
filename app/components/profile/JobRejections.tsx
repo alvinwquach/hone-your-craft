@@ -1,7 +1,4 @@
-import React, { useRef, useState } from "react";
 import { format } from "date-fns";
-import axios from "axios";
-import { mutate } from "swr";
 import { RejectionInitiator } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 
@@ -112,8 +109,11 @@ function JobRejections({
               <td className="px-6 py-4">{rejection.job.company}</td>
               <td className="px-6 py-4">{rejection.job.title}</td>
               <td className="px-6 py-4">{rejection.notes}</td>
-              <td>
-                <button onClick={() => onDeleteRejection(rejection.id)}>
+              <td className="px-6 py-4">
+                <button
+                  onClick={() => onDeleteRejection(rejection.id)}
+                  className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                >
                   Delete
                 </button>
               </td>

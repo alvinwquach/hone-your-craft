@@ -47,6 +47,8 @@ function LogRejectionModal({
         const rejectionData = {
           userId: job.userId,
           jobId: job.id,
+          company: job.company,
+          title: job.title,
           date: new Date().toISOString(),
           initiatedBy: data.rejection.initiatedBy,
           notes: data.rejection.notes,
@@ -120,7 +122,7 @@ function LogRejectionModal({
                   />
                   {errors.rejection?.date && (
                     <p className="text-red-500 text-sm">
-                      {errors.rejection.date.message}
+                      Please provide a date.
                     </p>
                   )}
                   <div>
@@ -145,12 +147,12 @@ function LogRejectionModal({
                         </option>
                       ))}
                     </select>
-                    {errors.rejection?.initiatedBy && (
-                      <p className="text-red-500 text-sm">
-                        {errors.rejection.initiatedBy.message}
-                      </p>
-                    )}
                   </div>
+                  {errors.rejection?.initiatedBy && (
+                    <p className="text-red-500 text-sm">
+                      Please select an initiator.
+                    </p>
+                  )}
                   <div>
                     <label
                       htmlFor="rejectionNotes"
