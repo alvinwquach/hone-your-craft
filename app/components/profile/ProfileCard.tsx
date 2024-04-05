@@ -28,8 +28,10 @@ function ProfileCard() {
     isLoading,
     error,
     mutate,
-  } = useSWR(`/api/user/${session?.user?.email}`, (url) =>
-    fetcher(url, { method: "GET" })
+  } = useSWR(
+    `/api/user/${session?.user?.email}`,
+    (url) => fetcher(url, { method: "GET" }),
+    { refreshInterval: 1000 }
   );
   const [editing, setEditing] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
