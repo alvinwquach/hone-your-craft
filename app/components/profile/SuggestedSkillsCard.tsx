@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface SuggestedSkillsCardProps {
   suggestedSkills: string[];
@@ -31,10 +31,18 @@ function SuggestedSkillsCard({
   return (
     <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg mx-auto">
       <h2 className="text-xl font-bold text-gray-200 mb-4">Suggested Skills</h2>
-      <p className="text-gray-300 mb-4">
-        Based on the roles you&apos;ve applied to, here are some skills we
-        suggest adding to your profile:
-      </p>
+      {missingSkills.length === 0 && (
+        <p className="text-gray-300 mb-4">
+          Welcome! As you begin to apply to roles, we'll suggest skills to add
+          to your profile.
+        </p>
+      )}
+      {missingSkills.length > 0 && (
+        <p className="text-gray-300 mb-4">
+          Based on the roles you&apos;ve applied to, here are some skills we
+          suggest adding to your profile:
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         {missingSkills.slice(0, visibleSkills).map((missingSkill, index) => (
           <span
