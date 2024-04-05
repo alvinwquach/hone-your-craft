@@ -33,8 +33,8 @@ function SuggestedSkillsCard({
       <h2 className="text-xl font-bold text-gray-200 mb-4">Suggested Skills</h2>
       {missingSkills.length === 0 && (
         <p className="text-gray-300 mb-4">
-          Welcome! As you begin to apply to roles, we'll suggest skills to add
-          to your profile.
+          Welcome! As you begin to apply to roles, we&apos;ll suggest skills to
+          add to your profile.
         </p>
       )}
       {missingSkills.length > 0 && (
