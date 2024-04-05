@@ -29,7 +29,8 @@ function Profile() {
   const { data: session } = useSession();
   const { data: userData, isLoading: userDataLoading } = useSWR(
     session ? `/api/user/${session?.user?.email}` : null,
-    (url) => fetcher(url, { method: "GET" })
+    (url) => fetcher(url, { method: "GET" }),
+    { refreshInterval: 1000 }
   );
   const { data: userInterviews, isLoading: userInterviewsLoading } = useSWR(
     "/api/interviews",

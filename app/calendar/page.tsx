@@ -19,7 +19,9 @@ function Calendar() {
     data: interviews,
     isLoading: interviewsLoading,
     error,
-  } = useSWR<Interview[]>("/api/interviews", fetcher);
+  } = useSWR<Interview[]>("/api/interviews", fetcher, {
+    refreshInterval: 1000,
+  });
   const loadingInterviews = !interviews || interviewsLoading;
   if (error) return <div>Error fetching interviews</div>;
 

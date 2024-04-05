@@ -43,8 +43,10 @@ function Metrics(): JSX.Element {
   const { data: session } = useSession({ required: true });
   const { data: userSkills } = useSWR(
     session ? `/api/user/${session?.user?.email}` : null,
-    (url) => fetcher(url, { method: "GET" })
+    (url) => fetcher(url, { method: "GET" }),
+    { refreshInterval: 1000 }
   );
+
   const [sortedSkills, setSortedSkills] = useState<string[]>([]);
   const [sortedFrequencies, setSortedFrequencies] = useState<number[]>([]);
   const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
