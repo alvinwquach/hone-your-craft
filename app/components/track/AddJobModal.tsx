@@ -78,8 +78,9 @@ function AddJobModal({
   const onSubmit = async (data: any) => {
     try {
       data.status = selectedCategory;
+      console.log("Logging job,", data);
       await axios.post(`/api/job/${data.id}`, data);
-      mutate("/api/jobs");
+      mutate("api/jobs");
       closeModal();
     } catch (error) {
       console.error("Error adding job:", error);
