@@ -1,8 +1,6 @@
+import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/lib/getCurrentUser";
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,

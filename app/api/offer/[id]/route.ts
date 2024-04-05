@@ -1,9 +1,19 @@
-import { PrismaClient } from "@prisma/client";
-
-import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/lib/getCurrentUser";
+import { NextRequest, NextResponse } from "next/server";
 
-const prisma = new PrismaClient();
+interface RequiredOfferData {
+  offerDate: string;
+  offerDeadline: string;
+  salary: string;
+}
+
+function validateRequiredOfferData(offerData: RequiredOfferData) {
+  if (!offerData.offerDate || !offerData.offerDeadline || !offerData.salary) {
+    return "Offer date, offer deadline, and salary are required fields.";
+  }
+  return null;
+}
 
 // Get offer by ID
 export async function GET(
@@ -46,12 +56,10 @@ export async function GET(
 export async function POST(request: NextRequest) {
   const offerData = await request.json();
 
-  // Check if the salary field is provided and not empty
-  if (!offerData.salary) {
-    return NextResponse.json(
-      { message: "Salary is required" },
-      { status: 400 }
-    );
+  const validationError = validateRequiredOfferData(offerData);
+
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
   }
 
   try {
@@ -65,11 +73,6 @@ export async function POST(request: NextRequest) {
     const offer = await prisma.offer.create({
       data: offerData,
     });
-
-    // // Log the offer creation
-    // await prisma.offer.update({
-    //   where: { id: offer.id },
-    // });
 
     // Return the created offer as a JSON response with a 201 status code
     return NextResponse.json({ offer }, { status: 201 });
@@ -91,12 +94,10 @@ export async function PUT(
   const offerId = params.id;
   const offerData = await request.json();
 
-  // Check if the salary field is provided and not empty
-  if (!offerData.salary) {
-    return NextResponse.json(
-      { message: "Salary is required" },
-      { status: 400 }
-    );
+  const validationError = validateRequiredOfferData(offerData);
+
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
   }
 
   try {
