@@ -12,7 +12,7 @@ import { Interview } from "@prisma/client";
 import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import { MonthlyNav } from "./MonthlyNav";
 import EditInterviewModal from "./EditInterviewModal";
-import { FaEllipsisV } from "react-icons/fa";
+import { IoEllipsisHorizontalSharp } from "react-icons/io5";
 
 interface InterviewCalendarProps {
   interviews: Interview[];
@@ -178,11 +178,11 @@ const InterviewDay = ({ interview }: { interview: any }) => {
           className="focus:outline-none text-white "
         >
           <span className="sr-only">Open dropdown</span>
-          <FaEllipsisV className="w-5 h-5 ml-2 mt-2" />
+          <IoEllipsisHorizontalSharp className="w-5 h-5 mr-2 " />
         </button>
         {showOptionsMenu && (
           <div
-            className="absolute top-8 right-0 bg-white shadow rounded-lg"
+            className="absolute top-4 right-2 bg-white shadow rounded-lg"
             ref={optionsMenuRef}
           >
             <button

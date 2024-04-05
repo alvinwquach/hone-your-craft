@@ -38,7 +38,6 @@ function JobCard({
   const handleDeleteJob = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    event.stopPropagation();
     try {
       await axios.delete(`/api/job/${job.id}`);
       mutate("/api/jobs");
