@@ -2,6 +2,25 @@ import getCurrentUser from "@/app/lib/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 
+interface RequiredJobData {
+  company: string;
+  title: string;
+  postUrl: string;
+  description: string;
+}
+
+function validateRequiredJobData(jobData: RequiredJobData) {
+  if (
+    !jobData.company ||
+    !jobData.title ||
+    !jobData.postUrl ||
+    !jobData.description
+  ) {
+    return "Company, post url, job title, and job description are required fields.";
+  }
+  return null;
+}
+
 // Get job by ID
 export async function GET(
   request: NextRequest,
@@ -41,6 +60,11 @@ export async function GET(
 // Create a new job
 export async function POST(request: NextRequest) {
   const jobData = await request.json();
+  const validationError = validateRequiredJobData(jobData);
+
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
+  }
 
   try {
     // Retrieve the current user from the session
@@ -90,6 +114,21 @@ export async function PUT(
   }
   const jobId = params.jobId;
   const jobData = await request.json();
+
+  if (
+    !jobData.company ||
+    !jobData.title ||
+    !jobData.postUrl ||
+    !jobData.description
+  ) {
+    return NextResponse.json(
+      {
+        message:
+          "Company, title, postUrl, and description are required fields.",
+      },
+      { status: 400 }
+    );
+  }
 
   try {
     // Attempt to update the job
