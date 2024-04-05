@@ -1,8 +1,18 @@
+import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/lib/getCurrentUser";
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-const prisma = new PrismaClient();
+interface RequiredRejectionData {
+  date: string;
+  initiatedBy: string;
+}
+
+function validateRequiredRejectionData(rejectionData: RequiredRejectionData) {
+  if (!rejectionData.date || !rejectionData.initiatedBy) {
+    return "Rejection date, and initiated by are required fields.";
+  }
+  return null;
+}
 
 // Get rejection by ID
 export async function GET(
@@ -54,6 +64,11 @@ export async function POST(request: NextRequest) {
 
   const { date, initiatedBy, notes, jobId, userId } = await request.json();
 
+  const validationError = validateRequiredRejectionData({ date, initiatedBy });
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
+  }
+
   try {
     // Attempt to create a new rejection
     const rejection = await prisma.rejection.create({
@@ -91,6 +106,11 @@ export async function PUT(
 
   const rejectionId = params.id;
   const { date, initiatedBy, notes, jobId, userId } = await request.json();
+
+  const validationError = validateRequiredRejectionData({ date, initiatedBy });
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
+  }
 
   try {
     // Attempt to update the rejection
