@@ -1,8 +1,18 @@
 import getCurrentUser from "@/app/lib/getCurrentUser";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/app/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const prisma = new PrismaClient();
+interface RequiredInterviewData {
+  interviewDate: string;
+  interviewType: string;
+}
+
+function validateRequiredInterviewData(interviewData: RequiredInterviewData) {
+  if (!interviewData.interviewDate || !interviewData.interviewType) {
+    return "Interview date, and interview type  are required fields.";
+  }
+  return null;
+}
 
 // Get interview by ID
 export async function GET(
@@ -47,7 +57,12 @@ export async function GET(
 
 // Create a new interview
 export async function POST(request: NextRequest) {
-  const requestBody = await request.json();
+  const interviewData = await request.json();
+  const validationError = validateRequiredInterviewData(interviewData);
+
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
+  }
 
   try {
     const currentUser = await getCurrentUser(); // Get the current user
@@ -58,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if interviewDate is provided and not null
-    if (!requestBody.interviewDate) {
+    if (!interviewData.interviewDate) {
       return NextResponse.json(
         { message: "interviewDate must not be null" },
         { status: 400 }
@@ -69,10 +84,10 @@ export async function POST(request: NextRequest) {
     const interview = await prisma.interview.create({
       data: {
         user: { connect: { id: currentUser.id } }, // Connect the user to the id
-        job: { connect: { id: requestBody.jobId } }, // Connect the interview to the job
-        acceptedDate: requestBody.acceptedDate,
-        interviewDate: requestBody.interviewDate,
-        interviewType: requestBody.interviewType,
+        job: { connect: { id: interviewData.jobId } }, // Connect the interview to the job
+        acceptedDate: interviewData.acceptedDate,
+        interviewDate: interviewData.interviewDate,
+        interviewType: interviewData.interviewType,
       },
     });
 
@@ -94,13 +109,18 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const interviewId = params.id;
-  const { acceptedDate, interviewDate, interviewType } = await request.json(); // Extract interviewType from the request body
+  const interviewData = await request.json();
+
+  // Validate the interview data
+  const validationError = validateRequiredInterviewData(interviewData);
+  if (validationError) {
+    return NextResponse.json({ message: validationError }, { status: 400 });
+  }
 
   try {
     const currentUser = await getCurrentUser(); // Get the current user
 
     if (!currentUser) {
-      // If user is not authenticated, return a 401 response
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
@@ -108,16 +128,13 @@ export async function PUT(
     const updatedInterview = await prisma.interview.update({
       where: { id: interviewId },
       data: {
-        acceptedDate,
-        interviewDate,
-        interviewType,
+        interviewDate: interviewData.interviewDate,
+        interviewType: interviewData.interviewType,
       },
     });
 
-    // Return the updated interview as a JSON response
     return NextResponse.json({ interview: updatedInterview });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error updating interview:", error);
     return NextResponse.json(
       { message: "Error updating interview" },
