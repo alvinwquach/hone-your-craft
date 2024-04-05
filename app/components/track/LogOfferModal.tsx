@@ -53,10 +53,7 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
 
       console.log("Offer data:", offerData);
 
-      // Check if offer already exists
-      const existingOffer = job.offer;
-
-      if (existingOffer) {
+      if (job.offer) {
         // If offer exists, update it
         await axios.put(`/api/offer/${job.id}`, offerData);
       } else {
@@ -70,6 +67,38 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
       console.error("Error submitting offer data:", error);
     }
   };
+
+  // const onSubmit = async (data: any) => {
+  //   try {
+  //     console.log("Submitting form data:", data);
+  //     if (data.offer) {
+  //       const offerData = {
+  //         userId: job.userId,
+  //         jobId: job.id,
+  //         company: job.company,
+  //         title: job.title,
+  //         offerDate: new Date(data.offerDate).toISOString(),
+  //         offerDeadline: data.offerDeadline,
+  //         salary: data.offerSalary,
+  //       };
+
+  //       console.log("Offer data:", offerData);
+
+  //       if (job.offer) {
+  //         // If rejection already exists, update it
+  //         await axios.put(`/api/offer/${job.id}`, offerData);
+  //       } else {
+  //         // If rejection doesn't exist, create a new one
+  //         await axios.post(`/api/offer/${job.id}`, offerData);
+  //       }
+  //     }
+
+  //     closeModal();
+  //     console.log("Offer data submitted successfully");
+  //   } catch (error) {
+  //     console.error("Error submitting Offer data:", error);
+  //   }
+  // };
 
   const drawDollarBill = (ctx: CanvasRenderingContext2D) => {
     const billWidth = 80;
@@ -131,10 +160,10 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                   </div>
                 )}
 
-                <div>
+                <div className="grid grid-cols-1 gap-2">
                   <label
                     htmlFor="offerDate"
-                    className="block mb-2 text-sm font-medium text-gray-900"
+                    className="block text-sm font-medium text-gray-900"
                   >
                     Offer Date
                   </label>
@@ -147,54 +176,56 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                   />
                   {errors.offerDate && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.offerDate.message}
+                      Please provide a date.
                     </p>
                   )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="offerDeadline"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Offer Deadline
-                  </label>
-                  <input
-                    type="datetime-local"
-                    id="offerDeadline"
-                    {...register("offerDeadline")}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
-                  />
-                </div>
-                {errors.offerDeadline && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.offerDeadline.message}
-                  </p>
-                )}
-                <div>
-                  <label
-                    htmlFor="offerSalary"
-                    className="block mb-2 text-sm font-medium text-gray-900"
-                  >
-                    Salary
-                  </label>
-                  <input
-                    type="text"
-                    id="offerSalary"
-                    {...register("offerSalary")}
-                    onChange={(e) => {
-                      const formattedValue = formatSalary(e.target.value);
-                      setValue("offerSalary", formattedValue);
-                    }}
-                    placeholder="Salary"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                    required
-                  />
-                  {errors.offerSalary && (
+
+                  <div>
+                    <label
+                      htmlFor="offerDeadline"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Offer Deadline
+                    </label>
+                    <input
+                      type="datetime-local"
+                      id="offerDeadline"
+                      {...register("offerDeadline")}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                    />
+                  </div>
+                  {errors.offerDeadline && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.offerSalary.message}
+                      Please provide a date.
                     </p>
                   )}
+                  <div>
+                    <label
+                      htmlFor="offerSalary"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Salary
+                    </label>
+                    <input
+                      type="text"
+                      id="offerSalary"
+                      {...register("offerSalary")}
+                      onChange={(e) => {
+                        const formattedValue = formatSalary(e.target.value);
+                        setValue("offerSalary", formattedValue);
+                      }}
+                      placeholder="Salary"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                      required
+                    />
+                    {errors.offerSalary && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Please provide a salary.
+                      </p>
+                    )}
+                  </div>
                 </div>
+
                 <div className="flex justify-end mt-4">
                   <button
                     type="button"

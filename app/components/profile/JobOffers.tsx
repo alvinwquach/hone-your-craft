@@ -2,36 +2,17 @@ import { format } from "date-fns";
 import axios from "axios";
 import { mutate } from "swr";
 
-interface JobOffer {
-  id: string;
+interface Job {
   company: string;
   title: string;
-  salary: string;
-  offerId: string;
+}
+
+interface JobOffer {
+  job: Job;
+  id: string;
   offerDate: Date;
   offerDeadline: Date;
-  job: {
-    id: string;
-    userId: string;
-    company: string;
-    title: string;
-    description: string;
-    industry: string | null;
-    location: string | null;
-    workLocation: string | null;
-    updatedAt: string;
-    postUrl: string;
-    offer: {
-      id: string;
-      userId: string;
-      jobId: string;
-      offerDate: Date;
-      offerDeadline: Date;
-      salary: string;
-      createdAt: string;
-      updatedAt: string;
-    }[];
-  };
+  salary: string;
 }
 
 interface JobOffersProps {
@@ -114,10 +95,7 @@ function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
         </thead>
         <tbody>
           {jobOffers.map((offer) => (
-            <tr
-              className="border-b bg-gray-800 border-gray-700"
-              key={offer.offerId}
-            >
+            <tr className="border-b bg-gray-800 border-gray-700" key={offer.id}>
               <td className="px-6 py-4">
                 <span className="hidden md:inline">
                   {format(offer.offerDate, "MM/dd/yy @ h:mm a")}
@@ -138,7 +116,12 @@ function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
               <td className="px-6 py-4">{offer.job.title}</td>
               <td className="px-6 py-4">${offer.salary}</td>
               <td className="px-6 py-4">
-                <button onClick={() => onDeleteOffer(offer.id)}>Delete</button>
+                <button
+                  onClick={() => onDeleteOffer(offer.id)}
+                  className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
