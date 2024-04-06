@@ -56,23 +56,32 @@ function JobPostingCard({
   };
 
   const handleShowMoreMatchingSkills = () => {
-    if (displayedMatchingSkills < matchingSkills.length) {
-      setDisplayedMatchingSkills((prevCount) => prevCount + 3);
+    const newCount = displayedMatchingSkills + 2;
+    const maxCount = matchingSkills.length;
+    if (newCount <= maxCount) {
+      setDisplayedMatchingSkills(newCount);
+    } else {
+      setDisplayedMatchingSkills(maxCount);
     }
   };
 
   const handleShowLessMatchingSkills = () => {
-    setDisplayedMatchingSkills(3);
+    setDisplayedMatchingSkills(2);
   };
 
   const handleShowMoreMissingSkills = () => {
-    if (displayedMissingSkills < missingSkills.length) {
-      setDisplayedMissingSkills((prevCount) => prevCount + 3);
+    const newCount = displayedMissingSkills + 2;
+    const maxCount = missingSkills.length;
+
+    if (newCount <= maxCount) {
+      setDisplayedMissingSkills(newCount);
+    } else {
+      setDisplayedMissingSkills(maxCount);
     }
   };
 
   const handleShowLessMissingSkills = () => {
-    setDisplayedMissingSkills(3);
+    setDisplayedMissingSkills(2);
   };
 
   const filterDuplicateMissingSkills = (skills: string[]) => {
@@ -90,7 +99,6 @@ function JobPostingCard({
             {isNaN(matchPercentage) ? "0%" : `${matchPercentage.toFixed(2)}%`}
           </span>
         </p>
-
         <PercentageBar matchPercentage={matchPercentage} />
       </div>
       {matchingSkills.length > 0 && (
@@ -108,7 +116,7 @@ function JobPostingCard({
                 </span>
               ))}
           </div>
-          {matchingSkills.length > 5 && (
+          {matchingSkills.length > 2 && (
             <div className="flex justify-center">
               {displayedMatchingSkills < matchingSkills.length ? (
                 <button
@@ -118,8 +126,7 @@ function JobPostingCard({
                 >
                   Show more
                 </button>
-              ) : null}
-              {displayedMatchingSkills > 5 && (
+              ) : (
                 <button
                   className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
                   onClick={handleShowLessMatchingSkills}
@@ -147,7 +154,7 @@ function JobPostingCard({
                 </span>
               ))}
           </div>
-          {missingSkills.length > 5 && (
+          {missingSkills.length > 2 && (
             <div className="flex justify-center">
               {displayedMissingSkills < missingSkills.length ? (
                 <button
@@ -157,8 +164,7 @@ function JobPostingCard({
                 >
                   Show more
                 </button>
-              ) : null}
-              {displayedMissingSkills > 5 && (
+              ) : (
                 <button
                   className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
                   onClick={handleShowLessMissingSkills}
