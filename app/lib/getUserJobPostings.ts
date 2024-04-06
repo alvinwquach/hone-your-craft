@@ -55,7 +55,7 @@ const getUserJobPostings = async () => {
             source = "SimplyHired";
             break;
           case job.postUrl.includes("stackoverflow"):
-            source = "Stack Overflow Jobs";
+            source = "Stack Overflow";
             break;
           case job.postUrl.includes("dice"):
             source = "Dice";
@@ -67,7 +67,7 @@ const getUserJobPostings = async () => {
             source = "Adzuna";
             break;
           default:
-            source = job.company;
+            source = "Company Website";
         }
       }
 
