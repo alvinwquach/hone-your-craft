@@ -3,32 +3,27 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-
 import { ChangeEvent, Fragment, useRef, useEffect, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Transition, Switch } from "@headlessui/react";
 import { iDToColumnText } from "./Column";
 import { ApplicationStatus } from "@prisma/client";
 import { mutate } from "swr";
 import axios from "axios";
 
-interface FormData {
+interface RequiredJobData {
+  referral?: boolean;
   company: string;
   postUrl: string;
   title: string;
   description: string;
-  industry?: string;
-  location?: string;
-  salary?: number;
 }
 
 const schema = yup.object().shape({
+  referral: yup.boolean(),
   company: yup.string().required("Company is required"),
   postUrl: yup.string().required("Post URL is required"),
   title: yup.string().required("Title is required"),
   description: yup.string().required("Title is required"),
-  industry: yup.string(),
-  location: yup.string(),
-  salary: yup.number(),
 });
 
 interface AddJobModalProps {
@@ -43,13 +38,18 @@ function AddJobModal({
   selectedCategory,
 }: AddJobModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const [referral, setReferral] = useState(false);
 
-  const [newJobInput, setNewJobInput] = useState<FormData>({
+  const [newJobInput, setNewJobInput] = useState<RequiredJobData>({
     company: "",
     postUrl: "",
     title: "",
     description: "",
   });
+
+  const handleToggleReferral = () => {
+    setReferral((prevReferral) => !prevReferral);
+  };
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -78,7 +78,8 @@ function AddJobModal({
   const onSubmit = async (data: any) => {
     try {
       data.status = selectedCategory;
-      console.log("Logging job,", data);
+      data.referral = referral;
+      console.log("Referral:", referral);
       await axios.post(`/api/job/${data.id}`, data);
       mutate("api/jobs");
       closeModal();
@@ -145,6 +146,36 @@ function AddJobModal({
                 </Dialog.Title>
                 <div className="mt-2">
                   <div className="grid gap-4 mb-4 grid-cols-2">
+                    <div className="flex items-center">
+                      <label
+                        htmlFor="company"
+                        className="inline-block  text-sm font-medium text-gray-900 mr-2"
+                      >
+                        Referral
+                      </label>
+                      <Switch
+                        checked={referral}
+                        onChange={handleToggleReferral}
+                        as={Fragment}
+                      >
+                        {({ checked }) => (
+                          <button
+                            className={`${
+                              checked
+                                ? "bg-blue-600 ring-blue-300"
+                                : "bg-gray-200 ring-gray-300"
+                            } relative inline-flex h-6 w-11 items-center rounded-full ring-4 ring-opacity-50`}
+                          >
+                            <span className="sr-only">Enable referral</span>
+                            <span
+                              className={`${
+                                checked ? "translate-x-6" : "translate-x-1"
+                              } inline-block h-4 w-4 transform rounded-full ring-4 bg-white transition`}
+                            />
+                          </button>
+                        )}
+                      </Switch>
+                    </div>
                     <div className="col-span-2">
                       <label
                         htmlFor="company"
