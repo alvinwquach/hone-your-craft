@@ -21,13 +21,50 @@ const getUserJobPostings = async () => {
       },
     });
 
-    // Initialize an array to store job postings
-    const jobPostings = userJobs.map((job) => ({
-      title: job.title,
-      company: job.company,
-      postUrl: job.postUrl,
-      skills: extractSkillsFromDescription(job.description),
-    }));
+    const jobPostings = userJobs.map((job, index) => {
+      let source = "";
+
+      if (job.referral === true) {
+        source = "Referral";
+      } else {
+        switch (true) {
+          case job.postUrl.includes("otta"):
+            source = "Otta";
+            break;
+          case job.postUrl.includes("linkedin"):
+            source = "LinkedIn";
+            break;
+          case job.postUrl.includes("wellfound"):
+            source = "Wellfound";
+            break;
+          case job.postUrl.includes("glassdoor"):
+            source = "Glassdoor";
+            break;
+          case job.postUrl.includes("monster"):
+            source = "Monster";
+            break;
+          case job.postUrl.includes("ziprecruiter"):
+            source = "Zip Recruiter";
+            break;
+          case job.postUrl.includes("careerbuilder"):
+            source = "Career Builder";
+            break;
+          default:
+            source = job.company;
+        }
+      }
+
+      return {
+        id: job.id,
+        title: job.title,
+        company: job.company,
+        postUrl: job.postUrl,
+        source: source,
+        skills: extractSkillsFromDescription(job.description),
+      };
+    });
+
+    console.log(jobPostings);
 
     return jobPostings;
   } catch (error) {
