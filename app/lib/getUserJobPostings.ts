@@ -21,13 +21,67 @@ const getUserJobPostings = async () => {
       },
     });
 
-    // Initialize an array to store job postings
-    const jobPostings = userJobs.map((job) => ({
-      title: job.title,
-      company: job.company,
-      postUrl: job.postUrl,
-      skills: extractSkillsFromDescription(job.description),
-    }));
+    const jobPostings = userJobs.map((job) => {
+      let source = "";
+
+      if (job.referral === true) {
+        source = "Referral";
+      } else {
+        switch (true) {
+          case job.postUrl.includes("otta"):
+            source = "Otta";
+            break;
+          case job.postUrl.includes("linkedin"):
+            source = "LinkedIn";
+            break;
+          case job.postUrl.includes("wellfound"):
+            source = "Wellfound";
+            break;
+          case job.postUrl.includes("glassdoor"):
+            source = "Glassdoor";
+            break;
+          case job.postUrl.includes("monster"):
+            source = "Monster";
+            break;
+          case job.postUrl.includes("ziprecruiter"):
+            source = "Zip Recruiter";
+            break;
+          case job.postUrl.includes("careerbuilder"):
+            source = "Career Builder";
+          case job.postUrl.includes("indeed"):
+            source = "Indeed";
+            break;
+          case job.postUrl.includes("simplyhired"):
+            source = "SimplyHired";
+            break;
+          case job.postUrl.includes("stackoverflow"):
+            source = "Stack Overflow Jobs";
+            break;
+          case job.postUrl.includes("dice"):
+            source = "Dice";
+            break;
+          case job.postUrl.includes("weworkremotely"):
+            source = "We Work Remotely";
+            break;
+          case job.postUrl.includes("adzuna"):
+            source = "Adzuna";
+            break;
+          default:
+            source = job.company;
+        }
+      }
+
+      return {
+        id: job.id,
+        title: job.title,
+        company: job.company,
+        postUrl: job.postUrl,
+        source: source,
+        skills: extractSkillsFromDescription(job.description),
+      };
+    });
+
+    console.log(jobPostings);
 
     return jobPostings;
   } catch (error) {

@@ -11,11 +11,14 @@ import useSWR from "swr";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import JobPostingCard from "../components/metrics/JobPostingCard";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
+import JobSource from "../components/metrics/JobSource";
 
-interface JobPosting {
+export interface JobPosting {
+  id: string;
   company: string;
   title: string;
   postUrl: string;
+  source: string;
   skills: string[];
   matchingSkills: string[];
   missingSkills: string[];
@@ -489,7 +492,7 @@ function Metrics(): JSX.Element {
   }, [sortedSkills, sortedFrequencies]);
 
   return (
-    <div className="max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
+    <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
       <div className="flex justify-between md:flex-row flex-col">
         <div className="w-full md:w-1/2 h-[550px] mt-2">
           <canvas id="skillFrequencyChart"></canvas>
@@ -513,6 +516,9 @@ function Metrics(): JSX.Element {
             missingSkills={job.missingSkills}
           />
         ))}
+      </div>
+      <div className="mt-5">
+        <JobSource jobPostings={jobPostings} />
       </div>
       <div className="flex justify-between md:flex-row flex-col">
         <div className="w-full md:w-1/2 h-[550px] mt-2">
