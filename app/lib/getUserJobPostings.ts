@@ -21,7 +21,7 @@ const getUserJobPostings = async () => {
       },
     });
 
-    const jobPostings = userJobs.map((job, index) => {
+    const jobPostings = userJobs.map((job) => {
       let source = "";
 
       if (job.referral === true) {
@@ -48,6 +48,23 @@ const getUserJobPostings = async () => {
             break;
           case job.postUrl.includes("careerbuilder"):
             source = "Career Builder";
+          case job.postUrl.includes("indeed"):
+            source = "Indeed";
+            break;
+          case job.postUrl.includes("simplyhired"):
+            source = "SimplyHired";
+            break;
+          case job.postUrl.includes("stackoverflow"):
+            source = "Stack Overflow Jobs";
+            break;
+          case job.postUrl.includes("dice"):
+            source = "Dice";
+            break;
+          case job.postUrl.includes("weworkremotely"):
+            source = "We Work Remotely";
+            break;
+          case job.postUrl.includes("adzuna"):
+            source = "Adzuna";
             break;
           default:
             source = job.company;
