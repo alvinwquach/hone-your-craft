@@ -46,6 +46,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLogOfferModalOpen, setIsLogOfferModalOpen] = useState(false);
   const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
   const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
@@ -69,28 +70,32 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
 
   const onSubmit = async (data: any) => {
     try {
+      setIsSubmitting(true);
+
       console.log("Submitting form data:", data);
 
-      const jobData: any = {};
-      if (data.company) jobData.company = data.company;
-      if (data.postUrl) jobData.postUrl = data.postUrl;
-      if (data.title) jobData.title = data.title;
-      if (data.description) jobData.description = data.description;
-      if (data.location) jobData.location = data.location;
-      if (data.workLocation) jobData.workLocation = data.workLocation;
-      if (data.applicationStatus) jobData.status = data.applicationStatus;
-      if (data.industry) jobData.industry = data.industry;
-      if (data.salary) jobData.salary = data.salary;
+      const jobData: any = {
+        company: data.company || "",
+        postUrl: data.postUrl || "",
+        title: data.title || "",
+        description: data.description || "",
+        location: data.location || "",
+        workLocation: data.workLocation || "",
+        status: data.applicationStatus || "",
+        industry: data.industry || "",
+        salary: data.salary || "",
+      };
 
       console.log("Updating job with data:", jobData);
 
-      // Update job data
       await axios.put(`/api/job/${job.id}`, jobData);
       mutate("api/jobs");
-      // closeModal();
+      closeModal();
       console.log("Job data updated successfully");
     } catch (error) {
       console.error("Error updating job:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -145,7 +150,11 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       <Dialog
         as="form"
         className="fixed inset-0 z-50 overflow-y-auto"
-        onClose={closeModal}
+        onClose={() => {
+          if (!isSubmitting) {
+            closeModal();
+          }
+        }}
         onSubmit={handleSubmit(onSubmit)}
         static
       >
@@ -162,7 +171,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
             <div className="fixed inset-0 flex items-center justify-center">
               <div
                 className="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 flex flex-col md:flex-row"
-                // ref={modalRef}
+                ref={modalRef}
               >
                 <div className="flex-grow flex flex-col mr-2">
                   <Dialog.Title className="text-lg font-medium text-center text-gray-900 ">
