@@ -4,6 +4,38 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "./db/prisma";
 import { extractSkillsFromDescription } from "./extractSkillsFromDescription";
 
+const getSourceFromUrl = (postUrl: string) => {
+  if (postUrl.includes("otta")) {
+    return "Otta";
+  } else if (postUrl.includes("linkedin")) {
+    return "LinkedIn";
+  } else if (postUrl.includes("wellfound")) {
+    return "Wellfound";
+  } else if (postUrl.includes("glassdoor")) {
+    return "Glassdoor";
+  } else if (postUrl.includes("monster")) {
+    return "Monster";
+  } else if (postUrl.includes("ziprecruiter")) {
+    return "Zip Recruiter";
+  } else if (postUrl.includes("careerbuilder")) {
+    return "Career Builder";
+  } else if (postUrl.includes("indeed")) {
+    return "Indeed";
+  } else if (postUrl.includes("simplyhired")) {
+    return "SimplyHired";
+  } else if (postUrl.includes("stackoverflow")) {
+    return "Stack Overflow";
+  } else if (postUrl.includes("dice")) {
+    return "Dice";
+  } else if (postUrl.includes("weworkremotely")) {
+    return "We Work Remotely";
+  } else if (postUrl.includes("adzuna")) {
+    return "Adzuna";
+  } else {
+    return "Company Website";
+  }
+};
+
 const getUserJobPostings = async () => {
   try {
     // Retrieve the current user
@@ -21,65 +53,15 @@ const getUserJobPostings = async () => {
       },
     });
 
-    const jobPostings = userJobs.map((job) => {
-      let source = "";
-
-      if (job.referral === true) {
-        source = "Referral";
-      } else {
-        switch (true) {
-          case job.postUrl.includes("otta"):
-            source = "Otta";
-            break;
-          case job.postUrl.includes("linkedin"):
-            source = "LinkedIn";
-            break;
-          case job.postUrl.includes("wellfound"):
-            source = "Wellfound";
-            break;
-          case job.postUrl.includes("glassdoor"):
-            source = "Glassdoor";
-            break;
-          case job.postUrl.includes("monster"):
-            source = "Monster";
-            break;
-          case job.postUrl.includes("ziprecruiter"):
-            source = "Zip Recruiter";
-            break;
-          case job.postUrl.includes("careerbuilder"):
-            source = "Career Builder";
-          case job.postUrl.includes("indeed"):
-            source = "Indeed";
-            break;
-          case job.postUrl.includes("simplyhired"):
-            source = "SimplyHired";
-            break;
-          case job.postUrl.includes("stackoverflow"):
-            source = "Stack Overflow";
-            break;
-          case job.postUrl.includes("dice"):
-            source = "Dice";
-            break;
-          case job.postUrl.includes("weworkremotely"):
-            source = "We Work Remotely";
-            break;
-          case job.postUrl.includes("adzuna"):
-            source = "Adzuna";
-            break;
-          default:
-            source = "Company Website";
-        }
-      }
-
-      return {
-        id: job.id,
-        title: job.title,
-        company: job.company,
-        postUrl: job.postUrl,
-        source: source,
-        skills: extractSkillsFromDescription(job.description),
-      };
-    });
+    const jobPostings = userJobs.map((job) => ({
+      id: job.id,
+      title: job.title,
+      company: job.company,
+      postUrl: job.postUrl,
+      source:
+        job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
+      skills: extractSkillsFromDescription(job.description),
+    }));
 
     console.log(jobPostings);
 
