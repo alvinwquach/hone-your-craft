@@ -148,34 +148,38 @@ function AddJobModal({
                   <div className="grid gap-4 mb-4 grid-cols-2">
                     <div className="flex items-center">
                       <label
-                        htmlFor="company"
-                        className="inline-block  text-sm font-medium text-gray-900 mr-2"
+                        htmlFor="referral"
+                        className="inline-block text-sm font-medium text-gray-900 mr-2"
                       >
-                        Referral
+                        Referral:
                       </label>
-                      <Switch
-                        checked={referral}
-                        onChange={handleToggleReferral}
-                        as={Fragment}
-                      >
-                        {({ checked }) => (
-                          <button
-                            className={`${
-                              checked
-                                ? "bg-blue-600 ring-blue-300"
-                                : "bg-gray-200 ring-gray-300"
-                            } relative inline-flex h-6 w-11 items-center rounded-full ring-4 ring-opacity-50`}
-                          >
-                            <span className="sr-only">Enable referral</span>
-                            <span
+                      <div className="flex items-center">
+                        <span className="text-xs font-medium text-gray-600 mr-1">
+                          No
+                        </span>
+                        <Switch
+                          checked={referral}
+                          onChange={handleToggleReferral}
+                          className={`${
+                            referral
+                              ? "bg-blue-600 ring-blue-300"
+                              : "bg-gray-200 ring-gray-300"
+                          } relative inline-flex h-6 w-11 items-center rounded-full ring-4 ring-opacity-50`}
+                        >
+                          {({ checked }) => (
+                            <button
                               className={`${
                                 checked ? "translate-x-6" : "translate-x-1"
                               } inline-block h-4 w-4 transform rounded-full ring-4 bg-white transition`}
                             />
-                          </button>
-                        )}
-                      </Switch>
+                          )}
+                        </Switch>
+                        <span className="text-xs font-medium text-gray-600 ml-1">
+                          Yes
+                        </span>
+                      </div>
                     </div>
+
                     <div className="col-span-2">
                       <label
                         htmlFor="company"
