@@ -111,7 +111,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
         {showOptionsMenu && (
           <div
             id="dropdown"
-            className="z-10 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow absolute right-0 mt-10"
+            className="text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow absolute right-0 mt-10"
             ref={optionsMenuRef}
           >
             <div className="bg-white shadow rounded-lg mr-4">

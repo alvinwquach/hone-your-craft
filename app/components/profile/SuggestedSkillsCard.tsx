@@ -58,7 +58,7 @@ function SuggestedSkillsCard({
           {showMoreSkills && (
             <button
               onClick={handleShowMore}
-              className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+              className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative"
             >
               Show more
             </button>
@@ -66,7 +66,7 @@ function SuggestedSkillsCard({
           {showLessSkills && (
             <button
               onClick={handleShowLess}
-              className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+              className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative"
             >
               Show less
             </button>

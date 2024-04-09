@@ -122,7 +122,7 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
           <div className="mt-4 flex justify-center">
             {showMoreSkills && (
               <button
-                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative"
                 onClick={handleShowMore}
               >
                 Show more
@@ -130,7 +130,7 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
             )}
             {showLessSkills && (
               <button
-                className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative"
                 onClick={handleShowLess}
               >
                 Show less
