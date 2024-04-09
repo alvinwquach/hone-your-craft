@@ -27,7 +27,7 @@ const fetcher = async (url: string, options: RequestInit) => {
 
 function Profile() {
   const { data: session } = useSession();
-  const { data: userData, isLoading: userDataLoading } = useSWR(
+  const { data, isLoading: userDataLoading } = useSWR(
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" }),
     { refreshInterval: 1000 }
@@ -52,7 +52,11 @@ function Profile() {
   // If there are no user interviews, default to an empty array
   const jobInterviews = userInterviews || [];
   // If there are no user skills, default to an empty array
-  const userSkills = userData?.user?.skills || [];
+  const userSkills = data?.user?.skills || [];
+  // If there is no user data, default to an empty array
+  const userData = data || [];
+
+  const loadingUserData = !userData || userDataLoading;
 
   const loadingUserSkills = !userSkills || userDataLoading;
 
@@ -110,8 +114,18 @@ function Profile() {
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <ProfileCard />
-
+        {/* Profile Card */}
+        {loadingUserData ? (
+          <div className="mt-4">
+            <Suspense fallback={<ProfileCard userData={[]} />}>
+              <ProfileCard userData={[]} />
+            </Suspense>
+          </div>
+        ) : (
+          <Suspense fallback={<ProfileCard userData={[]} />}>
+            <ProfileCard userData={userData} />
+          </Suspense>
+        )}
         {/* Suggested Skills */}
         {loadingUserSkills ? (
           <div className="mt-4">
@@ -135,9 +149,7 @@ function Profile() {
             />
           </Suspense>
         )}
-
         {/* User Skills */}
-
         {loadingUserSkills ? (
           <div className="mt-4">
             <Suspense fallback={<UserSkillsCard userSkills={[]} />}>
@@ -150,9 +162,7 @@ function Profile() {
           </Suspense>
         )}
       </div>
-
       {/* User Interviews */}
-
       <div className="mt-4">
         {loadingUserInterviews ? (
           <div>
@@ -166,9 +176,7 @@ function Profile() {
           </Suspense>
         )}
       </div>
-
       {/* User Offers */}
-
       <div className="mt-4">
         {loadingUserOffers ? (
           <Suspense
@@ -191,9 +199,7 @@ function Profile() {
           </Suspense>
         )}
       </div>
-
       {/* User Rejections */}
-
       <div className="mt-4">
         {loadingUserRejections ? (
           <Suspense

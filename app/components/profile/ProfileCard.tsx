@@ -4,35 +4,25 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import useSWR from "swr";
+import { mutate } from "swr";
 import axios from "axios";
 import Image from "next/image";
 import { FiUser } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
+import { HiDotsHorizontal } from "react-icons/hi";
 
 const schema = yup.object().shape({
   role: yup.string(),
   skills: yup.array().of(yup.string()),
 });
 
-const fetcher = async (url: string, options: RequestInit) => {
-  const response = await fetch(url, options);
-  return response.json();
-};
+interface ProfileCardProps {
+  userData: any;
+}
 
-function ProfileCard() {
+function ProfileCard({ userData }: ProfileCardProps) {
   const { data: session } = useSession();
-  const {
-    data: userData,
-    isLoading,
-    error,
-    mutate,
-  } = useSWR(
-    `/api/user/${session?.user?.email}`,
-    (url) => fetcher(url, { method: "GET" }),
-    { refreshInterval: 1000 }
-  );
   const [editing, setEditing] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
@@ -54,14 +44,13 @@ function ProfileCard() {
     setEditing(true);
   };
 
-
   const onSubmit = async (data: any) => {
     try {
       await axios.put(`/api/user/${session?.user?.email}`, {
         role: data.role,
         skills: data.skills,
       });
-      mutate();
+      mutate(`/api/user/${session?.user?.email}`);
       setEditing(false);
     } catch (error) {
       console.error("Error updating role and skills:", error);
@@ -117,15 +106,7 @@ function ProfileCard() {
           type="button"
         >
           <span className="sr-only">Open dropdown</span>
-          <svg
-            className="w-5 h-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 16 3"
-          >
-            <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
-          </svg>
+          <HiDotsHorizontal className="w-5 h-5" />
         </button>
         {showOptionsMenu && (
           <div
@@ -150,9 +131,9 @@ function ProfileCard() {
           <Suspense fallback={<p>Loading user...</p>}>
             <Image
               className="w-24 h-24 mb-3 rounded-full shadow-lg"
-              src={session?.user?.image || defaultPfp}
+              src={userData?.user?.image || defaultPfp}
               alt={
-                `${session?.user?.name}'s profile picture` ||
+                `${userData?.user?.name}'s profile picture` ||
                 "A default profile picture"
               }
               height={96}
@@ -161,7 +142,7 @@ function ProfileCard() {
             />
           </Suspense>
           <h5 className="mb-1 text-xl font-medium text-white">
-            {session?.user?.name}
+            {userData?.user?.name}
           </h5>
           <div className="max-w-7xl">
             {userData?.user?.role ? (
