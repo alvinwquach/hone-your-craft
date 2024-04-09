@@ -120,7 +120,7 @@ function JobPostingCard({
             <div className="flex justify-center">
               {displayedMatchingSkills < matchingSkills.length ? (
                 <button
-                  className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative"
                   onClick={handleShowMoreMatchingSkills}
                   aria-label="Show more matching skills"
                 >
@@ -128,7 +128,7 @@ function JobPostingCard({
                 </button>
               ) : (
                 <button
-                  className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative"
                   onClick={handleShowLessMatchingSkills}
                   aria-label="Show less matching skills"
                 >
@@ -158,7 +158,7 @@ function JobPostingCard({
             <div className="flex justify-center">
               {displayedMissingSkills < missingSkills.length ? (
                 <button
-                  className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative"
                   onClick={handleShowMoreMissingSkills}
                   aria-label="Show more missing skills"
                 >
@@ -166,7 +166,7 @@ function JobPostingCard({
                 </button>
               ) : (
                 <button
-                  className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative z-10"
+                  className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative"
                   onClick={handleShowLessMissingSkills}
                   aria-label="Show less missing skills"
                 >
