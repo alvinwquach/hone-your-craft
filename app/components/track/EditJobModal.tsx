@@ -21,9 +21,9 @@ const schema = yup.object().shape({
   title: yup.string().required("Title is required"),
   postUrl: yup.string().required("Post URL is required"),
   description: yup.string().required("Description is required"),
+  salary: yup.string().notRequired(),
   industry: yup.string().notRequired(),
   location: yup.string().notRequired(),
-  salary: yup.string().notRequired(),
   workLocation: yup.mixed().notRequired(),
   applicationStatus: yup
     .mixed<ApplicationStatus>()
@@ -60,11 +60,10 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       setValue("title", job.title || "");
       setValue("description", job.description || "");
       setValue("industry", job.industry || "");
-      setValue("location", job.location || "");
       setValue("salary", job.salary || "");
       setValue("workLocation", job.workLocation || "");
+      setValue("location", job.location || "");
       setValue("applicationStatus", job.status || "");
-      setValue("industry", job.industry || "");
     }
   }, [job, setValue]);
 
