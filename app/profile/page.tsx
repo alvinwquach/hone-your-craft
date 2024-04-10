@@ -12,6 +12,7 @@ import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
 import JobRejections from "../components/profile/JobRejections";
 import { Suspense } from "react";
+import { toast } from "react-toastify";
 
 interface JobPosting {
   title: string;
@@ -92,21 +93,35 @@ function Profile() {
   );
 
   const handleDeleteRejection = async (id: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this rejection?"
+    );
+    if (!confirmed) return;
+
     try {
       await axios.delete(`/api/rejection/${id}`);
       mutate("/api/rejections");
+      toast.success("Rejection Deleted");
     } catch (error) {
       console.error("Error deleting rejection:", error);
+      toast.error("Failed To Delete Rejection");
       throw error;
     }
   };
 
   const handleDeleteOffer = async (offerId: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this offer?"
+    );
+    if (!confirmed) return;
+
     try {
       await axios.delete(`/api/offer/${offerId}`);
       mutate("/api/offers");
+      toast.success("Offer Deleted");
     } catch (error) {
       console.error("Error deleting rejection:", error);
+      toast.error("Failed To Delete Offer");
       throw error;
     }
   };

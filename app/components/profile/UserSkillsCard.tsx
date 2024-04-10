@@ -6,6 +6,7 @@ import axios from "axios";
 import { FiX } from "react-icons/fi";
 import { GiStoneCrafting } from "react-icons/gi";
 import { useSession } from "next-auth/react";
+import { toast } from "react-toastify";
 
 interface UserSkillsCardProps {
   userSkills?: string[];
@@ -46,9 +47,11 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
               },
               false
             );
+            toast.success("Skill(s) Added");
           } catch (error) {
             // Log error if adding skill fails
             console.error("Error adding skill:", error);
+            toast.error("Failed To Delete Skill(s)");
           }
         }
       }
@@ -58,6 +61,11 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
   };
 
   const handleRemoveSkill = async (skillToRemove: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this skill?"
+    );
+    if (!confirmed) return;
+
     try {
       // Filter out the skill to remove from the userSkills array
       const updatedSkills = userSkills?.filter(
@@ -70,9 +78,11 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
       });
 
       mutate(`/api/user/${session?.user?.email}`);
+      toast.success("Skill Deleted");
     } catch (error) {
       // Log error if updating user skills fails
       console.error("Error updating user skills:", error);
+      toast.error("Skill Deleted");
     }
   };
 
