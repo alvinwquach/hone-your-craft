@@ -8,6 +8,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { InterviewType } from "@prisma/client";
 import React from "react";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   interviewDate: yup.date(),
@@ -72,10 +73,11 @@ function LogInterviewModal({
           console.log("Interview created successfully");
         }
       }
-
       closeModal();
+      toast.success("Interview Added");
     } catch (error) {
       console.error("Error updating and creating interview:", error);
+      toast.error("Failed To Add Interview");
     }
   };
 
