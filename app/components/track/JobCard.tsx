@@ -45,10 +45,10 @@ function JobCard({
     try {
       await axios.delete(`/api/job/${job.id}`);
       mutate("/api/jobs");
-      toast.success("Job deleted");
+      toast.success("Job Deleted");
     } catch (error) {
       console.error("Error deleting job:", error);
-      toast.error("Failed to delete job");
+      toast.error("Failed To Delete Job");
     }
   };
 

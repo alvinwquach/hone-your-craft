@@ -9,6 +9,7 @@ import { iDToColumnText } from "./Column";
 import { ApplicationStatus } from "@prisma/client";
 import { mutate } from "swr";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 interface RequiredJobData {
   referral?: boolean;
@@ -82,9 +83,11 @@ function AddJobModal({
       console.log("Referral:", referral);
       await axios.post(`/api/job/${data.id}`, data);
       mutate("api/jobs");
+      toast.success("Job Added");
       closeModal();
     } catch (error) {
       console.error("Error adding job:", error);
+      toast.error("Failed To Add Job");
     }
   };
 
