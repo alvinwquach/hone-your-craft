@@ -7,6 +7,7 @@ import { mutate } from "swr";
 import axios from "axios";
 import Confetti from "react-confetti";
 import { ApplicationStatus } from "@prisma/client";
+import { toast } from "react-toastify";
 
 interface ColumnType {
   id: ApplicationStatus;
@@ -63,7 +64,12 @@ function Board({ userJobs }: any) {
         setShowConfetti(true);
         setTimeout(() => {
           setShowConfetti(false);
-        }, 5000); // Hide confetti after 5 seconds
+        }, 5000);
+        toast.success("Congratulations!");
+      }
+
+      if (finishCol.id === "REJECTED") {
+        toast.success("Better luck next time!");
       }
 
       // If the job is moved within the same column
@@ -116,11 +122,11 @@ function Board({ userJobs }: any) {
           console.error("Error updating job:", error);
         }
 
-        // Update the board state with the new columns
         setBoard({
           ...board,
           columns: newColumns,
         });
+        // Update the board state with the new columns
       }
     }
   };
