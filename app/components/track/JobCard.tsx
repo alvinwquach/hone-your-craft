@@ -10,6 +10,7 @@ import { useState } from "react";
 import { HiTrash, HiLink } from "react-icons/hi";
 import { mutate } from "swr";
 import EditJobModal from "./EditJobModal";
+import { toast } from "react-toastify";
 
 type JobCardProps = {
   job: Job;
@@ -35,14 +36,19 @@ function JobCard({
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteJob = async (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
+  const handleDeleteJob = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this job?"
+    );
+
+    if (!confirmed) return;
     try {
       await axios.delete(`/api/job/${job.id}`);
       mutate("/api/jobs");
+      toast.success("Job deleted");
     } catch (error) {
       console.error("Error deleting job:", error);
+      toast.error("Failed to delete job");
     }
   };
 

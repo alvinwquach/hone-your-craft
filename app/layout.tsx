@@ -5,6 +5,8 @@ import "./globals.css";
 import Header from "./components/common/Header";
 import BottomNavigationDock from "./components/common/BottomNavigationDock";
 import { GoogleTagManager } from "@next/third-parties/google";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +31,7 @@ export default function RootLayout({
           <Header />
           <main className="bg-slate-700">{children}</main>
           <BottomNavigationDock />
+          <ToastContainer />
         </SessionProvider>
       </body>
     </html>
