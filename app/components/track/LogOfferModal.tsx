@@ -7,6 +7,7 @@ import * as yup from "yup";
 import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import Confetti from "react-confetti";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   offerDate: yup.date().required("Offer date is required"),
@@ -62,9 +63,11 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
       }
 
       closeModal();
+      toast.success("Offer Added");
       console.log("Offer data submitted successfully");
     } catch (error) {
       console.error("Error submitting offer data:", error);
+      toast.error("Failed to Add Offer");
     }
   };
 
