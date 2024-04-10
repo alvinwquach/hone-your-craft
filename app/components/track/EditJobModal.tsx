@@ -15,6 +15,7 @@ import { RiCloseCircleLine, RiCalendarCheckLine } from "react-icons/ri";
 import { LuCircleDollarSign } from "react-icons/lu";
 import { ApplicationStatus, WorkLocation } from "@prisma/client";
 import { mutate } from "swr";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
@@ -90,9 +91,11 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       await axios.put(`/api/job/${job.id}`, jobData);
       mutate("api/jobs");
       closeModal();
+      toast.success("Job Updated");
       console.log("Job data updated successfully");
     } catch (error) {
       console.error("Error updating job:", error);
+      toast.error("Failed To Update Job");
     } finally {
       setIsSubmitting(false);
     }
