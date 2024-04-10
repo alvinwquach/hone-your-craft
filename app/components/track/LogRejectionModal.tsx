@@ -8,6 +8,7 @@ import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import { RejectionInitiator } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   rejection: yup.object().shape({
@@ -66,9 +67,11 @@ function LogRejectionModal({
       }
 
       closeModal();
+      toast.success("Rejection Logged");
       console.log("Rejection data submitted successfully");
     } catch (error) {
       console.error("Error submitting rejection data:", error);
+      toast.error("Failed To Log Rejection");
     }
   };
   return (
