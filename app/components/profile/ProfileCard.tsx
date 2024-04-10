@@ -11,6 +11,7 @@ import { FiUser } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   role: yup.string(),
@@ -52,8 +53,10 @@ function ProfileCard({ userData }: ProfileCardProps) {
       });
       mutate(`/api/user/${session?.user?.email}`);
       setEditing(false);
+      toast.success("User Updated");
     } catch (error) {
       console.error("Error updating role and skills:", error);
+      toast.error("Failed To Update User");
     }
   };
 
