@@ -8,6 +8,7 @@ import InterviewCalendar from "../components/calendar/InterviewCalendar";
 import Legend from "../components/calendar/Legend";
 import useSWR, { mutate } from "swr";
 import { Suspense } from "react";
+import { toast } from "react-toastify";
 
 const fetcher = async (url: string, ...args: any[]) => {
   const response = await fetch(url, ...args);
@@ -29,9 +30,11 @@ function Calendar() {
     try {
       await axios.delete(`/api/interview/${id}`);
       mutate("/api/interviews");
+      toast.success("Interview Deleted");
       console.log("Interview deleted successfully");
     } catch (error) {
       console.error("Error deleting interview:", error);
+      toast.error("Failed To Delete Interview");
     }
   };
   return (

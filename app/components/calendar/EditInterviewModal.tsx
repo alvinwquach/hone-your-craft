@@ -7,6 +7,7 @@ import axios from "axios";
 import { mutate } from "swr";
 import { Interview, InterviewType } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
   interviewDate: yup.date().required("Interview date is required"),
@@ -82,9 +83,11 @@ function EditInterviewModal({
       mutate("/api/interviews");
 
       closeModal();
+      toast.success("Interview Updated");
       console.log("Interview data updated successfully");
     } catch (error) {
       console.error("Error updating interview:", error);
+      toast.error("Failed To Update Interview");
     }
   };
 
