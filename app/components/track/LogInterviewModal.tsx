@@ -6,7 +6,7 @@ import * as yup from "yup";
 import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import { InterviewType } from "@prisma/client";
-import React from "react";
+import React, { useState } from "react";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
 
@@ -41,9 +41,11 @@ function LogInterviewModal({
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (data: any) => {
     try {
+      setIsSubmitting(true);
       console.log("Submitting form data:", data);
 
       if (data.interviews && data.interviews.length > 0) {
@@ -78,6 +80,8 @@ function LogInterviewModal({
     } catch (error) {
       console.error("Error updating and creating interview:", error);
       toast.error("Failed To Add Interview");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,7 +90,11 @@ function LogInterviewModal({
       <Dialog
         as="form"
         className="fixed inset-0 z-50 overflow-y-auto"
-        onClose={closeModal}
+        onClose={() => {
+          if (!isSubmitting) {
+            closeModal();
+          }
+        }}
         onSubmit={handleSubmit(onSubmit)}
         static
       >
