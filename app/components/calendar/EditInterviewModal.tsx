@@ -144,8 +144,8 @@ function EditInterviewModal({
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
                   />
                   {errors.interviewDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.interviewDate.message}
+                    <p className="text-red-500 text-sm">
+                      Please provide a date.
                     </p>
                   )}
                   <div>
@@ -167,8 +167,8 @@ function EditInterviewModal({
                       ))}
                     </select>
                     {errors.interviewType && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.interviewType.message}
+                      <p className="text-red-500 text-sm">
+                        Please provide an interview type.
                       </p>
                     )}
                   </div>

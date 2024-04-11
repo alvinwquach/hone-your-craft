@@ -74,7 +74,7 @@ function LogInterviewModal({
         }
       }
       closeModal();
-      toast.success("Interview Added");
+      toast.success("Interview Added To Calendar");
     } catch (error) {
       console.error("Error updating and creating interview:", error);
       toast.error("Failed To Add Interview");
@@ -132,8 +132,8 @@ function LogInterviewModal({
                     required
                   />
                   {errors.interviewDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.interviewDate.message}
+                    <p className="text-red-500 text-sm">
+                      Please provide a date.
                     </p>
                   )}
                   <div className="">
@@ -158,6 +158,11 @@ function LogInterviewModal({
                         </option>
                       ))}
                     </select>
+                    {errors.interviews && errors.interviews[0] && (
+                      <p className="text-red-500 text-sm">
+                        Please provide an interview type.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex justify-end mt-4">
