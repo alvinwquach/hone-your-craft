@@ -8,6 +8,7 @@ import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import Confetti from "react-confetti";
 import { toast } from "react-toastify";
+import { mutate } from "swr";
 
 const schema = yup.object().shape({
   offerDate: yup.date().required("Offer date is required"),
@@ -30,6 +31,8 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -42,6 +45,7 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
 
   const onSubmit = async (data: any) => {
     try {
+      setIsSubmitting(true);
       console.log("Submitting form data:", data);
 
       const offerData = {
@@ -61,13 +65,15 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
         // If offer doesn't exist, create a new one
         await axios.post(`/api/offer/${job.id}`, offerData);
       }
-
+      mutate("api/jobs");
       closeModal();
       toast.success("Offer Added");
       console.log("Offer data submitted successfully");
     } catch (error) {
       console.error("Error submitting offer data:", error);
       toast.error("Failed to Add Offer");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -125,7 +131,11 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
       <Dialog
         as="form"
         className="fixed inset-0 z-50 overflow-y-auto"
-        onClose={closeModal}
+        onClose={() => {
+          if (!isSubmitting) {
+            closeModal();
+          }
+        }}
         onSubmit={handleSubmit(onSubmit)}
         static
       >
