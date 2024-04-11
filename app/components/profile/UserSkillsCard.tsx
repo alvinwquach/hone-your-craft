@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { mutate } from "swr";
 import axios from "axios";
 import { FiX } from "react-icons/fi";
@@ -16,81 +16,86 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
   const { data: session } = useSession();
   const [displayedSkills, setDisplayedSkills] = useState(10);
   const [newSkill, setNewSkill] = useState("");
+  const [skillsList, setSkillsList] = useState<string[]>(userSkills);
+
+  useEffect(() => {
+    setSkillsList(userSkills);
+  }, [userSkills]);
 
   const handleShowMore = () => {
     setDisplayedSkills(displayedSkills + 5);
   };
 
   const handleShowLess = () => {
-    setDisplayedSkills(displayedSkills - 5);
+    setDisplayedSkills(Math.max(displayedSkills - 5, 10));
   };
 
   const handleKeyPress = async (event: React.KeyboardEvent) => {
-    // Check if Enter key is pressed
     if (event.key === "Enter") {
-      // Split newSkill by newline or comma, and trim each skill
-      const skills = newSkill.split(/[\n,]+/).map((skill) => skill.trim());
-      // Iterate over each skill
-      for (const skill of skills) {
-        // Check if skill is not empty
-        if (skill !== "") {
-          try {
-            // Send POST request to server to add skill for the user
+      const trimmedSkill = newSkill.trim();
+      if (trimmedSkill === "") return;
+
+      // Split the input value by commas to handle multiple skills
+      const newSkills = trimmedSkill.split(",").map((skill) => skill.trim());
+
+      try {
+        // Make separate POST requests for each skill added
+        await Promise.all(
+          newSkills.map(async (skill) => {
             await axios.post(`/api/user/${session?.user?.email}`, {
-              skill: skill.trim(), // Trimmed skill
+              skill,
             });
-            // Prepend the new skill to the beginning of the userSkills array
-            mutate(
-              `/api/user/${session?.user?.email}`,
-              {
-                user: { skills: [skill.trim(), ...userSkills] },
-              },
-              false
-            );
-            toast.success("Skill(s) Added");
-          } catch (error) {
-            // Log error if adding skill fails
-            console.error("Error adding skill:", error);
-            toast.error("Failed To Delete Skill(s)");
-          }
-        }
+          })
+        );
+
+        setSkillsList((prevSkillsList) => [...newSkills, ...prevSkillsList]);
+        mutate(`/api/user/${session?.user?.email}`);
+
+        const toastMessage =
+          newSkills.length > 1 ? "Skills Added" : "Skill Added";
+        toast.success(toastMessage);
+      } catch (error) {
+        console.error("Error Adding Skill:", error);
+        toast.error("Failed To Add Skill");
       }
-      // Clear input field after adding skills
+
       setNewSkill("");
     }
   };
 
-  const handleRemoveSkill = async (skillToRemove: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this skill?"
-    );
-    if (!confirmed) return;
-
-    try {
-      // Filter out the skill to remove from the userSkills array
-      const updatedSkills = userSkills?.filter(
-        (skill: string) => skill !== skillToRemove
+  const handleRemoveSkill = useCallback(
+    async (skillToRemove: string) => {
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this skill?"
       );
+      if (!confirmed) return;
 
-      // Send a PUT request to update the user's skills
-      await axios.put(`/api/user/${session?.user?.email}`, {
-        skills: updatedSkills, // Updated skills array
-      });
+      try {
+        // Filter out the skill to remove from the userSkills array
+        const updatedSkills = userSkills?.filter(
+          (skill: string) => skill !== skillToRemove
+        );
 
-      mutate(`/api/user/${session?.user?.email}`);
-      toast.success("Skill Deleted");
-    } catch (error) {
-      // Log error if updating user skills fails
-      console.error("Error updating user skills:", error);
-      toast.error("Skill Deleted");
-    }
-  };
+        await axios.put(`/api/user/${session?.user?.email}`, {
+          skills: updatedSkills,
+        });
 
-  const showMoreSkills = userSkills.length > displayedSkills;
+        setSkillsList(updatedSkills);
+        mutate(`/api/user/${session?.user?.email}`);
+        toast.success("Skill Deleted");
+      } catch (error) {
+        console.error("Error updating user skills:", error);
+        toast.error("Failed To Delete Skill");
+      }
+    },
+    [userSkills, session, setSkillsList]
+  );
+
+  const showMoreSkills = skillsList.length > displayedSkills;
   const showLessSkills = displayedSkills > 10;
 
   return (
-    <div className="w-full  border rounded-lg shadow bg-gray-800 border-gray-700">
+    <div className="w-full border rounded-lg shadow bg-gray-800 border-gray-700">
       <div className="p-4">
         <div className="mt-4">
           <div className="relative mb-4">
@@ -105,17 +110,18 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
               className="w-full p-4 pl-10 text-xs md:text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Add a skill or skills"
+              placeholder="Add a skill or skills (TypeScript, Python)"
               onKeyPress={handleKeyPress}
             />
           </div>
         </div>
         <div className="flex flex-wrap items-center">
-          {userSkills
+          {skillsList
             .slice(0, displayedSkills)
-            .map((skill: string, index: number) => (
+            .reverse()
+            .map((skill: string) => (
               <div
-                key={index}
+                key={skill}
                 className="bg-gray-600 text-white rounded-lg px-3 py-1 flex items-center m-1"
               >
                 <span className="mr-2">{skill}</span>
