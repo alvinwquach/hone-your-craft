@@ -10,6 +10,7 @@ import { ApplicationStatus } from "@prisma/client";
 import { mutate } from "swr";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { convertToSentenceCase } from "../../lib/convertToSentenceCase";
 
 interface RequiredJobData {
   referral?: boolean;
@@ -83,7 +84,15 @@ function AddJobModal({
       console.log("Referral:", referral);
       await axios.post(`/api/job/${data.id}`, data);
       mutate("api/jobs");
-      toast.success("Job Added");
+
+      const categoryMessage =
+        selectedCategory === "REJECTED"
+          ? "Better Luck Next Time!"
+          : selectedCategory === "OFFER"
+          ? "Congratulations! You Did It!"
+          : `Job Added To ${convertToSentenceCase(selectedCategory)}`;
+
+      toast.success(categoryMessage);
       closeModal();
     } catch (error) {
       console.error("Error adding job:", error);
