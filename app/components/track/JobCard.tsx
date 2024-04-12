@@ -74,6 +74,11 @@ function JobCard({
     return truncatedTitle;
   };
 
+  const handleDeleteJob = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onDeleteJob(job);
+  };
+
   return (
     <div>
       <div
@@ -101,7 +106,7 @@ function JobCard({
             {isHovering && (
               <button
                 className="text-gray-400 hover:text-gray-500 border-2 p-0.5 rounded-lg"
-                onClick={() => onDeleteJob(job)}
+                onClick={handleDeleteJob}
               >
                 <HiTrash className="h-4 w-4" />
               </button>
