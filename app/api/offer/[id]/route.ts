@@ -2,7 +2,7 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/lib/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic"; 
-export const maxDuration = 20;
+export const maxDuration = 10;
 
 interface RequiredOfferData {
   offerDate: string;
