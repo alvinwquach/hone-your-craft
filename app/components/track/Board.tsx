@@ -21,7 +21,7 @@ function Board({ userJobs, onDeleteJob }: any) {
 
   // Check if userJobs array is empty
   const isEmptyBoard = Object.values(userJobs).every(
-    (jobsArray: any) => jobsArray?.length === 0
+    (jobsArray: any) => jobsArray.length === 0
   );
 
   const handleOnDragEnd = async (result: DropResult) => {
@@ -59,19 +59,6 @@ function Board({ userJobs, onDeleteJob }: any) {
       const newJobs = [...startCol.jobs];
       // Remove the job being moved from the start column
       const [jobMoved] = newJobs.splice(source.index, 1);
-
-      // If the job is moved to the "OFFER" column, show confetti
-      if (finishCol.id === "OFFER") {
-        setShowConfetti(true);
-        setTimeout(() => {
-          setShowConfetti(false);
-        }, 5000);
-        toast.success("Congratulations!");
-      }
-
-      if (finishCol.id === "REJECTED") {
-        toast.success("Better luck next time!");
-      }
 
       // If the job is moved within the same column
       if (startCol.id === finishCol.id) {
@@ -117,8 +104,27 @@ function Board({ userJobs, onDeleteJob }: any) {
         try {
           await axios.put(`/api/job/${jobMoved.id}`, {
             status: finishCol.id,
+            company: jobMoved.company,
+            title: jobMoved.title,
+            postUrl: jobMoved.postUrl,
+            description: jobMoved.description,
           });
           mutate("/api/jobs");
+          switch (finishCol.id) {
+            case "OFFER":
+              setShowConfetti(true);
+              setTimeout(() => {
+                setShowConfetti(false);
+              }, 5000);
+              toast.success("Congratulations!");
+              break;
+            case "REJECTED":
+              toast.error("Better luck next time!");
+              break;
+            default:
+              toast.success("Job Status Updated");
+              break;
+          }
         } catch (error) {
           console.error("Error updating job:", error);
         }
@@ -127,7 +133,6 @@ function Board({ userJobs, onDeleteJob }: any) {
           ...board,
           columns: newColumns,
         });
-        // Update the board state with the new columns
       }
     }
   };
