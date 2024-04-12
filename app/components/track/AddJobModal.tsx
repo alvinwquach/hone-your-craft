@@ -81,17 +81,14 @@ function AddJobModal({
     try {
       data.status = selectedCategory;
       data.referral = referral;
-      console.log("Referral:", referral);
       await axios.post(`/api/job/${data.id}`, data);
-      mutate("api/jobs", false);
-
+      mutate("/api/jobs", false);
       const categoryMessage =
         selectedCategory === "REJECTED"
           ? "Better Luck Next Time!"
           : selectedCategory === "OFFER"
           ? "Congratulations! You Did It!"
           : `Job Added To ${convertToSentenceCase(selectedCategory)}`;
-
       toast.success(categoryMessage);
       closeModal();
     } catch (error) {
