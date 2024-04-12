@@ -336,4 +336,12 @@ export const skillKeywords = [
   "MetaMask",
   "Infura",
   "Ethereum",
+  "GKE",
+  "CloudSQL",
+  "CloudStorage",
+  "Supertokens",
+  "Non-relational database",
+  "Asana",
+  "SST",
+  "Drizzle",
 ];
