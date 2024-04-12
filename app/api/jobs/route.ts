@@ -2,7 +2,6 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/lib/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 import { ApplicationStatus } from "@prisma/client";
-export const dynamic = "force-dynamic"; 
 
 export async function GET(request: NextRequest) {
   try {
