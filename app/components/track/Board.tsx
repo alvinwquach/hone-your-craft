@@ -12,15 +12,16 @@ import { toast } from "react-toastify";
 interface ColumnType {
   id: ApplicationStatus;
   jobs: Job[];
+  onDeleteJob: (job: Job) => void;
 }
 
-function Board({ userJobs }: any) {
+function Board({ userJobs, onDeleteJob }: any) {
   const [board, setBoard] = useState(userJobs);
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Check if userJobs array is empty
   const isEmptyBoard = Object.values(userJobs).every(
-    (jobsArray: any) => jobsArray.length === 0
+    (jobsArray: any) => jobsArray?.length === 0
   );
 
   const handleOnDragEnd = async (result: DropResult) => {
@@ -140,6 +141,7 @@ function Board({ userJobs }: any) {
             id={status as ApplicationStatus}
             jobs={[]}
             index={index}
+            onDeleteJob={onDeleteJob}
           />
         ))}
       </div>
@@ -163,6 +165,7 @@ function Board({ userJobs }: any) {
                 id={column.id}
                 jobs={column.jobs}
                 index={index}
+                onDeleteJob={onDeleteJob}
               />
             ))}
             {/* Render the placeholder for dropped items */}
