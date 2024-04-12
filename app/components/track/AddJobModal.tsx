@@ -83,7 +83,7 @@ function AddJobModal({
       data.referral = referral;
       console.log("Referral:", referral);
       await axios.post(`/api/job/${data.id}`, data);
-      mutate("api/jobs");
+      mutate("api/jobs", false);
 
       const categoryMessage =
         selectedCategory === "REJECTED"
