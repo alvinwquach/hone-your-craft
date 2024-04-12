@@ -19,6 +19,7 @@ type JobCardProps = {
   innerRef: (element: HTMLElement | null) => void;
   draggableProps: DraggableProvidedDraggableProps;
   draghandleProps: DraggableProvidedDragHandleProps | null | undefined;
+  onDeleteJob: (job: Job) => void;
 };
 
 function JobCard({
@@ -28,28 +29,13 @@ function JobCard({
   innerRef,
   draggableProps,
   draghandleProps,
+  onDeleteJob,
 }: JobCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
   const handleEditModalOpen = () => {
     setIsEditModalOpen(true);
-  };
-
-  const handleDeleteJob = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this job?"
-    );
-
-    if (!confirmed) return;
-    try {
-      await axios.delete(`/api/job/${job.id}`);
-      mutate("/api/jobs");
-      toast.success("Job Deleted");
-    } catch (error) {
-      console.error("Error deleting job:", error);
-      toast.error("Failed To Delete Job");
-    }
   };
 
   const truncateTitle = (title: string, maxLength: number) => {
@@ -115,7 +101,7 @@ function JobCard({
             {isHovering && (
               <button
                 className="text-gray-400 hover:text-gray-500 border-2 p-0.5 rounded-lg"
-                onClick={handleDeleteJob}
+                onClick={() => onDeleteJob(job)}
               >
                 <HiTrash className="h-4 w-4" />
               </button>

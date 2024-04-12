@@ -10,6 +10,7 @@ type ColumnProps = {
   id: ApplicationStatus;
   jobs: Job[];
   index: number;
+  onDeleteJob: (job: Job) => void;
 };
 // A mapping of column IDs to their corresponding display text
 export const iDToColumnText: {
@@ -22,7 +23,7 @@ export const iDToColumnText: {
   OFFER: "Offer",
 };
 
-function Column({ id, jobs, index }: ColumnProps) {
+function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
   // Get the search string from the board store
   const [titleSearchString] = useBoardStore((state) => [
     state.titleSearchString,
@@ -33,7 +34,6 @@ function Column({ id, jobs, index }: ColumnProps) {
   const openAddJobModal = () => {
     setIsAddJobModalOpen(true);
   };
-
 
   return (
     <Draggable draggableId={id} index={index} key={id}>
@@ -75,7 +75,7 @@ function Column({ id, jobs, index }: ColumnProps) {
                     <AddJobModal
                       isOpen={isAddJobModalOpen}
                       closeModal={() => setIsAddJobModalOpen(false)}
-                      selectedCategory={id} 
+                      selectedCategory={id}
                     />
                   )}
                 </div>
@@ -85,7 +85,7 @@ function Column({ id, jobs, index }: ColumnProps) {
                       titleSearchString &&
                       !job.title.toLowerCase().includes(titleSearchString)
                     ) {
-                      return null; 
+                      return null;
                     }
                     return (
                       <Draggable
@@ -106,6 +106,7 @@ function Column({ id, jobs, index }: ColumnProps) {
                               innerRef={provided.innerRef}
                               draggableProps={provided.draggableProps}
                               draghandleProps={provided.dragHandleProps}
+                              onDeleteJob={onDeleteJob}
                             />
                           </div>
                         )}
