@@ -19,35 +19,35 @@ function Rating({ value }: RatingProps) {
     <div className="flex items-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className={clsx("w-4 h-auto fill-current text-primary")}
+        className={clsx("w-4 h-auto fill-current  text-white")}
         viewBox="0 0 16 16"
       >
         {value >= 1 ? fullStar : value > 0 ? halfStar : emptyStar}
       </svg>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className={clsx("w-4 h-auto fill-current text-primary")}
+        className={clsx("w-4 h-auto fill-current text-white")}
         viewBox="0 0 16 16"
       >
         {value >= 2 ? fullStar : value > 1 ? halfStar : emptyStar}
       </svg>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className={clsx("w-4 h-auto fill-current text-primary")}
+        className={clsx("w-4 h-auto fill-current text-white")}
         viewBox="0 0 16 16"
       >
         {value >= 3 ? fullStar : value > 2 ? halfStar : emptyStar}
       </svg>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className={clsx("w-4 h-auto fill-current text-primary")}
+        className={clsx("w-4 h-auto fill-current text-white")}
         viewBox="0 0 16 16"
       >
         {value >= 4 ? fullStar : value > 3 ? halfStar : emptyStar}
       </svg>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className={clsx("w-4 h-auto fill-current text-primary")}
+        className={clsx("w-4 h-auto fill-current text-white")}
         viewBox="0 0 16 16"
       >
         {value >= 5 ? fullStar : value > 4 ? halfStar : emptyStar}

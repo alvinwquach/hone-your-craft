@@ -35,7 +35,7 @@ function GetReadyToHoneYourCraft() {
           <h1 className={` text-4xl sm:text-6xl text-white uppercase`}>
             <strong className="font-semibold">craft</strong>
           </h1>
-          <h3 className="font-light pt-8 text-xl sm:text-2xl relative">
+          <h3 className="text-white pt-8 text-xl sm:text-2xl relative">
             Apply. Work smarter, not harder. Get closer to your dream role as a{" "}
             <span className="font-bold text-primary relative">
               <em>technical writer</em> / <em>engineer.</em>

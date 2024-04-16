@@ -98,7 +98,7 @@ function ImageCarousel() {
         {carouselItems.map((item, index) => (
           <button
             key={index}
-            className={`px-4 py-1 m-1 rounded-md flex items-center justify-center focus:outline-none ${
+            className={`text-white px-4 py-1 m-1 rounded-md flex items-center justify-center focus:outline-none ${
               currentImage.text === item.text ? item.outlineColor : ""
             }`}
             onClick={() => handleImageClick(item)}
