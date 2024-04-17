@@ -36,6 +36,7 @@ export default async function getCurrentUser() {
     // Format the user object with ISO string dates for createdAt, updatedAt, and emailVerified fields
     return {
       ...currentUser,
+      image: currentUser.image,
       createdAt: currentUser.createdAt.toISOString(), // Convert createdAt date to ISO string
       updatedAt: currentUser.updatedAt.toISOString(), // Convert updatedAt date to ISO string
       emailVerified: currentUser.emailVerified?.toISOString() || null, // Convert emailVerified date to ISO string or null if undefined
