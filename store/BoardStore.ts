@@ -2,12 +2,14 @@ import { create } from "zustand";
 
 export interface BoardState {
   titleSearchString: string;
+  companySearchString: string;
   setTitleSearchString: (searchString: string) => void;
+  setCompanySearchString: (searchString: string) => void;
 }
 
-// Create a Zustand store for managing board state
-export const useBoardStore = create<BoardState>((set, get) => ({
+export const useBoardStore = create<BoardState>((set) => ({
   titleSearchString: "",
-  // Update title search search string
+  companySearchString: "",
   setTitleSearchString: (titleSearchString) => set({ titleSearchString }),
+  setCompanySearchString: (companySearchString) => set({ companySearchString }),
 }));

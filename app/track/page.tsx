@@ -1,12 +1,13 @@
 "use client";
 
 import { useBoardStore } from "@/store/BoardStore";
-import JobTitleSearchForm from "../components/track/JobTitleSearchForm";
 import Board from "../components/track/Board";
 import useSWR, { mutate } from "swr";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import JobTitleSearchForm from "../components/track/JobTitleSearchForm";
+import CompanyTitleSearchForm from "../components/track/CompanyTitleSearchForm";
 
 const fetcher = async (url: string, ...args: any[]) => {
   const response = await fetch(url, ...args);
@@ -60,6 +61,10 @@ function Track() {
       <JobTitleSearchForm
         titleSearchString={titleSearchString}
         setTitleSearchString={setTitleSearchString}
+      />
+      <CompanyTitleSearchForm
+        companySearchString={titleSearchString}
+        setCompanySearchString={setTitleSearchString}
       />
       {loadingUserJobs ? (
         <div>
