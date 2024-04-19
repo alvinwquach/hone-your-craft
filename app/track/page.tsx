@@ -23,9 +23,16 @@ interface UserJobs {
 }
 
 function Track() {
-  const [titleSearchString, setTitleSearchString] = useBoardStore((state) => [
+  const [
+    titleSearchString,
+    setTitleSearchString,
+    companySearchString,
+    setCompanySearchString,
+  ] = useBoardStore((state) => [
     state.titleSearchString,
     state.setTitleSearchString,
+    state.companySearchString,
+    state.setCompanySearchString,
   ]);
 
   const {
@@ -63,8 +70,8 @@ function Track() {
         setTitleSearchString={setTitleSearchString}
       />
       <CompanyTitleSearchForm
-        companySearchString={titleSearchString}
-        setCompanySearchString={setTitleSearchString}
+        companySearchString={companySearchString}
+        setCompanySearchString={setCompanySearchString}
       />
       {loadingUserJobs ? (
         <div>
