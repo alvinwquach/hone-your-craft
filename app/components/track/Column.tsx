@@ -25,8 +25,9 @@ export const iDToColumnText: {
 
 function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
   // Get the search string from the board store
-  const [titleSearchString] = useBoardStore((state) => [
+  const [titleSearchString, companySearchString] = useBoardStore((state) => [
     state.titleSearchString,
+    state.companySearchString,
   ]);
 
   const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
@@ -56,12 +57,18 @@ function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
                   {iDToColumnText[id]}
                   {/* Display the count of jobs in the column */}
                   <span className="text-black bg-gray-200 text-sm font-normal rounded-full px-2 py-1">
-                    {!titleSearchString
-                      ? jobs.length // Display total job count if no search string
-                      : jobs.filter((job) =>
-                          job.title.includes(titleSearchString)
+                    {!titleSearchString && !companySearchString
+                      ? jobs.length // Display total job count if no search strings
+                      : jobs.filter(
+                          (job) =>
+                            job.title
+                              .toLowerCase()
+                              .includes(titleSearchString.toLowerCase()) ||
+                            job.company
+                              .toLowerCase()
+                              .includes(companySearchString.toLowerCase())
                         ).length}
-                    {/* Display filtered job count if there's a search string */}
+                    {/* Display filtered job count if there's any search string */}
                   </span>
                 </h2>
                 <div className="flex justify-center">
@@ -82,11 +89,16 @@ function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
                 <div className="overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {jobs.map((job, index) => {
                     if (
-                      titleSearchString &&
-                      !job.title.toLowerCase().includes(titleSearchString)
+                      (titleSearchString &&
+                        !job.title.toLowerCase().includes(titleSearchString)) ||
+                      (companySearchString &&
+                        !job.company
+                          .toLowerCase()
+                          .includes(companySearchString))
                     ) {
                       return null;
                     }
+
                     return (
                       <Draggable
                         draggableId={job.id}
