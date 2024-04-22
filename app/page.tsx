@@ -14,16 +14,34 @@ const words = ["vue", "kubernetes", "angular", "react", "docker"];
 
 const testimonials = [
   {
+    name: "Jason T.",
+    testimonial:
+      "This app embodies Kobe's Mamba Mentality - relentless, focused, and driven to succeed. Just like Kobe pushed the limits on the court, this app pushes the boundaries of job hunting, empowering users to strive for greatness in their careers.",
+    rating: 1.8,
+  },
+  {
     name: "Anthony C.",
     testimonial:
       "Who created this? This is as helpful as an iPhone cable for my old android.",
-    rating: 0.1,
+    rating: 4.7,
   },
   {
     name: "Louis H.",
     testimonial:
       "This app is like a puzzle with missing pieces - confusing, frustrating, and ultimately, not worth the effort.",
     rating: 5,
+  },
+  {
+    name: "Doug J.",
+    testimonial:
+      "Using this app is like having the firepower of the 2016-2018 Warriors at my fingertips. It's like having Curry's precision, Durant's versatility, and Thompson's sharp focus all rolled into one platform. It's a game-changer for job hunting!",
+    rating: 2.017,
+  },
+  {
+    name: "Raman B.",
+    testimonial:
+      "Using this app is like channeling Larry Bird's basketball IQ into my job search. It's strategic, calculated, and always aiming for the perfect shot. With this app, I feel like I'm playing the game of job hunting at the highest level, just like Larry Legend.",
+    rating: 1.7,
   },
 ];
 
