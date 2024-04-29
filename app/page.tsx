@@ -51,14 +51,8 @@ export default function Home() {
       <Section bg={Section.Colors.Dark}>
         <GetReadyToHoneYourCraft />
       </Section>
-      <Section bg={Section.Colors.Light}>
-        <Tool />
-      </Section>
-      <Section bg={Section.Colors.Dark} className="!py-16">
+      <Section bg={Section.Colors.Light} className="!py-16">
         <TheWeekAhead />
-      </Section>
-      <Section bg={Section.Colors.Light}>
-        <Pricing />
       </Section>
       <Section bg={Section.Colors.Dark} className="!py-16">
         <ImageCarousel />
