@@ -104,7 +104,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        closeModal(); // Close the modal if click is outside
+        closeModal();
       }
     };
 
@@ -120,18 +120,27 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   }, [isOpen, closeModal]);
 
   const openLogOfferModal = () => {
-    closeModal();
     setIsLogOfferModalOpen(true);
   };
 
+  const closeLogOfferModal = () => {
+    setIsLogOfferModalOpen(false);
+  };
+
   const openRejectionModal = () => {
-    closeModal();
     setIsRejectionModalOpen(true);
   };
 
+  const closeRejectionModal = () => {
+    setIsRejectionModalOpen(false);
+  };
+
   const openInterviewModal = () => {
-    closeModal();
     setIsInterviewModalOpen(true);
+  };
+
+  const closeInterviewModal = () => {
+    setIsInterviewModalOpen(false);
   };
 
   const workLocations = Object.values(WorkLocation);
@@ -235,171 +244,191 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         required
                       />
                     </div>
-                  </div>
+                    <div className="col-span-full">
+                      <label
+                        htmlFor="postUrl"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Post URL
+                      </label>
+                      <input
+                        type="text"
+                        id="postUrl"
+                        {...register("postUrl")}
+                        placeholder="Post URL"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="salary"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Salary
+                      </label>
+                      <input
+                        type="text"
+                        id="salary"
+                        {...register("salary")}
+                        placeholder="Salary"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="industry"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Industry
+                      </label>
+                      <input
+                        type="text"
+                        id="industry"
+                        {...register("industry")}
+                        placeholder="Industry"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="location"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        id="location"
+                        {...register("location")}
+                        placeholder="Location"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="workLocation"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Work Location
+                      </label>
+                      <select
+                        id="workLocation"
+                        {...register("workLocation")}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      >
+                        {workLocations.map((location) => (
+                          <option key={location} value={location}>
+                            {convertToSentenceCase(location)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <div className="grid grid-cols-1 gap-2">
-                    <label
-                      htmlFor="postUrl"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Post URL
-                    </label>
-                    <input
-                      type="url"
-                      id="postUrl"
-                      {...register("postUrl")}
-                      placeholder="Post URL"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                      required
-                    />
+                    <div className="col-span-full">
+                      <label
+                        htmlFor="applicationStatus"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Application Status
+                      </label>
+                      <select
+                        id="status"
+                        {...register("applicationStatus")}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                      >
+                        {applicationStatuses.map((status) => (
+                          <option key={status} value={status}>
+                            {convertToSentenceCase(status)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-span-full">
+                      <label
+                        htmlFor="description"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Description
+                      </label>
+                      <textarea
+                        id="description"
+                        rows={4}
+                        {...register("description")}
+                        placeholder="Description"
+                        className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        required
+                      />
+                    </div>
                   </div>
+                  <LogInterviewModal
+                    job={job}
+                    isOpen={isInterviewModalOpen}
+                    closeModal={closeInterviewModal}
+                  />
+                  <LogRejectionModal
+                    job={job}
+                    isOpen={isRejectionModalOpen}
+                    closeModal={closeRejectionModal}
+                  />
+                  <LogOfferModal
+                    job={job}
+                    isOpen={isLogOfferModalOpen}
+                    closeModal={closeLogOfferModal}
+                  />
 
-                  <div className="grid grid-cols-1 gap-2">
-                    <label
-                      htmlFor="description"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Description
-                    </label>
-                    <textarea
-                      id="description"
-                      {...register("description")}
-                      placeholder="Description"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none resize-none"
-                      required
-                    ></textarea>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    <label
-                      htmlFor="salary"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Salary
-                    </label>
-                    <input
-                      type="text"
-                      id="salary"
-                      {...register("salary")}
-                      placeholder="Salary"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    <label
-                      htmlFor="industry"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Industry
-                    </label>
-                    <input
-                      type="text"
-                      id="industry"
-                      {...register("industry")}
-                      placeholder="Industry"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    <label
-                      htmlFor="location"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      id="location"
-                      {...register("location")}
-                      placeholder="Location"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    <label
-                      htmlFor="workLocation"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Work Location
-                    </label>
-                    <select
-                      id="workLocation"
-                      {...register("workLocation")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                    >
-                      {workLocations.map((location) => (
-                        <option key={location} value={location}>
-                          {convertToSentenceCase(location)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-2">
-                    <label
-                      htmlFor="applicationStatus"
-                      className="block mb-2 text-sm font-medium text-gray-900"
-                    >
-                      Application Status
-                    </label>
-                    <select
-                      id="applicationStatus"
-                      {...register("applicationStatus")}
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
-                    >
-                      {applicationStatuses.map((status) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex justify-center space-x-4 mt-4">
+                  <div className="flex justify-end mt-4 gap-2">
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300 w-full"
+                      className="text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
                     >
-                      Cancel
+                      Discard
                     </button>
                     <button
                       type="submit"
-                      className="bg-primary-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg border border-primary-600 focus:ring-4 focus:outline-none focus:ring-primary-500 w-full"
+                      className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                     >
-                      {isSubmitting ? "Updating..." : "Update Job"}
+                      Save
                     </button>
                   </div>
+                </div>
+                <div className="hidden md:flex flex-row md:flex-col md:w-48 flex-shrink-0 bg-white md:border-l border-gray-300 pl-2">
+                  <button
+                    onClick={openInterviewModal}
+                    className="mb-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
+                  >
+                    <span className="hover:text-primary-500">
+                      <RiCalendarCheckLine className="inline-block mr-2 h-5 w-5" />{" "}
+                      Log Interview
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={openRejectionModal}
+                    className="mb-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
+                  >
+                    <span className="hover:text-primary-500">
+                      <RiCloseCircleLine className="inline-block mr-2 h-5 w-5" />{" "}
+                      Log Rejection
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={openLogOfferModal}
+                    className="mb-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
+                  >
+                    <span className="hover:text-primary-500">
+                      <LuCircleDollarSign className="inline-block mr-2 h-5 w-5" />
+                      Log Offer
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
           </Transition.Child>
         </div>
       </Dialog>
-      {isLogOfferModalOpen && (
-        <LogOfferModal
-          isOpen={isLogOfferModalOpen}
-          closeModal={() => setIsLogOfferModalOpen(false)}
-          job={job}
-        />
-      )}
-      {isRejectionModalOpen && (
-        <LogRejectionModal
-          isOpen={isRejectionModalOpen}
-          closeModal={() => setIsRejectionModalOpen(false)}
-          job={job}
-        />
-      )}
-      {isInterviewModalOpen && (
-        <LogInterviewModal
-          isOpen={isInterviewModalOpen}
-          closeModal={() => setIsInterviewModalOpen(false)}
-          job={job}
-        />
-      )}
     </Transition>
   );
 }
