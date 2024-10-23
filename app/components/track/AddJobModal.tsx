@@ -32,12 +32,14 @@ interface AddJobModalProps {
   isOpen: boolean;
   closeModal: () => void;
   selectedCategory: ApplicationStatus;
+  onJobAdded: (job: Job) => void;
 }
 
 function AddJobModal({
   isOpen,
   closeModal,
   selectedCategory,
+  onJobAdded,
 }: AddJobModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [referral, setReferral] = useState(false);
@@ -83,6 +85,7 @@ function AddJobModal({
       data.referral = referral;
       await axios.post(`/api/job/${data.id}`, data);
       mutate("/api/jobs", false);
+      onJobAdded(data);
       const categoryMessage =
         selectedCategory === "REJECTED"
           ? "Better Luck Next Time!"

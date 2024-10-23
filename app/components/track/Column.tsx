@@ -11,7 +11,9 @@ type ColumnProps = {
   jobs: Job[];
   index: number;
   onDeleteJob: (job: Job) => void;
+  onJobAdded: (job: Job) => void;
 };
+
 // A mapping of column IDs to their corresponding display text
 export const iDToColumnText: {
   [key in ApplicationStatus]: string;
@@ -23,7 +25,7 @@ export const iDToColumnText: {
   OFFER: "Offer",
 };
 
-function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
+function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
   // Get the search string from the board store
   const [titleSearchString, companySearchString] = useBoardStore((state) => [
     state.titleSearchString,
@@ -83,6 +85,7 @@ function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
                       isOpen={isAddJobModalOpen}
                       closeModal={() => setIsAddJobModalOpen(false)}
                       selectedCategory={id}
+                      onJobAdded={onJobAdded}
                     />
                   )}
                 </div>
@@ -96,14 +99,14 @@ function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
                           .toLowerCase()
                           .includes(companySearchString))
                     ) {
-                      return null;
+                      return null; // Skip jobs that don't match the search criteria
                     }
 
                     return (
                       <Draggable
-                        draggableId={job.id}
-                        index={index}
                         key={job.id}
+                        index={index}
+                        draggableId={job.id}
                       >
                         {(provided) => (
                           <div
