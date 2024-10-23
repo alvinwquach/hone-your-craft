@@ -86,7 +86,7 @@ function Column({ id, jobs, index, onDeleteJob }: ColumnProps) {
                     />
                   )}
                 </div>
-                <div className="overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                <div className="overflow-y-auto overflow-x-hidden max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {jobs.map((job, index) => {
                     if (
                       (titleSearchString &&
