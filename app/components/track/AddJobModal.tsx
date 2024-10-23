@@ -176,13 +176,14 @@ function AddJobModal({
                           } relative inline-flex h-6 w-11 items-center rounded-full ring-4 ring-opacity-50`}
                         >
                           {({ checked }) => (
-                            <button
+                            <span
                               className={`${
                                 checked ? "translate-x-6" : "translate-x-1"
                               } inline-block h-4 w-4 transform rounded-full ring-4 bg-white transition`}
                             />
                           )}
                         </Switch>
+
                         <span className="text-xs font-medium text-gray-600 ml-1">
                           Yes
                         </span>
