@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import Column from "./Column";
 import { mutate } from "swr";
@@ -15,9 +15,54 @@ interface ColumnType {
   onDeleteJob: (job: Job) => void;
 }
 
+interface BoardType {
+  columns: ColumnType[];
+}
+
 function Board({ userJobs, onDeleteJob }: any) {
   const [board, setBoard] = useState(userJobs);
   const [showConfetti, setShowConfetti] = useState(false);
+
+  const addJobToBoard = (newJob: Job) => {
+    // Update the board state
+    setBoard((prevBoard: BoardType) => {
+      const updatedColumns = prevBoard.columns.map((column) => {
+        // If the column matches the new job's status
+        if (column.id === newJob.status) {
+          // Return a new column object with the updated jobs array
+          return {
+            ...column, // Spread existing column properties
+            jobs: [...column.jobs, newJob], // Add the new job
+          };
+        }
+        return column; // Return the column unchanged
+      });
+
+      return { ...prevBoard, columns: updatedColumns }; // Return updated board state
+    });
+  };
+
+  const handleDeleteJob = async (job: Job) => {
+    // Update the board state
+    setBoard((prevBoard: BoardType) => {
+      const updatedColumns = prevBoard.columns.map((column) => {
+        // If the column matches the job's status
+        if (column.id === job.status) {
+          return {
+            ...column, // Spread existing column properties
+            jobs: column.jobs.filter((j) => j.id !== job.id), // Remove the job
+          };
+        }
+        return column; // Return the column unchanged
+      });
+
+      return { ...prevBoard, columns: updatedColumns }; // Return updated board state
+    });
+  };
+
+  useEffect(() => {
+    setBoard(userJobs);
+  }, [userJobs]);
 
   // Check if userJobs array is empty
   const isEmptyBoard = Object.values(userJobs).every(
@@ -147,6 +192,7 @@ function Board({ userJobs, onDeleteJob }: any) {
             jobs={[]}
             index={index}
             onDeleteJob={onDeleteJob}
+            onJobAdded={addJobToBoard}
           />
         ))}
       </div>
@@ -170,7 +216,8 @@ function Board({ userJobs, onDeleteJob }: any) {
                 id={column.id}
                 jobs={column.jobs}
                 index={index}
-                onDeleteJob={onDeleteJob}
+                onDeleteJob={handleDeleteJob}
+                onJobAdded={addJobToBoard}
               />
             ))}
             {/* Render the placeholder for dropped items */}
