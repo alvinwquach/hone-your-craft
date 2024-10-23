@@ -35,6 +35,8 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     // Callback triggered when a user signs in
     async signIn({ user }) {
+      console.log("GitHub user data:", user);
+
       if (user && user.email) {
         // Check if the user exists in the database
         const existingUser = await prisma.user.findUnique({
