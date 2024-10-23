@@ -72,8 +72,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
     try {
       setIsSubmitting(true);
 
-      console.log("Submitting form data:", data);
-
       const jobData: any = {
         company: data.company || "",
         postUrl: data.postUrl || "",
@@ -86,13 +84,10 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
         salary: data.salary || "",
       };
 
-      console.log("Updating job with data:", jobData);
-
       await axios.put(`/api/job/${job.id}`, jobData);
       mutate("api/jobs");
       closeModal();
       toast.success("Job Updated");
-      console.log("Job data updated successfully");
     } catch (error) {
       console.error("Error updating job:", error);
       toast.error("Failed To Update Job");
@@ -100,24 +95,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        closeModal();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleOutsideClick);
-    } else {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, [isOpen, closeModal]);
 
   const openLogOfferModal = () => {
     setIsLogOfferModalOpen(true);
@@ -144,7 +121,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   };
 
   const workLocations = Object.values(WorkLocation);
-
   const applicationStatuses = Object.values(ApplicationStatus);
 
   return (
@@ -184,6 +160,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                     <div className="col-span-full">
                       <div className="flex flex-row gap-2 mb-2">
                         <button
+                          type="button"
                           onClick={openInterviewModal}
                           className="sm:hidden mt-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
                         >
@@ -194,6 +171,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         </button>
 
                         <button
+                          type="button"
                           onClick={openRejectionModal}
                           className="sm:hidden mt-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
                         >
@@ -204,6 +182,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                         </button>
 
                         <button
+                          type="button"
                           onClick={openLogOfferModal}
                           className="sm:hidden mt-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
                         >
@@ -395,6 +374,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                 </div>
                 <div className="hidden md:flex flex-row md:flex-col md:w-48 flex-shrink-0 bg-white md:border-l border-gray-300 pl-2">
                   <button
+                    type="button"
                     onClick={openInterviewModal}
                     className="mb-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
                   >
@@ -405,6 +385,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                   </button>
 
                   <button
+                    type="button"
                     onClick={openRejectionModal}
                     className="mb-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
                   >
@@ -415,6 +396,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                   </button>
 
                   <button
+                    type="button"
                     onClick={openLogOfferModal}
                     className="mb-2 text-gray-600 font-medium text-xs md:text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300  w-full flex items-center justify-start"
                   >

@@ -112,6 +112,7 @@ export async function PUT(
       { status: 401 }
     );
   }
+
   const jobId = params.jobId;
   const jobData = await request.json();
 
@@ -131,16 +132,20 @@ export async function PUT(
   }
 
   try {
-    // Attempt to update the job
+    const dataToUpdate = {
+      // Spread the jobData to include all fields
+      ...jobData,
+      // Set workLocation to undefined if not provided
+      workLocation: jobData.workLocation || undefined,
+    };
+
     const updatedJob = await prisma.job.update({
       where: { id: jobId },
-      data: jobData,
+      data: dataToUpdate,
     });
 
-    // Return the updated job as a JSON response
     return NextResponse.json({ job: updatedJob });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error updating job:", error);
     return NextResponse.json(
       { message: "Error updating job" },
