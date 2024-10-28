@@ -31,33 +31,50 @@ function Board({ userJobs, onDeleteJob }: any) {
         if (column.id === newJob.status) {
           // Return a new column object with the updated jobs array
           return {
-            ...column, // Spread existing column properties
-            jobs: [...column.jobs, newJob], // Add the new job
+            // Spread existing column properties
+            ...column,
+            // Add the new job
+            jobs: [...column.jobs, newJob],
           };
         }
-        return column; // Return the column unchanged
+        // Return the column unchanged
+        return column;
       });
-
-      return { ...prevBoard, columns: updatedColumns }; // Return updated board state
+      // Return updated board state
+      return { ...prevBoard, columns: updatedColumns };
     });
   };
 
   const handleDeleteJob = async (job: Job) => {
-    // Update the board state
-    setBoard((prevBoard: BoardType) => {
-      const updatedColumns = prevBoard.columns.map((column) => {
-        // If the column matches the job's status
-        if (column.id === job.status) {
-          return {
-            ...column, // Spread existing column properties
-            jobs: column.jobs.filter((j) => j.id !== job.id), // Remove the job
-          };
-        }
-        return column; // Return the column unchanged
-      });
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this job?"
+    );
+    if (!confirmed) return;
 
-      return { ...prevBoard, columns: updatedColumns }; // Return updated board state
-    });
+    try {
+      await axios.delete(`/api/job/${job.id}`);
+
+      // Optimistically update the UI
+      setBoard((prevBoard: BoardType) => {
+        const updatedColumns = prevBoard.columns.map((column) => {
+          // If the column matches the job's status, filter out the deleted job
+          if (column.id === job.status) {
+            return {
+              ...column,
+              jobs: column.jobs.filter((j) => j.id !== job.id),
+            };
+          }
+          // Return the column unchanged
+          return column;
+        });
+        // Return updated board state
+        return { ...prevBoard, columns: updatedColumns };
+      });
+      toast.success("Job Deleted");
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      toast.error("Failed To Delete Job");
+    }
   };
 
   useEffect(() => {
@@ -173,7 +190,6 @@ function Board({ userJobs, onDeleteJob }: any) {
         } catch (error) {
           console.error("Error updating job:", error);
         }
-
         setBoard({
           ...board,
           columns: newColumns,

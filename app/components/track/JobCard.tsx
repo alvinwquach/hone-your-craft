@@ -75,6 +75,7 @@ function JobCard({
   };
 
   const handleDeleteJob = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation(); 
     onDeleteJob(job);
   };
 
