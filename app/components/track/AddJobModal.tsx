@@ -25,7 +25,7 @@ const schema = yup.object().shape({
   company: yup.string().required("Company is required"),
   postUrl: yup.string().required("Post URL is required"),
   title: yup.string().required("Title is required"),
-  description: yup.string().required("Title is required"),
+  description: yup.string().required("Description is required"),
 });
 
 interface AddJobModalProps {
@@ -43,7 +43,6 @@ function AddJobModal({
 }: AddJobModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [referral, setReferral] = useState(false);
-
   const [newJobInput, setNewJobInput] = useState<RequiredJobData>({
     company: "",
     postUrl: "",
@@ -117,6 +116,7 @@ function AddJobModal({
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, [isOpen, closeModal]);
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -158,41 +158,28 @@ function AddJobModal({
                 </Dialog.Title>
                 <div className="mt-2">
                   <div className="grid gap-4 mb-4 grid-cols-2">
-                    <div className="flex items-center">
-                      <label
-                        htmlFor="referral"
-                        className="inline-block text-sm font-medium text-gray-900 mr-2"
-                      >
+                    <div className="flex items-center col-span-2">
+                      <label className="inline-block text-sm font-medium text-gray-900 mr-2">
                         Referral:
                       </label>
-                      <div className="flex items-center">
-                        <span className="text-xs font-medium text-gray-600 mr-1">
-                          No
-                        </span>
-                        <Switch
-                          checked={referral}
-                          onChange={handleToggleReferral}
-                          className={`${
-                            referral
-                              ? "bg-blue-600 ring-blue-300"
-                              : "bg-gray-200 ring-gray-300"
-                          } relative inline-flex h-6 w-11 items-center rounded-full ring-4 ring-opacity-50`}
-                        >
-                          {({ checked }) => (
-                            <span
-                              className={`${
-                                checked ? "translate-x-6" : "translate-x-1"
-                              } inline-block h-4 w-4 transform rounded-full ring-4 bg-white transition`}
-                            />
-                          )}
-                        </Switch>
-
-                        <span className="text-xs font-medium text-gray-600 ml-1">
-                          Yes
-                        </span>
-                      </div>
+                      <Switch
+                        checked={referral}
+                        onChange={handleToggleReferral}
+                        className={`${
+                          referral
+                            ? "bg-blue-600 ring-blue-300"
+                            : "bg-gray-200 ring-gray-300"
+                        } relative inline-flex h-6 w-11 items-center rounded-full ring-4 ring-opacity-50`}
+                      >
+                        {({ checked }) => (
+                          <span
+                            className={`${
+                              checked ? "translate-x-6" : "translate-x-1"
+                            } inline-block h-4 w-4 transform rounded-full ring-4 bg-white transition`}
+                          />
+                        )}
+                      </Switch>
                     </div>
-
                     <div className="col-span-2">
                       <label
                         htmlFor="company"
@@ -207,9 +194,14 @@ function AddJobModal({
                         value={newJobInput.company}
                         onChange={handleChange}
                         placeholder="Company"
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 outline-none"
                         required
                       />
+                      {errors.company && (
+                        <span className="text-red-500">
+                          {errors.company.message}
+                        </span>
+                      )}
                     </div>
                     <div className="col-span-2">
                       <label
@@ -225,13 +217,18 @@ function AddJobModal({
                         value={newJobInput.postUrl}
                         onChange={handleChange}
                         placeholder="+ add URL"
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 outline-none"
                         required
                       />
+                      {errors.postUrl && (
+                        <span className="text-red-500">
+                          {errors.postUrl.message}
+                        </span>
+                      )}
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
+                    <div className="col-span-2">
                       <label
-                        htmlFor="jobTitle"
+                        htmlFor="title"
                         className="block mb-2 text-sm font-medium text-gray-900"
                       >
                         Job Title
@@ -243,11 +240,37 @@ function AddJobModal({
                         value={newJobInput.title}
                         onChange={handleChange}
                         placeholder="Job Title"
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 outline-none"
                         required
                       />
+                      {errors.title && (
+                        <span className="text-red-500">
+                          {errors.title.message}
+                        </span>
+                      )}
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
+                    <div className="col-span-2">
+                      <label
+                        htmlFor="description"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Job Description
+                      </label>
+                      <textarea
+                        id="description"
+                        rows={4}
+                        {...register("description")}
+                        value={newJobInput.description}
+                        onChange={handleChange}
+                        className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      />
+                      {errors.description && (
+                        <span className="text-red-500">
+                          {errors.description.message}
+                        </span>
+                      )}
+                    </div>
+                    <div className="col-span-2">
                       <label
                         htmlFor="category"
                         className="block mb-2 text-sm font-medium text-gray-900"
@@ -258,7 +281,7 @@ function AddJobModal({
                         id="category"
                         value={selectedCategory ?? ""}
                         onChange={handleCategoryChange}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 outline-none"
                       >
                         {Object.entries(iDToColumnText).map(([key, value]) => (
                           <option key={key} value={key}>
@@ -266,23 +289,6 @@ function AddJobModal({
                           </option>
                         ))}
                       </select>
-                    </div>
-                    <div className="col-span-2">
-                      <label
-                        htmlFor="description"
-                        className="block mb-2 text-sm font-medium text-gray-900"
-                      >
-                        Job Description
-                      </label>
-                      <textarea
-                        required
-                        id="description"
-                        rows={4}
-                        {...register("description")}
-                        value={newJobInput.description}
-                        onChange={handleChange}
-                        className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      />
                     </div>
                   </div>
                 </div>

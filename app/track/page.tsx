@@ -53,7 +53,7 @@ function Track() {
 
     try {
       await axios.delete(`/api/job/${job.id}`);
-      mutate("/api/jobs", false);
+      mutate("/api/jobs");
       toast.success("Job Deleted");
     } catch (error) {
       console.error("Error deleting job:", error);
