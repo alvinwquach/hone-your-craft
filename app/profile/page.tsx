@@ -6,7 +6,7 @@ import useSWR, { mutate } from "swr";
 import axios from "axios";
 import ProfileCard from "../components/profile/ProfileCard";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
-import UserSkillsCard from "../components/profile/UserSkillsCard";
+import SkillsCard from "../components/profile/SkillsCard";
 import getUserJobPostings from "../lib/getUserJobPostings";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
@@ -45,6 +45,8 @@ function Profile() {
     "/api/rejections",
     (url) => axios.get(url).then((res) => res.data)
   );
+
+  const userType = data?.user?.userType;
   // If there are no user offers, default to an empty array
   const jobOffers = userOffers || [];
   // If there are no user rejections, default to an empty array
@@ -128,124 +130,130 @@ function Profile() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Profile Card */}
-        {loadingUserData ? (
+      {userType === "candidate" ? (
+        <>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {/* Profile Card */}
+            {loadingUserData ? (
+              <div className="mt-4">
+                <Suspense fallback={<ProfileCard userData={[]} />}>
+                  <ProfileCard userData={[]} />
+                </Suspense>
+              </div>
+            ) : (
+              <Suspense fallback={<ProfileCard userData={[]} />}>
+                <ProfileCard userData={userData} />
+              </Suspense>
+            )}
+            {/* Suggested Skills */}
+            {loadingUserSkills ? (
+              <div className="mt-4">
+                <Suspense
+                  fallback={
+                    <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+                  }
+                >
+                  <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+                </Suspense>
+              </div>
+            ) : (
+              <Suspense
+                fallback={
+                  <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+                }
+              >
+                <SuggestedSkillsCard
+                  userSkills={userSkills}
+                  suggestedSkills={suggestedSkills}
+                />
+              </Suspense>
+            )}
+            {/* User Skills */}
+            {loadingUserSkills ? (
+              <div className="mt-4">
+                <Suspense fallback={<SkillsCard userSkills={[]} />}>
+                  <SkillsCard userSkills={[]} />
+                </Suspense>
+              </div>
+            ) : (
+              <Suspense fallback={<SkillsCard userSkills={[]} />}>
+                <SkillsCard userSkills={userSkills} />
+              </Suspense>
+            )}
+          </div>
+          {/* User Interviews */}
           <div className="mt-4">
-            <Suspense fallback={<ProfileCard userData={[]} />}>
-              <ProfileCard userData={[]} />
-            </Suspense>
+            {loadingUserInterviews ? (
+              <div>
+                <Suspense fallback={<UpcomingInterviews jobInterviews={[]} />}>
+                  <UpcomingInterviews jobInterviews={[]} />
+                </Suspense>
+              </div>
+            ) : (
+              <Suspense fallback={<UpcomingInterviews jobInterviews={[]} />}>
+                <UpcomingInterviews jobInterviews={jobInterviews} />
+              </Suspense>
+            )}
           </div>
-        ) : (
-          <Suspense fallback={<ProfileCard userData={[]} />}>
-            <ProfileCard userData={userData} />
-          </Suspense>
-        )}
-        {/* Suggested Skills */}
-        {loadingUserSkills ? (
+          {/* User Offers */}
           <div className="mt-4">
-            <Suspense
-              fallback={
-                <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
-              }
-            >
-              <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
-            </Suspense>
+            {loadingUserOffers ? (
+              <Suspense
+                fallback={
+                  <JobOffers jobOffers={[]} onDeleteOffer={handleDeleteOffer} />
+                }
+              >
+                <JobOffers jobOffers={[]} onDeleteOffer={handleDeleteOffer} />
+              </Suspense>
+            ) : (
+              <Suspense
+                fallback={
+                  <JobOffers jobOffers={[]} onDeleteOffer={handleDeleteOffer} />
+                }
+              >
+                <JobOffers
+                  jobOffers={jobOffers}
+                  onDeleteOffer={handleDeleteOffer}
+                />
+              </Suspense>
+            )}
           </div>
-        ) : (
-          <Suspense
-            fallback={
-              <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
-            }
-          >
-            <SuggestedSkillsCard
-              userSkills={userSkills}
-              suggestedSkills={suggestedSkills}
-            />
-          </Suspense>
-        )}
-        {/* User Skills */}
-        {loadingUserSkills ? (
+          {/* User Rejections */}
           <div className="mt-4">
-            <Suspense fallback={<UserSkillsCard userSkills={[]} />}>
-              <UserSkillsCard userSkills={[]} />
-            </Suspense>
+            {loadingUserRejections ? (
+              <Suspense
+                fallback={
+                  <JobRejections
+                    jobRejections={[]}
+                    onDeleteRejection={handleDeleteRejection}
+                  />
+                }
+              >
+                <JobRejections
+                  jobRejections={[]}
+                  onDeleteRejection={handleDeleteRejection}
+                />
+              </Suspense>
+            ) : (
+              <Suspense
+                fallback={
+                  <JobRejections
+                    jobRejections={[]}
+                    onDeleteRejection={handleDeleteRejection}
+                  />
+                }
+              >
+                <JobRejections
+                  jobRejections={jobRejections}
+                  onDeleteRejection={handleDeleteRejection}
+                />
+              </Suspense>
+            )}
           </div>
-        ) : (
-          <Suspense fallback={<UserSkillsCard userSkills={[]} />}>
-            <UserSkillsCard userSkills={userSkills} />
-          </Suspense>
-        )}
-      </div>
-      {/* User Interviews */}
-      <div className="mt-4">
-        {loadingUserInterviews ? (
-          <div>
-            <Suspense fallback={<UpcomingInterviews jobInterviews={[]} />}>
-              <UpcomingInterviews jobInterviews={[]} />
-            </Suspense>
-          </div>
-        ) : (
-          <Suspense fallback={<UpcomingInterviews jobInterviews={[]} />}>
-            <UpcomingInterviews jobInterviews={jobInterviews} />
-          </Suspense>
-        )}
-      </div>
-      {/* User Offers */}
-      <div className="mt-4">
-        {loadingUserOffers ? (
-          <Suspense
-            fallback={
-              <JobOffers jobOffers={[]} onDeleteOffer={handleDeleteOffer} />
-            }
-          >
-            <JobOffers jobOffers={[]} onDeleteOffer={handleDeleteOffer} />
-          </Suspense>
-        ) : (
-          <Suspense
-            fallback={
-              <JobOffers jobOffers={[]} onDeleteOffer={handleDeleteOffer} />
-            }
-          >
-            <JobOffers
-              jobOffers={jobOffers}
-              onDeleteOffer={handleDeleteOffer}
-            />
-          </Suspense>
-        )}
-      </div>
-      {/* User Rejections */}
-      <div className="mt-4">
-        {loadingUserRejections ? (
-          <Suspense
-            fallback={
-              <JobRejections
-                jobRejections={[]}
-                onDeleteRejection={handleDeleteRejection}
-              />
-            }
-          >
-            <JobRejections
-              jobRejections={[]}
-              onDeleteRejection={handleDeleteRejection}
-            />
-          </Suspense>
-        ) : (
-          <Suspense
-            fallback={
-              <JobRejections
-                jobRejections={[]}
-                onDeleteRejection={handleDeleteRejection}
-              />
-            }
-          >
-            <JobRejections
-              jobRejections={jobRejections}
-              onDeleteRejection={handleDeleteRejection}
-            />
-          </Suspense>
-        )}
-      </div>
+        </>
+      ) : userType === "client" ? (
+        <></>
+      ) : null}
     </section>
   );
 }
