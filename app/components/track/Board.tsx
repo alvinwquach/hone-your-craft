@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
-import Column from "./Column";
-import { mutate } from "swr";
 import axios from "axios";
-import Confetti from "react-confetti";
-import { ApplicationStatus } from "@prisma/client";
+import { mutate } from "swr";
 import { toast } from "react-toastify";
+import Confetti from "react-confetti";
+import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
+import { ApplicationStatus } from "@prisma/client";
+import Column from "./Column";
 
 interface ColumnType {
   id: ApplicationStatus;
@@ -23,56 +23,61 @@ function Board({ userJobs, onDeleteJob }: any) {
   const [board, setBoard] = useState(userJobs);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const addJobToBoard = (newJob: Job) => {
-    // Update the board state
-    setBoard((prevBoard: BoardType) => {
-      const updatedColumns = prevBoard.columns.map((column) => {
-        // If the column matches the new job's status
-        if (column.id === newJob.status) {
-          // Return a new column object with the updated jobs array
-          return {
-            // Spread existing column properties
-            ...column,
-            // Add the new job
-            jobs: [...column.jobs, newJob],
-          };
-        }
-        // Return the column unchanged
-        return column;
-      });
-      // Return updated board state
-      return { ...prevBoard, columns: updatedColumns };
-    });
-  };
-
-  const handleDeleteJob = async (job: Job) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this job?"
-    );
-    if (!confirmed) return;
-
+  const addJobToBoard = async (newJobData: Job) => {
     try {
-      await axios.delete(`/api/job/${job.id}`);
-
-      // Optimistically update the UI
+      const response = await axios.post(
+        `/api/job/${newJobData.id}`,
+        newJobData
+      );
+      // Update the board state to include the new job
       setBoard((prevBoard: BoardType) => {
+        // Map through the current columns in the board
         const updatedColumns = prevBoard.columns.map((column) => {
-          // If the column matches the job's status, filter out the deleted job
-          if (column.id === job.status) {
+          // Check if the current column matches the new job's status
+          if (column.id === response.data.job.status) {
             return {
               ...column,
-              jobs: column.jobs.filter((j) => j.id !== job.id),
+              // Add the new job to the top of the jobs array
+              jobs: [response.data.job, ...column.jobs],
             };
           }
-          // Return the column unchanged
+          // Return the column unchanged if it doesn't match
           return column;
         });
-        // Return updated board state
+        // Return the updated board with modified columns
         return { ...prevBoard, columns: updatedColumns };
       });
-      toast.success("Job Deleted");
     } catch (error) {
+      // Log any error that occurs during the job addition
+      console.error("Error adding job:", error);
+      // Show an error message to the user
+      toast.error("Failed To Add Job");
+    }
+  };
+
+  const handleDeleteJob = async (jobId: string) => {
+    try {
+      await axios.delete(`/api/job/${jobId}`);
+      // Update the board state to remove the deleted job
+      setBoard((prevBoard: BoardType) => {
+        // Map through the current columns in the board
+        const updatedColumns = prevBoard.columns.map((column) => {
+          return {
+            ...column,
+            // Filter out the job that matches the deleted job's ID
+            jobs: column.jobs.filter((job) => job.id !== jobId),
+          };
+        });
+        // Return the updated board with modified columns
+        return { ...prevBoard, columns: updatedColumns };
+      });
+
+      // Show a success message to the user
+      toast.success("Job Deleted Successfully");
+    } catch (error) {
+      // Log any error that occurs during the job deletion
       console.error("Error deleting job:", error);
+      // Show an error message to the user
       toast.error("Failed To Delete Job");
     }
   };
@@ -190,6 +195,7 @@ function Board({ userJobs, onDeleteJob }: any) {
         } catch (error) {
           console.error("Error updating job:", error);
         }
+
         setBoard({
           ...board,
           columns: newColumns,
