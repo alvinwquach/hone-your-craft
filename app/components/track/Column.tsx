@@ -1,8 +1,8 @@
-import { useBoardStore } from "@/store/BoardStore";
-import { Draggable, Droppable } from "@hello-pangea/dnd";
-import { ApplicationStatus } from "@prisma/client";
 import { useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
+import { Draggable, Droppable } from "@hello-pangea/dnd";
+import { ApplicationStatus } from "@prisma/client";
+import { useBoardStore } from "@/store/BoardStore";
 import AddJobModal from "./AddJobModal";
 import JobCard from "./JobCard";
 
@@ -10,7 +10,7 @@ type ColumnProps = {
   id: ApplicationStatus;
   jobs: Job[];
   index: number;
-  onDeleteJob: (job: Job) => void;
+  onDeleteJob: (jobId: string) => Promise<void>;
   onJobAdded: (job: Job) => void;
 };
 

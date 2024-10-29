@@ -1,16 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { HiTrash, HiLink } from "react-icons/hi";
+import { ApplicationStatus } from "@prisma/client";
 import {
   DraggableProvidedDraggableProps,
   DraggableProvidedDragHandleProps,
 } from "@hello-pangea/dnd";
-import { ApplicationStatus } from "@prisma/client";
-import axios from "axios";
-import { useState } from "react";
-import { HiTrash, HiLink } from "react-icons/hi";
-import { mutate } from "swr";
 import EditJobModal from "./EditJobModal";
-import { toast } from "react-toastify";
 
 type JobCardProps = {
   job: Job;
@@ -19,7 +16,7 @@ type JobCardProps = {
   innerRef: (element: HTMLElement | null) => void;
   draggableProps: DraggableProvidedDraggableProps;
   draghandleProps: DraggableProvidedDragHandleProps | null | undefined;
-  onDeleteJob: (job: Job) => void;
+  onDeleteJob: (jobId: string) => Promise<void>;
 };
 
 function JobCard({
@@ -75,8 +72,8 @@ function JobCard({
   };
 
   const handleDeleteJob = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation(); 
-    onDeleteJob(job);
+    event.stopPropagation();
+    onDeleteJob(job.id);
   };
 
   return (
