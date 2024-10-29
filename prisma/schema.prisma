@@ -38,6 +38,11 @@ enum RejectionInitiator {
   COMPANY
 }
 
+enum UserType {
+  CLIENT
+  CANDIDATE
+}
+
 model Job {
   id           String            @id @default(auto()) @map("_id") @db.ObjectId
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -153,6 +158,7 @@ model User {
   emailVerified DateTime?
   image         String?
   role          String?
+  userType      UserType
   skills        String[]
   accounts      Account[]
   sessions      Session[]

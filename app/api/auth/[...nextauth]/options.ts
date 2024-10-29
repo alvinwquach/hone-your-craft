@@ -10,18 +10,18 @@ const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
       allowDangerousEmailAccountLinking: true,
     }),
     DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID as string,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+      clientId: process.env.DISCORD_CLIENT_ID ?? "",
+      clientSecret: process.env.DISCORD_CLIENT_SECRET ?? "",
       allowDangerousEmailAccountLinking: true,
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
+      clientId: process.env.GITHUB_ID ?? "",
+      clientSecret: process.env.GITHUB_SECRET ?? "",
       allowDangerousEmailAccountLinking: true,
     }),
   ],
@@ -35,7 +35,7 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     // Callback triggered when a user signs in
     async signIn({ user }) {
-      console.log("GitHub user data:", user);
+      console.log("User data:", user);
 
       if (user && user.email) {
         // Check if the user exists in the database
@@ -50,10 +50,10 @@ const authOptions: NextAuthOptions = {
               name: user.name,
               email: user.email,
               image: user.image,
+              // Default to candidate until onboarding is complete
+              userType: "CANDIDATE",
             },
           });
-          console.log("Sign-in data:", user);
-
           console.log("New user created:", newUser);
         } else {
           console.log("Existing user signed in:", existingUser);
