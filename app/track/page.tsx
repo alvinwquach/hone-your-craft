@@ -46,7 +46,7 @@ function Track() {
   } = useSWR<UserJobs>("/api/jobs", fetcher);
 
   const loadingUserJobs = !userJobs || userJobsLoading;
-  if (error) return <div>Error loading user's jobs</div>;
+  if (error) return <div>Error loading user jobs</div>;
 
   const handleDeleteJob = async (job: Job) => {
     const confirmed = window.confirm(
