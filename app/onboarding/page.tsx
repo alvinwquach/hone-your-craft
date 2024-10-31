@@ -76,11 +76,11 @@ function Onboarding() {
           ) : (
             <>
               <p className="mb-6 text-center text-gray-300">
-                We're excited to share our new features! We're now connecting
-                clients and hiring managers finding top talent.
+                We&rsquo;re excited to share our new features! We&rsquo;re now
+                connecting clients and hiring managers finding top talent.
               </p>
               <p className="mb-6 text-center text-gray-300">
-                Please take a moment to decide how you'd like to proceed.
+                Please take a moment to decide how you&rsquo;d like to proceed.
               </p>
             </>
           )}
