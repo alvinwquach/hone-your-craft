@@ -43,6 +43,19 @@ enum UserType {
   CANDIDATE
 }
 
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId  String   @db.ObjectId
+  recipient User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  recipientId String   @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("messages")
+}
+
 model Job {
   id           String            @id @default(auto()) @map("_id") @db.ObjectId
   user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -167,6 +180,8 @@ model User {
   offers        Offer[]
   interviews    Interview[]
   rejections    Rejection[]
+  messagesSent  Message[]   @relation("SentMessages")
+  messagesReceived Message[] @relation("ReceivedMessages")
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
