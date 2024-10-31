@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react"; // Import useSession to get the user type
+import { useSession } from "next-auth/react"; 
 import { useBoardStore } from "@/store/BoardStore";
 import Board from "../components/track/Board";
 import useSWR, { mutate } from "swr";
