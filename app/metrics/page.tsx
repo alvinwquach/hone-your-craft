@@ -12,6 +12,7 @@ import getUserJobPostings from "../lib/getUserJobPostings";
 import JobPostingCard from "../components/metrics/JobPostingCard";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
 import JobSource from "../components/metrics/JobSource";
+import { FaTools } from "react-icons/fa";
 
 export interface JobPosting {
   id: string;
@@ -49,6 +50,7 @@ function Metrics(): JSX.Element {
     (url) => fetcher(url, { method: "GET" }),
     { refreshInterval: 1000 }
   );
+  const userType = session?.user?.userType;
 
   const [sortedSkills, setSortedSkills] = useState<string[]>([]);
   const [sortedFrequencies, setSortedFrequencies] = useState<number[]>([]);
@@ -493,43 +495,58 @@ function Metrics(): JSX.Element {
 
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
-      <div className="flex justify-between md:flex-row flex-col">
-        <div className="w-full md:w-1/2 h-[550px] mt-2">
-          <canvas id="skillFrequencyChart"></canvas>
-        </div>
-        {Object.keys(interviewTypeFrequency).length > 0 && (
-          <div className="w-full md:w-1/2 h-[550px] mt-2">
-            <canvas id="missingSkillsChart"></canvas>
+      {userType === "CANDIDATE" ? (
+        <>
+          <div className="flex justify-between md:flex-row flex-col">
+            <div className="w-full md:w-1/2 h-[550px] mt-2">
+              <canvas id="skillFrequencyChart"></canvas>
+            </div>
+            {Object.keys(interviewTypeFrequency).length > 0 && (
+              <div className="w-full md:w-1/2 h-[550px] mt-2">
+                <canvas id="missingSkillsChart"></canvas>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {jobPostings.map((job, index) => (
-          <JobPostingCard
-            key={index}
-            company={job.company}
-            title={job.title}
-            skills={job.skills}
-            postUrl={job.postUrl}
-            matchingSkills={job.matchingSkills}
-            missingSkills={job.missingSkills}
-          />
-        ))}
-      </div>
-      <div className="mt-5">
-        <JobSource jobPostings={jobPostings} />
-      </div>
-      <div className="flex justify-between md:flex-row flex-col">
-        <div className="w-full md:w-1/2 h-[550px] mt-2">
-          <canvas id="applicationStatusChart"></canvas>
-        </div>
-        {Object.keys(interviewTypeFrequency).length > 0 && (
-          <div className="w-full md:w-1/2 h-[550px] mt-2">
-            <canvas id="interviewTypeFrequencyChart"></canvas>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {jobPostings.map((job, index) => (
+              <JobPostingCard
+                key={index}
+                company={job.company}
+                title={job.title}
+                skills={job.skills}
+                postUrl={job.postUrl}
+                matchingSkills={job.matchingSkills}
+                missingSkills={job.missingSkills}
+              />
+            ))}
           </div>
-        )}
-      </div>
+          <div className="mt-5">
+            <JobSource jobPostings={jobPostings} />
+          </div>
+          <div className="flex justify-between md:flex-row flex-col">
+            <div className="w-full md:w-1/2 h-[550px] mt-2">
+              <canvas id="applicationStatusChart"></canvas>
+            </div>
+            {Object.keys(interviewTypeFrequency).length > 0 && (
+              <div className="w-full md:w-1/2 h-[550px] mt-2">
+                <canvas id="interviewTypeFrequencyChart"></canvas>
+              </div>
+            )}
+          </div>
+        </>
+      ) : userType === "CLIENT" ? (
+        <section className="flex flex-col items-center justify-center min-h-screen">
+          <FaTools className="text-6xl text-yellow-500 mb-4" />
+          <h2 className="text-xl font-bold text-gray-700 mb-2">
+            We&rsquo;re Building Something Great!
+          </h2>
+          <p className="text-center text-gray-500">
+            This page is currently in development. We can&rsquo;t wait to share
+            it with you! Please check back soon for updates.
+          </p>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -6,11 +6,9 @@ export default withAuth(
   async function middleware(req) {
     // Retrieve the token from the request headers
     const token = await getToken({ req });
-
     // Check if a token exists
     const isAuthenticated = !!token;
-
-    // Define routes that require authentication
+    // Define a list of protected routes that require authentication
     const authRoutes = [
       "/profile",
       "/calendar",
@@ -18,20 +16,26 @@ export default withAuth(
       "/metrics",
       "/roles",
     ];
-
     // Check if the requested route is in the list of protected routes
     if (authRoutes.includes(req.nextUrl.pathname)) {
       // If the user is authenticated, allow access to the requested route
       if (isAuthenticated) {
-        // Allow access to the requested route
+        // Check if the user's type is set in the token
+        if (!token.userType) {
+          console.log("UserType is not set, redirecting to onboarding");
+          // Redirect the user to the onboarding page if userType is not set
+          return NextResponse.redirect(new URL("/onboarding", req.url));
+        }
+        // If authenticated and userType is set, allow access to the requested route
         return NextResponse.next();
       } else {
+        console.log("User not authenticated, redirecting to login");
         // If the user is not authenticated, redirect them to the login page
         return NextResponse.redirect(new URL("/login", req.url));
       }
     } else {
-      /* If the requested route is not in the list of protected routes,
-      allow access to the requested route */
+      // If the requested route is not in the list of protected routes,
+      // allow access to the requested route
       return NextResponse.next();
     }
   },

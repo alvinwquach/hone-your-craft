@@ -29,8 +29,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <SessionProvider>
           <Header />
-          <main className="bg-slate-700">{children}</main>
-          <BottomNavigationDock />
+          <main className="">{children}</main>
+          {/* <BottomNavigationDock /> */}
           <ToastContainer />
         </SessionProvider>
       </body>

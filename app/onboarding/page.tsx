@@ -1,0 +1,140 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { toast } from "react-toastify";
+import Confetti from "react-confetti";
+import { FaArrowRight } from "react-icons/fa";
+import Section from "../components/common/Section";
+
+function Onboarding() {
+  const { data: session, status, update } = useSession();
+  const [userType, setUserType] = useState("");
+  const [showConfetti, setShowConfetti] = useState(false);
+  const router = useRouter();
+  const cutoffDate = "2024-10-31T00:00:00Z";
+  const userCreatedAt = session?.user?.createdAt;
+  const isNewUser = userCreatedAt ? userCreatedAt >= cutoffDate : false;
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!userType) {
+      toast.error("❌ Please select a role before continuing.");
+      return;
+    }
+    try {
+      const response = await axios.put(`/api/onboarding`, { userType });
+      if (response.status === 200) {
+        toast.success(`🎉 Role updated to "${userType}" successfully!`);
+        await update({ userType });
+        router.push("/profile");
+      } else {
+        throw new Error("Network response was not ok");
+      }
+    } catch (error) {
+      console.error("Error updating role:", error);
+      toast.error("❌ Failed to update role. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    setShowConfetti(true);
+    const timeout = setTimeout(() => setShowConfetti(false), 5000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  return (
+    <Section>
+      <div className="flex items-center justify-center min-h-screen bg-black text-white p-4">
+        {showConfetti && <Confetti />}
+        <div className="p-6 rounded-lg shadow-lg max-w-md w-full mx-auto bg-zinc-900">
+          <h1 className="text-2xl font-bold mb-4 text-center">
+            {isNewUser ? `Welcome! 🎊` : `Welcome Back!`}
+          </h1>
+          <p className="mb-6 text-center text-gray-300">
+            {isNewUser
+              ? `We're excited to help you get started here at Hone Your Craft.`
+              : `Thank you for using Hone Your Craft! We're making some updates to improve your experience.`}
+          </p>
+          {isNewUser ? (
+            <>
+              <p className="mb-6 text-center text-gray-300">
+                As a Client or Hiring Manager, you can connect with talented
+                individuals and streamline your hiring process.
+              </p>
+              <p className="mb-6 text-center text-gray-300">
+                As a Job Seeker, you can explore exciting opportunities and
+                showcase your skills to potential employers.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mb-6 text-center text-gray-300">
+                We&rsquo;re excited to share our new features! We&rsquo;re now
+                connecting clients and hiring managers finding top talent.
+              </p>
+              <p className="mb-6 text-center text-gray-300">
+                Please take a moment to decide how you&rsquo;d like to proceed.
+              </p>
+            </>
+          )}
+          <form onSubmit={handleSubmit}>
+            <fieldset className="mb-4">
+              <legend className="text-gray-200 mb-2 text-center">
+                Select Your Role:
+              </legend>
+              <div className="flex flex-col space-y-2">
+                <button
+                  type="button"
+                  className={`flex items-center justify-center py-3 px-6 rounded-lg transition duration-200 ease-in-out ${
+                    userType === "CLIENT"
+                      ? "bg-zinc-800 text-white transform scale-105"
+                      : "bg-zinc-600 text-gray-200 hover:bg-zinc-700"
+                  }`}
+                  onClick={() =>
+                    setUserType(userType === "CLIENT" ? "" : "CLIENT")
+                  }
+                >
+                  🤝 Client / Hiring Manager
+                </button>
+                <button
+                  type="button"
+                  className={`flex items-center justify-center py-3 px-6 rounded-lg transition duration-200 ease-in-out ${
+                    userType === "CANDIDATE"
+                      ? "bg-zinc-800 text-white transform scale-105"
+                      : "bg-zinc-600 text-gray-200 hover:bg-zinc-700"
+                  }`}
+                  onClick={() =>
+                    setUserType(userType === "CANDIDATE" ? "" : "CANDIDATE")
+                  }
+                >
+                  💼 Job Seeker
+                </button>
+              </div>
+            </fieldset>
+
+            <p className="mb-4 text-center text-gray-400">
+              Whether you are a job seeker or a hiring manager, we are here to
+              support your journey!
+            </p>
+            <button
+              type="submit"
+              className="flex items-center justify-center w-full bg-white text-black py-2 rounded-md hover:bg-gray-200 transition duration-150"
+            >
+              <span className="mr-2">Proceed</span>
+              <FaArrowRight />
+            </button>
+          </form>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+export default Onboarding;

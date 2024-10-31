@@ -13,6 +13,7 @@ import JobOffers from "../components/profile/JobOffers";
 import JobRejections from "../components/profile/JobRejections";
 import { Suspense } from "react";
 import { toast } from "react-toastify";
+import { FaTools } from "react-icons/fa";
 
 interface JobPosting {
   title: string;
@@ -47,26 +48,16 @@ function Profile() {
   );
 
   const userType = data?.user?.userType;
-  // If there are no user offers, default to an empty array
   const jobOffers = userOffers || [];
-  // If there are no user rejections, default to an empty array
   const jobRejections = userRejections || [];
-
-  // If there are no user interviews, default to an empty array
   const jobInterviews = userInterviews || [];
-  // If there are no user skills, default to an empty array
   const userSkills = data?.user?.skills || [];
-  // If there is no user data, default to an empty array
   const userData = data || [];
 
   const loadingUserData = !userData || userDataLoading;
-
   const loadingUserSkills = !userSkills || userDataLoading;
-
   const loadingUserInterviews = !userInterviews || userInterviewsLoading;
-
   const loadingUserOffers = !userOffers || userOffersLoading;
-
   const loadingUserRejections = !userRejections || userRejectionsLoading;
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
@@ -83,7 +74,6 @@ function Profile() {
     fetchJobPostings();
   }, []);
 
-  // Calculate all suggested skills and remove duplicates
   const suggestedSkills = Array.from(
     new Set(
       jobPostings
@@ -122,7 +112,7 @@ function Profile() {
       mutate("/api/offers");
       toast.success("Offer Deleted");
     } catch (error) {
-      console.error("Error deleting rejection:", error);
+      console.error("Error deleting offer:", error);
       toast.error("Failed To Delete Offer");
       throw error;
     }
@@ -130,7 +120,7 @@ function Profile() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      {userType === "candidate" ? (
+      {userType === "CANDIDATE" ? (
         <>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Profile Card */}
@@ -251,12 +241,20 @@ function Profile() {
             )}
           </div>
         </>
-      ) : userType === "client" ? (
-        <></>
+      ) : userType === "CLIENT" ? (
+        <section className="flex flex-col items-center justify-center min-h-screen">
+          <FaTools className="text-6xl text-yellow-500 mb-4" />
+          <h2 className="text-xl font-bold text-gray-700 mb-2">
+            We&rsquo;re Building Something Great!
+          </h2>
+          <p className="text-center text-gray-500">
+            This page is currently in development. We can&rsquo;t wait to share
+            it with you! Please check back soon for updates.
+          </p>
+        </section>
       ) : null}
     </section>
   );
 }
 
 export default Profile;
-  
