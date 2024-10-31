@@ -10,39 +10,40 @@ export async function getSession() {
 
 export default async function getCurrentUser() {
   try {
-    // Retrieve the user session
+    // Retrieve the current session
     const session = await getSession();
-
-    console.log("User session:", session); // Log the session object for debugging
-
-    // Check if the session or user email is missing
+    console.log("User session:", session);
+    // Check if the session exists and the user has an email
     if (!session?.user?.email) {
-      // If so, return null
+      // If no email is found, return null
       return null;
     }
-
-    // Query the database to find the current user by email
+    // Query the database to find the user by their email
     const currentUser = await prisma.user.findUnique({
       where: {
-        email: session.user.email as string, // Convert user email to string
+        // Use the user's email to find them in the database
+        email: session.user.email ?? "",
       },
     });
-
-    // If the current user is not found in the database, return null
+    // If no user is found, return null
     if (!currentUser) {
       return null;
     }
-
-    // Format the user object with ISO string dates for createdAt, updatedAt, and emailVerified fields
+    // Return the current user with specific fields formatted
     return {
+      // Spread the current user object to include all its properties
       ...currentUser,
+      // Include the user's image
       image: currentUser.image,
-      createdAt: currentUser.createdAt.toISOString(), // Convert createdAt date to ISO string
-      updatedAt: currentUser.updatedAt.toISOString(), // Convert updatedAt date to ISO string
-      emailVerified: currentUser.emailVerified?.toISOString() || null, // Convert emailVerified date to ISO string or null if undefined
+      // Include createdAt
+      createdAt: currentUser.createdAt.toISOString(),
+      // Include updatedAt
+      updatedAt: currentUser.updatedAt.toISOString(),
+      // Include emailVerified
+      emailVerified: currentUser.emailVerified?.toISOString() || null,
     };
   } catch (error: any) {
-    // If any error occurs during the process, return null
+    // In case of an error during the process, return null
     return null;
   }
 }

@@ -1,13 +1,20 @@
-import NextAuth from "next-auth";
+import NextAuth, { ISODateString } from "next-auth";
 
 declare module "next-auth" {
-  interface Session extends Session {
+  interface Session {
     user?: {
+      userType?: string | null;
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      userId?: number | null;
+      userId?: string | null;
+      createdAt?: string | null;
     };
     expires: ISODateString;
+  }
+
+  interface User {
+    userType?: string | null;
+    createdAt?: string | null;
   }
 }

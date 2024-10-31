@@ -12,6 +12,7 @@ const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      // Allow linking of accounts with the same email
       allowDangerousEmailAccountLinking: true,
     }),
     DiscordProvider({
@@ -26,8 +27,11 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   session: {
+    // Use JWT for session management
     strategy: "jwt",
+    // Set session expiration to 1 day
     maxAge: 60 * 60 * 24,
+    // Update session age every 24 hours
     updateAge: 24 * 60 * 60,
   },
   // Secret key for encrypting and decrypting tokens
@@ -36,22 +40,24 @@ const authOptions: NextAuthOptions = {
     // Callback triggered when a user signs in
     async signIn({ user }) {
       console.log("User data:", user);
-
+      // Check if the user has an email
       if (user && user.email) {
-        // Check if the user exists in the database
+        // Query the database to check if the user already exists
         const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
+          where: { email: user.email }, // Find user by email
         });
-
         // If the user does not exist, create a new user
         if (!existingUser) {
           const newUser = await prisma.user.create({
             data: {
+              // Set user's name
               name: user.name,
+              // Set user's email
               email: user.email,
+              // Set user's profile image
               image: user.image,
-              // Default to candidate until onboarding is complete
-              userType: "CANDIDATE",
+              // Set userType to null initially
+              userType: null,
             },
           });
           console.log("New user created:", newUser);
@@ -59,40 +65,47 @@ const authOptions: NextAuthOptions = {
           console.log("Existing user signed in:", existingUser);
         }
       }
-
-      // Return true to indicate successful sign-in
+      // Indicate successful sign-in
       return true;
     },
-    // Callback triggered when a JWT token is generated
-    async jwt({ token, user }) {
-      if (user && user.email) {
-        // Ensure email is not null or undefined
+    // Callback triggered when a JSON Web Token is created or updated
+    async jwt({ token, user, trigger, session }) {
+      // Handle userType updates
+      if (trigger === "update" && session?.userType) {
+        // Update token with new userType from session
+        token.userType = session.userType;
+      } else if (user && user.email) {
+        // If user is new or exists, find their details in the database
         const foundUser = await prisma.user.findUnique({
+          // Find user by email
           where: { email: user.email },
         });
-
-        console.log("Found user in database:", foundUser);
-
         if (foundUser) {
-          // Adding user ID to the token
+          // Store user's ID in the token
           token.userId = foundUser.id;
+          // Store user's type in the token
+          token.userType = foundUser.userType;
+          // Store user's createdAt in the token
+          token.createdAt = user.createdAt;
         }
       }
-
-      console.log("JWT token data:", token);
+      // Return the updated token
       return token;
     },
-    // Callback triggered when a session is created or updated
+    // Callback triggered whenever a session is checked
     async session({ session, token }) {
       if (session.user) {
-        session.user.userId = token.userId as number | null | undefined;
+        session.user.userId = token.userId as string | null | undefined;
+        session.user.userType = token.userType as string | null | undefined;
+        session.user.createdAt = token.createdAt as string | null | undefined;
       }
       return session;
     },
-
+    // Callback triggered when redirecting after sign in
     async redirect({ url, baseUrl }) {
-      // Redirect to /profile after successful sign-in
+      // If redirecting to the base URL, redirect to the profile page
       if (url === baseUrl) return "/profile";
+      // Default redirection to base URL
       return baseUrl;
     },
   },
