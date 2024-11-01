@@ -43,39 +43,105 @@ enum UserType {
   CANDIDATE
 }
 
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  TEMPORARY
+}
+
+enum JobPostingStatus {
+  OPEN
+  CLOSED
+  FILLED
+}
+
+enum ExperienceLevel {
+  JUNIOR
+  MID
+  SENIOR
+  STAFF
+  PRINCIPAL
+}
+
 model Message {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
-  senderId  String   @db.ObjectId
-  recipient User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId    String   @db.ObjectId
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
   recipientId String   @db.ObjectId
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("messages")
 }
 
-model Job {
+model JobListing {
+  id                       String              @id @default(auto()) @map("_id") @db.ObjectId
+  user                     User                @relation("JobListings", fields: [userId], references: [id], onDelete: Cascade)
+  userId                   String              @db.ObjectId
+  company                  String?
+  title                    String
+  jobType                  JobType?
+  applicationDeadline      DateTime?
+  experienceLevels         ExperienceLevel[] 
+  yearsOfExperience        Int?
+  description              String
+  industry                 String?
+  location                 String?
+  workLocation             WorkLocation?
+  rate                     Float?             
+  salary                   Float?             
+  salaryRangeMin           Float?           
+  salaryRangeMax           Float?            
+  status                   JobPostingStatus     @default(OPEN)
+  requiredSkills           String[]
+  bonusSkills              String[]
+  views                    Int                  @default(0)
+  applications             Application[]        @relation("JobApplications")
+  applicationsReceived     Int                  @default(0)
+  isArchived               Boolean              @default(false)
+  url                      String?
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+
+  @@map("job_postings")
+}
+
+model Application {
   id           String            @id @default(auto()) @map("_id") @db.ObjectId
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String            @db.ObjectId
-  referral  Boolean?
+  candidateId  String            @db.ObjectId
+  candidate    User              @relation("JobApplications", fields: [candidateId], references: [id])
+  jobListingId String            @db.ObjectId
+  jobListing   JobListing        @relation("JobApplications", fields: [jobListingId], references: [id])
+  status       ApplicationStatus @default(APPLIED)
+  appliedAt    DateTime          @default(now())
+
+  @@map("applications")
+}
+
+model Job {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String             @db.ObjectId
+  referral     Boolean?
   company      String
   description  String
   title        String
   industry     String?
   location     String?
   workLocation WorkLocation?
-  postUrl      String 
+  postUrl      String
   salary       String?
   status       ApplicationStatus?
   interviews   Interview[]
   offer        Offer[]
   rejection    Rejection[]
   jobSkills    JobSkill[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
   @@map("job")
 }
@@ -93,29 +159,29 @@ model JobSkill {
 }
 
 model Interview {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  user            User?            @relation(fields: [userId], references: [id])
-  userId          String?          @db.ObjectId
-  job             Job              @relation(fields: [jobId], references: [id])
-  jobId           String           @db.ObjectId
-  acceptedDate    DateTime
-  interviewDate   DateTime
-  interviewType InterviewType 
-  
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  user          User?         @relation(fields: [userId], references: [id])
+  userId        String?       @db.ObjectId
+  job           Job           @relation(fields: [jobId], references: [id])
+  jobId         String        @db.ObjectId
+  acceptedDate  DateTime
+  interviewDate DateTime
+  interviewType InterviewType
+
   @@map("interview")
 }
 
 model Offer {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  user         User?       @relation(fields: [userId], references: [id])
-  userId       String?     @db.ObjectId
-  job          Job         @relation(fields: [jobId], references: [id])
-  jobId        String      @db.ObjectId
-  offerDate    DateTime
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?   @db.ObjectId
+  job           Job       @relation(fields: [jobId], references: [id])
+  jobId         String    @db.ObjectId
+  offerDate     DateTime
   offerDeadline DateTime?
-  salary       String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  salary        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@map("offer")
 }
@@ -160,30 +226,33 @@ model Session {
   userId       String?  @db.ObjectId
   expires      DateTime
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userType     String?  
+  userType     String?
 
   @@map("session")
 }
 
 model User {
-  id            String      @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?     @unique
-  emailVerified DateTime?
-  image         String?
-  role          String?
-  userType      UserType?
-  skills        String[]
-  accounts      Account[]
-  sessions      Session[]
-  jobs          Job[]
-  offers        Offer[]
-  interviews    Interview[]
-  rejections    Rejection[]
-  messagesSent  Message[]   @relation("SentMessages")
-  messagesReceived Message[] @relation("ReceivedMessages")
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  name             String?
+  email            String?       @unique
+  emailVerified    DateTime?
+  image            String?
+  role             String?
+  userType         UserType?
+  skills           String[]
+  accounts         Account[]
+  sessions         Session[]
+  jobs             Job[]
+  offers           Offer[]
+  interviews       Interview[]
+  rejections       Rejection[]
+  messagesSent     Message[]     @relation("SentMessages")
+  messagesReceived Message[]     @relation("ReceivedMessages")
+  JobListings      JobListing[]  @relation("JobListings")
+  applications     Application[] @relation("JobApplications")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   @@map("users")
 }
