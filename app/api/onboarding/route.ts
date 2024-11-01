@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server"; // Import necessary modules for handling requests and responses
-import getCurrentUser from "@/app/lib/getCurrentUser"; // Import function to get the current user
-import prisma from "@/app/lib/db/prisma"; // Import Prisma client for database interactions
+import { NextRequest, NextResponse } from "next/server";
+import getCurrentUser from "@/app/lib/getCurrentUser";
+import prisma from "@/app/lib/db/prisma";
 
 export async function PUT(request: NextRequest) {
   try {
