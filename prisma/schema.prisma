@@ -65,6 +65,29 @@ enum ExperienceLevel {
   PRINCIPAL
 }
 
+enum YearsOfExperience {
+  LESS_THAN_1_YEAR
+  ONE_YEAR
+  TWO_YEARS
+  THREE_YEARS
+  FOUR_YEARS
+  FIVE_YEARS
+  SIX_YEARS
+  SEVEN_YEARS
+  EIGHT_YEARS
+  NINE_YEARS
+  TEN_YEARS
+  TEN_PLUS_YEARS
+}
+
+enum Availability {
+  IMMEDIATELY
+  WITHIN_ONE_WEEK
+  WITHIN_TWO_WEEKS
+  ONE_MONTH
+  NEGOTIABLE
+}
+
 model Message {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   sender      User     @relation("SentMessages", fields: [senderId], references: [id])
@@ -79,35 +102,80 @@ model Message {
 }
 
 model JobListing {
-  id                       String              @id @default(auto()) @map("_id") @db.ObjectId
-  user                     User                @relation("JobListings", fields: [userId], references: [id], onDelete: Cascade)
-  userId                   String              @db.ObjectId
-  company                  String?
-  title                    String
-  jobType                  JobType?
-  applicationDeadline      DateTime?
-  experienceLevels         ExperienceLevel[] 
-  yearsOfExperience        Int?
-  description              String
-  industry                 String?
-  location                 String?
-  workLocation             WorkLocation?
-  rate                     Float?             
-  salary                   Float?             
-  salaryRangeMin           Float?           
-  salaryRangeMax           Float?            
-  status                   JobPostingStatus     @default(OPEN)
-  requiredSkills           String[]
-  bonusSkills              String[]
-  views                    Int                  @default(0)
-  applications             Application[]        @relation("JobApplications")
-  applicationsReceived     Int                  @default(0)
-  isArchived               Boolean              @default(false)
-  url                      String?
-  createdAt                DateTime            @default(now())
-  updatedAt                DateTime            @updatedAt
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  user                 User              @relation("JobListings", fields: [userId], references: [id], onDelete: Cascade)
+  userId               String            @db.ObjectId
+  company              String?
+  title                String
+  jobType              JobType?
+  applicationDeadline  DateTime?
+  experienceLevels     ExperienceLevel[]
+  yearsOfExperience    Int?
+  description          String
+  industry             String?
+  location             String?
+  workLocation         WorkLocation?
+  rate                 Float?
+  salary               Float?
+  salaryRangeMin       Float?
+  salaryRangeMax       Float?
+  status               JobPostingStatus  @default(OPEN)
+  requiredSkills       String[]
+  bonusSkills          String[]
+  views                Int               @default(0)
+  applications         Application[]     @relation("JobApplications")
+  applicationsReceived Int               @default(0)
+  isArchived           Boolean           @default(false)
+  url                  String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   @@map("job_postings")
+}
+
+model WorkExperience {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String    @db.ObjectId
+  company     String
+  title       String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("work_experience")
+}
+
+model Project {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @db.ObjectId
+  title       String
+  description String?
+  url         String?
+  technologies String[] // Optional: for listing technologies used
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("projects")
+}
+
+
+model Education {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String   @db.ObjectId
+  education      String
+  graduationDate DateTime
+  degree         String
+  major          String
+  gpa            Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("education")
 }
 
 model Application {
@@ -232,27 +300,48 @@ model Session {
 }
 
 model User {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
-  name             String?
-  email            String?       @unique
-  emailVerified    DateTime?
-  image            String?
-  role             String?
-  userType         UserType?
-  skills           String[]
-  accounts         Account[]
-  sessions         Session[]
-  jobs             Job[]
-  offers           Offer[]
-  interviews       Interview[]
-  rejections       Rejection[]
-  messagesSent     Message[]     @relation("SentMessages")
-  messagesReceived Message[]     @relation("ReceivedMessages")
-  JobListings      JobListing[]  @relation("JobListings")
-  applications     Application[] @relation("JobApplications")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  name               String?
+  email              String?            @unique
+  emailVerified      DateTime?
+  image              String?
+  bio                String?
+  website            String?
+  linkedin           String?
+  github             String?
+  twitter            String?
+  role               String?
+  userType           UserType?
+  primaryRole        String?
+  openToRoles        String[]
+  yearsOfExperience  YearsOfExperience?
+  skills             String[]
+  availability       Availability?
+  availableFrom      DateTime?
+  openToWork         Boolean            @default(false)
+  hiring             Boolean            @default(false)
+  jobAlert           Boolean            @default(true)
+  candidateAlert     Boolean            @default(true)
+  lookingForMentor   Boolean            @default(false)
+  offeringMentorship Boolean            @default(false)
+  workExperience     WorkExperience[]
+  projects           Project[]
+  education          Education[]
+  resume             String?
+  coverLetter        String?
+  certificates       String[]
+  accounts           Account[]
+  sessions           Session[]
+  jobs               Job[]
+  offers             Offer[]
+  interviews         Interview[]
+  rejections         Rejection[]
+  applications       Application[]      @relation("JobApplications")
+  JobListings        JobListing[]       @relation("JobListings")
+  messagesSent       Message[]          @relation("SentMessages")
+  messagesReceived   Message[]          @relation("ReceivedMessages")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   @@map("users")
 }
