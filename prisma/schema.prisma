@@ -365,26 +365,24 @@ model JobSkill {
 }
 
 model Skill {
-  id            String             @id @default(auto()) @map("_id") @db.ObjectId
-  name          String             @unique
-  endorsements   SkillEndorsement[] @relation("SkillEndorsements")
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  name         String             @unique
+  endorsements SkillEndorsement[] @relation("SkillEndorsements")
 }
-
 
 model SkillEndorsement {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  endorserId String   @db.ObjectId 
+  endorserId String   @db.ObjectId
   endorser   User     @relation("Endorser", fields: [endorserId], references: [id], onDelete: Cascade)
-  userId     String   @db.ObjectId 
+  userId     String   @db.ObjectId
   user       User     @relation("Endorsees", fields: [userId], references: [id], onDelete: Cascade)
-  skillId    String   @db.ObjectId 
-  skill      Skill    @relation("SkillEndorsements", fields: [skillId], references: [id]) 
+  skillId    String   @db.ObjectId
+  skill      Skill    @relation("SkillEndorsements", fields: [skillId], references: [id])
   createdAt  DateTime @default(now())
 
-  @@unique([endorserId, userId, skillId]) 
+  @@unique([endorserId, userId, skillId])
   @@map("skill_endorsements")
 }
-
 
 model Interview {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
@@ -459,10 +457,26 @@ model Session {
   @@map("session")
 }
 
+model UserStatus {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String   @unique @db.ObjectId
+  user                 User     @relation("UserStatusRelation", fields: [userId], references: [id], onDelete: Cascade)
+  availability         Availability?
+  availableFrom        DateTime?
+  openToWork           Boolean   @default(false)
+  openToWorkVisibility Visibility @default(PUBLIC)
+  hiring               Boolean   @default(false)
+  hiringVisibility     Visibility @default(PUBLIC)
+  readyToInterview     Boolean   @default(false)
+  openToOffers         Boolean   @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
 model User {
-  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
   name                 String?
-  email                String?            @unique
+  email                String?             @unique
   emailVerified        DateTime?
   image                String?
   bio                  String?
@@ -479,51 +493,45 @@ model User {
   openToRoles          String[]
   yearsOfExperience    YearsOfExperience?
   skills               String[]
-  availability         Availability?
-  availableFrom        DateTime?
-  openToWork           Boolean            @default(false)
-  openToWorkVisibility Visibility         @default(PUBLIC)
-  hiring               Boolean            @default(false)
-  hiringVisibility     Visibility         @default(PUBLIC)
-  jobAlert             Boolean            @default(true)
-  candidateAlert       Boolean            @default(true)
-  lookingForMentor     Boolean            @default(false)
-  offeringMentorship    Boolean           @default(false)
+  status               UserStatus?        @relation("UserStatusRelation")
+  jobAlert             Boolean             @default(true)
+  candidateAlert       Boolean             @default(true)
+  lookingForMentor     Boolean             @default(false)
+  offeringMentorship   Boolean             @default(false)
   preferredLanguages   String[]
   timezone             String?
   profileCompletion    Int                 @default(0)
   isProfilePublic      Boolean             @default(true)
   lastActive           DateTime?
   connectionsSent      Connection[]        @relation("ConnectionsSent")
-  connectionsReceived   Connection[]       @relation("ConnectionsReceived")
-  documents           Document[]          @relation("UserDocuments")
-  workExperience      WorkExperience[]
-  projects            Project[]
-  education           Education[]
-  resume              String?
-  coverLetter         String?
-  certificates        String[]
-  accounts            Account[]
-  sessions            Session[]
-  jobs                Job[]
-  offers              Offer[]
-  interviews          Interview[]
-  rejections          Rejection[]
-  notifications       Notification[]
-  applications        Application[]       @relation("JobApplications")
-  JobListings         JobListing[]       @relation("JobListings")
-  messagesSent        Message[]           @relation("SentMessages")
-  messagesReceived    Message[]           @relation("ReceivedMessages")
+  connectionsReceived  Connection[]        @relation("ConnectionsReceived")
+  documents            Document[]          @relation("UserDocuments")
+  workExperience       WorkExperience[]
+  projects             Project[]
+  education            Education[]
+  resume               String?
+  coverLetter          String?
+  certificates         String[]
+  accounts             Account[]
+  sessions             Session[]
+  jobs                 Job[]
+  offers               Offer[]
+  interviews           Interview[]
+  rejections           Rejection[]
+  notifications        Notification[]
+  applications         Application[]       @relation("JobApplications")
+  JobListings          JobListing[]        @relation("JobListings")
+  messagesSent         Message[]           @relation("SentMessages")
+  messagesReceived     Message[]           @relation("ReceivedMessages")
   jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
-  endorsementsGiven    SkillEndorsement[] @relation("Endorser")
-  endorsementsReceived  SkillEndorsement[] @relation("Endorsees")
+  endorsementsGiven    SkillEndorsement[]  @relation("Endorser")
+  endorsementsReceived SkillEndorsement[]  @relation("Endorsees")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
 }
-
 
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
