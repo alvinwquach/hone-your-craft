@@ -30,7 +30,7 @@ export default function RootLayout({
         <SessionProvider>
           <Header />
           <main className="">{children}</main>
-          {/* <BottomNavigationDock /> */}
+          <BottomNavigationDock />
           <ToastContainer />
         </SessionProvider>
       </body>
