@@ -135,6 +135,41 @@ enum NotificationType {
   OTHER
 }
 
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum Visibility {
+  PUBLIC
+  NETWORK_ONLY
+  FRIENDS_ONLY
+  COMPANY_ONLY
+  SELECTED_CONNECTIONS
+  ANONYMOUS
+  GROUP_ONLY
+  TEMPORARY
+  VIEW_ONLY
+  BETA_TESTERS
+  SUBSCRIBERS
+  HIDDEN
+  CUSTOM
+}
+
+model Connection {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  requesterId String           @db.ObjectId
+  requester   User             @relation("ConnectionsSent", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId  String           @db.ObjectId
+  receiver    User             @relation("ConnectionsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      ConnectionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([requesterId, receiverId])
+}
+
 model Message {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
   sender            User        @relation("SentMessages", fields: [senderId], references: [id])
@@ -157,26 +192,36 @@ model Message {
   @@map("messages")
 }
 
+model Document {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation("UserDocuments", fields: [userId], references: [id], onDelete: Cascade)
+  documentType String
+  url          String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model Notification {
-  id        String               @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String               @db.ObjectId
-  user      User                 @relation(fields: [userId], references: [id])
-  message   String
-  priority  NotificationPriority
-  notificationType  NotificationType
-  redirectUrl       String?
-  isRead    Boolean              @default(false)
-  readAt    DateTime?
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String               @db.ObjectId
+  user             User                 @relation(fields: [userId], references: [id])
+  message          String
+  priority         NotificationPriority
+  notificationType NotificationType
+  redirectUrl      String?
+  isRead           Boolean              @default(false)
+  readAt           DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
   @@map("notifications")
 }
 
 model JobListing {
-  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
-  user                 User              @relation("JobListings", fields: [userId], references: [id], onDelete: Cascade)
-  userId               String            @db.ObjectId
+  id                   String              @id @default(auto()) @map("_id") @db.ObjectId
+  user                 User                @relation("JobListings", fields: [userId], references: [id], onDelete: Cascade)
+  userId               String              @db.ObjectId
   company              String?
   title                String
   jobType              JobType?
@@ -191,18 +236,34 @@ model JobListing {
   salary               Float?
   salaryRangeMin       Float?
   salaryRangeMax       Float?
-  status               JobPostingStatus  @default(OPEN)
+  status               JobPostingStatus    @default(OPEN)
   requiredSkills       String[]
   bonusSkills          String[]
-  views                Int               @default(0)
-  applications         Application[]     @relation("JobApplications")
-  applicationsReceived Int               @default(0)
-  isArchived           Boolean           @default(false)
+  views                Int                 @default(0)
+  applications         Application[]       @relation("JobApplications")
+  applicationsReceived Int                 @default(0)
+  isArchived           Boolean             @default(false)
   url                  String?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
 
   @@map("job_postings")
+}
+
+model JobRecommendation {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String     @db.ObjectId
+  user          User       @relation("JobRecommendations", fields: [userId], references: [id])
+  jobId         String     @db.ObjectId
+  job           JobListing @relation("JobRecommendations", fields: [jobId], references: [id])
+  recommendedAt DateTime   @default(now())
+  source        String?
+  rationale     String?
+  isAccepted    Boolean    @default(false)
+  acceptedAt    DateTime?
+  rejectedAt    DateTime?
+  feedback      String?
 }
 
 model WorkExperience {
@@ -303,6 +364,28 @@ model JobSkill {
   @@map("job_skill")
 }
 
+model Skill {
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  name          String             @unique
+  endorsements   SkillEndorsement[] @relation("SkillEndorsements")
+}
+
+
+model SkillEndorsement {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  endorserId String   @db.ObjectId 
+  endorser   User     @relation("Endorser", fields: [endorserId], references: [id], onDelete: Cascade)
+  userId     String   @db.ObjectId 
+  user       User     @relation("Endorsees", fields: [userId], references: [id], onDelete: Cascade)
+  skillId    String   @db.ObjectId 
+  skill      Skill    @relation("SkillEndorsements", fields: [skillId], references: [id]) 
+  createdAt  DateTime @default(now())
+
+  @@unique([endorserId, userId, skillId]) 
+  @@map("skill_endorsements")
+}
+
+
 model Interview {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   user          User?         @relation(fields: [userId], references: [id])
@@ -377,52 +460,70 @@ model Session {
 }
 
 model User {
-  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
-  name               String?
-  email              String?            @unique
-  emailVerified      DateTime?
-  image              String?
-  bio                String?
-  website            String?
-  linkedin           String?
-  github             String?
-  twitter            String?
-  role               String?
-  userType           UserType?
-  primaryRole        String?
-  openToRoles        String[]
-  yearsOfExperience  YearsOfExperience?
-  skills             String[]
-  availability       Availability?
-  availableFrom      DateTime?
-  openToWork         Boolean            @default(false)
-  hiring             Boolean            @default(false)
-  jobAlert           Boolean            @default(true)
-  candidateAlert     Boolean            @default(true)
-  lookingForMentor   Boolean            @default(false)
-  offeringMentorship Boolean            @default(false)
-  workExperience     WorkExperience[]
-  projects           Project[]
-  education          Education[]
-  resume             String?
-  coverLetter        String?
-  certificates       String[]
-  accounts           Account[]
-  sessions           Session[]
-  jobs               Job[]
-  offers             Offer[]
-  interviews         Interview[]
-  rejections         Rejection[]
-  Notifcation        Notification[]
-  applications       Application[]      @relation("JobApplications")
-  JobListings        JobListing[]       @relation("JobListings")
-  messagesSent       Message[]          @relation("SentMessages")
-  messagesReceived   Message[]          @relation("ReceivedMessages")
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String?
+  email                String?            @unique
+  emailVerified        DateTime?
+  image                String?
+  bio                  String?
+  website              String?
+  linkedin             String?
+  github               String?
+  twitter              String?
+  facebook             String?
+  instagram            String?
+  youtube              String?
+  role                 String?
+  userType             UserType?
+  primaryRole          String?
+  openToRoles          String[]
+  yearsOfExperience    YearsOfExperience?
+  skills               String[]
+  availability         Availability?
+  availableFrom        DateTime?
+  openToWork           Boolean            @default(false)
+  openToWorkVisibility Visibility         @default(PUBLIC)
+  hiring               Boolean            @default(false)
+  hiringVisibility     Visibility         @default(PUBLIC)
+  jobAlert             Boolean            @default(true)
+  candidateAlert       Boolean            @default(true)
+  lookingForMentor     Boolean            @default(false)
+  offeringMentorship    Boolean           @default(false)
+  preferredLanguages   String[]
+  timezone             String?
+  profileCompletion    Int                 @default(0)
+  isProfilePublic      Boolean             @default(true)
+  lastActive           DateTime?
+  connectionsSent      Connection[]        @relation("ConnectionsSent")
+  connectionsReceived   Connection[]       @relation("ConnectionsReceived")
+  documents           Document[]          @relation("UserDocuments")
+  workExperience      WorkExperience[]
+  projects            Project[]
+  education           Education[]
+  resume              String?
+  coverLetter         String?
+  certificates        String[]
+  accounts            Account[]
+  sessions            Session[]
+  jobs                Job[]
+  offers              Offer[]
+  interviews          Interview[]
+  rejections          Rejection[]
+  notifications       Notification[]
+  applications        Application[]       @relation("JobApplications")
+  JobListings         JobListing[]       @relation("JobListings")
+  messagesSent        Message[]           @relation("SentMessages")
+  messagesReceived    Message[]           @relation("ReceivedMessages")
+  jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
+  endorsementsGiven    SkillEndorsement[] @relation("Endorser")
+  endorsementsReceived  SkillEndorsement[] @relation("Endorsees")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
+
 
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
