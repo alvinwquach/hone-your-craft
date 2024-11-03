@@ -7,62 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum WorkLocation {
-  ONSITE
-  HYBRID
-  REMOTE
-}
-
-enum InterviewType {
-  FINAL_ROUND
-  ON_SITE
-  TECHNICAL
-  PANEL
-  PHONE_SCREEN
-  ASSESSMENT
-  INTERVIEW
-  VIDEO_INTERVIEW
-  FOLLOW_UP
-}
-
-enum ApplicationStatus {
-  SAVED
-  APPLIED
-  INTERVIEW
-  OFFER
-  REJECTED
-}
-
-enum RejectionInitiator {
-  APPLICANT
-  COMPANY
-}
-
 enum UserType {
   CLIENT
   CANDIDATE
 }
 
-enum JobType {
-  FULL_TIME
-  PART_TIME
-  CONTRACT
-  INTERNSHIP
-  TEMPORARY
-}
-
-enum JobPostingStatus {
-  OPEN
-  CLOSED
-  FILLED
-}
-
 enum ExperienceLevel {
+  INTERN
+  TRAINEE
   JUNIOR
+  ASSOCIATE
   MID
   SENIOR
+  LEAD
   STAFF
   PRINCIPAL
+  MANAGER
+  DIRECTOR
+  VP
+  EXECUTIVE
+  C_LEVEL
 }
 
 enum YearsOfExperience {
@@ -80,12 +44,66 @@ enum YearsOfExperience {
   TEN_PLUS_YEARS
 }
 
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  TEMPORARY
+}
+
+enum JobPostingStatus {
+  OPEN
+  CLOSED
+  FILLED
+}
+
+enum WorkLocation {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
 enum Availability {
   IMMEDIATELY
   WITHIN_ONE_WEEK
   WITHIN_TWO_WEEKS
   ONE_MONTH
   NEGOTIABLE
+}
+
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+enum RejectionInitiator {
+  APPLICANT
+  COMPANY
+}
+
+enum InterviewType {
+  FINAL_ROUND
+  ON_SITE
+  TECHNICAL
+  PANEL
+  PHONE_SCREEN
+  ASSESSMENT
+  INTERVIEW
+  VIDEO_INTERVIEW
+  FOLLOW_UP
+}
+
+enum MentorshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+  IN_PROGRESS
 }
 
 enum ProjectType {
@@ -218,6 +236,12 @@ model Notification {
   @@map("notifications")
 }
 
+model Tag {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name    String   @unique
+  jobTags JobTag[] @relation("JobTags")
+}
+
 model JobListing {
   id                   String              @id @default(auto()) @map("_id") @db.ObjectId
   user                 User                @relation("JobListings", fields: [userId], references: [id], onDelete: Cascade)
@@ -229,6 +253,7 @@ model JobListing {
   experienceLevels     ExperienceLevel[]
   yearsOfExperience    Int?
   description          String
+  responsibilities     String[]
   industry             String?
   location             String?
   workLocation         WorkLocation?
@@ -237,7 +262,9 @@ model JobListing {
   salaryRangeMin       Float?
   salaryRangeMax       Float?
   status               JobPostingStatus    @default(OPEN)
-  requiredSkills       String[]
+  requiredEducation    String?
+  interviewProcess     String[]
+  requiredSkills       JobSkill[]          @relation("JobSkills") 
   bonusSkills          String[]
   views                Int                 @default(0)
   applications         Application[]       @relation("JobApplications")
@@ -247,8 +274,19 @@ model JobListing {
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
+  jobTags              JobTag[]            @relation("JobTags")
 
   @@map("job_postings")
+}
+
+model JobTag {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  jobListing   JobListing @relation("JobTags", fields: [jobListingId], references: [id])
+  jobListingId String     @db.ObjectId
+  tag          Tag        @relation("JobTags", fields: [tagId], references: [id])
+  tagId        String     @db.ObjectId
+
+  @@unique([jobListingId, tagId])
 }
 
 model JobRecommendation {
@@ -275,6 +313,7 @@ model WorkExperience {
   startDate   DateTime
   endDate     DateTime?
   description String?
+  projects    Project[] @relation("ProjectWorkExperience")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -282,38 +321,69 @@ model WorkExperience {
 }
 
 model Project {
-  id           String       @id @default(auto()) @map("_id") @db.ObjectId
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String       @db.ObjectId
-  title        String
-  description  String?
-  url          String?
-  technologies String[]
-  role         String?
-  startDate    DateTime?
-  endDate      DateTime?
-  images       String[]
-  isFeatured   Boolean      @default(false)
-  projectType  ProjectType?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String          @db.ObjectId
+  title            String
+  description      String?
+  url              String?
+  technologies     String[]
+  role             String?
+  startDate        DateTime?
+  endDate          DateTime?
+  images           String[]
+  isFeatured       Boolean         @default(false)
+  projectType      ProjectType?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  workExperience   WorkExperience? @relation("ProjectWorkExperience", fields: [workExperienceId], references: [id])
+  workExperienceId String?         @db.ObjectId
+  education        Education?      @relation("ProjectEducation", fields: [educationId], references: [id])
+  educationId      String?         @db.ObjectId
+  collaborations   Collaboration[] @relation("ProjectCollaborations")
 
   @@map("projects")
 }
 
-model Education {
+model Collaboration {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String   @db.ObjectId
+  projectId      String   @db.ObjectId
+  project        Project  @relation("ProjectCollaborations", fields: [projectId], references: [id])
+  collaboratorId String   @db.ObjectId
+  collaborator   User     @relation("UserCollaborations", fields: [collaboratorId], references: [id])
+  role           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Education {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String    @db.ObjectId
   education      String
   graduationDate DateTime
   degree         String
   major          String
   gpa            Float?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  projects       Project[] @relation("ProjectEducation")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@map("education")
+}
+
+model ApplicationStage {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  applicationId String            @db.ObjectId
+  application   Application       @relation("ApplicationStages", fields: [applicationId], references: [id], onDelete: Cascade)
+  stage         ApplicationStatus
+  description   String?
+  attachments   String[]
+  notes         String?
+  updatedAt     DateTime          @updatedAt
+  createdAt     DateTime          @default(now())
+
+  @@index([applicationId])
 }
 
 model Application {
@@ -324,6 +394,8 @@ model Application {
   jobListing   JobListing        @relation("JobApplications", fields: [jobListingId], references: [id])
   status       ApplicationStatus @default(APPLIED)
   appliedAt    DateTime          @default(now())
+
+  stages ApplicationStage[] @relation("ApplicationStages")
 
   @@map("applications")
 }
@@ -344,7 +416,7 @@ model Job {
   status       ApplicationStatus?
   interviews   Interview[]
   offer        Offer[]
-  rejection    Rejection[]
+  rejection     Rejection[]
   jobSkills    JobSkill[]
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
@@ -353,21 +425,26 @@ model Job {
 }
 
 model JobSkill {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  job        Job      @relation(fields: [jobId], references: [id])
-  jobId      String   @db.ObjectId
-  skill      String
-  isRequired Boolean
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  job          Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId        String      @db.ObjectId
+  skill        Skill       @relation("JobSkillToSkill", fields: [skillId], references: [id], onDelete: Cascade)
+  skillId      String      @db.ObjectId
+  isRequired   Boolean
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  jobListing   JobListing? @relation("JobSkills", fields: [jobListingId], references: [id], onDelete: Cascade)
+  jobListingId String?     @db.ObjectId
 
-  @@map("job_skill")
+  @@unique([jobListingId, skillId])
+  @@map("job_skills") 
 }
 
 model Skill {
   id           String             @id @default(auto()) @map("_id") @db.ObjectId
   name         String             @unique
   endorsements SkillEndorsement[] @relation("SkillEndorsements")
+  jobSkills    JobSkill[]         @relation("JobSkillToSkill")
 }
 
 model SkillEndorsement {
@@ -427,6 +504,52 @@ model Rejection {
   @@map("rejection")
 }
 
+model UserStatus {
+  id                   String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String        @unique @db.ObjectId
+  user                 User          @relation("UserStatusRelation", fields: [userId], references: [id], onDelete: Cascade)
+  availability         Availability?
+  availableFrom        DateTime?
+  openToWork           Boolean       @default(false)
+  openToWorkVisibility Visibility    @default(PUBLIC)
+  hiring               Boolean       @default(false)
+  hiringVisibility     Visibility    @default(PUBLIC)
+  readyToInterview     Boolean       @default(false)
+  openToOffers         Boolean       @default(false)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}
+
+model Mentorship {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  mentorId  String           @db.ObjectId
+  mentor    User             @relation("MentorRelationships", fields: [mentorId], references: [id])
+  menteeId  String           @db.ObjectId
+  mentee    User             @relation("MenteeRelationships", fields: [menteeId], references: [id])
+  status    MentorshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model SocialLinks {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String  @unique @db.ObjectId
+  user             User    @relation("UserSocialLinks", fields: [userId], references: [id])
+  linkedinUrl      String?
+  githubUrl        String?
+  twitterUrl       String?
+  facebookUrl      String?
+  instagramUrl     String?
+  youtubeUrl       String?
+  tiktokUrl        String?
+  pinterestUrl     String?
+  redditUrl        String?
+  snapchatUrl      String?
+  mediumUrl        String?
+  stackOverflowUrl String?
+  behanceUrl       String?
+}
+
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -457,49 +580,30 @@ model Session {
   @@map("session")
 }
 
-model UserStatus {
-  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId               String   @unique @db.ObjectId
-  user                 User     @relation("UserStatusRelation", fields: [userId], references: [id], onDelete: Cascade)
-  availability         Availability?
-  availableFrom        DateTime?
-  openToWork           Boolean   @default(false)
-  openToWorkVisibility Visibility @default(PUBLIC)
-  hiring               Boolean   @default(false)
-  hiringVisibility     Visibility @default(PUBLIC)
-  readyToInterview     Boolean   @default(false)
-  openToOffers         Boolean   @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-}
-
 model User {
   id                   String              @id @default(auto()) @map("_id") @db.ObjectId
   name                 String?
   email                String?             @unique
   emailVerified        DateTime?
   image                String?
+  company              String?
   bio                  String?
   website              String?
-  linkedin             String?
-  github               String?
-  twitter              String?
-  facebook             String?
-  instagram            String?
-  youtube              String?
+  socialLinks          SocialLinks?        @relation("UserSocialLinks")
+  title                String?
   role                 String?
   userType             UserType?
   primaryRole          String?
   openToRoles          String[]
   yearsOfExperience    YearsOfExperience?
   skills               String[]
-  status               UserStatus?        @relation("UserStatusRelation")
+  status               UserStatus?         @relation("UserStatusRelation")
   jobAlert             Boolean             @default(true)
   candidateAlert       Boolean             @default(true)
   lookingForMentor     Boolean             @default(false)
   offeringMentorship   Boolean             @default(false)
-  preferredLanguages   String[]
-  timezone             String?
+  mentorshipsOffered   Mentorship[]        @relation("MentorRelationships")
+  mentorshipsRequested Mentorship[]        @relation("MenteeRelationships")
   profileCompletion    Int                 @default(0)
   isProfilePublic      Boolean             @default(true)
   lastActive           DateTime?
@@ -509,9 +613,6 @@ model User {
   workExperience       WorkExperience[]
   projects             Project[]
   education            Education[]
-  resume               String?
-  coverLetter          String?
-  certificates         String[]
   accounts             Account[]
   sessions             Session[]
   jobs                 Job[]
@@ -526,9 +627,9 @@ model User {
   jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
   endorsementsGiven    SkillEndorsement[]  @relation("Endorser")
   endorsementsReceived SkillEndorsement[]  @relation("Endorsees")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  collaborations       Collaboration[]     @relation("UserCollaborations")
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 
   @@map("users")
 }
