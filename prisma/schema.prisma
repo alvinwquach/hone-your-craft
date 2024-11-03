@@ -361,13 +361,15 @@ model Education {
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String    @db.ObjectId
   education      String
-  graduationDate DateTime
+  startDate      DateTime? 
+  graduationDate DateTime   
   degree         String
-  major          String
+  majors         String[]  
+  minor          String?    
   gpa            Float?
-  projects       Project[] @relation("ProjectEducation")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  projects       Project[]  @relation("ProjectEducation")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   @@map("education")
 }
