@@ -28,7 +28,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <SessionProvider>
           <Header />
-          <main className="">{children}</main>
+          <main className="bg-zinc-800">{children}</main>
           <ToastContainer />
         </SessionProvider>
       </body>
