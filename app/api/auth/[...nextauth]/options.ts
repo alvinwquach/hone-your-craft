@@ -77,27 +77,27 @@ const authOptions: NextAuthOptions = {
       } else if (user && user.email) {
         // If user is new or exists, find their details in the database
         const foundUser = await prisma.user.findUnique({
-          // Find user by email
           where: { email: user.email },
         });
         if (foundUser) {
-          // Store user's ID in the token
-          token.userId = foundUser.id;
-          // Store user's type in the token
-          token.userType = foundUser.userType;
-          // Store user's createdAt in the token
-          token.createdAt = user.createdAt;
+          Object.assign(token, {
+            userId: foundUser.id,
+            userType: foundUser.userType,
+            createdAt: user.createdAt,
+          });
         }
       }
-      // Return the updated token
+
       return token;
     },
     // Callback triggered whenever a session is checked
     async session({ session, token }) {
       if (session.user) {
-        session.user.userId = token.userId as string | null | undefined;
-        session.user.userType = token.userType as string | null | undefined;
-        session.user.createdAt = token.createdAt as string | null | undefined;
+        Object.assign(session.user, {
+          userId: token.userId,
+          userType: token.userType,
+          createdAt: token.createdAt,
+        });
       }
       return session;
     },
