@@ -8,43 +8,44 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment, Suspense } from "react";
 import { IconType } from "react-icons";
 import { AiOutlineHome } from "react-icons/ai";
-import { BsBriefcase } from "react-icons/bs";
-import { FiCalendar, FiUser } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiUser,
+  FiClipboard,
+  FiMessageCircle,
+} from "react-icons/fi";
 import { HiOutlineChevronDown } from "react-icons/hi";
-import { SiBaremetrics } from "react-icons/si";
 import { MdAssignmentInd } from "react-icons/md";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
   { href: "/profile", text: "Profile", icon: FiUser },
-  { href: "/track", text: "Track", icon: BsBriefcase },
+  { href: "/track", text: "Track", icon: FiClipboard },
   { href: "/calendar", text: "Calendar", icon: FiCalendar },
-  { href: "/metrics", text: "Metrics", icon: SiBaremetrics },
-  // { href: "/roles", text: "Roles", icon: MdAssignmentInd },
+  { href: "/messages", text: "Messages", icon: FiMessageCircle },
+  { href: "/jobs", text: "Jobs", icon: MdAssignmentInd },
 ];
 
-// function classNames(...classes: string[]) {
-//   return classes.filter(Boolean).join(" ");
-// }
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(" ");
+}
 
 export default function CustomNavigation() {
-  // const { data: session } = useSession();
   return (
     <>
-      <header className="fixed top-0 right-0 bg-gray-800 w-full h-20 flex items-center z-50 border-b border-gray-700">
+      <header className="fixed top-0 right-0 bg-zinc-900 w-full h-20 flex items-center z-50 border-b border-zinc-700">
         <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
         <div className="mr-6">
           <ProfileMenu />
         </div>
       </header>
-
-      {/* <div className="2xl:hidden">
+      <div className="2xl:hidden">
         <BottomNavigation />
       </div>
       <div className="hidden 2xl:block">
         <Sidebar />
-      </div> */}
+      </div>
     </>
   );
 }
@@ -57,7 +58,7 @@ function ProfileMenu() {
     <div className="flex items-center space-x-4">
       <Menu as="div" className="relative">
         <div>
-          <Menu.Button className="rounded-lg px-2 py-3 hover:bg-gray-700">
+          <Menu.Button className="rounded-lg px-2 py-3 hover:bg-zinc-700">
             <span className="sr-only">Open user menu</span>
             <div className="flex items-center">
               <Suspense fallback={<p>Loading user...</p>}>
@@ -73,7 +74,7 @@ function ProfileMenu() {
                   priority
                 />
               </Suspense>
-              <HiOutlineChevronDown className="w-6 h-6 ml-1 text-gray-500 transition-colors group-hover:text-gray-700" />
+              <HiOutlineChevronDown className="w-6 h-6 ml-1 text-zinc-500 transition-colors group-hover:text-zinc-700" />
             </div>
           </Menu.Button>
         </div>
@@ -104,30 +105,30 @@ function ProfileMenu() {
                     </span>
                   </div>
                 </Menu.Item>
-                <hr className="my-1 border-gray-200 w-4/5 mx-auto" />
+                <hr className="my-1 border-zinc-200 w-4/5 mx-auto" />
                 <div className="ml-6 mt-2 text-gray-400 text-xs">Personal</div>
                 <Menu.Item>
                   {({ active }) => (
                     <Link
                       href="/profile"
                       className={`${
-                        active ? "bg-gray-100" : ""
-                      } block px-4 py-2 text-sm text-gray-700 w-full text-left`}
+                        active ? "bg-zinc-100" : ""
+                      } block px-4 py-2 text-sm text-zinc-700 w-full text-left`}
                     >
                       Edit Profile
                     </Link>
                   )}
                 </Menu.Item>
 
-                <hr className="my-1 border-gray-200 w-4/5 mx-auto" />
+                <hr className="my-1 border-zinc-200 w-4/5 mx-auto" />
 
                 <Menu.Item>
                   {({ active }) => (
                     <button
                       onClick={() => signOut()}
                       className={`${
-                        active ? "bg-gray-100" : ""
-                      } block px-4 py-2 text-sm text-gray-700 w-full text-left`}
+                        active ? "bg-zinc-100" : ""
+                      } block px-4 py-2 text-sm text-zinc-700 w-full text-left`}
                     >
                       Log out
                     </button>
@@ -138,7 +139,7 @@ function ProfileMenu() {
               <Menu.Item>
                 <Link
                   href="/login"
-                  className="block px-4 py-2 text-sm text-gray-700 w-full text-left"
+                  className="block px-4 py-2 text-sm text-zinc-700 w-full text-left"
                 >
                   Log in
                 </Link>
@@ -151,121 +152,115 @@ function ProfileMenu() {
   );
 }
 
-// function Sidebar() {
-//   return (
-//     <nav className="fixed inset-y-0 left-0 z-50">
-//       <div className="fixed inset-y-0 left-0 w-24 bg-gray-800 z-40">
-//         <div className="h-full ">
-//           <div className="px-4 py-10 mt-10">
-//             <ul className="space-y-4">
-//               {navigation.map((item, index) => (
-//                 <SidebarItem
-//                   key={index}
-//                   href={item.href}
-//                   text={item.text}
-//                   icon={item.icon}
-//                 />
-//               ))}
-//             </ul>
-//           </div>
-//         </div>
-//       </div>
-//     </nav>
-//   );
-// }
+function Sidebar() {
+  return (
+    <nav className="fixed inset-y-0 left-0 z-50">
+      <div className="fixed inset-y-0 left-0 w-24 bg-zinc-900 z-40">
+        <div className="h-full ">
+          <div className="px-4 py-10 mt-10">
+            <ul className="space-y-4">
+              {navigation.map((item, index) => (
+                <SidebarItem
+                  key={index}
+                  href={item.href}
+                  text={item.text}
+                  icon={item.icon}
+                />
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
 
-// interface SidebarItemProps {
-//   href: string;
-//   text: string;
-//   icon: IconType;
-// }
+interface SidebarItemProps {
+  href: string;
+  text: string;
+  icon: IconType;
+}
 
-// function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
-//   const pathname = usePathname();
-//   const isActive = pathname === href;
+function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
 
-//   return (
-//     <li>
-//       <Link
-//         href={href}
-//         className={`flex flex-col items-center p-3 rounded-lg ${
-//           isActive
-//             ? "bg-gray-700"
-//             : "hover:bg-gray-700 hover:underline hover:text-gray-400"
-//         }`}
-//       >
-//         <Icon
-//           className={`w-6 h-6 ${isActive ? "text-blue-500" : "text-gray-300"}`}
-//         />
-//         <span
-//           className={`mt-1 text-xs ${
-//             isActive ? "text-blue-500" : "text-gray-300"
-//           }`}
-//         >
-//           {text}
-//         </span>
-//       </Link>
-//     </li>
-//   );
-// }
+  return (
+    <li>
+      <Link
+        href={href}
+        className={`flex flex-col items-center p-3 rounded-lg ${
+          isActive
+            ? "bg-zinc-700"
+            : "hover:bg-zinc-700 hover:underline hover:text-zinc-400"
+        }`}
+      >
+        <Icon
+          className={`w-6 h-6 ${isActive ? "text-blue-500" : "text-zinc-300"}`}
+        />
+        <span
+          className={`mt-1 text-xs ${
+            isActive ? "text-blue-500" : "text-zinc-300"
+          }`}
+        >
+          {text}
+        </span>
+      </Link>
+    </li>
+  );
+}
 
-// function BottomNavigation() {
-//   return (
-//     <div className="fixed bottom-0 z-50 w-full bg-gray-800 border-t border-gray-600 ">
-//       <div className="flex justify-around  my-2">
-//         {navigation.map((item, index) => (
-//           <BottomNavigationItem
-//             key={index}
-//             href={item.href}
-//             text={item.text}
-//             icon={item.icon}
-//           />
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
+function BottomNavigation() {
+  return (
+    <div className="fixed bottom-0 z-50 w-full bg-zinc-900 border-t border-zinc-600">
+      <div className="flex justify-around my-2">
+        {navigation.map((item, index) => (
+          <BottomNavigationItem
+            key={index}
+            href={item.href}
+            text={item.text}
+            icon={item.icon}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
-// interface BottomNavigationItemProps {
-//   href: string;
-//   text: string;
-//   icon: IconType;
-// }
+interface BottomNavigationItemProps {
+  href: string;
+  text: string;
+  icon: IconType;
+}
 
-// function BottomNavigationItem({
-//   href,
-//   text,
-//   icon: Icon,
-// }: BottomNavigationItemProps) {
-//   const pathname = usePathname();
-//   const isActive = pathname === href;
+function BottomNavigationItem({
+  href,
+  text,
+  icon: Icon,
+}: BottomNavigationItemProps) {
+  const pathname = usePathname();
+  const isActive = pathname === href;
 
-//   return (
-//     <Link href={href}>
-//       <button
-//         className={`inline-flex flex-col items-center justify-center rounded-lg group ${
-//           isActive
-//             ? "bg-gray-700 "
-//             : "hover:bg-gray-700 hover:underline hover:text-gray-400"
-//         }`}
-//       >
-//         <Icon
-//           className={`w-5 h-5 mt-1 ${
-//             isActive ? "text-blue-500" : "text-gray-400"
-//           }`}
-//         />
-//         <span
-//           className={`text-xs  ${
-//             isActive ? "text-blue-500" : "text-gray-400 "
-//           }`}
-//         >
-//           <span className="text-xs">{text}</span>
-//         </span>
-//       </button>
-//     </Link>
-//   );
-// }
-
-
-
-
+  return (
+    <Link href={href}>
+      <button
+        className={`inline-flex flex-col items-center justify-center rounded-lg group ${
+          isActive
+            ? "bg-zinc-700"
+            : "hover:bg-zinc-700 hover:underline hover:text-zinc-400"
+        }`}
+      >
+        <Icon
+          className={`w-5 h-5 mt-1 ${
+            isActive ? "text-blue-500" : "text-zinc-400"
+          }`}
+        />
+        <span
+          className={`text-xs ${isActive ? "text-blue-500" : "text-zinc-400"}`}
+        >
+          {text}
+        </span>
+      </button>
+    </Link>
+  );
+}

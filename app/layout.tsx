@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import SessionProvider from "./SessionProvider";
-import "./globals.css";
-import Header from "./components/common/Header";
-import BottomNavigationDock from "./components/common/BottomNavigationDock";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import SessionProvider from "./SessionProvider";
+import Header from "./components/common/Header";
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,7 +29,6 @@ export default function RootLayout({
         <SessionProvider>
           <Header />
           <main className="">{children}</main>
-          <BottomNavigationDock />
           <ToastContainer />
         </SessionProvider>
       </body>
