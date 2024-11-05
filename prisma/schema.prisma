@@ -552,6 +552,27 @@ model SocialLinks {
   behanceUrl       String?
 }
 
+model Badge {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  description String
+  iconUrl     String?  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userBadges  UserBadge[] @relation("BadgeUserBadges") 
+}
+
+model UserBadge {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation("UserBadges", fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String   @db.ObjectId
+  badge     Badge    @relation("BadgeUserBadges", fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime @default(now())
+  progress  Int      @default(0) 
+}
+
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -630,11 +651,12 @@ model User {
   endorsementsGiven    SkillEndorsement[]  @relation("Endorser")
   endorsementsReceived SkillEndorsement[]  @relation("Endorsees")
   collaborations       Collaboration[]     @relation("UserCollaborations")
+  badges               UserBadge[]         @relation("UserBadges")
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
-
   @@map("users")
 }
+
 
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
