@@ -27,27 +27,39 @@ const navigation = [
   { href: "/jobs", text: "Jobs", icon: MdAssignmentInd },
 ];
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function CustomNavigation() {
-  return (
-    <>
+  const { status } = useSession();
+
+  if (status === "unauthenticated") {
+    return (
       <header className="fixed top-0 right-0 bg-zinc-900 w-full h-20 flex items-center z-50 border-b border-zinc-700">
         <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
         <div className="mr-6">
           <ProfileMenu />
         </div>
       </header>
-      <div className="2xl:hidden">
-        <BottomNavigation />
-      </div>
-      <div className="hidden 2xl:block">
-        <Sidebar />
-      </div>
-    </>
-  );
+    );
+  }
+
+  if (status === "authenticated") {
+    return (
+      <>
+        <header className="fixed top-0 right-0 bg-zinc-900 w-full h-20 flex items-center z-50 border-b border-zinc-700">
+          <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
+          <div className="mr-6">
+            <ProfileMenu />
+          </div>
+        </header>
+        <div className="2xl:hidden">
+          <BottomNavigation />
+        </div>
+        <div className="hidden 2xl:block">
+          <Sidebar />
+        </div>
+      </>
+    );
+  }
+  return null;
 }
 
 function ProfileMenu() {
