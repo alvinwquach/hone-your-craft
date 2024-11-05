@@ -51,14 +51,15 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`p-2 rounded-2xl shadow-sm ${
-                  snapshot.isDraggingOver ? "bg-gray-900" : "bg-gray-800"
+                className={`p-2 rounded-2xl shadow-md ${
+                  snapshot.isDraggingOver ? "bg-gray-900" : "bg-black"
                 }`}
               >
-                <h2 className="flex justify-between semibold text-base p-2">
+                {/* Column Header */}
+                <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 bg-black rounded-t-2xl">
                   {iDToColumnText[id]}
                   {/* Display the count of jobs in the column */}
-                  <span className="text-black bg-gray-200 text-sm font-normal rounded-full px-2 py-1">
+                  <span className="bg-gray-500 text-white text-sm font-normal rounded-full px-2 py-1">
                     {!titleSearchString && !companySearchString
                       ? jobs.length // Display total job count if no search strings
                       : jobs.filter(
@@ -73,12 +74,14 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                     {/* Display filtered job count if there's any search string */}
                   </span>
                 </h2>
+
+                {/* Add Job Button */}
                 <div className="flex justify-center">
                   <button
-                    className="py-1 px-2 my-2 bg-gray-700 hover:bg-gray-600 w-full text-center rounded-lg"
+                    className="py-2 px-4 my-2 bg-neutral-800 hover:bg-neutral-700 w-full text-center rounded-lg text-white"
                     onClick={openAddJobModal}
                   >
-                    <HiPlusCircle className="h-10 w-10 text-gray-400 inline-block" />
+                    <HiPlusCircle className="h-10 w-10 inline-block" />
                   </button>
                   {isAddJobModalOpen && (
                     <AddJobModal
@@ -89,6 +92,8 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                     />
                   )}
                 </div>
+
+                {/* Job Cards List */}
                 <div className="overflow-y-auto overflow-x-hidden max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {jobs.map((job, index) => {
                     if (

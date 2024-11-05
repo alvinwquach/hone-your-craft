@@ -79,7 +79,7 @@ function JobCard({
   return (
     <div>
       <div
-        className="relative bg-gray-700 rounded-lg shadow-md mb-2 "
+        className="relative bg-neutral-800 hover:bg-neutral-700 rounded-lg shadow-md mb-2 "
         {...draggableProps}
         {...draghandleProps}
         ref={innerRef}
@@ -90,7 +90,7 @@ function JobCard({
         role="button"
       >
         {isHovering && (
-          <div className="absolute inset-0 border-2 border-sky-600 rounded-lg pointer-events-none"></div>
+          <div className="absolute inset-0 border-2 border-white rounded-lg pointer-events-none"></div>
         )}
         <div className="p-4 sm:p-2 flex justify-between items-center text-gray-300 relative">
           <div>
@@ -102,7 +102,7 @@ function JobCard({
           <div className="absolute top-0 right-0 mr-2 mt-2">
             {isHovering && (
               <button
-                className="text-gray-400 hover:text-gray-500 border-2 p-0.5 rounded-lg"
+                className="text-gray-300 hover:text-white border-2 p-0.5 rounded-lg hover:bg-gray-700"
                 onClick={handleDeleteJob}
               >
                 <HiTrash className="h-4 w-4" />
@@ -116,7 +116,7 @@ function JobCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`View job posting for ${job.title} at ${job.company}`}
-                className=" text-gray-400 hover:text-gray-500 border-2 p-0.5 rounded-lg"
+                className="text-gray-300 hover:text-white border-2 p-0.5 rounded-lg hover:bg-gray-700"
                 onClick={(event) => event.stopPropagation()}
               >
                 <HiLink className="h-4 w-4" />
