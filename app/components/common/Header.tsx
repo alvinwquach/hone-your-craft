@@ -29,40 +29,32 @@ const navigation = [
 
 export default function CustomNavigation() {
   const { status } = useSession();
+  const isAuthenticated = status === "authenticated";
 
-  if (status === "unauthenticated") {
-    return (
+  return (
+    <>
       <header className="fixed top-0 right-0 bg-zinc-900 w-full h-20 flex items-center z-50 border-b border-zinc-700">
         <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
         <div className="mr-6">
-          <ProfileMenu />
+          <ProfileMenu isAuthenticated={isAuthenticated} />
         </div>
       </header>
-    );
-  }
 
-  if (status === "authenticated") {
-    return (
-      <>
-        <header className="fixed top-0 right-0 bg-zinc-900 w-full h-20 flex items-center z-50 border-b border-zinc-700">
-          <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
-          <div className="mr-6">
-            <ProfileMenu />
+      {isAuthenticated && (
+        <>
+          <div className="2xl:hidden">
+            <BottomNavigation />
           </div>
-        </header>
-        <div className="2xl:hidden">
-          <BottomNavigation />
-        </div>
-        <div className="hidden 2xl:block">
-          <Sidebar />
-        </div>
-      </>
-    );
-  }
-  return null;
+          <div className="hidden 2xl:block">
+            <Sidebar />
+          </div>
+        </>
+      )}
+    </>
+  );
 }
 
-function ProfileMenu() {
+function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -77,8 +69,9 @@ function ProfileMenu() {
                 <Image
                   src={user?.image || defaultPfp}
                   alt={
-                    `${user?.name}'s profile picture` ||
-                    "A default profile picture"
+                    user?.name
+                      ? `${user?.name}'s profile picture`
+                      : "A default profile picture"
                   }
                   height={40}
                   width={40}
@@ -101,7 +94,7 @@ function ProfileMenu() {
           leaveTo="transform opacity-0 scale-95"
         >
           <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-            {user ? (
+            {isAuthenticated ? (
               <>
                 <Menu.Item>
                   <div className="px-4 py-2 flex items-center space-x-2">
@@ -113,7 +106,7 @@ function ProfileMenu() {
                       className="rounded-full"
                     />
                     <span className="text-sm text-gray-700 mb-3 font-semibold">
-                      {user.name}
+                      {user?.name}
                     </span>
                   </div>
                 </Menu.Item>
