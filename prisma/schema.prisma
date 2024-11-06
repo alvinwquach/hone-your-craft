@@ -12,6 +12,28 @@ enum UserType {
   CANDIDATE
 }
 
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+enum RejectionInitiator {
+  APPLICANT
+  COMPANY
+}
+
+enum MentorshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+  IN_PROGRESS
+}
+
 enum ExperienceLevel {
   INTERN
   TRAINEE
@@ -72,19 +94,6 @@ enum Availability {
   NEGOTIABLE
 }
 
-enum ApplicationStatus {
-  SAVED
-  APPLIED
-  INTERVIEW
-  OFFER
-  REJECTED
-}
-
-enum RejectionInitiator {
-  APPLICANT
-  COMPANY
-}
-
 enum InterviewType {
   FINAL_ROUND
   ON_SITE
@@ -95,15 +104,6 @@ enum InterviewType {
   INTERVIEW
   VIDEO_INTERVIEW
   FOLLOW_UP
-}
-
-enum MentorshipStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-  COMPLETED
-  CANCELLED
-  IN_PROGRESS
 }
 
 enum ProjectType {
@@ -131,7 +131,7 @@ enum NotificationType {
   GENERAL_ANNOUNCEMENT
   SYSTEM_ALERT
   APPLICATION_STATUS_CHANGE
-  NEW_JOB_LISTING
+  NEW_JOB_POSTING
   MESSAGE_RECEIVED
   FEEDBACK_RECEIVED
   REMINDER
@@ -188,6 +188,17 @@ model Connection {
   @@unique([requesterId, receiverId])
 }
 
+model Mentorship {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  mentorId  String           @db.ObjectId
+  mentor    User             @relation("MentorRelationships", fields: [mentorId], references: [id])
+  menteeId  String           @db.ObjectId
+  mentee    User             @relation("MenteeRelationships", fields: [menteeId], references: [id])
+  status    MentorshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
 model Message {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
   sender            User        @relation("SentMessages", fields: [senderId], references: [id])
@@ -236,19 +247,14 @@ model Notification {
   @@map("notifications")
 }
 
-model Tag {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  name    String   @unique
-  jobTags JobTag[] @relation("JobTags")
-}
-
-model JobListing {
+model JobPosting {
   id                   String              @id @default(auto()) @map("_id") @db.ObjectId
-  user                 User                @relation("JobListings", fields: [userId], references: [id], onDelete: Cascade)
+  user                 User                @relation("JobPostings", fields: [userId], references: [id], onDelete: Cascade)
   userId               String              @db.ObjectId
   company              String?
   title                String
   jobType              JobType?
+  url                  String?
   applicationDeadline  DateTime?
   experienceLevels     ExperienceLevel[]
   yearsOfExperience    Int?
@@ -264,13 +270,12 @@ model JobListing {
   status               JobPostingStatus    @default(OPEN)
   requiredEducation    String?
   interviewProcess     String[]
-  requiredSkills       JobSkill[]          @relation("JobSkills")
-  bonusSkills          String[]
+  requiredSkills       JobSkill[]          @relation("RequiredJobSkills") 
+  bonusSkills          JobSkill[]          @relation("BonusJobSkills")    
   views                Int                 @default(0)
   applications         Application[]       @relation("JobApplications")
   applicationsReceived Int                 @default(0)
   isArchived           Boolean             @default(false)
-  url                  String?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
@@ -281,20 +286,26 @@ model JobListing {
 
 model JobTag {
   id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  jobListing   JobListing @relation("JobTags", fields: [jobListingId], references: [id])
-  jobListingId String     @db.ObjectId
+  jobPosting   JobPosting @relation("JobTags", fields: [jobPostingId], references: [id])
+  jobPostingId String     @db.ObjectId
   tag          Tag        @relation("JobTags", fields: [tagId], references: [id])
   tagId        String     @db.ObjectId
 
-  @@unique([jobListingId, tagId])
+  @@unique([jobPostingId, tagId])
+}
+
+model Tag {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name    String   @unique
+  jobTags JobTag[] @relation("JobTags")
 }
 
 model JobRecommendation {
   id            String     @id @default(auto()) @map("_id") @db.ObjectId
   userId        String     @db.ObjectId
   user          User       @relation("JobRecommendations", fields: [userId], references: [id])
-  jobId         String     @db.ObjectId
-  job           JobListing @relation("JobRecommendations", fields: [jobId], references: [id])
+  jobPostingId         String     @db.ObjectId
+  job           JobPosting @relation("JobRecommendations", fields: [jobPostingId], references: [id])
   recommendedAt DateTime   @default(now())
   source        String?
   rationale     String?
@@ -302,6 +313,46 @@ model JobRecommendation {
   acceptedAt    DateTime?
   rejectedAt    DateTime?
   feedback      String?
+}
+
+model JobSkill {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  jobId        String      @db.ObjectId
+  job          Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill        Skill       @relation("JobSkillToSkill", fields: [skillId], references: [id], onDelete: Cascade)
+  skillId      String      @db.ObjectId
+  isRequired   Boolean
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  jobPostingId String?     @db.ObjectId
+  jobPosting   JobPosting? @relation("RequiredJobSkills", fields: [jobPostingId], references: [id], onDelete: Cascade)  
+  jobPostingBonusId String? @db.ObjectId
+  jobPostingBonus JobPosting? @relation("BonusJobSkills", fields: [jobPostingBonusId], references: [id], onDelete: Cascade)  
+
+  @@unique([jobPostingId, skillId])
+  @@unique([jobPostingBonusId, skillId]) 
+  @@map("job_skills")
+}
+
+model Skill {
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  name         String             @unique
+  endorsements SkillEndorsement[] @relation("SkillEndorsements")
+  jobSkills    JobSkill[]         @relation("JobSkillToSkill")
+}
+
+model SkillEndorsement {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  endorserId String   @db.ObjectId
+  endorser   User     @relation("Endorser", fields: [endorserId], references: [id], onDelete: Cascade)
+  userId     String   @db.ObjectId
+  user       User     @relation("Endorsees", fields: [userId], references: [id], onDelete: Cascade)
+  skillId    String   @db.ObjectId
+  skill      Skill    @relation("SkillEndorsements", fields: [skillId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([endorserId, userId, skillId])
+  @@map("skill_endorsements")
 }
 
 model WorkExperience {
@@ -374,6 +425,20 @@ model Education {
   @@map("education")
 }
 
+model Application {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  candidateId  String            @db.ObjectId
+  candidate    User              @relation("JobApplications", fields: [candidateId], references: [id])
+  jobPostingId String            @db.ObjectId
+  jobPosting   JobPosting        @relation("JobApplications", fields: [jobPostingId], references: [id])
+  status       ApplicationStatus @default(APPLIED)
+  appliedAt    DateTime          @default(now())
+
+  stages ApplicationStage[] @relation("ApplicationStages")
+
+  @@map("applications")
+}
+
 model ApplicationStage {
   id            String            @id @default(auto()) @map("_id") @db.ObjectId
   applicationId String            @db.ObjectId
@@ -386,20 +451,6 @@ model ApplicationStage {
   createdAt     DateTime          @default(now())
 
   @@index([applicationId])
-}
-
-model Application {
-  id           String            @id @default(auto()) @map("_id") @db.ObjectId
-  candidateId  String            @db.ObjectId
-  candidate    User              @relation("JobApplications", fields: [candidateId], references: [id])
-  jobListingId String            @db.ObjectId
-  jobListing   JobListing        @relation("JobApplications", fields: [jobListingId], references: [id])
-  status       ApplicationStatus @default(APPLIED)
-  appliedAt    DateTime          @default(now())
-
-  stages ApplicationStage[] @relation("ApplicationStages")
-
-  @@map("applications")
 }
 
 model Job {
@@ -424,43 +475,6 @@ model Job {
   updatedAt    DateTime           @updatedAt
 
   @@map("job")
-}
-
-model JobSkill {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  job          Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId        String      @db.ObjectId
-  skill        Skill       @relation("JobSkillToSkill", fields: [skillId], references: [id], onDelete: Cascade)
-  skillId      String      @db.ObjectId
-  isRequired   Boolean
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  jobListing   JobListing? @relation("JobSkills", fields: [jobListingId], references: [id], onDelete: Cascade)
-  jobListingId String?     @db.ObjectId
-
-  @@unique([jobListingId, skillId])
-  @@map("job_skills")
-}
-
-model Skill {
-  id           String             @id @default(auto()) @map("_id") @db.ObjectId
-  name         String             @unique
-  endorsements SkillEndorsement[] @relation("SkillEndorsements")
-  jobSkills    JobSkill[]         @relation("JobSkillToSkill")
-}
-
-model SkillEndorsement {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  endorserId String   @db.ObjectId
-  endorser   User     @relation("Endorser", fields: [endorserId], references: [id], onDelete: Cascade)
-  userId     String   @db.ObjectId
-  user       User     @relation("Endorsees", fields: [userId], references: [id], onDelete: Cascade)
-  skillId    String   @db.ObjectId
-  skill      Skill    @relation("SkillEndorsements", fields: [skillId], references: [id])
-  createdAt  DateTime @default(now())
-
-  @@unique([endorserId, userId, skillId])
-  @@map("skill_endorsements")
 }
 
 model Interview {
@@ -520,17 +534,6 @@ model UserStatus {
   openToOffers         Boolean       @default(false)
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
-}
-
-model Mentorship {
-  id        String           @id @default(auto()) @map("_id") @db.ObjectId
-  mentorId  String           @db.ObjectId
-  mentor    User             @relation("MentorRelationships", fields: [mentorId], references: [id])
-  menteeId  String           @db.ObjectId
-  mentee    User             @relation("MenteeRelationships", fields: [menteeId], references: [id])
-  status    MentorshipStatus @default(PENDING)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
 }
 
 model SocialLinks {
@@ -655,7 +658,7 @@ model User {
   rejections           Rejection[]
   notifications        Notification[]
   applications         Application[]       @relation("JobApplications")
-  JobListings          JobListing[]        @relation("JobListings")
+  jobPostings          JobPosting[]        @relation("JobPostings")
   messagesSent         Message[]           @relation("SentMessages")
   messagesReceived     Message[]           @relation("ReceivedMessages")
   jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
