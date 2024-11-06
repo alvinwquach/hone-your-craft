@@ -95,15 +95,34 @@ enum Availability {
 }
 
 enum InterviewType {
-  FINAL_ROUND
-  ON_SITE
-  TECHNICAL
-  PANEL
-  PHONE_SCREEN
-  ASSESSMENT
-  INTERVIEW
-  VIDEO_INTERVIEW
-  FOLLOW_UP
+  FINAL_ROUND     
+  ON_SITE            
+  TECHNICAL          
+  PANEL               
+  PHONE_SCREEN        
+  ASSESSMENT          
+  INTERVIEW           
+  VIDEO_INTERVIEW     
+  FOLLOW_UP           
+  OFFER_EXTENDED      
+  OFFER_ACCEPTED      
+  OFFER_REJECTED      
+  REJECTION           
+  CONTRACT_SIGNED     
+  SALARY_NEGOTIATION  
+  FINAL_DECISION      
+  PRE_SCREENING       
+  GROUP_INTERVIEW     
+  REFERENCE_CHECK
+  TRIAL_PERIOD        
+  FINAL_OFFER        
+  OFFER_WITHDRAWN     
+  NEGOTIATION_PHASE   
+  ADDITIONAL_DOCS_REQUIRED 
+  NO_SHOW             
+  CANDIDATE_WITHDREW  
+  HIRING_FREEZE
+  TAKE_HOME_ASSESSMENT    
 }
 
 enum ProjectType {
@@ -270,8 +289,8 @@ model JobPosting {
   status               JobPostingStatus    @default(OPEN)
   requiredEducation    String?
   interviewProcess     String[]
-  requiredSkills       JobSkill[]          @relation("RequiredJobSkills") 
-  bonusSkills          JobSkill[]          @relation("BonusJobSkills")    
+  requiredSkills       JobSkill[]          @relation("RequiredJobSkills")
+  bonusSkills          JobSkill[]          @relation("BonusJobSkills")
   views                Int                 @default(0)
   applications         Application[]       @relation("JobApplications")
   applicationsReceived Int                 @default(0)
@@ -280,6 +299,9 @@ model JobPosting {
   updatedAt            DateTime            @updatedAt
   jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
   jobTags              JobTag[]            @relation("JobTags")
+  rejections Rejection[] @relation("JobRejections")
+  offers     Offer[]     @relation("JobOffers")
+  interviews Interview[] @relation("JobInterviews")
 
   @@map("job_postings")
 }
@@ -304,7 +326,7 @@ model JobRecommendation {
   id            String     @id @default(auto()) @map("_id") @db.ObjectId
   userId        String     @db.ObjectId
   user          User       @relation("JobRecommendations", fields: [userId], references: [id])
-  jobPostingId         String     @db.ObjectId
+  jobPostingId  String     @db.ObjectId
   job           JobPosting @relation("JobRecommendations", fields: [jobPostingId], references: [id])
   recommendedAt DateTime   @default(now())
   source        String?
@@ -316,21 +338,21 @@ model JobRecommendation {
 }
 
 model JobSkill {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  jobId        String      @db.ObjectId
-  job          Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  skill        Skill       @relation("JobSkillToSkill", fields: [skillId], references: [id], onDelete: Cascade)
-  skillId      String      @db.ObjectId
-  isRequired   Boolean
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  jobPostingId String?     @db.ObjectId
-  jobPosting   JobPosting? @relation("RequiredJobSkills", fields: [jobPostingId], references: [id], onDelete: Cascade)  
-  jobPostingBonusId String? @db.ObjectId
-  jobPostingBonus JobPosting? @relation("BonusJobSkills", fields: [jobPostingBonusId], references: [id], onDelete: Cascade)  
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  jobId             String      @db.ObjectId
+  job               Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill             Skill       @relation("JobSkillToSkill", fields: [skillId], references: [id], onDelete: Cascade)
+  skillId           String      @db.ObjectId
+  isRequired        Boolean
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  jobPostingId      String?     @db.ObjectId
+  jobPosting        JobPosting? @relation("RequiredJobSkills", fields: [jobPostingId], references: [id], onDelete: Cascade)
+  jobPostingBonusId String?     @db.ObjectId
+  jobPostingBonus   JobPosting? @relation("BonusJobSkills", fields: [jobPostingBonusId], references: [id], onDelete: Cascade)
 
   @@unique([jobPostingId, skillId])
-  @@unique([jobPostingBonusId, skillId]) 
+  @@unique([jobPostingBonusId, skillId])
   @@map("job_skills")
 }
 
@@ -478,44 +500,52 @@ model Job {
 }
 
 model Interview {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  user          User?         @relation(fields: [userId], references: [id])
-  userId        String?       @db.ObjectId
-  job           Job           @relation(fields: [jobId], references: [id])
-  jobId         String        @db.ObjectId
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  user         User?   @relation(fields: [userId], references: [id])
+  userId       String? @db.ObjectId
+  job          Job     @relation(fields: [jobId], references: [id])
+  jobId        String  @db.ObjectId
+  jobPostingId String? @db.ObjectId
+  jobPosting JobPosting? @relation("JobInterviews", fields: [jobPostingId], references: [id])
   acceptedDate  DateTime
-  interviewDate DateTime
+  startTime    DateTime?
+  endTime      DateTime?
+  interviewDate DateTime?
   interviewType InterviewType
 
   @@map("interview")
 }
 
 model Offer {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  user          User?     @relation(fields: [userId], references: [id])
-  userId        String?   @db.ObjectId
-  job           Job       @relation(fields: [jobId], references: [id])
-  jobId         String    @db.ObjectId
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  user          User?       @relation(fields: [userId], references: [id])
+  userId        String?     @db.ObjectId
+  job           Job         @relation(fields: [jobId], references: [id])
+  jobId         String      @db.ObjectId
+  jobPostingId  String?     @db.ObjectId
+  jobPosting    JobPosting? @relation("JobOffers", fields: [jobPostingId], references: [id])
   offerDate     DateTime
   offerDeadline DateTime?
   salary        String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@map("offer")
 }
 
 model Rejection {
-  id          String             @id @default(auto()) @map("_id") @db.ObjectId
-  user        User?              @relation(fields: [userId], references: [id])
-  userId      String?            @db.ObjectId
-  job         Job?               @relation(fields: [jobId], references: [id])
-  jobId       String?            @db.ObjectId
-  date        DateTime?
-  initiatedBy RejectionInitiator
-  notes       String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  user         User?              @relation(fields: [userId], references: [id])
+  userId       String?            @db.ObjectId
+  job          Job?               @relation(fields: [jobId], references: [id])
+  jobId        String?            @db.ObjectId
+  jobPostingId String?            @db.ObjectId
+  jobPosting   JobPosting?        @relation("JobRejections", fields: [jobPostingId], references: [id])
+  date         DateTime?
+  initiatedBy  RejectionInitiator
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
   @@map("rejection")
 }
@@ -556,14 +586,14 @@ model SocialLinks {
 }
 
 model Badge {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String   @unique
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  name        String         @unique
   description String
-  iconUrl     String? 
-  userBadges UserBadge[]    @relation("BadgeUserBadges") 
-  triggers   BadgeTrigger[] @relation("BadgeTriggers") 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  iconUrl     String?
+  userBadges  UserBadge[]    @relation("BadgeUserBadges")
+  triggers    BadgeTrigger[] @relation("BadgeTriggers")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }
 
 model BadgeTrigger {

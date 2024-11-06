@@ -33,13 +33,13 @@ export async function GET(
   const jobId = params.id;
 
   try {
-    // Fetch the current authenticated user
+    // Retrieve the current authenticated user
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       // Return an error response if the user is not authenticated
       return NextResponse.error();
     }
-    // Fetch the job posting using the jobId
+    // Find the job posting using the jobId
     const job = await prisma.jobPosting.findUnique({
       where: { id: jobId },
       include: {
@@ -234,7 +234,7 @@ export async function DELETE(
     });
 
     if (!job) {
-      // Return a 404 error if the job posting does not exist
+      // Return a 404 error if the job posting doesn't exist
       return NextResponse.json({ message: "Job not found" }, { status: 404 });
     }
 

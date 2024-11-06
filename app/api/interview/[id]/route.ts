@@ -9,7 +9,7 @@ interface RequiredInterviewData {
 
 function validateRequiredInterviewData(interviewData: RequiredInterviewData) {
   if (!interviewData.interviewDate || !interviewData.interviewType) {
-    return "Interview date, and interview type  are required fields.";
+    return "Interview date and interview type are required fields.";
   }
   return null;
 }
@@ -20,33 +20,38 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const interviewId = params.id;
-
   try {
-    const currentUser = await getCurrentUser(); // Get the current user
-
+    // Retrieve the current authenticated user
+    const currentUser = await getCurrentUser();
     if (!currentUser) {
-      // If user is not authenticated, return a 401 response
+      // Return an error response if the user is not authenticated
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
-    // Attempt to find the interview by ID
+    // Find the interview by its ID
     const interview = await prisma.interview.findUnique({
       where: { id: interviewId },
-      include: { user: true, job: true }, // Include related user, job, and interview rounds data
+      // Include related user and job information
+      include: { user: true, job: true },
     });
-
-    // If interview is not found, return a 404 response
+    // Check if the interview exists
     if (!interview) {
       return NextResponse.json(
         { message: "Interview not found" },
         { status: 404 }
       );
     }
+    // If the current user is a candidate, ensure they can only view interviews of their own
+    if (
+      currentUser.userType === "CANDIDATE" &&
+      interview.userId !== currentUser.id
+    ) {
+      // Candidate cannot view interviews of others
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
 
-    // Return the interview as a JSON response
+    // Return the interview data as a JSON response
     return NextResponse.json({ interview });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error fetching interview:", error);
     return NextResponse.json(
       { message: "Error fetching interview" },
@@ -65,36 +70,52 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const currentUser = await getCurrentUser(); // Get the current user
-
+    // Retrieve the current authenticated user
+    const currentUser = await getCurrentUser();
     if (!currentUser) {
-      // If user is not authenticated, return a 401 response
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if interviewDate is provided and not null
-    if (!interviewData.interviewDate) {
+    // Candidate-specific check - Only allow certain interview types
+    const candidateInterviewTypes = [
+      "FINAL_ROUND",
+      "ON_SITE",
+      "TECHNICAL",
+      "PANEL",
+      "PHONE_SCREEN",
+      "ASSESSMENT",
+      "INTERVIEW",
+      "VIDEO_INTERVIEW",
+      "FOLLOW_UP",
+    ];
+
+    // Candidates can only create interviews from the above list
+    if (
+      currentUser.userType === "CANDIDATE" &&
+      !candidateInterviewTypes.includes(interviewData.interviewType)
+    ) {
       return NextResponse.json(
-        { message: "interviewDate must not be null" },
-        { status: 400 }
+        { message: "Unauthorized interview type" },
+        { status: 403 }
       );
     }
 
-    // Attempt to create a new interview
+    // Create the interview (for both candidates and clients)
     const interview = await prisma.interview.create({
       data: {
-        user: { connect: { id: currentUser.id } }, // Connect the user to the id
-        job: { connect: { id: interviewData.jobId } }, // Connect the interview to the job
+        user: { connect: { id: currentUser.id } }, // Connect the user to the interview
+        job: { connect: { id: interviewData.jobId } }, // Connect the interview to a job
         acceptedDate: interviewData.acceptedDate,
         interviewDate: interviewData.interviewDate,
         interviewType: interviewData.interviewType,
+        startTime: interviewData.startTime,
+        endTime: interviewData.endTime,
       },
     });
 
-    // Return the created interview as a JSON response with a 201 status code
+    // Return the created interview as a JSON response
     return NextResponse.json({ interview }, { status: 201 });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error creating interview:", error);
     return NextResponse.json(
       { message: "Error creating interview" },
@@ -103,7 +124,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Update interview by ID
+// Update an existing interview - Clients can update any interview, candidates can update only their own
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -111,20 +132,33 @@ export async function PUT(
   const interviewId = params.id;
   const interviewData = await request.json();
 
-  // Validate the interview data
   const validationError = validateRequiredInterviewData(interviewData);
   if (validationError) {
     return NextResponse.json({ message: validationError }, { status: 400 });
   }
 
   try {
-    const currentUser = await getCurrentUser(); // Get the current user
-
+    // Retrieve the current authenticated user
+    const currentUser = await getCurrentUser();
     if (!currentUser) {
+      // Return an error response if the user is not authenticated
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Attempt to update the interview
+    // Find the interview by ID
+    const interview = await prisma.interview.findUnique({
+      where: { id: interviewId },
+    });
+
+    // If the current user is a candidate, ensure they can only update their own interview
+    if (
+      currentUser.userType === "CANDIDATE" &&
+      interview?.userId !== currentUser.id
+    ) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
+
+    // Update the interview
     const updatedInterview = await prisma.interview.update({
       where: { id: interviewId },
       data: {
@@ -143,43 +177,44 @@ export async function PUT(
   }
 }
 
-// Delete interview by ID
+// Delete an interview by ID - Candidates can delete only their own interviews, clients can delete any interview
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const interviewId = params.id;
-  try {
-    const currentUser = await getCurrentUser(); // Get the current user
 
+  try {
+    // Retrieve the current authenticated user
+    const currentUser = await getCurrentUser();
     if (!currentUser) {
-      // If user is not authenticated, return a 401 response
+      // Return an error response if the user is not authenticated
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
-    // Check if the interview belongs to the current user
+    // Find the interview to check ownership by ID
     const interview = await prisma.interview.findUnique({
       where: { id: interviewId },
       select: { userId: true },
     });
-
-    if (!interview || interview.userId !== currentUser.id) {
-      // If the interview does not exist or does not belong to the current user, return a 404 response
+    // If the current user is a candidate, ensure they can only delete their own interview
+    if (
+      !interview ||
+      (currentUser.userType === "CANDIDATE" &&
+        interview.userId !== currentUser.id)
+    ) {
+      // Return a 404 error if the interview doesn't exist
       return NextResponse.json(
-        { message: "Interview not found" },
+        { message: "Interview not found or not allowed to delete" },
         { status: 404 }
       );
     }
-
-    // Attempt to delete the interview
+    //  Delete the interview
     await prisma.interview.delete({
       where: { id: interviewId },
     });
-
-    // Return a success message as a JSON response
+    // Return a success message
     return NextResponse.json({ message: "Interview deleted successfully" });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error deleting interview:", error);
     return NextResponse.json(
       { message: "Error deleting interview" },
