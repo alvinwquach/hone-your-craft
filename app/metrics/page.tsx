@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getUserJobSkillsAndFrequency } from "../lib/getUserJobSkillsAndFrequency";
-import getUserJobInterviews from "../lib/getUserJobInterviews";
+import getUserJobInterviews from "../lib/getCandidateJobInterviews";
 import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
 import Chart from "chart.js/auto";
 

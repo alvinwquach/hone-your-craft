@@ -2,8 +2,20 @@
 
 import getCurrentUser from "./getCurrentUser";
 import prisma from "./db/prisma";
-import { InterviewType } from "@prisma/client";
 
+// Define only the interview types you are using
+type CandidateInterview =
+  | "FINAL_ROUND"
+  | "ON_SITE"
+  | "TECHNICAL"
+  | "PANEL"
+  | "PHONE_SCREEN"
+  | "ASSESSMENT"
+  | "INTERVIEW"
+  | "VIDEO_INTERVIEW"
+  | "FOLLOW_UP";
+
+// Define the frequency object with only those interview types
 const getUserJobInterviews = async () => {
   try {
     // Retrieve the current user
@@ -37,8 +49,8 @@ const getUserJobInterviews = async () => {
       },
     });
 
-    // Initialize the frequency count object with default values
-    const initialInterviewTypeFrequency: Record<InterviewType, number> = {
+    // Initialize the frequency count object with only the interview types you are using
+    const initialInterviewTypeFrequency: Record<CandidateInterview, number> = {
       FINAL_ROUND: 0,
       ON_SITE: 0,
       TECHNICAL: 0,
@@ -54,16 +66,21 @@ const getUserJobInterviews = async () => {
     const interviewTypeFrequency = { ...initialInterviewTypeFrequency };
     userInterviews.forEach((interview) => {
       const { interviewType } = interview;
-      interviewTypeFrequency[interviewType]++;
+
+      // Ensure interviewType is one of the valid types we are tracking
+      if (interviewType in initialInterviewTypeFrequency) {
+        interviewTypeFrequency[interviewType as CandidateInterview]++;
+      }
     });
 
     // Sort interview type frequency from highest to lowest
     const sortedInterviewTypeFrequency = Object.entries(interviewTypeFrequency)
-      .sort(([, freq1], [, freq2]) => freq2 - freq1) // Sort by frequency in descending order
+      // Sort by frequency in descending order
+      .sort(([, freq1], [, freq2]) => freq2 - freq1)
       .reduce((acc, [type, freq]) => {
-        acc[type as InterviewType] = freq;
+        acc[type as CandidateInterview] = freq;
         return acc;
-      }, {} as Record<InterviewType, number>);
+      }, {} as Record<CandidateInterview, number>);
 
     // Return user interviews along with sorted interview type frequency
     return {
