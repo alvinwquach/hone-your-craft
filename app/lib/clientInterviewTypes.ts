@@ -1,4 +1,3 @@
-// app/lib/clientInterviewTypes.ts
 export const clientInterviewTypes = [
   { type: "FOLLOW_UP", label: "Follow Up", color: "bg-orange-400" },
   { type: "PHONE_SCREEN", label: "Phone Screen", color: "bg-yellow-400" },
