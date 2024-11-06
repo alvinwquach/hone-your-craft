@@ -1,4 +1,4 @@
-export const interviewTypes = [
+export const candidateInterviewTypes = [
   { type: "FOLLOW_UP", label: "Follow Up", color: "bg-orange-400" },
   { type: "PHONE_SCREEN", label: "Phone Screen", color: "bg-yellow-400" },
   { type: "ON_SITE", label: "On Site", color: "bg-green-400" },

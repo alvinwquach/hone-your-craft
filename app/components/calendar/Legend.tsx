@@ -1,6 +1,3 @@
-import React, { useState } from "react";
-import { RiMenuLine, RiCloseLine } from "react-icons/ri";
-
 interface InterviewType {
   color: string;
   label: string;
@@ -12,38 +9,19 @@ interface LegendProps {
 
 function LegendItem({ color, label }: InterviewType) {
   return (
-    <div className="flex items-center mt-1 md:mt-1">
+    <div className="flex items-center space-x-3 mt-2 md:mt-3">
       <div
-        className={`${color} lg:w-6 lg:h-6 md:w-4 md:h-4 sm:w-3 sm:h-3 mr-2 min-h-2 min-w-2 `}
+        className={`${color} w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full`}
       />
-      <div className="text-xs lg:text-lg">{label}</div>
+      <div className="text-xs lg:text-sm font-medium">{label}</div>
     </div>
   );
 }
 
 function Legend({ interviewTypes }: LegendProps) {
-  const [showLegend, setShowLegend] = useState(false);
-
   return (
     <div className="text-xs font-bold mb-4">
-      <div className="md:hidden flex justify-start mt-5 ">
-        {!showLegend ? (
-          <RiMenuLine
-            className="text-gray-500 h-5 w-5 cursor-pointer mr-2"
-            onClick={() => setShowLegend(true)}
-          />
-        ) : (
-          <RiCloseLine
-            className="text-gray-500 h-5 w-5 cursor-pointer mr-2"
-            onClick={() => setShowLegend(false)}
-          />
-        )}
-      </div>
-      <div
-        className={`grid grid-cols-3 md:block ${
-          showLegend ? "block" : "hidden"
-        }`}
-      >
+      <div className="max-h-48 sm:max-h-60 md:max-h-96 overflow-y-auto md:overflow-auto">
         {interviewTypes.map((type) => (
           <LegendItem key={type.label} color={type.color} label={type.label} />
         ))}
