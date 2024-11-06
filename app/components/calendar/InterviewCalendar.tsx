@@ -7,7 +7,7 @@ import {
   MonthlyDay,
   MonthlyCalendar,
 } from "@zach.codes/react-calendar";
-import { interviewTypes } from "@/app/lib/interviewTypes";
+import { candidateInterviewTypes } from "@/app/lib/candidateInterviewTypes";
 import { Interview } from "@prisma/client";
 import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import { MonthlyNav } from "./MonthlyNav";
@@ -19,7 +19,7 @@ interface InterviewCalendarProps {
 }
 
 const getColorForInterviewType = (type: string) => {
-  const selectedInterviewType = interviewTypes.find(
+  const selectedInterviewType = candidateInterviewTypes.find(
     (interviewType) => interviewType.type === type
   );
   return selectedInterviewType ? selectedInterviewType.color : "bg-gray-300";
