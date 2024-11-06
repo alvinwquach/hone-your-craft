@@ -61,7 +61,12 @@ function EditInterviewModal({
   useEffect(() => {
     if (interview) {
       const date = interview.interviewDate;
-      setValue("interviewDate", date);
+      // Only set the value if date isn't null
+      if (date !== null) {
+        // Only set the value if it's a valid Date
+        setValue("interviewDate", date);
+      }
+
       setValue("interviewType", interview.interviewType || "");
     }
   }, [interview, setValue]);
