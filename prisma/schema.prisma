@@ -12,6 +12,33 @@ enum UserType {
   CANDIDATE
 }
 
+enum Frequency {
+  PER_YEAR
+  PER_MONTH
+  PER_HOUR
+}
+
+enum DegreeType {
+  HIGH_SCHOOL_DIPLOMA
+  BACHELORS_DEGREE
+  MASTERS_DEGREE
+  ASSOCIATES_DEGREE
+  MASTER_OF_BUSINESS_ADMINISTRATION
+  DOCTOR_OF_LAW
+}
+
+enum SalaryType {
+  RANGE
+  STARTING_AT
+  UP_TO
+  EXACT
+}
+
+enum PaymentType {
+  SALARY
+  ONE_TIME_PAYMENT
+}
+
 enum ApplicationStatus {
   SAVED
   APPLIED
@@ -77,7 +104,10 @@ enum JobType {
 enum JobPostingStatus {
   OPEN
   CLOSED
+  DRAFT
+  ARCHIVED
   FILLED
+  COMPLETED
 }
 
 enum WorkLocation {
@@ -95,34 +125,34 @@ enum Availability {
 }
 
 enum InterviewType {
-  FINAL_ROUND     
-  ON_SITE            
-  TECHNICAL          
-  PANEL               
-  PHONE_SCREEN        
-  ASSESSMENT          
-  INTERVIEW           
-  VIDEO_INTERVIEW     
-  FOLLOW_UP           
-  OFFER_EXTENDED      
-  OFFER_ACCEPTED      
-  OFFER_REJECTED      
-  REJECTION           
-  CONTRACT_SIGNED     
-  SALARY_NEGOTIATION  
-  FINAL_DECISION      
-  PRE_SCREENING       
-  GROUP_INTERVIEW     
+  FINAL_ROUND
+  ON_SITE
+  TECHNICAL
+  PANEL
+  PHONE_SCREEN
+  ASSESSMENT
+  INTERVIEW
+  VIDEO_INTERVIEW
+  FOLLOW_UP
+  OFFER_EXTENDED
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  REJECTION
+  CONTRACT_SIGNED
+  SALARY_NEGOTIATION
+  FINAL_DECISION
+  PRE_SCREENING
+  GROUP_INTERVIEW
   REFERENCE_CHECK
-  TRIAL_PERIOD        
-  FINAL_OFFER        
-  OFFER_WITHDRAWN     
-  NEGOTIATION_PHASE   
-  ADDITIONAL_DOCS_REQUIRED 
-  NO_SHOW             
-  CANDIDATE_WITHDREW  
+  TRIAL_PERIOD
+  FINAL_OFFER
+  OFFER_WITHDRAWN
+  NEGOTIATION_PHASE
+  ADDITIONAL_DOCS_REQUIRED
+  NO_SHOW
+  CANDIDATE_WITHDREW
   HIRING_FREEZE
-  TAKE_HOME_ASSESSMENT    
+  TAKE_HOME_ASSESSMENT
 }
 
 enum ProjectType {
@@ -280,17 +310,16 @@ model JobPosting {
   description          String
   responsibilities     String[]
   industry             String?
-  location             String?
+  jobLocation          String?
   workLocation         WorkLocation?
-  rate                 Float?
-  salary               Float?
-  salaryRangeMin       Float?
-  salaryRangeMax       Float?
+  paymentType          PaymentType
+  salary               Salary?             @relation("SalaryJobPosting") 
   status               JobPostingStatus    @default(OPEN)
   requiredEducation    String?
   interviewProcess     String[]
   requiredSkills       JobSkill[]          @relation("RequiredJobSkills")
   bonusSkills          JobSkill[]          @relation("BonusJobSkills")
+  requiredDegree       Degree[]            @relation("JobPostingDegrees")
   views                Int                 @default(0)
   applications         Application[]       @relation("JobApplications")
   applicationsReceived Int                 @default(0)
@@ -299,11 +328,25 @@ model JobPosting {
   updatedAt            DateTime            @updatedAt
   jobRecommendations   JobRecommendation[] @relation("JobRecommendations")
   jobTags              JobTag[]            @relation("JobTags")
-  rejections Rejection[] @relation("JobRejections")
-  offers     Offer[]     @relation("JobOffers")
-  interviews Interview[] @relation("JobInterviews")
+  rejections           Rejection[]         @relation("JobRejections")
+  offers               Offer[]             @relation("JobOffers")
+  interviews           Interview[]         @relation("JobInterviews")
 
   @@map("job_postings")
+}
+
+model Salary {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  jobPostingId String     @unique @db.ObjectId 
+  jobPosting   JobPosting @relation("SalaryJobPosting", fields: [jobPostingId], references: [id], onDelete: Cascade)
+  salaryAmount Float? 
+  rangeMin     Float? 
+  rangeMax     Float? 
+  salaryType   SalaryType @default(RANGE) 
+  frequency    Frequency 
+  negotiable   Boolean? 
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model JobTag {
@@ -344,6 +387,7 @@ model JobSkill {
   skill             Skill       @relation("JobSkillToSkill", fields: [skillId], references: [id], onDelete: Cascade)
   skillId           String      @db.ObjectId
   isRequired        Boolean
+  yearsOfExperience Int?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   jobPostingId      String?     @db.ObjectId
@@ -375,6 +419,18 @@ model SkillEndorsement {
 
   @@unique([endorserId, userId, skillId])
   @@map("skill_endorsements")
+}
+
+model Degree {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  degreeType   DegreeType
+  jobPosting   JobPosting @relation("JobPostingDegrees", fields: [jobPostingId], references: [id], onDelete: Cascade)
+  jobPostingId String     @db.ObjectId
+  isRequired   Boolean
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("degrees")
 }
 
 model WorkExperience {
@@ -448,18 +504,20 @@ model Education {
 }
 
 model Application {
-  id           String            @id @default(auto()) @map("_id") @db.ObjectId
-  candidateId  String            @db.ObjectId
-  candidate    User              @relation("JobApplications", fields: [candidateId], references: [id])
-  jobPostingId String            @db.ObjectId
-  jobPosting   JobPosting        @relation("JobApplications", fields: [jobPostingId], references: [id])
-  status       ApplicationStatus @default(APPLIED)
-  appliedAt    DateTime          @default(now())
-
-  stages ApplicationStage[] @relation("ApplicationStages")
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  candidateId    String            @db.ObjectId
+  candidate      User              @relation("JobApplications", fields: [candidateId], references: [id])
+  jobPostingId   String            @db.ObjectId
+  jobPosting     JobPosting        @relation("JobApplications", fields: [jobPostingId], references: [id])
+  status         ApplicationStatus @default(APPLIED)
+  appliedAt      DateTime          @default(now())
+  acceptedAt     DateTime?         
+  rejectedAt     DateTime?        
+  stages         ApplicationStage[] @relation("ApplicationStages")
 
   @@map("applications")
 }
+
 
 model ApplicationStage {
   id            String            @id @default(auto()) @map("_id") @db.ObjectId
@@ -500,16 +558,16 @@ model Job {
 }
 
 model Interview {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  user         User?   @relation(fields: [userId], references: [id])
-  userId       String? @db.ObjectId
-  job          Job     @relation(fields: [jobId], references: [id])
-  jobId        String  @db.ObjectId
-  jobPostingId String? @db.ObjectId
-  jobPosting JobPosting? @relation("JobInterviews", fields: [jobPostingId], references: [id])
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  user          User?         @relation(fields: [userId], references: [id])
+  userId        String?       @db.ObjectId
+  job           Job           @relation(fields: [jobId], references: [id])
+  jobId         String        @db.ObjectId
+  jobPostingId  String?       @db.ObjectId
+  jobPosting    JobPosting?   @relation("JobInterviews", fields: [jobPostingId], references: [id])
   acceptedDate  DateTime
-  startTime    DateTime?
-  endTime      DateTime?
+  startTime     DateTime?
+  endTime       DateTime?
   interviewDate DateTime?
   interviewType InterviewType
 
