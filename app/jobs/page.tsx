@@ -21,7 +21,7 @@ const mockJobs = [
     updatedAt: "2024-11-07T08:30:00Z",
     jobType: "FULL_TIME",
     salary: {
-      salaryAmount: 5000,
+      amount: 5000,
       salaryType: "EXACT",
       rangeMin: null,
       rangeMax: null,
@@ -31,10 +31,20 @@ const mockJobs = [
     requiredSkills: [
       { skill: "JavaScript", yearsOfExperience: 3, isRequired: true },
       { skill: "React", yearsOfExperience: 2, isRequired: true },
+      {
+        skill: "Adobe Creative Suite",
+        yearsOfExperience: 0,
+        isRequired: false,
+      },
     ],
     bonusSkills: ["CSS", "HTML"],
     experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
     yearsOfExperience: 3,
+    deadline: "2024-12-15T23:59:59Z",
+    requiredDegree: {
+      degree: "BACHELORS_DEGREE",
+      isRequired: true,
+    },
   },
   {
     id: 2,
@@ -47,7 +57,7 @@ const mockJobs = [
     updatedAt: "2024-11-02T10:15:00Z",
     jobType: "FULL_TIME",
     salary: {
-      salaryAmount: null,
+      amount: null,
       salaryType: "RANGE",
       rangeMin: 90000,
       rangeMax: 110000,
@@ -57,10 +67,20 @@ const mockJobs = [
     requiredSkills: [
       { skill: "Node.js", yearsOfExperience: 4, isRequired: true },
       { skill: "MongoDB", yearsOfExperience: 3, isRequired: true },
+      {
+        skill: "Adobe Creative Suite",
+        yearsOfExperience: 0,
+        isRequired: false,
+      },
     ],
+    requiredDegree: {
+      degree: "MASTERS_DEGREE",
+      isRequired: true,
+    },
     bonusSkills: [],
     experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
     yearsOfExperience: 4,
+    deadline: "2024-11-25T23:59:59Z",
   },
   {
     id: 3,
@@ -73,7 +93,7 @@ const mockJobs = [
     updatedAt: "2024-11-10T11:00:00Z",
     jobType: "FULL_TIME",
     salary: {
-      salaryAmount: 50000,
+      amount: 50000,
       salaryType: "UP_TO",
       rangeMin: null,
       rangeMax: null,
@@ -83,10 +103,20 @@ const mockJobs = [
     requiredSkills: [
       { skill: "UX Research", yearsOfExperience: 3, isRequired: true },
       { skill: "Figma", yearsOfExperience: 2, isRequired: true },
+      {
+        skill: "Adobe Creative Suite",
+        yearsOfExperience: 0,
+        isRequired: false,
+      },
     ],
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
     bonusSkills: [],
     experienceLevels: ["ENTRY_LEVEL", "MID_LEVEL"],
     yearsOfExperience: 3,
+    deadline: null,
   },
   {
     id: 4,
@@ -99,7 +129,7 @@ const mockJobs = [
     updatedAt: "2024-11-01T14:15:00Z",
     jobType: "FULL_TIME",
     salary: {
-      salaryAmount: 70000,
+      amount: 70000,
       salaryType: "STARTING_AT",
       rangeMin: null,
       rangeMax: null,
@@ -113,6 +143,11 @@ const mockJobs = [
     bonusSkills: ["Scrum", "Jira"],
     experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
     yearsOfExperience: 4,
+    deadline: "2024-12-01T23:59:59Z",
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
   {
     id: 5,
@@ -125,7 +160,7 @@ const mockJobs = [
     updatedAt: "2024-11-05T09:00:00Z",
     jobType: "FREELANCE",
     salary: {
-      salaryAmount: 5000,
+      amount: 5000,
       salaryType: "EXACT",
       rangeMin: null,
       rangeMax: null,
@@ -139,6 +174,11 @@ const mockJobs = [
     bonusSkills: ["Node.js", "TypeScript"],
     experienceLevels: ["MID_LEVEL"],
     yearsOfExperience: 4,
+    deadline: null,
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
   {
     id: 6,
@@ -151,7 +191,7 @@ const mockJobs = [
     updatedAt: "2024-10-29T09:00:00Z",
     jobType: "FREELANCE",
     salary: {
-      salaryAmount: 8000,
+      amount: 8000,
       salaryType: "EXACT",
       rangeMin: null,
       rangeMax: null,
@@ -165,6 +205,11 @@ const mockJobs = [
     bonusSkills: [],
     experienceLevels: ["MID_LEVEL"],
     yearsOfExperience: 3,
+    deadline: null,
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
   {
     id: 7,
@@ -177,7 +222,7 @@ const mockJobs = [
     updatedAt: "2024-10-30T08:00:00Z",
     jobType: "FULL_TIME",
     salary: {
-      salaryAmount: 100000,
+      amount: 100000,
       salaryType: "EXACT",
       rangeMin: null,
       rangeMax: null,
@@ -191,6 +236,11 @@ const mockJobs = [
     bonusSkills: [],
     experienceLevels: ["SENIOR_LEVEL"],
     yearsOfExperience: 5,
+    deadline: null,
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
   {
     id: 8,
@@ -203,7 +253,7 @@ const mockJobs = [
     updatedAt: "2024-11-04T12:00:00Z",
     jobType: "FULL_TIME",
     salary: {
-      salaryAmount: null,
+      amount: null,
       salaryType: "RANGE",
       rangeMin: 120000,
       rangeMax: 150000,
@@ -217,6 +267,11 @@ const mockJobs = [
     bonusSkills: [],
     experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
     yearsOfExperience: 4,
+    deadline: null,
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
   {
     id: 9,
@@ -229,7 +284,7 @@ const mockJobs = [
     updatedAt: "2024-11-09T10:45:00Z",
     jobType: "FREELANCE",
     salary: {
-      salaryAmount: 3000,
+      amount: 3000,
       salaryType: "STARTING_AT",
       rangeMin: null,
       rangeMax: null,
@@ -243,6 +298,11 @@ const mockJobs = [
     bonusSkills: ["JavaScript", "SEO"],
     experienceLevels: ["ENTRY_LEVEL", "MID_LEVEL"],
     yearsOfExperience: 3,
+    deadline: "2024-12-10T23:59:59Z",
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
   {
     id: 10,
@@ -255,7 +315,7 @@ const mockJobs = [
     updatedAt: "2024-11-06T13:30:00Z",
     jobType: "FREELANCE",
     salary: {
-      salaryAmount: 10000,
+      amount: 10000,
       salaryType: "UP_TO",
       rangeMin: null,
       rangeMax: null,
@@ -269,6 +329,11 @@ const mockJobs = [
     bonusSkills: [],
     experienceLevels: ["MID_LEVEL"],
     yearsOfExperience: 3,
+    deadline: null,
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
   {
     id: 11,
@@ -281,7 +346,7 @@ const mockJobs = [
     updatedAt: "2024-11-12T09:00:00Z",
     jobType: "FULL_TIME",
     salary: {
-      salaryAmount: 95000,
+      amount: 95000,
       salaryType: "EXACT",
       rangeMin: null,
       rangeMax: null,
@@ -289,11 +354,18 @@ const mockJobs = [
     },
     paymentType: "SALARY",
     requiredSkills: [
-      { skill: "Swift" },
-      { skill: "React Native" },
-      { skill: "UI Design" },
+      { skill: "Swift", yearsOfExperience: 2, isRequired: true },
+      { skill: "React Native", yearsOfExperience: 2, isRequired: true },
+      { skill: "UI Design", yearsOfExperience: 0, isRequired: false },
     ],
     bonusSkills: ["JavaScript", "Objective-C"],
+    experienceLevels: ["MID_LEVEL"],
+    yearsOfExperience: 3,
+    deadline: null,
+    requiredDegree: {
+      degree: null,
+      isRequired: false,
+    },
   },
 ];
 
@@ -510,7 +582,7 @@ function Jobs() {
         </div>
         <div className="w-full lg:w-1/4">
           <div className="bg-zinc-900 p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
-            <Link href="/job-posting">
+            <Link href="/post-job">
               <button className="bg-zinc-700 text-white px-4 py-2 rounded-full flex items-center justify-center w-full sm:w-auto">
                 <IoIosAddCircleOutline className="mr-2" size={20} />
                 Post a Job

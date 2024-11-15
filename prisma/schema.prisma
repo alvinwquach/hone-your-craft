@@ -39,6 +39,12 @@ enum PaymentType {
   ONE_TIME_PAYMENT
 }
 
+enum JobApplicationStatus {
+  ACCEPTED
+  PENDING
+  REJECTED
+}
+
 enum ApplicationStatus {
   SAVED
   APPLIED
@@ -99,6 +105,7 @@ enum JobType {
   CONTRACT
   INTERNSHIP
   TEMPORARY
+  FREELANCE
 }
 
 enum JobPostingStatus {
@@ -304,16 +311,16 @@ model JobPosting {
   title                String
   jobType              JobType?
   url                  String?
-  applicationDeadline  DateTime?
+  deadline             DateTime?
   experienceLevels     ExperienceLevel[]
-  yearsOfExperience    Int?
+  yearsOfExperience    YearsOfExperience?
   description          String
   responsibilities     String[]
   industry             String?
   jobLocation          String?
   workLocation         WorkLocation?
   paymentType          PaymentType
-  salary               Salary?             @relation("SalaryJobPosting") 
+  salary               Salary?             @relation("SalaryJobPosting")
   status               JobPostingStatus    @default(OPEN)
   requiredEducation    String?
   interviewProcess     String[]
@@ -337,14 +344,14 @@ model JobPosting {
 
 model Salary {
   id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  jobPostingId String     @unique @db.ObjectId 
+  jobPostingId String     @unique @db.ObjectId
   jobPosting   JobPosting @relation("SalaryJobPosting", fields: [jobPostingId], references: [id], onDelete: Cascade)
-  salaryAmount Float? 
-  rangeMin     Float? 
-  rangeMax     Float? 
-  salaryType   SalaryType @default(RANGE) 
-  frequency    Frequency 
-  negotiable   Boolean? 
+  amount       Float?
+  rangeMin     Float?
+  rangeMax     Float?
+  salaryType   SalaryType @default(RANGE)
+  frequency    Frequency
+  negotiable   Boolean?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
@@ -504,20 +511,19 @@ model Education {
 }
 
 model Application {
-  id             String            @id @default(auto()) @map("_id") @db.ObjectId
-  candidateId    String            @db.ObjectId
-  candidate      User              @relation("JobApplications", fields: [candidateId], references: [id])
-  jobPostingId   String            @db.ObjectId
-  jobPosting     JobPosting        @relation("JobApplications", fields: [jobPostingId], references: [id])
-  status         ApplicationStatus @default(APPLIED)
-  appliedAt      DateTime          @default(now())
-  acceptedAt     DateTime?         
-  rejectedAt     DateTime?        
-  stages         ApplicationStage[] @relation("ApplicationStages")
+  id           String               @id @default(auto()) @map("_id") @db.ObjectId
+  candidateId  String               @db.ObjectId
+  candidate    User                 @relation("JobApplications", fields: [candidateId], references: [id])
+  jobPostingId String               @db.ObjectId
+  jobPosting   JobPosting           @relation("JobApplications", fields: [jobPostingId], references: [id])
+  status       JobApplicationStatus @default(PENDING)
+  appliedAt    DateTime             @default(now())
+  acceptedAt   DateTime?
+  rejectedAt   DateTime?
+  stages       ApplicationStage[]   @relation("ApplicationStages")
 
   @@map("applications")
 }
-
 
 model ApplicationStage {
   id            String            @id @default(auto()) @map("_id") @db.ObjectId
