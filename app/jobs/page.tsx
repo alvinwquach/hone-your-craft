@@ -37,7 +37,10 @@ const mockJobs = [
         isRequired: false,
       },
     ],
-    bonusSkills: ["CSS", "HTML"],
+    bonusSkills: [
+      { skill: "JavaScript", yearsOfExperience: null, isRequired: null },
+      { skill: "React", yearsOfExperience: null, isRequired: null },
+    ],
     experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
     yearsOfExperience: 3,
     deadline: "2024-12-15T23:59:59Z",
