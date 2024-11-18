@@ -7,6 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CompanySize {
+  Tiny_1_10        
+  Small_11_50      
+  Medium_51_200    
+  Large_201_500    
+  XLarge_501_1000  
+  XXLarge_1001_5000 
+  Enterprise_5000plus 
+}
+
 enum UserType {
   CLIENT
   CANDIDATE
@@ -308,6 +318,8 @@ model JobPosting {
   user                 User                @relation("JobPostings", fields: [userId], references: [id], onDelete: Cascade)
   userId               String              @db.ObjectId
   company              String?
+  companySize          CompanySize?
+  industry             String[]
   title                String
   jobType              JobType?
   url                  String?

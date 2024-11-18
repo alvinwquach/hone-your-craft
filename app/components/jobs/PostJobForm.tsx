@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Select from "react-select";
 import {
+  CompanySize,
   WorkLocation,
   YearsOfExperience,
   ExperienceLevel,
@@ -20,11 +21,13 @@ import { AiOutlineClose } from "react-icons/ai";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
+import { industryKeywords } from "@/app/lib/industryKeywords";
 
 const jobSchema = z.object({
   title: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company name is required"),
   industry: z.array(z.string()).optional(),
+  companySize: z.nativeEnum(CompanySize).optional(),
   workLocation: z.nativeEnum(WorkLocation),
   location: z.string().min(1, "Location is required"),
   url: z.optional(z.string().url("Invalid URL format")),
@@ -64,6 +67,16 @@ const jobSchema = z.object({
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
+
+const companySizeLabels: { [key in keyof typeof CompanySize]: string } = {
+  Tiny_1_10: "1 - 10 employees",
+  Small_11_50: "11 - 50 employees",
+  Medium_51_200: "51 - 200 employees",
+  Large_201_500: "201 - 500 employees",
+  XLarge_501_1000: "501 - 1000 employees",
+  XXLarge_1001_5000: "1001 - 5000 employees",
+  Enterprise_5000plus: "5000+ employees",
+};
 
 const experienceLabels = {
   LESS_THAN_1_YEAR: "< 1 year",
@@ -149,7 +162,16 @@ interface ExperienceLevelOption {
   label: string;
 }
 
+interface IndustryOption {
+  value: string;
+  label: string;
+}
+
 const PostJobForm = () => {
+  const [selectedIndustries, setSelectedIndustries] = useState<
+    IndustryOption[]
+  >([]);
+
   const [selectedRequiredSkills, setSelectedRequiredSkills] = useState<
     SkillOption[]
   >([]);
@@ -172,6 +194,8 @@ const PostJobForm = () => {
     defaultValues: {
       title: "",
       company: "",
+      companySize: CompanySize.Tiny_1_10,
+      industry: [],
       workLocation: WorkLocation.ONSITE,
       location: "",
       url: "",
@@ -229,6 +253,10 @@ const PostJobForm = () => {
       !selectedRequiredSkills.some((skill) => skill.value === keyword)
   );
 
+  const alphabeticalIndustryKeywords = industryKeywords.sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase())
+  );
+
   const handleHideSkill = (index: number) => {
     // Get the current requiredSkills array from the form state
     const updatedSkills = [...watch("requiredSkills")];
@@ -278,6 +306,17 @@ const PostJobForm = () => {
     const updatedSkills = [...watch("requiredSkills")];
     updatedSkills[index].isRequired = isRequired;
     setValue("requiredSkills", updatedSkills);
+  };
+
+  const handleIndustrySkillChange = (selected: any) => {
+    setSelectedIndustries(selected || []);
+
+    console.log("Selected Industries:", selected);
+
+    setValue(
+      "industry",
+      selected ? selected.map((item: any) => item.value) : []
+    );
   };
 
   const handleRequiredSkillChange = (selected: any) => {
@@ -363,18 +402,18 @@ const PostJobForm = () => {
       const response = await fetch("/api/job-posting", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(data), 
+        body: JSON.stringify(data),
       });
 
       if (response.ok) {
-        const responseData = await response.json(); 
+        const responseData = await response.json();
         console.log("Success:", responseData);
 
         toast.success("Job posted successfully!");
         setTimeout(() => {
-          router.push("/jobs"); 
+          router.push("/jobs");
         }, 1500);
       } else {
         console.error("Error: ", response.statusText);
@@ -441,6 +480,56 @@ const PostJobForm = () => {
                 }}
               />
             )}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="flex flex-col">
+          <label
+            htmlFor="companySize"
+            className="text-sm font-semibold text-gray-300"
+          >
+            Company Size
+          </label>
+          <Controller
+            control={control}
+            name="companySize"
+            render={({ field }) => (
+              <select
+                {...field}
+                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                style={{
+                  backgroundColor: "#171717",
+                  borderColor: "#333",
+                  color: "#fff",
+                }}
+              >
+                {Object.values(CompanySize).map((size) => (
+                  <option key={size} value={size}>
+                    {companySizeLabels[size]}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
+        </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="industry"
+            className="text-sm font-semibold text-gray-300 mb-2"
+          >
+            Industry(ies)
+          </label>
+          <Select
+            isMulti
+            options={alphabeticalIndustryKeywords.map((industry) => ({
+              label: industry,
+              value: industry,
+            }))}
+            onChange={handleIndustrySkillChange}
+            value={selectedIndustries}
+            styles={customSelectStyles}
+            placeholder="Select industry(ies)"
           />
         </div>
       </div>
