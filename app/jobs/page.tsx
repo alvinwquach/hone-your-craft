@@ -4,11 +4,13 @@ import { useSession } from "next-auth/react";
 import { useState, Fragment } from "react";
 import { FaTools } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { Menu, Transition } from "@headlessui/react";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import Link from "next/link";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 enum JobPostingStatus {
   OPEN = "OPEN",
@@ -49,8 +51,7 @@ function Jobs() {
     error,
   } = useSWR<JobPosting[]>("/api/job-postings", fetcher);
 
-  const jobPostings = Array.isArray(userJobPostings) ? userJobPostings : [];
-
+  const jobPostings = userJobPostings ? userJobPostings : [];
   if (userType !== "CLIENT") {
     return (
       <section className="flex flex-col items-center justify-center min-h-screen">
@@ -73,6 +74,25 @@ function Jobs() {
   if (error) {
     return <div>Error loading job postings</div>;
   }
+
+  const handleDeleteJobPosting = async (jobId: string) => {
+    const updatedJobs =
+      userJobPostings?.filter((job) => job.id !== jobId) ?? [];
+    mutate("/api/job-postings", updatedJobs, false);
+    try {
+      const response = await fetch(`/api/job-posting/${jobId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete job posting");
+      }
+      toast.success("Job posting deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      mutate("/api/job-postings", userJobPostings, false);
+      toast.error("An error occurred while deleting the job posting.");
+    }
+  };
 
   const filteredJobs = jobPostings.filter((job) => {
     if (filter === "drafts") return job.status === JobPostingStatus.DRAFT;
@@ -196,7 +216,6 @@ function Jobs() {
                       leaveTo="transform opacity-0 scale-95"
                     >
                       <Menu.Items className="absolute right-0 mt-2 w-48 bg-zinc-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        {/* Options for Drafts */}
                         {job.status === JobPostingStatus.DRAFT && (
                           <div className="py-1">
                             <Menu.Item>
@@ -204,7 +223,7 @@ function Jobs() {
                                 className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
                                 onClick={() =>
                                   alert(`Editing draft job ${job.id}`)
-                                } // Replace with actual edit logic
+                                }
                               >
                                 Edit Draft
                               </button>
@@ -214,15 +233,13 @@ function Jobs() {
                                 className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
                                 onClick={() =>
                                   alert(`Deleting draft job ${job.id}`)
-                                } // Replace with actual edit logic
+                                }
                               >
                                 Delete Draft
                               </button>
                             </Menu.Item>
                           </div>
                         )}
-
-                        {/* Options for Posted Jobs */}
                         {job.status === JobPostingStatus.OPEN && (
                           <div className="py-1">
                             <Menu.Item>
@@ -238,9 +255,7 @@ function Jobs() {
                             <Menu.Item>
                               <button
                                 className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
-                                onClick={() =>
-                                  alert(`Deleting posted job ${job.id}`)
-                                }
+                                onClick={() => handleDeleteJobPosting(job.id)}
                               >
                                 Delete Job
                               </button>
