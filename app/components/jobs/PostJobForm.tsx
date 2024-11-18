@@ -6,21 +6,25 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Select from "react-select";
 import {
-  PaymentType,
   WorkLocation,
-  JobType,
-  ExperienceLevel,
-  DegreeType,
-  Frequency,
-  SalaryType,
   YearsOfExperience,
+  ExperienceLevel,
+  JobType,
+  PaymentType,
+  DegreeType,
+  SalaryType,
+  Frequency,
 } from "@prisma/client";
 import { skillKeywords } from "@/app/lib/skillKeywords";
 import { AiOutlineClose } from "react-icons/ai";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation";
 
 const jobSchema = z.object({
   title: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company name is required"),
+  industry: z.array(z.string()).optional(),
   workLocation: z.nativeEnum(WorkLocation),
   location: z.string().min(1, "Location is required"),
   url: z.optional(z.string().url("Invalid URL format")),
@@ -29,13 +33,19 @@ const jobSchema = z.object({
   jobType: z.nativeEnum(JobType),
   paymentType: z.nativeEnum(PaymentType),
   description: z.string().min(1, "Job description is required"),
-  bonusSkills: z.array(z.string()).optional(),
   yearsOfExperience: z.nativeEnum(YearsOfExperience).optional(),
   requiredSkills: z.array(
     z.object({
       skill: z.string(),
       yearsOfExperience: z.number().optional(),
-      isRequired: z.boolean(),
+      isRequired: z.boolean().nullable(),
+    })
+  ),
+  bonusSkills: z.array(
+    z.object({
+      skill: z.string().optional(),
+      yearsOfExperience: z.number().optional().nullable(),
+      isRequired: z.boolean().nullable(),
     })
   ),
   requiredDegree: z
@@ -143,6 +153,7 @@ const PostJobForm = () => {
   const [selectedRequiredSkills, setSelectedRequiredSkills] = useState<
     SkillOption[]
   >([]);
+
   const [selectedBonusSkills, setSelectedBonusSkills] = useState<SkillOption[]>(
     []
   );
@@ -153,6 +164,8 @@ const PostJobForm = () => {
   const [hiddenSkills, setHiddenSkills] = useState<{ [key: number]: boolean }>(
     {}
   );
+
+  const router = useRouter();
 
   const { control, handleSubmit, watch, setValue } = useForm<JobFormData>({
     resolver: zodResolver(jobSchema),
@@ -175,7 +188,13 @@ const PostJobForm = () => {
           isRequired: false,
         },
       ],
-      bonusSkills: [],
+      bonusSkills: [
+        {
+          skill: "",
+          yearsOfExperience: 0,
+          isRequired: null,
+        },
+      ],
       salary: {
         amount: 0,
         salaryType: "EXACT",
@@ -184,7 +203,7 @@ const PostJobForm = () => {
         frequency: Frequency.PER_YEAR,
       },
       requiredDegree: {
-        degree: undefined,
+        degree: null,
         isRequired: false,
       },
     },
@@ -205,6 +224,11 @@ const PostJobForm = () => {
     a.toLowerCase().localeCompare(b.toLowerCase())
   );
 
+  const availableBonusSkills = alphabeticalSkillKeywords.filter(
+    (keyword) =>
+      !selectedRequiredSkills.some((skill) => skill.value === keyword)
+  );
+
   const handleHideSkill = (index: number) => {
     // Get the current requiredSkills array from the form state
     const updatedSkills = [...watch("requiredSkills")];
@@ -213,7 +237,7 @@ const PostJobForm = () => {
     updatedSkills[index] = {
       ...updatedSkills[index],
       yearsOfExperience: 0, // Set yearsOfExperience to 0
-      isRequired: false, // Set isRequired to false
+      isRequired: null, // Set isRequired to false
     };
 
     // Update the form state with the modified skills array
@@ -232,13 +256,17 @@ const PostJobForm = () => {
     setValue("experienceLevels", experienceLevelValues);
   };
 
+  const handleYearsOfExperienceChange = (index: number, value: number) => {
+    setValue(`requiredSkills.${index}.yearsOfExperience`, value);
+  };
+
+  const handleSalaryAmountChange = (value: number) => {
+    setValue("salary.amount", value);
+  };
+
   const handleHideDegreeCard = () => {
     setIsDegreeCardVisible(false);
     setValue("requiredDegree", { degree: null, isRequired: false });
-  };
-
-  const handleYearsOfExperienceChange = (index: number, value: number) => {
-    setValue(`requiredSkills.${index}.yearsOfExperience`, value);
   };
 
   const updateRequiredSkill = (
@@ -258,10 +286,6 @@ const PostJobForm = () => {
 
   const handleBonusSkillsChange = (selected: any) => {
     setSelectedBonusSkills(selected || []);
-  };
-
-  const handleSalaryAmountChange = (value: number) => {
-    setValue("salary.amount", value);
   };
 
   useEffect(() => {
@@ -299,7 +323,11 @@ const PostJobForm = () => {
   useEffect(() => {
     setValue(
       "bonusSkills",
-      selectedBonusSkills.map((skill) => skill.value)
+      selectedBonusSkills.map((skill) => ({
+        skill: skill.value,
+        yearsOfExperience: null,
+        isRequired: null,
+      }))
     );
   }, [selectedBonusSkills, setValue]);
 
@@ -328,8 +356,35 @@ const PostJobForm = () => {
     }),
   };
 
-  const onSubmit = (data: JobFormData) => {
+  const onSubmit = async (data: JobFormData) => {
     console.log("Form Data Submitted", data);
+
+    try {
+      const response = await fetch("/api/job-posting", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+        },
+        body: JSON.stringify(data), 
+      });
+
+      if (response.ok) {
+        const responseData = await response.json(); 
+        console.log("Success:", responseData);
+
+        toast.success("Job posted successfully!");
+        setTimeout(() => {
+          router.push("/jobs"); 
+        }, 1500);
+      } else {
+        console.error("Error: ", response.statusText);
+
+        toast.error(`Error: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Request failed", error);
+      toast.error("Failed to post job. Please try again.");
+    }
   };
 
   return (
@@ -468,10 +523,11 @@ const PostJobForm = () => {
             )}
           />
         </div>
+
         <div className="flex flex-col">
           <label
             htmlFor="deadline"
-            className="text-sm font-semibold text-gray-300 mt-2"
+            className="text-sm font-semibold text-gray-300 "
           >
             Application Deadline
           </label>
@@ -677,7 +733,7 @@ const PostJobForm = () => {
         </label>
         <Select
           isMulti
-          options={alphabeticalSkillKeywords.map((skill) => ({
+          options={availableBonusSkills.map((skill) => ({
             label: skill,
             value: skill,
           }))}
@@ -935,8 +991,12 @@ const PostJobForm = () => {
               className="text-sm font-semibold text-gray-300"
             >
               Have you completed the following level of education:{" "}
-              <span className="text-indigo-400">
-                {selectedDegree || "[Degree]"}
+              <span>
+                <span className="text-indigo-400">
+                  {selectedDegree
+                    ? degreeTypeLabels[selectedDegree]
+                    : "[Degree]"}
+                </span>
               </span>
               ?
               <span className="bg-blue-500 ml-2 p-1 rounded-lg">
@@ -980,7 +1040,6 @@ const PostJobForm = () => {
                 )}
               />
             </div>
-
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-2 md:mt-0">
               <div className="flex flex-col">
                 <label
@@ -991,7 +1050,6 @@ const PostJobForm = () => {
                 </label>
                 <span className="text-sm text-gray-300 mt-2">Yes</span>
               </div>
-
               <div className="flex items-center space-x-2 mt-4 md:mt-0">
                 <input
                   type="checkbox"
@@ -1018,7 +1076,6 @@ const PostJobForm = () => {
             className="space-y-6 p-6 bg-zinc-700 bg-opacity-70 rounded-lg shadow-md relative"
           >
             <div className="flex justify-between items-center  w-full">
-              {/* Label */}
               <div className="flex flex-col">
                 <label
                   htmlFor={`requiredSkills.${index}.yearsOfExperience`}
@@ -1118,7 +1175,7 @@ const PostJobForm = () => {
       <div className="flex justify-end mt-6">
         <button
           type="submit"
-          className="bg-zinc-700 text-white p-3 rounded-full hover:bg-zinc-800 w-48"
+          className="bg-zinc-600 text-white p-3 rounded-full hover:bg-zinc-700 w-48"
         >
           Post Job
         </button>
