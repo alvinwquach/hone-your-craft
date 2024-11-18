@@ -130,11 +130,9 @@ export async function POST(request: NextRequest) {
         };
       }
     } else {
-      // If no degree, omit the field
       delete jobPostingData.requiredDegree;
     }
 
-    // Create the job posting with the correct relational data
     const jobPosting = await prisma.jobPosting.create({
       data: {
         ...jobPostingData,
