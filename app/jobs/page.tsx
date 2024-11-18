@@ -1,402 +1,55 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect, Fragment } from "react";
-import Link from "next/link";
+import { useState, Fragment } from "react";
 import { FaTools } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
+import useSWR from "swr";
 import { Menu, Transition } from "@headlessui/react";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { IoIosAddCircleOutline } from "react-icons/io";
+import Link from "next/link";
 
-const mockJobs = [
-  {
-    id: 1,
-    title: "Frontend Developer",
-    company: "Bring The Shreds",
-    location: "Los Angeles, California, United States",
-    workLocation: "On-site",
-    status: "draft",
-    createdAt: "2024-11-07T08:30:00Z",
-    updatedAt: "2024-11-07T08:30:00Z",
-    jobType: "FULL_TIME",
-    salary: {
-      amount: 5000,
-      salaryType: "EXACT",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: null,
-    },
-    paymentType: "SALARY",
-    requiredSkills: [
-      { skill: "JavaScript", yearsOfExperience: 3, isRequired: true },
-      { skill: "React", yearsOfExperience: 2, isRequired: true },
-      {
-        skill: "Adobe Creative Suite",
-        yearsOfExperience: 0,
-        isRequired: false,
-      },
-    ],
-    bonusSkills: [
-      { skill: "JavaScript", yearsOfExperience: null, isRequired: null },
-      { skill: "React", yearsOfExperience: null, isRequired: null },
-    ],
-    experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
-    yearsOfExperience: 3,
-    deadline: "2024-12-15T23:59:59Z",
-    requiredDegree: {
-      degree: "BACHELORS_DEGREE",
-      isRequired: true,
-    },
-  },
-  {
-    id: 2,
-    title: "Backend Developer",
-    company: "CodeWorks",
-    location: "San Francisco, California, United States",
-    workLocation: "Hybrid",
-    status: "completed",
-    createdAt: "2024-11-02T10:15:00Z",
-    updatedAt: "2024-11-02T10:15:00Z",
-    jobType: "FULL_TIME",
-    salary: {
-      amount: null,
-      salaryType: "RANGE",
-      rangeMin: 90000,
-      rangeMax: 110000,
-      frequency: "PER_YEAR",
-    },
-    paymentType: "SALARY",
-    requiredSkills: [
-      { skill: "Node.js", yearsOfExperience: 4, isRequired: true },
-      { skill: "MongoDB", yearsOfExperience: 3, isRequired: true },
-      {
-        skill: "Adobe Creative Suite",
-        yearsOfExperience: 0,
-        isRequired: false,
-      },
-    ],
-    requiredDegree: {
-      degree: "MASTERS_DEGREE",
-      isRequired: true,
-    },
-    bonusSkills: [],
-    experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
-    yearsOfExperience: 4,
-    deadline: "2024-11-25T23:59:59Z",
-  },
-  {
-    id: 3,
-    title: "UX Designer",
-    company: "DesignStudio",
-    location: "Santa Monica, California, United States",
-    workLocation: "On-site",
-    status: "draft",
-    createdAt: "2024-11-10T11:00:00Z",
-    updatedAt: "2024-11-10T11:00:00Z",
-    jobType: "FULL_TIME",
-    salary: {
-      amount: 50000,
-      salaryType: "UP_TO",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: "PER_YEAR",
-    },
-    paymentType: "SALARY",
-    requiredSkills: [
-      { skill: "UX Research", yearsOfExperience: 3, isRequired: true },
-      { skill: "Figma", yearsOfExperience: 2, isRequired: true },
-      {
-        skill: "Adobe Creative Suite",
-        yearsOfExperience: 0,
-        isRequired: false,
-      },
-    ],
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-    bonusSkills: [],
-    experienceLevels: ["ENTRY_LEVEL", "MID_LEVEL"],
-    yearsOfExperience: 3,
-    deadline: null,
-  },
-  {
-    id: 4,
-    title: "Product Manager",
-    company: "Techify",
-    location: "Austin, Texas, United States",
-    workLocation: "Remote",
-    status: "completed",
-    createdAt: "2024-11-01T14:15:00Z",
-    updatedAt: "2024-11-01T14:15:00Z",
-    jobType: "FULL_TIME",
-    salary: {
-      amount: 70000,
-      salaryType: "STARTING_AT",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: "PER_YEAR",
-    },
-    paymentType: "SALARY",
-    requiredSkills: [
-      { skill: "Agile", yearsOfExperience: 4, isRequired: true },
-      { skill: "Project Management", yearsOfExperience: 3, isRequired: true },
-    ],
-    bonusSkills: ["Scrum", "Jira"],
-    experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
-    yearsOfExperience: 4,
-    deadline: "2024-12-01T23:59:59Z",
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-  {
-    id: 5,
-    title: "Freelance Full Stack Developer",
-    company: "WebTech Solutions",
-    location: "Remote",
-    workLocation: "Remote",
-    status: "draft",
-    createdAt: "2024-11-05T09:00:00Z",
-    updatedAt: "2024-11-05T09:00:00Z",
-    jobType: "FREELANCE",
-    salary: {
-      amount: 5000,
-      salaryType: "EXACT",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: null,
-    },
-    paymentType: "ONE_TIME_PAYMENT",
-    requiredSkills: [
-      { skill: "JavaScript", yearsOfExperience: 4, isRequired: true },
-      { skill: "React", yearsOfExperience: 3, isRequired: true },
-    ],
-    bonusSkills: ["Node.js", "TypeScript"],
-    experienceLevels: ["MID_LEVEL"],
-    yearsOfExperience: 4,
-    deadline: null,
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-  {
-    id: 6,
-    title: "Freelance Python Developer",
-    company: "DataWorks",
-    location: "Remote",
-    workLocation: "Remote",
-    status: "completed",
-    createdAt: "2024-10-29T09:00:00Z",
-    updatedAt: "2024-10-29T09:00:00Z",
-    jobType: "FREELANCE",
-    salary: {
-      amount: 8000,
-      salaryType: "EXACT",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: null,
-    },
-    paymentType: "ONE_TIME_PAYMENT",
-    requiredSkills: [
-      { skill: "Python", yearsOfExperience: 3, isRequired: true },
-      { skill: "Django", yearsOfExperience: 2, isRequired: true },
-    ],
-    bonusSkills: [],
-    experienceLevels: ["MID_LEVEL"],
-    yearsOfExperience: 3,
-    deadline: null,
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-  {
-    id: 7,
-    title: "Software Engineer",
-    company: "CodeForge",
-    location: "New York, New York, United States",
-    workLocation: "On-site",
-    status: "completed",
-    createdAt: "2024-10-30T08:00:00Z",
-    updatedAt: "2024-10-30T08:00:00Z",
-    jobType: "FULL_TIME",
-    salary: {
-      amount: 100000,
-      salaryType: "EXACT",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: "PER_YEAR",
-    },
-    paymentType: "SALARY",
-    requiredSkills: [
-      { skill: "Java", yearsOfExperience: 5, isRequired: true },
-      { skill: "Spring Boot", yearsOfExperience: 4, isRequired: true },
-    ],
-    bonusSkills: [],
-    experienceLevels: ["SENIOR_LEVEL"],
-    yearsOfExperience: 5,
-    deadline: null,
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-  {
-    id: 8,
-    title: "Data Scientist",
-    company: "AI Labs",
-    location: "San Francisco, California, United States",
-    workLocation: "Hybrid",
-    status: "draft",
-    createdAt: "2024-11-04T12:00:00Z",
-    updatedAt: "2024-11-04T12:00:00Z",
-    jobType: "FULL_TIME",
-    salary: {
-      amount: null,
-      salaryType: "RANGE",
-      rangeMin: 120000,
-      rangeMax: 150000,
-      frequency: "PER_YEAR",
-    },
-    paymentType: "SALARY",
-    requiredSkills: [
-      { skill: "Python", yearsOfExperience: 4, isRequired: true },
-      { skill: "Machine Learning", yearsOfExperience: 3, isRequired: true },
-    ],
-    bonusSkills: [],
-    experienceLevels: ["MID_LEVEL", "SENIOR_LEVEL"],
-    yearsOfExperience: 4,
-    deadline: null,
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-  {
-    id: 9,
-    title: "Freelance Web Developer",
-    company: "Web Innovators",
-    location: "Remote",
-    workLocation: "Remote",
-    status: "draft",
-    createdAt: "2024-11-09T10:45:00Z",
-    updatedAt: "2024-11-09T10:45:00Z",
-    jobType: "FREELANCE",
-    salary: {
-      amount: 3000,
-      salaryType: "STARTING_AT",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: null,
-    },
-    paymentType: "ONE_TIME_PAYMENT",
-    requiredSkills: [
-      { skill: "HTML", yearsOfExperience: 3, isRequired: true },
-      { skill: "CSS", yearsOfExperience: 3, isRequired: true },
-    ],
-    bonusSkills: ["JavaScript", "SEO"],
-    experienceLevels: ["ENTRY_LEVEL", "MID_LEVEL"],
-    yearsOfExperience: 3,
-    deadline: "2024-12-10T23:59:59Z",
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-  {
-    id: 10,
-    title: "Freelance Mobile App Developer",
-    company: "App Creators",
-    location: "Remote",
-    workLocation: "Remote",
-    status: "draft",
-    createdAt: "2024-11-06T13:30:00Z",
-    updatedAt: "2024-11-06T13:30:00Z",
-    jobType: "FREELANCE",
-    salary: {
-      amount: 10000,
-      salaryType: "UP_TO",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: null,
-    },
-    paymentType: "ONE_TIME_PAYMENT",
-    requiredSkills: [
-      { skill: "Swift", yearsOfExperience: 4, isRequired: true },
-      { skill: "React Native", yearsOfExperience: 3, isRequired: true },
-    ],
-    bonusSkills: [],
-    experienceLevels: ["MID_LEVEL"],
-    yearsOfExperience: 3,
-    deadline: null,
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-  {
-    id: 11,
-    title: "Mobile App Developer",
-    company: "App Innovators",
-    location: "Seattle, Washington, United States",
-    workLocation: "Remote",
-    status: "draft",
-    createdAt: "2024-11-12T09:00:00Z",
-    updatedAt: "2024-11-12T09:00:00Z",
-    jobType: "FULL_TIME",
-    salary: {
-      amount: 95000,
-      salaryType: "EXACT",
-      rangeMin: null,
-      rangeMax: null,
-      frequency: "PER_YEAR",
-    },
-    paymentType: "SALARY",
-    requiredSkills: [
-      { skill: "Swift", yearsOfExperience: 2, isRequired: true },
-      { skill: "React Native", yearsOfExperience: 2, isRequired: true },
-      { skill: "UI Design", yearsOfExperience: 0, isRequired: false },
-    ],
-    bonusSkills: ["JavaScript", "Objective-C"],
-    experienceLevels: ["MID_LEVEL"],
-    yearsOfExperience: 3,
-    deadline: null,
-    requiredDegree: {
-      degree: null,
-      isRequired: false,
-    },
-  },
-];
+enum JobPostingStatus {
+  OPEN = "OPEN",
+  CLOSED = "CLOSED",
+  DRAFT = "DRAFT",
+  ARCHIVED = "ARCHIVED",
+  FILLED = "FILLED",
+  COMPLETED = "COMPLETED",
+}
+
+interface JobPosting {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  workLocation: string;
+  status: JobPostingStatus;
+  createdAt: string;
+}
+
+const fetcher = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch data");
+  }
+  const data = await response.json();
+  return data.jobPostings || [];
+};
 
 function Jobs() {
   const { data: session } = useSession();
   const userType = session?.user?.userType;
-  const [jobs, setJobs] = useState(mockJobs);
   const [filter, setFilter] = useState<"all" | "drafts" | "posted">("all");
 
-  useEffect(() => {
-    setJobs(
-      mockJobs.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-    );
-  }, []);
+  const {
+    data: userJobPostings,
+    isLoading: userJobPostingsLoading,
+    error,
+  } = useSWR<JobPosting[]>("/api/job-postings", fetcher);
 
-  const filteredJobs = jobs.filter((job) => {
-    if (filter === "drafts") return job.status === "draft";
-    if (filter === "posted") return job.status === "completed";
-    return true;
-  });
-
-  const postedJobsCount = jobs.filter(
-    (job) => job.status === "completed"
-  ).length;
-  const draftJobsCount = jobs.filter((job) => job.status === "draft").length;
+  const jobPostings = Array.isArray(userJobPostings) ? userJobPostings : [];
 
   if (userType !== "CLIENT") {
     return (
@@ -412,6 +65,37 @@ function Jobs() {
       </section>
     );
   }
+
+  if (userJobPostingsLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading job postings</div>;
+  }
+
+  const filteredJobs = jobPostings.filter((job) => {
+    if (filter === "drafts") return job.status === JobPostingStatus.DRAFT;
+    if (filter === "posted") return job.status === JobPostingStatus.OPEN;
+    return true;
+  });
+
+  const postedJobsCount = jobPostings.filter(
+    (job) => job.status === JobPostingStatus.OPEN
+  ).length;
+  const draftJobsCount = jobPostings.filter(
+    (job) => job.status === JobPostingStatus.DRAFT
+  ).length;
+
+  const workLocationLabels: {
+    ONSITE: string;
+    HYBRID: string;
+    REMOTE: string;
+  } = {
+    ONSITE: "On-site",
+    HYBRID: "Hybrid",
+    REMOTE: "Remote",
+  };
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
@@ -438,38 +122,33 @@ function Jobs() {
             <div className="text-xl font-semibold text-blue-500">
               Posted Jobs
             </div>
-            {filteredJobs.length > 0 && (
-              <div className="flex justify-start items-center gap-4 mt-4">
-                <button
-                  onClick={() => setFilter("all")}
-                  className={`px-4 py-2 rounded-full ${
-                    filter === "all" ? "bg-blue-500" : "bg-zinc-700"
-                  } text-white`}
-                >
-                  All Jobs
-                </button>
-                <button
-                  onClick={() => setFilter("drafts")}
-                  className={`px-4 py-2 rounded-full ${
-                    filter === "drafts" ? "bg-blue-500" : "bg-zinc-700"
-                  } text-white`}
-                >
-                  Drafts
-                </button>
-                <button
-                  onClick={() => setFilter("posted")}
-                  className={`px-4 py-2 rounded-full ${
-                    filter === "posted" ? "bg-blue-500" : "bg-zinc-700"
-                  } text-white`}
-                >
-                  Posted
-                </button>
-              </div>
-            )}
+            <div className="flex justify-start items-center gap-4 mt-4">
+              <button
+                onClick={() => setFilter("all")}
+                className={`px-4 py-2 rounded-full ${
+                  filter === "all" ? "bg-blue-500" : "bg-zinc-700"
+                } text-white`}
+              >
+                All Jobs
+              </button>
+              <button
+                onClick={() => setFilter("drafts")}
+                className={`px-4 py-2 rounded-full ${
+                  filter === "drafts" ? "bg-blue-500" : "bg-zinc-700"
+                } text-white`}
+              >
+                Drafts
+              </button>
+              <button
+                onClick={() => setFilter("posted")}
+                className={`px-4 py-2 rounded-full ${
+                  filter === "posted" ? "bg-blue-500" : "bg-zinc-700"
+                } text-white`}
+              >
+                Posted
+              </button>
+            </div>
           </div>
-          {filteredJobs.length > 0 && (
-            <div className="border-t border-zinc-700" />
-          )}
           {filteredJobs.length === 0 ? (
             <div className="bg-zinc-900 p-6 shadow-lg flex flex-col items-center border-b border-zinc-700">
               <h3 className="text-lg font-semibold text-white mb-2">
@@ -494,7 +173,13 @@ function Jobs() {
                     </div>
                     <div className="text-lg text-gray-400">{job.company}</div>
                     <div className="text-sm text-gray-500">
-                      {job.location} ({job.workLocation})
+                      {job.location} (
+                      {
+                        workLocationLabels[
+                          job.workLocation as keyof typeof workLocationLabels
+                        ]
+                      }
+                      )
                     </div>
                   </div>
                   <Menu as="div" className="relative">
@@ -511,12 +196,41 @@ function Jobs() {
                       leaveTo="transform opacity-0 scale-95"
                     >
                       <Menu.Items className="absolute right-0 mt-2 w-48 bg-zinc-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        {job.status === "draft" && (
+                        {/* Options for Drafts */}
+                        {job.status === JobPostingStatus.DRAFT && (
                           <div className="py-1">
                             <Menu.Item>
                               <button
                                 className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
-                                onClick={() => alert(`Editing job ${job.id}`)}
+                                onClick={() =>
+                                  alert(`Editing draft job ${job.id}`)
+                                } // Replace with actual edit logic
+                              >
+                                Edit Draft
+                              </button>
+                            </Menu.Item>
+                            <Menu.Item>
+                              <button
+                                className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
+                                onClick={() =>
+                                  alert(`Deleting draft job ${job.id}`)
+                                } // Replace with actual edit logic
+                              >
+                                Delete Draft
+                              </button>
+                            </Menu.Item>
+                          </div>
+                        )}
+
+                        {/* Options for Posted Jobs */}
+                        {job.status === JobPostingStatus.OPEN && (
+                          <div className="py-1">
+                            <Menu.Item>
+                              <button
+                                className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
+                                onClick={() =>
+                                  alert(`Editing posted job ${job.id}`)
+                                }
                               >
                                 Edit Job
                               </button>
@@ -524,22 +238,38 @@ function Jobs() {
                             <Menu.Item>
                               <button
                                 className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
-                                onClick={() => alert(`Deleting job ${job.id}`)}
+                                onClick={() =>
+                                  alert(`Deleting posted job ${job.id}`)
+                                }
                               >
-                                Delete Draft
+                                Delete Job
                               </button>
                             </Menu.Item>
                           </div>
                         )}
-                        {job.status === "completed" && (
-                          <Menu.Item>
-                            <button
-                              className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
-                              onClick={() => alert(`Editing job ${job.id}`)}
-                            >
-                              Edit Job
-                            </button>
-                          </Menu.Item>
+                        {job.status === JobPostingStatus.COMPLETED && (
+                          <div className="py-1">
+                            <Menu.Item>
+                              <button
+                                className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
+                                onClick={() =>
+                                  alert(`Editing completed job ${job.id}`)
+                                }
+                              >
+                                Edit Job
+                              </button>
+                            </Menu.Item>
+                            <Menu.Item>
+                              <button
+                                className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
+                                onClick={() =>
+                                  alert(`Deleting completed job ${job.id}`)
+                                }
+                              >
+                                Delete Job
+                              </button>
+                            </Menu.Item>
+                          </div>
                         )}
                       </Menu.Items>
                     </Transition>
@@ -547,7 +277,7 @@ function Jobs() {
                 </div>
                 <div className="flex justify-start items-center mt-2">
                   <div className="flex flex-col">
-                    {job.status === "draft" ? (
+                    {job.status === JobPostingStatus.DRAFT ? (
                       <>
                         <div className="flex items-center">
                           <span className="rounded-full text-xs font-bold">
