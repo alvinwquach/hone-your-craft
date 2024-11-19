@@ -360,7 +360,7 @@ model Salary {
   rangeMin     Float?
   rangeMax     Float?
   salaryType   SalaryType @default(RANGE)
-  frequency    Frequency
+  frequency    Frequency?
   negotiable   Boolean?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt

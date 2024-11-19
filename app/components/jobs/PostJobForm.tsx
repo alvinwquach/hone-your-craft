@@ -62,7 +62,7 @@ const jobSchema = z.object({
     salaryType: z.nativeEnum(SalaryType),
     rangeMin: z.number().nullable(),
     rangeMax: z.number().nullable(),
-    frequency: z.string().nullable(),
+    frequency: z.string().nullable().optional(),
   }),
 });
 
