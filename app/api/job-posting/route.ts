@@ -30,13 +30,17 @@ export async function POST(request: NextRequest) {
         jobPostingData.salary;
       let salaryData = {};
 
-      if (salaryType === "EXACT") {
+      if (
+        salaryType === "EXACT" ||
+        salaryType === "STARTING_AT" ||
+        salaryType === "UP_TO"
+      ) {
         salaryData = {
           amount,
           rangeMin: null,
           rangeMax: null,
           salaryType,
-          frequency,
+          frequency: salaryType === "EXACT" ? null : frequency,
         };
       } else if (salaryType === "RANGE") {
         salaryData = {
@@ -46,21 +50,15 @@ export async function POST(request: NextRequest) {
           salaryType,
           frequency,
         };
-      } else if (salaryType === "STARTING_AT") {
+      }
+
+      if (jobPostingData.paymentType === "ONE_TIME_PAYMENT") {
         salaryData = {
           amount,
           rangeMin: null,
           rangeMax: null,
           salaryType,
-          frequency,
-        };
-      } else if (salaryType === "UP_TO") {
-        salaryData = {
-          amount: null,
-          rangeMin: null,
-          rangeMax,
-          salaryType,
-          frequency,
+          frequency: null,
         };
       }
 
@@ -109,7 +107,6 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // Handle requiredDegree (create or connect)
     if (jobPostingData.requiredDegree?.degree) {
       const existingDegree = await prisma.degree.findFirst({
         where: {
@@ -161,7 +158,6 @@ export async function POST(request: NextRequest) {
 
     console.log(jobPosting);
 
-    // Return the created job posting with related data
     return NextResponse.json({ jobPosting }, { status: 201 });
   } catch (error) {
     console.error("Error creating job posting:", error);
