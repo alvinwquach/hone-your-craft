@@ -17,7 +17,7 @@ enum CompanySize {
   Enterprise_5000plus 
 }
 
-enum UserType {
+enum UserRole {
   CLIENT
   CANDIDATE
 }
@@ -743,7 +743,7 @@ model User {
   socialLinks          SocialLinks?        @relation("UserSocialLinks")
   title                String?
   role                 String?
-  userType             UserType?
+  userRole             UserRole?
   primaryRole          String?
   openToRoles          String[]
   yearsOfExperience    YearsOfExperience?

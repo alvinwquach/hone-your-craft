@@ -42,7 +42,7 @@ const fetcher = async (url: string) => {
 
 function Jobs() {
   const { data: session } = useSession();
-  const userType = session?.user?.userType;
+  const userRole = session?.user?.userRole;
   const [filter, setFilter] = useState<"all" | "drafts" | "posted">("all");
 
   const {
@@ -52,7 +52,7 @@ function Jobs() {
   } = useSWR<JobPosting[]>("/api/job-postings", fetcher);
 
   const jobPostings = userJobPostings ? userJobPostings : [];
-  if (userType !== "CLIENT") {
+  if (userRole !== "CLIENT") {
     return (
       <section className="flex flex-col items-center justify-center min-h-screen">
         <FaTools className="text-6xl text-blue-500 mb-4" />

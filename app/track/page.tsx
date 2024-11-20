@@ -26,7 +26,7 @@ interface UserJobs {
 
 function Track() {
   const { data: session } = useSession();
-  const userType = session?.user?.userType;
+  const userRole = session?.user?.userRole;
   const [
     titleSearchString,
     setTitleSearchString,
@@ -67,7 +67,7 @@ function Track() {
 
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      {userType === "CANDIDATE" ? (
+      {userRole === "CANDIDATE" ? (
         <>
           <JobTitleSearchForm
             titleSearchString={titleSearchString}
@@ -89,7 +89,7 @@ function Track() {
             </Suspense>
           )}
         </>
-      ) : userType === "CLIENT" ? (
+      ) : userRole === "CLIENT" ? (
         <section className="flex flex-col items-center justify-center min-h-screen">
           <FaTools className="text-6xl text-yellow-500 mb-4" />
           <h2 className="text-xl font-bold text-gray-700 mb-2">

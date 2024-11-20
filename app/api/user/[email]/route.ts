@@ -25,7 +25,7 @@ export async function GET(
         image: true,
         role: true,
         skills: true,
-        userType: true,
+        userRole: true,
         createdAt: true,
       },
     });

@@ -11,7 +11,7 @@ import Section from "../components/common/Section";
 
 function Onboarding() {
   const { data: session, status, update } = useSession();
-  const [userType, setUserType] = useState("");
+  const [userRole, setUserRole] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const router = useRouter();
   const cutoffDate = "2024-10-31T00:00:00Z";
@@ -20,15 +20,17 @@ function Onboarding() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!userType) {
+    if (!userRole) {
       toast.error("❌ Please select a role before continuing.");
       return;
     }
     try {
-      const response = await axios.put(`/api/onboarding`, { userType });
+      const response = await axios.put(`/api/onboarding`, {
+        userType: userRole,
+      });
       if (response.status === 200) {
-        toast.success(`🎉 Role updated to "${userType}" successfully!`);
-        await update({ userType });
+        toast.success(`🎉 Role updated to "${userRole}" successfully!`);
+        await update({ userType: userRole });
         router.push("/profile");
       } else {
         throw new Error("Network response was not ok");
@@ -93,12 +95,12 @@ function Onboarding() {
                 <button
                   type="button"
                   className={`flex items-center justify-center py-3 px-6 rounded-lg transition duration-200 ease-in-out ${
-                    userType === "CLIENT"
+                    userRole === "CLIENT"
                       ? "bg-zinc-800 text-white transform scale-105"
                       : "bg-zinc-600 text-gray-200 hover:bg-zinc-700"
                   }`}
                   onClick={() =>
-                    setUserType(userType === "CLIENT" ? "" : "CLIENT")
+                    setUserRole(userRole === "CLIENT" ? "" : "CLIENT")
                   }
                 >
                   🤝 Client / Hiring Manager
@@ -106,12 +108,12 @@ function Onboarding() {
                 <button
                   type="button"
                   className={`flex items-center justify-center py-3 px-6 rounded-lg transition duration-200 ease-in-out ${
-                    userType === "CANDIDATE"
+                    userRole === "CANDIDATE"
                       ? "bg-zinc-800 text-white transform scale-105"
                       : "bg-zinc-600 text-gray-200 hover:bg-zinc-700"
                   }`}
                   onClick={() =>
-                    setUserType(userType === "CANDIDATE" ? "" : "CANDIDATE")
+                    setUserRole(userRole === "CANDIDATE" ? "" : "CANDIDATE")
                   }
                 >
                   💼 Job Seeker

@@ -47,7 +47,7 @@ function Profile() {
     (url) => axios.get(url).then((res) => res.data)
   );
 
-  const userType = data?.user?.userType;
+  const userRole = data?.user?.userRole;
   const jobOffers = userOffers || [];
   const jobRejections = userRejections || [];
   const jobInterviews = userInterviews || [];
@@ -120,7 +120,7 @@ function Profile() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      {userType === "CANDIDATE" ? (
+      {userRole === "CANDIDATE" ? (
         <>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Profile Card */}
@@ -241,7 +241,7 @@ function Profile() {
             )}
           </div>
         </>
-      ) : userType === "CLIENT" ? (
+      ) : userRole === "CLIENT" ? (
         <section className="flex flex-col items-center justify-center min-h-screen">
           <FaTools className="text-6xl text-yellow-500 mb-4" />
           <h2 className="text-xl font-bold text-gray-700 mb-2">

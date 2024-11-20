@@ -3,7 +3,7 @@ import NextAuth, { ISODateString } from "next-auth";
 declare module "next-auth" {
   interface Session {
     user?: {
-      userType?: string | null;
+      userRole?: string | null;
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -14,7 +14,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    userType?: string | null;
+    userRole?: string | null;
     createdAt?: string | null;
   }
 }

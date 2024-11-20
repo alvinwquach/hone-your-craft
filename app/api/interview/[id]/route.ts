@@ -42,7 +42,7 @@ export async function GET(
     }
     // If the current user is a candidate, ensure they can only view interviews of their own
     if (
-      currentUser.userType === "CANDIDATE" &&
+      currentUser.userRole === "CANDIDATE" &&
       interview.userId !== currentUser.id
     ) {
       // Candidate cannot view interviews of others
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Candidates can only create interviews from the above list
     if (
-      currentUser.userType === "CANDIDATE" &&
+      currentUser.userRole === "CANDIDATE" &&
       !candidateInterviewTypes.includes(interviewData.interviewType)
     ) {
       return NextResponse.json(
@@ -152,7 +152,7 @@ export async function PUT(
 
     // If the current user is a candidate, ensure they can only update their own interview
     if (
-      currentUser.userType === "CANDIDATE" &&
+      currentUser.userRole === "CANDIDATE" &&
       interview?.userId !== currentUser.id
     ) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
@@ -199,7 +199,7 @@ export async function DELETE(
     // If the current user is a candidate, ensure they can only delete their own interview
     if (
       !interview ||
-      (currentUser.userType === "CANDIDATE" &&
+      (currentUser.userRole === "CANDIDATE" &&
         interview.userId !== currentUser.id)
     ) {
       // Return a 404 error if the interview doesn't exist
