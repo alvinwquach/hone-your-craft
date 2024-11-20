@@ -95,7 +95,7 @@ const authOptions: NextAuthOptions = {
       if (session.user) {
         Object.assign(session.user, {
           userId: token.userId,
-          userType: token.userType,
+          userRole: token.userRole,
           createdAt: token.createdAt,
         });
       }

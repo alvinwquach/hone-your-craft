@@ -726,7 +726,7 @@ model Session {
   userId       String?  @db.ObjectId
   expires      DateTime
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userType     String?
+  userRole     String?
 
   @@map("session")
 }
