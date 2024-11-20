@@ -46,12 +46,12 @@ function Jobs() {
   const [filter, setFilter] = useState<"all" | "drafts" | "posted">("all");
 
   const {
-    data: userJobPostings,
-    isLoading: userJobPostingsLoading,
+    data: userPostedJobs,
+    isLoading: userPostedJobsLoading,
     error,
-  } = useSWR<JobPosting[]>("/api/job-postings", fetcher);
+  } = useSWR<JobPosting[]>("/api/client-jobs", fetcher);
 
-  const jobPostings = userJobPostings ? userJobPostings : [];
+  const jobPostings = userPostedJobs ? userPostedJobs : [];
   if (userRole !== "CLIENT") {
     return (
       <section className="flex flex-col items-center justify-center min-h-screen">
@@ -67,7 +67,7 @@ function Jobs() {
     );
   }
 
-  if (userJobPostingsLoading) {
+  if (userPostedJobsLoading) {
     return <div>Loading...</div>;
   }
 
@@ -76,8 +76,7 @@ function Jobs() {
   }
 
   const handleDeleteJobPosting = async (jobId: string) => {
-    const updatedJobs =
-      userJobPostings?.filter((job) => job.id !== jobId) ?? [];
+    const updatedJobs = userPostedJobs?.filter((job) => job.id !== jobId) ?? [];
     mutate("/api/job-postings", updatedJobs, false);
     try {
       const response = await fetch(`/api/job-posting/${jobId}`, {
@@ -89,7 +88,7 @@ function Jobs() {
       toast.success("Job posting deleted successfully!");
     } catch (error) {
       console.error("Error deleting job:", error);
-      mutate("/api/job-postings", userJobPostings, false);
+      mutate("/api/job-postings", userPostedJobs, false);
       toast.error("An error occurred while deleting the job posting.");
     }
   };
