@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import getCurrentUser from "@/app/lib/getCurrentUser";
 import prisma from "@/app/lib/db/prisma";
+import getCurrentUser from "@/app/actions/getCurrentUser";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   try {

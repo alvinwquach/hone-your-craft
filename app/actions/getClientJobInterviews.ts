@@ -1,7 +1,7 @@
 "use server";
 
 import getCurrentUser from "./getCurrentUser";
-import prisma from "./db/prisma";
+import prisma from "../lib/db/prisma";
 import { InterviewType } from "@prisma/client";
 
 const getUserJobInterviews = async () => {
