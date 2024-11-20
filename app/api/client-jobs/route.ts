@@ -1,8 +1,8 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Retrieve the current user from the session
     const currentUser = await getCurrentUser();
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch job postings created by the current user
-    const jobPostings = await prisma.jobPosting.findMany({
+    const postedJobs = await prisma.jobPosting.findMany({
       where: {
         userId: currentUser.id,
       },
@@ -38,9 +38,9 @@ export async function GET(request: NextRequest) {
       },
     });
     console.log("Current User:", currentUser);
-    console.log("Job Postings:", jobPostings);
+    console.log("Job Postings:", postedJobs);
 
-    return NextResponse.json({ jobPostings }, { status: 200 });
+    return NextResponse.json({ jobPostings: postedJobs }, { status: 200 });
   } catch (error) {
     console.error("Error fetching job postings:", error);
     return NextResponse.json(
