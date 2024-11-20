@@ -42,9 +42,9 @@ const authOptions: NextAuthOptions = {
       console.log("User data:", user);
       // Check if the user has an email
       if (user && user.email) {
-        // Query the database to check if the user already exists
         const existingUser = await prisma.user.findUnique({
-          where: { email: user.email }, // Find user by email
+          // Find user by email
+          where: { email: user.email },
         });
         // If the user does not exist, create a new user
         if (!existingUser) {
@@ -56,8 +56,8 @@ const authOptions: NextAuthOptions = {
               email: user.email,
               // Set user's profile image
               image: user.image,
-              // Set userType to null initially
-              userType: null,
+              // Set userRole to null initially
+              userRole: null,
             },
           });
           console.log("New user created:", newUser);
@@ -70,10 +70,10 @@ const authOptions: NextAuthOptions = {
     },
     // Callback triggered when a JSON Web Token is created or updated
     async jwt({ token, user, trigger, session }) {
-      // Handle userType updates
-      if (trigger === "update" && session?.userType) {
-        // Update token with new userType from session
-        token.userType = session.userType;
+      // Handle userRole updates
+      if (trigger === "update" && session?.userRole) {
+        // Update token with new userRole from session
+        token.userRole = session.userRole;
       } else if (user && user.email) {
         // If user is new or exists, find their details in the database
         const foundUser = await prisma.user.findUnique({
@@ -82,7 +82,7 @@ const authOptions: NextAuthOptions = {
         if (foundUser) {
           Object.assign(token, {
             userId: foundUser.id,
-            userType: foundUser.userType,
+            userRole: foundUser.userRole,
             createdAt: user.createdAt,
           });
         }

@@ -19,7 +19,7 @@ const fetcher = async (url: string, ...args: any[]) => {
 
 function Calendar() {
   const { data: session } = useSession();
-  const userType = session?.user?.userType;
+  const userRole = session?.user?.userRole;
 
   const {
     data: interviews,
@@ -47,7 +47,7 @@ function Calendar() {
   return (
     <DeleteInterviewContext.Provider value={handleDeleteInterview}>
       <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
-        {userType === "CANDIDATE" ? (
+        {userRole === "CANDIDATE" ? (
           <div className="flex flex-wrap">
             <div className="w-full md:w-1/5 pr-4 mt-4 sm:mt-6 md:mt-0">
               <Legend interviewTypes={candidateInterviewTypes} />
@@ -66,7 +66,7 @@ function Calendar() {
               )}
             </div>
           </div>
-        ) : userType === "CLIENT" ? (
+        ) : userRole === "CLIENT" ? (
           <div className="flex flex-wrap">
             <div className="w-full md:w-1/5 mt-4 sm:mt-6 md:mt-0 pr-0 md:pr-4">
               <Legend interviewTypes={clientInterviewTypes} />

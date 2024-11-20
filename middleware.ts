@@ -20,10 +20,10 @@ export default withAuth(
     if (authRoutes.includes(req.nextUrl.pathname)) {
       // If the user is authenticated, allow access to the requested route
       if (isAuthenticated) {
-        // Check if the user's type is set in the token
-        if (!token.userType) {
+        // Check if the user's role is set in the token
+        if (!token.userRole) {
           console.log("UserType is not set, redirecting to onboarding");
-          // Redirect the user to the onboarding page if userType is not set
+          // Redirect the user to the onboarding page if userRole is not set
           return NextResponse.redirect(new URL("/onboarding", req.url));
         }
         // If authenticated and userType is set, allow access to the requested route

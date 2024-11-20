@@ -10,14 +10,14 @@ export async function PUT(request: NextRequest) {
     if (!currentUser || !currentUser.email) {
       return NextResponse.error();
     }
-    // Parse the request body to get the userType
-    const { userType } = await request.json();
-    // Update the user in the database with the new userType
+    // Parse the request body to get the userRole
+    const { userRole } = await request.json();
+    // Update the user in the database with the new userRole
     const updatedUser = await prisma.user.update({
       // Locate user by their email
       where: { email: currentUser.email },
-      // Update userType in the database
-      data: { userType },
+      // Update userRole in the database
+      data: { userRole },
     });
     console.log("Updated User:", updatedUser);
     // Return the updated user as a JSON response

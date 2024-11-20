@@ -50,7 +50,7 @@ function Metrics(): JSX.Element {
     (url) => fetcher(url, { method: "GET" }),
     { refreshInterval: 1000 }
   );
-  const userType = session?.user?.userType;
+  const userRole = session?.user?.userRole;
 
   const [sortedSkills, setSortedSkills] = useState<string[]>([]);
   const [sortedFrequencies, setSortedFrequencies] = useState<number[]>([]);
@@ -495,7 +495,7 @@ function Metrics(): JSX.Element {
 
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 lg:pb-12 animate-fade-in-up min-h-screen">
-      {userType === "CANDIDATE" ? (
+      {userRole === "CANDIDATE" ? (
         <>
           <div className="flex justify-between md:flex-row flex-col">
             <div className="w-full md:w-1/2 h-[550px] mt-2">
@@ -535,7 +535,7 @@ function Metrics(): JSX.Element {
             )}
           </div>
         </>
-      ) : userType === "CLIENT" ? (
+      ) : userRole === "CLIENT" ? (
         <section className="flex flex-col items-center justify-center min-h-screen">
           <FaTools className="text-6xl text-yellow-500 mb-4" />
           <h2 className="text-xl font-bold text-gray-700 mb-2">
