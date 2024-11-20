@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getUserJobSkillsAndFrequency } from "../lib/getUserJobSkillsAndFrequency";
-import getUserJobInterviews from "../lib/getCandidateJobInterviews";
-import { getJobsByApplicationStatus } from "../lib/getJobsByApplicationStatus";
+import getUserJobInterviews from "../actions/getCandidateJobInterviews";
 import Chart from "chart.js/auto";
-
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
-import getUserJobPostings from "../lib/getUserJobPostings";
 import JobPostingCard from "../components/metrics/JobPostingCard";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
 import JobSource from "../components/metrics/JobSource";
 import { FaTools } from "react-icons/fa";
+import { getJobsByApplicationStatus } from "../actions/getJobsByApplicationStatus";
+import getUserJobPostings from "../actions/getUserJobPostings";
+import { getUserJobSkillsAndFrequency } from "../actions/getUserJobSkillsAndFrequency";
 
 export interface JobPosting {
   id: string;

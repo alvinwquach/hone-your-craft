@@ -7,13 +7,13 @@ import axios from "axios";
 import ProfileCard from "../components/profile/ProfileCard";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import SkillsCard from "../components/profile/SkillsCard";
-import getUserJobPostings from "../lib/getUserJobPostings";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
 import JobRejections from "../components/profile/JobRejections";
 import { Suspense } from "react";
 import { toast } from "react-toastify";
 import { FaTools } from "react-icons/fa";
+import getUserJobPostings from "../actions/getUserJobPostings";
 
 interface JobPosting {
   title: string;

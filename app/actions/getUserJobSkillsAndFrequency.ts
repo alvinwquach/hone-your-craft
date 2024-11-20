@@ -1,9 +1,8 @@
 "use server";
 
 import getCurrentUser from "./getCurrentUser";
-import prisma from "./db/prisma";
-import { extractSkillsFromDescription } from "./extractSkillsFromDescription";
-
+import prisma from "../lib/db/prisma";
+import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
 
 const updateSkillFrequencyMap = (
   skillFrequencyMap: Map<string, number>,

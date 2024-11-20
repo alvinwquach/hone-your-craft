@@ -1,5 +1,5 @@
 import prisma from "@/app/lib/db/prisma";
-import getCurrentUser from "@/app/lib/getCurrentUser";
+import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -144,7 +144,7 @@ export async function DELETE(
       where: { email: userEmail },
       data: {
         skills: {
-          set: currentUser.skills.filter((s) => s !== skillName),
+          set: currentUser.skills.filter((s: string) => s !== skillName),
         },
       },
     });

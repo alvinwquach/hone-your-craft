@@ -1,5 +1,5 @@
 import prisma from "@/app/lib/db/prisma";
-import getCurrentUser from "@/app/lib/getCurrentUser";
+import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 import { Rejection } from "@prisma/client";
 

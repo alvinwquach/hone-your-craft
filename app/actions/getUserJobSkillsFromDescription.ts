@@ -1,8 +1,8 @@
 "use server";
 
 import getCurrentUser from "./getCurrentUser";
-import prisma from "./db/prisma";
-import { extractSkillsFromDescription } from "./extractSkillsFromDescription";
+import prisma from "../lib/db/prisma";
+import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
 
 const getUserJobSkillsFromDescription = async () => {
   try {
@@ -35,6 +35,5 @@ const getUserJobSkillsFromDescription = async () => {
     throw new Error("Failed to fetch user jobs or extract skills");
   }
 };
-
 
 export default getUserJobSkillsFromDescription;

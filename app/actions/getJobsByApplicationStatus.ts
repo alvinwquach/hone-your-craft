@@ -1,9 +1,9 @@
 "use server";
 
 import getCurrentUser from "./getCurrentUser";
-import prisma from "./db/prisma";
+import prisma from "../lib/db/prisma";
 import { ApplicationStatus } from "@prisma/client";
-import { convertToSentenceCase } from "./convertToSentenceCase";
+import { convertToSentenceCase } from "../lib/convertToSentenceCase";
 
 export const getJobsByApplicationStatus = async () => {
   try {
@@ -56,5 +56,3 @@ export const getJobsByApplicationStatus = async () => {
     throw new Error("Failed to fetch user jobs or application status");
   }
 };
-
-
