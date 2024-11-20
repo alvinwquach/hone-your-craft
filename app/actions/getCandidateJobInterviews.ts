@@ -3,7 +3,6 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 
-// Define only the interview types you are using
 type CandidateInterview =
   | "FINAL_ROUND"
   | "ON_SITE"
@@ -15,7 +14,6 @@ type CandidateInterview =
   | "VIDEO_INTERVIEW"
   | "FOLLOW_UP";
 
-// Define the frequency object with only those interview types
 const getUserJobInterviews = async () => {
   try {
     // Retrieve the current user
@@ -49,7 +47,6 @@ const getUserJobInterviews = async () => {
       },
     });
 
-    // Initialize the frequency count object with only the interview types you are using
     const initialInterviewTypeFrequency: Record<CandidateInterview, number> = {
       FINAL_ROUND: 0,
       ON_SITE: 0,
