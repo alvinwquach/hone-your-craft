@@ -38,3 +38,88 @@ interface JobSkill {
   updatedAt: Date;
 }
 
+interface Salary {
+  id: string;
+  jobPostingId: string;
+  amount: number;
+  rangeMin: number | null;
+  rangeMax: number | null;
+  salaryType: string;
+  frequency: string | null;
+  negotiable: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface RequiredSkill {
+  id: string;
+  jobPostingId: string;
+  skillId: string;
+  isRequired: boolean;
+  yearsOfExperience: number;
+  skill: {
+    id: string;
+    name: string;
+  };
+}
+
+interface BonusSkill {
+  id: string;
+  jobPostingId: string;
+  skillId: string;
+  isRequired: boolean;
+  yearsOfExperience: number;
+  skill: {
+    id: string;
+    name: string;
+  };
+}
+
+enum JobPostingStatus {
+  OPEN = "OPEN",
+  CLOSED = "CLOSED",
+  DRAFT = "DRAFT",
+  ARCHIVED = "ARCHIVED",
+  FILLED = "FILLED",
+  COMPLETED = "COMPLETED",
+}
+
+interface JobPosting {
+  id: string;
+  userId: string;
+  company: string;
+  companySize: string;
+  industry: string[];
+  title: string;
+  jobType: string;
+  url: string;
+  deadline: string;
+  experienceLevels: string[];
+  yearsOfExperience: string;
+  description: string;
+  responsibilities: string[];
+  location: string;
+  workLocation: string;
+  paymentType: string;
+  status: JobPostingStatus;
+  interviewProcess: string[];
+  views: number;
+  applicationsReceived: number;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+  salary: Salary;
+  requiredSkills: RequiredSkill[];
+  bonusSkills: BonusSkill[];
+  requiredDegree: RequiredDegree[];
+}
+
+interface RequiredDegree {
+  id: string;
+  degreeType: string;
+  jobPostingId: string;
+  isRequired: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
