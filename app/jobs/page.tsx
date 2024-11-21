@@ -1,16 +1,101 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useState, Fragment } from "react";
-import { FaTools } from "react-icons/fa";
-import { formatDistanceToNow } from "date-fns";
 import useSWR, { mutate } from "swr";
 import { Menu, Transition } from "@headlessui/react";
-import { FiMoreHorizontal } from "react-icons/fi";
-import { IoIosAddCircleOutline } from "react-icons/io";
-import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { IoIosAddCircleOutline } from "react-icons/io";
+import { FiMoreHorizontal } from "react-icons/fi";
+import {
+  FaCalendarAlt,
+  FaGraduationCap,
+  FaMapMarkerAlt,
+  FaCoins,
+  FaBriefcase,
+  FaToolbox,
+  FaWrench,
+  FaHourglass,
+  FaRegClock,
+  FaClock,
+  FaArrowAltCircleUp,
+  FaStopwatch,
+} from "react-icons/fa";
+import { PiPencilLineFill, PiUsersFour } from "react-icons/pi";
+
+const companySizeLabels = {
+  Tiny_1_10: "1 - 10 employees",
+  Small_11_50: "11 - 50 employees",
+  Medium_51_200: "51 - 200 employees",
+  Large_201_500: "201 - 500 employees",
+  XLarge_501_1000: "501 - 1000 employees",
+  XXLarge_1001_5000: "1001 - 5000 employees",
+  Enterprise_5000plus: "5000+ employees",
+};
+
+const experienceLabels = {
+  LESS_THAN_1_YEAR: "< 1 year",
+  ONE_YEAR: "1 year",
+  TWO_YEARS: "2 years",
+  THREE_YEARS: "3 years",
+  FOUR_YEARS: "4 years",
+  FIVE_YEARS: "5 years",
+  SIX_YEARS: "6 years",
+  SEVEN_YEARS: "7 years",
+  EIGHT_YEARS: "8 years",
+  NINE_YEARS: "9 years",
+  TEN_YEARS: "10 years",
+  TEN_PLUS_YEARS: "10+ years",
+};
+
+const degreeTypeLabels = {
+  HIGH_SCHOOL_DIPLOMA: "High School Diploma",
+  BACHELORS_DEGREE: "Bachelor's Degree",
+  MASTERS_DEGREE: "Master's Degree",
+  ASSOCIATES_DEGREE: "Associate's Degree",
+  MASTER_OF_BUSINESS_ADMINISTRATION: "Master of Business Administration",
+  DOCTOR_OF_LAW: "Doctor of Law",
+};
+
+const experienceLevelLabels = {
+  INTERN: "Intern",
+  TRAINEE: "Trainee",
+  JUNIOR: "Junior",
+  ASSOCIATE: "Associate",
+  MID: "Mid",
+  SENIOR: "Senior",
+  LEAD: "Lead",
+  STAFF: "Staff",
+  PRINCIPAL: "Principal",
+  MANAGER: "Manager",
+  DIRECTOR: "Director",
+  VP: "Vice President",
+  EXECUTIVE: "Executive",
+  C_LEVEL: "C-Level",
+};
+
+const paymentTypeLabels = {
+  SALARY: "Salary",
+  ONE_TIME_PAYMENT: "One-time payment",
+};
+
+const jobTypeLabels = {
+  FULL_TIME: "Full-time",
+  PART_TIME: "Part-time",
+  CONTRACT: "Contract",
+  INTERNSHIP: "Internship",
+  TEMPORARY: "Temporary",
+  FREELANCE: "Freelance",
+};
+
+const workLocationLabels = {
+  REMOTE: "Remote",
+  HYBRID: "Hybrid",
+  ONSITE: "On-site",
+};
 
 enum JobPostingStatus {
   OPEN = "OPEN",
@@ -19,16 +104,6 @@ enum JobPostingStatus {
   ARCHIVED = "ARCHIVED",
   FILLED = "FILLED",
   COMPLETED = "COMPLETED",
-}
-
-interface JobPosting {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  workLocation: string;
-  status: JobPostingStatus;
-  createdAt: string;
 }
 
 const fetcher = async (url: string) => {
@@ -45,29 +120,240 @@ function Jobs() {
   const userRole = session?.user?.userRole;
   const [filter, setFilter] = useState<"all" | "drafts" | "posted">("all");
 
-  const {
-    data: userPostedJobs,
-    isLoading: userPostedJobsLoading,
-    error,
-  } = useSWR<JobPosting[]>("/api/client-jobs", fetcher);
+  const jobPostingsUrl =
+    userRole === "CANDIDATE" ? "/api/job-postings" : "/api/client-jobs";
 
-  const jobPostings = userPostedJobs ? userPostedJobs : [];
-  if (userRole !== "CLIENT") {
+  const {
+    data: jobPostings,
+    isLoading: jobPostingsLoading,
+    error,
+  } = useSWR<JobPosting[]>(jobPostingsUrl, fetcher);
+
+  const getSalaryDisplay = (salary: Salary) => {
+    if (!salary) return null;
+
+    let displayText = "";
+
+    const numberFormatter = new Intl.NumberFormat();
+
+    if (salary.salaryType === "STARTING_AT" && salary.amount) {
+      displayText += `Starting at $${numberFormatter.format(salary.amount)}`;
+    }
+
+    if (salary.salaryType === "UP_TO" && salary.amount) {
+      displayText += `Up to $${numberFormatter.format(salary.amount)}`;
+    }
+
+    if (salary.salaryType === "RANGE" && salary.rangeMin && salary.rangeMax) {
+      displayText += `$${numberFormatter.format(
+        salary.rangeMin
+      )} - ${numberFormatter.format(salary.rangeMax)}`;
+    }
+
+    if (salary.frequency) {
+      displayText += ` ${
+        salary.frequency === "PER_YEAR"
+          ? "per year"
+          : salary.frequency.replace("_", " ").toLowerCase()
+      }`;
+    }
+
+    return displayText;
+  };
+
+  if (userRole === "CANDIDATE") {
     return (
-      <section className="flex flex-col items-center justify-center min-h-screen">
-        <FaTools className="text-6xl text-blue-500 mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">
-          We&rsquo;re Building Something Great!
-        </h2>
-        <p className="text-center text-gray-500">
-          This page is currently in development. We can&rsquo;t wait to share it
-          with you! Please check back soon for updates.
-        </p>
+      <section className="flex flex-col items-center justify-center min-h-screen px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24">
+        {jobPostings?.length === 0 ? (
+          <div className="text-center text-xl font-semibold text-gray-600">
+            No job postings available.
+          </div>
+        ) : (
+          <div className="space-y-8 w-full max-w-screen-lg">
+            {jobPostings?.map((jobPosting) => (
+              <div
+                key={jobPosting.id}
+                className="bg-zinc-900 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300"
+              >
+                <div className="lg:flex space-y-4 lg:space-y-0 lg:space-x-8">
+                  <div className="flex-1 space-y-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center space-x-3">
+                        <h3 className="text-2xl font-semibold text-blue-600">
+                          {jobPosting.title},
+                        </h3>
+                        <span className="text-2xl ml-2">
+                          {jobPosting.company}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-gray-500 mb-2">
+                      <FaCoins className="mr-2 text-white" />
+                      <span className="text-lg font-semibold">
+                        {getSalaryDisplay(jobPosting.salary)}
+                        {jobPosting.paymentType && (
+                          <span className="ml-2 text-gray-600">
+                            (
+                            {paymentTypeLabels[
+                              jobPosting.paymentType as keyof typeof paymentTypeLabels
+                            ] || jobPosting.paymentType}
+                            )
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    {jobPosting.requiredDegree?.length > 0 && (
+                      <div className="flex items-center text-gray-500 mb-4">
+                        <FaGraduationCap className="mr-2 text-blue-600" />
+                        <h4 className="font-semibold text-gray-700 mr-2">
+                          Required Education:
+                        </h4>
+                        <p className="text-gray-600">
+                          {jobPosting.requiredDegree.map((degree) => (
+                            <span key={degree.id} className="mr-2">
+                              {degreeTypeLabels[
+                                degree.degreeType as keyof typeof degreeTypeLabels
+                              ] || degree.degreeType}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                    )}
+                    <div className="flex items-center text-gray-500 mb-4">
+                      <FaToolbox className="mr-2 text-blue-500" />
+                      <h4 className="font-semibold text-gray-700">
+                        Required Skills:
+                      </h4>
+                    </div>
+                    <div className="max-h-40 flex flex-wrap gap-2">
+                      {jobPosting.requiredSkills
+                        .filter((skill) => skill.yearsOfExperience >= 1)
+                        .map((skill) => (
+                          <div key={skill.id} className="flex items-center">
+                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                              {skill.skill.name}
+                            </span>
+                            {skill.yearsOfExperience > 0 && (
+                              <span className="ml-2 text-sm text-gray-500">
+                                ({skill.yearsOfExperience} yr
+                                {skill.yearsOfExperience > 1 ? "s" : ""})
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                    {jobPosting.bonusSkills &&
+                      jobPosting.bonusSkills.length > 0 && (
+                        <div className="mb-4">
+                          <div className="flex items-center text-gray-500">
+                            <FaWrench className="mr-2 text-blue-600" />
+                            <h4 className="font-semibold text-gray-700">
+                              Bonus Skills:
+                            </h4>
+                          </div>
+                          <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2">
+                            {jobPosting.bonusSkills
+                              .filter(
+                                (skill) =>
+                                  !skill.isRequired &&
+                                  skill.yearsOfExperience === 0
+                              )
+                              .map((skill) => (
+                                <div
+                                  key={skill.id}
+                                  className="flex items-center"
+                                >
+                                  <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+                                    {skill.skill.name}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    <div className="flex items-center text-gray-500 mb-2">
+                      <FaArrowAltCircleUp className="mr-2 text-blue-600" />
+                      <span className="font-medium text-gray-700">
+                        {jobPosting.experienceLevels?.length > 0
+                          ? jobPosting.experienceLevels
+                              .map(
+                                (level) =>
+                                  experienceLevelLabels[
+                                    level as keyof typeof experienceLevelLabels
+                                  ] || level
+                              )
+                              .join(", ")
+                          : "Not specified"}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-500 mb-2">
+                      <FaStopwatch className="mr-2 text-blue-600" />
+                      <span className="font-medium text-gray-700">
+                        {experienceLabels[
+                          jobPosting.yearsOfExperience as keyof typeof experienceLabels
+                        ] || jobPosting.yearsOfExperience}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="lg:hidden border-t-2 border-gray-700 my-4"></div>
+                  <div className="lg:block border-l-2 border-gray-700 mx-4"></div>
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center text-gray-500 mb-4">
+                      <PiUsersFour className="mr-2 text-blue-600" />
+                      <span className="font-medium text-gray-700">
+                        {companySizeLabels[
+                          jobPosting.companySize as keyof typeof companySizeLabels
+                        ] || jobPosting.companySize}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-500 mb-4">
+                      <FaBriefcase className="mr-2 text-blue-600" />
+                      <p className="text-gray-600">
+                        {jobPosting.industry.join(", ")}
+                      </p>
+                    </div>
+                    <div className="flex items-center text-gray-500 mb-4">
+                      <FaMapMarkerAlt className="mr-2 text-gray-400" />
+                      <span>
+                        {jobPosting.location} (
+                        {workLocationLabels[
+                          jobPosting.workLocation as keyof typeof workLocationLabels
+                        ] || jobPosting.workLocation}
+                        )
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-500 mb-4">
+                      <span className="text-xs text-gray-400 mx-2">
+                        Posted{" "}
+                        {formatDistanceToNow(new Date(jobPosting.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <a
+                    href={jobPosting.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition duration-200"
+                    aria-label={`Open link to apply to job at ${jobPosting.url}`}
+                    role="button"
+                  >
+                    <PiPencilLineFill className="inline-block mr-2" />
+                    Apply
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     );
   }
 
-  if (userPostedJobsLoading) {
+  if (jobPostingsLoading) {
     return <div>Loading...</div>;
   }
 
@@ -76,7 +362,7 @@ function Jobs() {
   }
 
   const handleDeleteJobPosting = async (jobId: string) => {
-    const updatedJobs = userPostedJobs?.filter((job) => job.id !== jobId) ?? [];
+    const updatedJobs = jobPostings?.filter((job) => job.id !== jobId) ?? [];
     mutate("/api/job-postings", updatedJobs, false);
     try {
       const response = await fetch(`/api/job-posting/${jobId}`, {
@@ -88,33 +374,23 @@ function Jobs() {
       toast.success("Job posting deleted successfully!");
     } catch (error) {
       console.error("Error deleting job:", error);
-      mutate("/api/job-postings", userPostedJobs, false);
+      mutate("/api/job-postings", jobPostings, false);
       toast.error("An error occurred while deleting the job posting.");
     }
   };
 
-  const filteredJobs = jobPostings.filter((job) => {
+  const filteredJobs = jobPostings?.filter((job) => {
     if (filter === "drafts") return job.status === JobPostingStatus.DRAFT;
     if (filter === "posted") return job.status === JobPostingStatus.OPEN;
     return true;
   });
 
-  const postedJobsCount = jobPostings.filter(
+  const postedJobsCount = jobPostings?.filter(
     (job) => job.status === JobPostingStatus.OPEN
   ).length;
-  const draftJobsCount = jobPostings.filter(
+  const draftJobsCount = jobPostings?.filter(
     (job) => job.status === JobPostingStatus.DRAFT
   ).length;
-
-  const workLocationLabels: {
-    ONSITE: string;
-    HYBRID: string;
-    REMOTE: string;
-  } = {
-    ONSITE: "On-site",
-    HYBRID: "Hybrid",
-    REMOTE: "Remote",
-  };
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
@@ -168,7 +444,7 @@ function Jobs() {
               </button>
             </div>
           </div>
-          {filteredJobs.length === 0 ? (
+          {filteredJobs?.length === 0 ? (
             <div className="bg-zinc-900 p-6 shadow-lg flex flex-col items-center border-b border-zinc-700">
               <h3 className="text-lg font-semibold text-white mb-2">
                 No jobs under this category yet.
@@ -178,11 +454,11 @@ function Jobs() {
               </p>
             </div>
           ) : (
-            filteredJobs.map((job, index) => (
+            filteredJobs?.map((job, index) => (
               <div
                 key={job.id}
                 className={`bg-zinc-900 p-6 shadow-lg flex flex-col border-b border-zinc-700 ${
-                  index === filteredJobs.length - 1 ? "rounded-b-lg" : ""
+                  index === filteredJobs?.length - 1 ? "rounded-b-lg" : ""
                 }`}
               >
                 <div className="flex justify-between items-start">
