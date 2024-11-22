@@ -84,9 +84,6 @@ export async function DELETE(
     }
 
     await Promise.all([
-      prisma.jobPostingSkill.deleteMany({
-        where: { jobPostingId: jobPostingId },
-      }),
       prisma.interview.deleteMany({ where: { jobPostingId: jobPostingId } }),
       prisma.offer.deleteMany({ where: { jobPostingId: jobPostingId } }),
       prisma.rejection.deleteMany({ where: { jobPostingId: jobPostingId } }),

@@ -67,8 +67,11 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    const requiredSkills = await Promise.all(
-      jobPostingData.requiredSkills.map(async (skill: Skill) => {
+    const requiredSkills = jobPostingData.requiredSkills || [];
+    const bonusSkills = jobPostingData.bonusSkills || [];
+
+    const requiredSkillsData = await Promise.all(
+      requiredSkills.map(async (skill: Skill) => {
         let skillRecord = await prisma.skill.findUnique({
           where: { name: skill.skill },
         });
@@ -81,14 +84,14 @@ export async function POST(request: NextRequest) {
 
         return {
           skillId: skillRecord.id,
-          isRequired: skill.isRequired ?? false,
+          isRequired: true,
           yearsOfExperience: skill.yearsOfExperience ?? 0,
         };
       })
     );
 
-    const bonusSkills = await Promise.all(
-      jobPostingData.bonusSkills.map(async (skill: Skill) => {
+    const bonusSkillsData = await Promise.all(
+      bonusSkills.map(async (skill: Skill) => {
         let skillRecord = await prisma.skill.findUnique({
           where: { name: skill.skill },
         });
@@ -101,8 +104,8 @@ export async function POST(request: NextRequest) {
 
         return {
           skillId: skillRecord.id,
-          isRequired: skill.isRequired ?? false,
-          yearsOfExperience: skill.yearsOfExperience ?? 0,
+          isRequired: false,
+          yearsOfExperience: skill.yearsOfExperience ?? null,
         };
       })
     );
@@ -134,10 +137,10 @@ export async function POST(request: NextRequest) {
       data: {
         ...jobPostingData,
         requiredSkills: {
-          create: requiredSkills,
+          create: requiredSkillsData,
         },
         bonusSkills: {
-          create: bonusSkills,
+          create: bonusSkillsData,
         },
       },
       include: {
@@ -155,8 +158,6 @@ export async function POST(request: NextRequest) {
         requiredDegree: true,
       },
     });
-
-    console.log(jobPosting);
 
     return NextResponse.json({ jobPosting }, { status: 201 });
   } catch (error) {
