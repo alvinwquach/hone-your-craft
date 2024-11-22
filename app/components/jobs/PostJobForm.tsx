@@ -179,10 +179,13 @@ const PostJobForm = () => {
   const [selectedBonusSkills, setSelectedBonusSkills] = useState<SkillOption[]>(
     []
   );
+
   const [selectedExperienceLevels, setSelectedExperienceLevels] = useState<
     ExperienceLevelOption[]
   >([]);
+
   const [isDegreeCardVisible, setIsDegreeCardVisible] = useState(true);
+
   const [hiddenSkills, setHiddenSkills] = useState<{ [key: number]: boolean }>(
     {}
   );
@@ -310,9 +313,6 @@ const PostJobForm = () => {
 
   const handleIndustrySkillChange = (selected: any) => {
     setSelectedIndustries(selected || []);
-
-    console.log("Selected Industries:", selected);
-
     setValue(
       "industry",
       selected ? selected.map((item: any) => item.value) : []
@@ -321,10 +321,32 @@ const PostJobForm = () => {
 
   const handleRequiredSkillChange = (selected: any) => {
     setSelectedRequiredSkills(selected || []);
+
+    setValue(
+      "requiredSkills",
+      selected
+        ? selected.map((skill: any) => ({
+            skill: skill.value,
+            yearsOfExperience: 1,
+            isRequired: true,
+          }))
+        : []
+    );
   };
 
   const handleBonusSkillsChange = (selected: any) => {
     setSelectedBonusSkills(selected || []);
+
+    setValue(
+      "bonusSkills",
+      selected
+        ? selected.map((skill: any) => ({
+            skill: skill.value,
+            yearsOfExperience: false,
+            isRequired: null,
+          }))
+        : []
+    );
   };
 
   useEffect(() => {
