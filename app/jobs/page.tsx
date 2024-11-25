@@ -18,11 +18,9 @@ import {
   FaBriefcase,
   FaToolbox,
   FaWrench,
-  FaHourglass,
-  FaRegClock,
-  FaClock,
+  FaUserClock,
   FaArrowAltCircleUp,
-  FaStopwatch,
+  FaLevelUpAlt,
 } from "react-icons/fa";
 import { PiPencilLineFill, PiUsersFour } from "react-icons/pi";
 
@@ -150,6 +148,10 @@ function Jobs() {
       )} - ${numberFormatter.format(salary.rangeMax)}`;
     }
 
+    if (salary.salaryType === "EXACT" && salary.amount) {
+      displayText += `$${numberFormatter.format(salary.amount)}`;
+    }
+
     if (salary.frequency) {
       displayText += ` ${
         salary.frequency === "PER_YEAR"
@@ -163,36 +165,53 @@ function Jobs() {
 
   if (userRole === "CANDIDATE") {
     return (
-      <section className="flex flex-col items-center justify-center min-h-screen px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24">
+      <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
         {jobPostings?.length === 0 ? (
           <div className="text-center text-xl font-semibold text-gray-600">
             No job postings available.
           </div>
         ) : (
-          <div className="space-y-8 w-full max-w-screen-lg">
+          <div className="space-y-8 w-full max-w-screen-lg mx-auto">
             {jobPostings?.map((jobPosting) => (
               <div
                 key={jobPosting.id}
-                className="bg-zinc-900 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300"
+                className="bg-zinc-900 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300 my-6"
               >
                 <div className="lg:flex space-y-4 lg:space-y-0 lg:space-x-8">
                   <div className="flex-1 space-y-4">
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start mb-4 space-y-2 sm:space-y-0">
                       <div className="flex items-center space-x-3">
                         <h3 className="text-2xl font-semibold text-blue-600">
-                          {jobPosting.title},
+                          {jobPosting.title}
                         </h3>
-                        <span className="text-2xl ml-2">
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-xl font-medium text-white">
                           {jobPosting.company}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center text-gray-500 mb-2">
+                    <div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          jobTypeLabels[
+                            jobPosting.jobType as keyof typeof jobTypeLabels
+                          ]
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-600 text-white"
+                        }`}
+                      >
+                        {jobTypeLabels[
+                          jobPosting.jobType as keyof typeof jobTypeLabels
+                        ] || jobPosting.jobType}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-400 mb-2">
                       <FaCoins className="mr-2 text-white" />
                       <span className="text-lg font-semibold">
                         {getSalaryDisplay(jobPosting.salary)}
                         {jobPosting.paymentType && (
-                          <span className="ml-2 text-gray-600">
+                          <span className="ml-2 text-gray-400">
                             (
                             {paymentTypeLabels[
                               jobPosting.paymentType as keyof typeof paymentTypeLabels
@@ -204,8 +223,8 @@ function Jobs() {
                     </div>
                     {jobPosting.requiredDegree?.length > 0 && (
                       <div className="flex items-center text-gray-500 mb-4">
-                        <FaGraduationCap className="mr-2 text-blue-600" />
-                        <h4 className="font-semibold text-gray-700 mr-2">
+                        <FaGraduationCap className="mr-2 text-white" />{" "}
+                        <h4 className="font-semibold text-gray-400 mr-2">
                           Required Education:
                         </h4>
                         <p className="text-gray-600">
@@ -219,9 +238,33 @@ function Jobs() {
                         </p>
                       </div>
                     )}
+                    {jobPosting.deadline && (
+                      <div className="flex items-center text-gray-500 mb-4">
+                        <FaCalendarAlt className="mr-2 text-white" />{" "}
+                        <span className="font-medium text-gray-400">
+                          Deadline:{" "}
+                          <span className="text-gray-600">
+                            {new Date(jobPosting.deadline).toLocaleString(
+                              "en-US",
+                              {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                                hour: "numeric",
+                                minute: "numeric",
+                                second: "numeric",
+                                hour12: true,
+                                timeZone: "America/Los_Angeles",
+                              }
+                            )}
+                          </span>
+                        </span>
+                      </div>
+                    )}
                     <div className="flex items-center text-gray-500 mb-4">
-                      <FaToolbox className="mr-2 text-blue-500" />
-                      <h4 className="font-semibold text-gray-700">
+                      <FaToolbox className="mr-2 text-white" />{" "}
+                      <h4 className="font-semibold text-gray-400">
                         Required Skills:
                       </h4>
                     </div>
@@ -242,38 +285,28 @@ function Jobs() {
                           </div>
                         ))}
                     </div>
-                    {jobPosting.bonusSkills &&
-                      jobPosting.bonusSkills.length > 0 && (
-                        <div className="mb-4">
-                          <div className="flex items-center text-gray-500">
-                            <FaWrench className="mr-2 text-blue-600" />
-                            <h4 className="font-semibold text-gray-700">
-                              Bonus Skills:
-                            </h4>
-                          </div>
-                          <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2">
-                            {jobPosting.bonusSkills
-                              .filter(
-                                (skill) =>
-                                  !skill.isRequired &&
-                                  skill.yearsOfExperience === 0
-                              )
-                              .map((skill) => (
-                                <div
-                                  key={skill.id}
-                                  className="flex items-center"
-                                >
-                                  <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
-                                    {skill.skill.name}
-                                  </span>
-                                </div>
-                              ))}
-                          </div>
+                    {jobPosting.bonusSkills.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex items-center text-gray-500">
+                          <FaWrench className="mr-2 text-white" />{" "}
+                          <h4 className="font-semibold text-gray-400">
+                            Bonus Skills:
+                          </h4>
                         </div>
-                      )}
-                    <div className="flex items-center text-gray-500 mb-2">
-                      <FaArrowAltCircleUp className="mr-2 text-blue-600" />
-                      <span className="font-medium text-gray-700">
+                        <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2">
+                          {jobPosting.bonusSkills.map((skill) => (
+                            <div key={skill.id} className="flex items-center">
+                              <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+                                {skill.skill.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <FaArrowAltCircleUp className="mr-2 text-white" />{" "}
+                      <span className="font-medium text-gray-400">
                         {jobPosting.experienceLevels?.length > 0
                           ? jobPosting.experienceLevels
                               .map(
@@ -287,8 +320,8 @@ function Jobs() {
                       </span>
                     </div>
                     <div className="flex items-center text-gray-500 mb-2">
-                      <FaStopwatch className="mr-2 text-blue-600" />
-                      <span className="font-medium text-gray-700">
+                      <FaLevelUpAlt className="mr-2 text-white" />{" "}
+                      <span className="font-medium text-gray-400">
                         {experienceLabels[
                           jobPosting.yearsOfExperience as keyof typeof experienceLabels
                         ] || jobPosting.yearsOfExperience}
@@ -299,22 +332,22 @@ function Jobs() {
                   <div className="lg:block border-l-2 border-gray-700 mx-4"></div>
                   <div className="flex-1 space-y-4">
                     <div className="flex items-center text-gray-500 mb-4">
-                      <PiUsersFour className="mr-2 text-blue-600" />
-                      <span className="font-medium text-gray-700">
+                      <PiUsersFour className="mr-2 text-white" />{" "}
+                      <span className="font-medium text-gray-400">
                         {companySizeLabels[
                           jobPosting.companySize as keyof typeof companySizeLabels
                         ] || jobPosting.companySize}
                       </span>
                     </div>
                     <div className="flex items-center text-gray-500 mb-4">
-                      <FaBriefcase className="mr-2 text-blue-600" />
-                      <p className="text-gray-600">
+                      <FaBriefcase className="mr-2 text-white" />{" "}
+                      <p className="font-medium text-gray-400">
                         {jobPosting.industry.join(", ")}
                       </p>
                     </div>
                     <div className="flex items-center text-gray-500 mb-4">
-                      <FaMapMarkerAlt className="mr-2 text-gray-400" />
-                      <span>
+                      <FaMapMarkerAlt className="mr-2 text-white" />
+                      <span className="font-medium text-gray-400">
                         {jobPosting.location} (
                         {workLocationLabels[
                           jobPosting.workLocation as keyof typeof workLocationLabels
