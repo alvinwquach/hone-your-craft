@@ -348,6 +348,7 @@ model JobPosting {
   rejections           Rejection[]         @relation("JobRejections")
   offers               Offer[]             @relation("JobOffers")
   interviews           Interview[]         @relation("JobInterviews")
+  directApplications   Int                 @default(0)
 
   @@map("job_postings")
 }
@@ -555,6 +556,7 @@ model Application {
   acceptedAt   DateTime?
   rejectedAt   DateTime?
   stages       ApplicationStage[]   @relation("ApplicationStages")
+  resumeUrl    String?
 
   @@map("applications")
 }
