@@ -14,6 +14,7 @@ import { Suspense } from "react";
 import { toast } from "react-toastify";
 import { FaTools } from "react-icons/fa";
 import getUserJobPostings from "../actions/getUserJobPostings";
+import ResumeUpload from "../components/profile/ResumeUpload";
 
 interface JobPosting {
   title: string;
@@ -171,6 +172,9 @@ function Profile() {
               </Suspense>
             )}
           </div>
+          <>
+            <ResumeUpload />
+          </>
           {/* User Interviews */}
           <div className="mt-4">
             {loadingUserInterviews ? (
