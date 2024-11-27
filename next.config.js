@@ -5,6 +5,7 @@ const nextConfig = {
       { hostname: "lh3.googleusercontent.com" },
       { hostname: "cdn.discordapp.com" },
       { hostname: "avatars.githubusercontent.com" },
+      { hostname: "hone-your-craft.s3.us-east-2.amazonaws.com" },
     ],
   },
   async headers() {
