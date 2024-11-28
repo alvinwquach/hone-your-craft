@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import {
   BsFiletypeCsv,
@@ -14,6 +14,26 @@ import "react-toastify/dist/ReactToastify.css";
 
 const ResumeUpload = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [currentDocument, setCurrentDocument] = useState<any | null>(null);
+
+  useEffect(() => {
+    fetchDocumentDetails();
+  }, []);
+
+  const fetchDocumentDetails = async () => {
+    try {
+      const response = await fetch("/api/documents/current");
+      const data = await response.json();
+
+      if (response.ok && data) {
+        setCurrentDocument(data);
+      } else {
+        console.log("No document found.");
+      }
+    } catch (error) {
+      toast.error("Error fetching document.");
+    }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -26,6 +46,7 @@ const ResumeUpload = () => {
 
   const handleRemoveFile = () => {
     setFile(null);
+    setCurrentDocument(null);
     console.log("File removed");
   };
 
@@ -43,17 +64,6 @@ const ResumeUpload = () => {
       default:
         return <BsFiletypeCsv className="w-12 h-12 mb-4 text-white" />;
     }
-  };
-
-  const formatFileSize = (size: number) => {
-    if (size < 1024) return `${size} bytes`;
-    if (size < 1048576) return `${(size / 1024).toFixed(2)} KB`;
-    return `${(size / 1048576).toFixed(2)} MB`;
-  };
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString();
   };
 
   const handleFileUpload = async (selectedFile: File) => {
@@ -75,7 +85,6 @@ const ResumeUpload = () => {
       }
 
       const { url, fields } = await response.json();
-
       console.log("Received presigned URL:", url);
       console.log("Received fields:", fields);
 
@@ -85,10 +94,8 @@ const ResumeUpload = () => {
       });
 
       formData.append("file", selectedFile);
-
       console.log("FormData prepared for upload:", formData);
 
-      console.log("Uploading file to S3 with URL:", url);
       const uploadResponse = await fetch(url, {
         method: "POST",
         body: formData,
@@ -96,6 +103,7 @@ const ResumeUpload = () => {
 
       if (uploadResponse.ok) {
         toast.success("Resume uploaded successfully!");
+        fetchDocumentDetails();
       } else {
         throw new Error("Upload to S3 failed");
       }
@@ -103,7 +111,6 @@ const ResumeUpload = () => {
       toast.error(
         `Error: ${error instanceof Error ? error.message : "Unknown error"}`
       );
-    } finally {
     }
   };
 
@@ -126,22 +133,16 @@ const ResumeUpload = () => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-4 mt-5">
-      {file && (
+      {currentDocument && (
         <div className="w-full text-left">
           <p className="text-sm font-medium text-white break-words">
-            {file.name}
+            {currentDocument.name}
           </p>
           <div className="flex flex-col items-start space-y-2 mt-2">
-            <p className="text-xs text-gray-400">
-              Size: {formatFileSize(file.size)}
-            </p>
-            <p className="text-xs text-gray-400">
-              Last Modified: {formatDate(file.lastModified)}
-            </p>
             <div className="flex items-center space-x-2 mt-2">
               <button
                 className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
-                onClick={() => window.open(URL.createObjectURL(file), "_blank")}
+                onClick={() => window.open(currentDocument.url, "_blank")}
               >
                 View your resume
               </button>
@@ -181,12 +182,6 @@ const ResumeUpload = () => {
                   </button>
                   <span className="text-sm text-gray-400">)</span>
                 </div>
-                <div className="flex flex-col items-center space-y-1 sm:space-y-0 sm:flex-row sm:space-x-2">
-                  <span className="text-xs text-gray-400">or</span>
-                  <span className="text-sm text-blue-500 hover:text-blue-700 font-semibold">
-                    Upload new file
-                  </span>
-                </div>
               </div>
             </div>
           ) : (
@@ -210,16 +205,22 @@ const ResumeUpload = () => {
           />
         </label>
       </div>
+      <div className="mt-4 flex items-center justify-end w-full">
+        <button
+          className="text-gray-400 text-sm font-semibold"
+          onClick={handleRemoveFile}
+        >
+          Remove your resume
+        </button>
+      </div>
       {file && (
         <div className="mt-4 flex items-center justify-end w-full">
-          <div className="bottom-4 right-4 p-2 rounded-md">
-            <button
-              className="text-gray-400 text-sm font-semibold"
-              onClick={handleRemoveFile}
-            >
-              Remove your resume
-            </button>
-          </div>
+          <button
+            className="text-gray-400 text-sm font-semibold"
+            onClick={handleRemoveFile}
+          >
+            Remove your resume
+          </button>
         </div>
       )}
     </div>
