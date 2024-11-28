@@ -18,6 +18,9 @@ export async function POST(request: Request) {
     const { filename, contentType } = await request.json();
 
     const client = new S3Client({ region: process.env.AWS_REGION });
+
+    const uniqueKey = `documents/${uuidv4()}`;
+
     const { url, fields } = await createPresignedPost(client, {
       Bucket: process.env.AWS_BUCKET_NAME ?? "",
       Key: `documents/${uuidv4()}`,
@@ -28,26 +31,20 @@ export async function POST(request: Request) {
       Fields: {
         "Content-Type": contentType,
       },
-      Expires: 600, // Seconds before the presigned post expires. 3600 by default.
+      Expires: 600, //  Seconds before the presigned post expires. 3600 by default.
     });
 
-    console.log("Presigned Post Fields:", fields);
+    const documentUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uniqueKey}`;
 
     const document = await prisma.document.create({
       data: {
         userId: currentUser.id,
         documentType: contentType,
         name: filename,
-        url,
+        url: documentUrl,
       },
     });
 
-    console.log(
-      "Document created",
-      document.documentType,
-      document.name,
-      document.url
-    );
     return NextResponse.json({ url, fields, document });
   } catch (error: unknown) {
     if (error instanceof Error) {
