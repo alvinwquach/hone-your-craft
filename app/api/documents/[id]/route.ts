@@ -20,13 +20,19 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
+      select: {
+        id: true,
+        name: true,
+        url: true,
+        updatedAt: true,
+      },
     });
 
     if (!document) {
       return NextResponse.json({ error: "No document found" }, { status: 404 });
     }
 
-    return NextResponse.json({ document });
+    return NextResponse.json(document);
   } catch (error: unknown) {
     console.error("Error fetching document:", error);
     return NextResponse.json(
