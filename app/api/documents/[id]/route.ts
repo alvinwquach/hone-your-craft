@@ -26,12 +26,7 @@ export async function GET() {
       return NextResponse.json({ error: "No document found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      id: document.id,
-      name: document.name,
-      url: document.url,
-      lastModified: document.updatedAt,
-    });
+    return NextResponse.json({ document });
   } catch (error: unknown) {
     console.error("Error fetching document:", error);
     return NextResponse.json(
