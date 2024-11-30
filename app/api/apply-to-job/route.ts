@@ -5,8 +5,6 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 export async function POST(request: Request) {
   try {
     const currentUser = await getCurrentUser();
-
-    // Check if the user is authenticated and has the role "CANDIDATE"
     if (
       !currentUser ||
       !currentUser.id ||
@@ -51,18 +49,14 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    // Check if the current user has already applied to the job posting
     const existingApplication = await prisma.application.findFirst({
       where: {
         candidateId: currentUser.id,
         jobPostingId,
-        // Exclude applications with "REJECTED" status
         status: { not: "REJECTED" },
       },
     });
 
-    // If an application already exists (not rejected), prevent applying again
     if (existingApplication) {
       return NextResponse.json(
         { error: "You have already applied to this job posting." },
@@ -70,7 +64,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch the most recent resume document for the candidate
     const document = await prisma.document.findFirst({
       where: {
         userId: currentUser.id,
@@ -79,7 +72,6 @@ export async function POST(request: Request) {
         createdAt: "desc",
       },
       select: {
-        // Get the URL of the resume
         url: true,
         documentType: true,
       },
