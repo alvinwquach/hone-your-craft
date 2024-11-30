@@ -112,6 +112,7 @@ interface JobPosting {
   requiredSkills: RequiredSkill[];
   bonusSkills: BonusSkill[];
   requiredDegree: RequiredDegree[];
+  applications: Application[];
 }
 
 interface RequiredDegree {

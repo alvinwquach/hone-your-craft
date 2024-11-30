@@ -17,6 +17,7 @@ export async function GET() {
           },
         },
         requiredDegree: true,
+        applications: true,
       },
       orderBy: {
         createdAt: "desc",
