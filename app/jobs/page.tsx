@@ -186,6 +186,22 @@ function Jobs() {
     }
   };
 
+    const getApplicationStatus = (jobPostingId: string) => {
+      const job = jobPostings?.find((job) => job.id === jobPostingId);
+
+      if (job && job.applications) {
+        const application = job.applications.find(
+          (app) => app.candidateId === session?.user?.userId
+        );
+        console.log("Application Status:", application?.status);
+        return application?.status || null;
+      }
+
+      console.log("No application found");
+      return null;
+    };
+
+
   if (userRole === "CANDIDATE") {
     return (
       <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
@@ -391,12 +407,35 @@ function Jobs() {
                 <div className="mt-4 flex gap-x-4 justify-end">
                   <button
                     onClick={() => applyToJob(jobPosting.id)}
+                    className={`inline-flex items-center ${
+                      ["PENDING", "REJECTED", "ACCEPTED"].includes(
+                        getApplicationStatus(jobPosting.id)
+                      )
+                        ? "bg-gray-600 cursor-not-allowed" // Disable button if status is "PENDING", "REJECTED", or "ACCEPTED"
+                        : "bg-blue-600 hover:bg-blue-700" // Normal apply button
+                    } text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
+                    disabled={["PENDING", "REJECTED", "ACCEPTED"].includes(
+                      getApplicationStatus(jobPosting.id)
+                    )} // Disable if status is "PENDING", "REJECTED", or "ACCEPTED"
+                    aria-label={`Apply to job posting for ${jobPosting.title}`}
+                  >
+                    <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
+                    {(() => {
+                      const status = getApplicationStatus(jobPosting.id);
+                      if (status === "PENDING") return "Pending"; // Show "Pending" if status is "PENDING"
+                      if (["REJECTED", "ACCEPTED"].includes(status))
+                        return "Applied"; // Show "Applied" if status is "REJECTED" or "ACCEPTED"
+                      return "Instant Apply"; // Default to "Instant Apply" if no application
+                    })()}
+                  </button>
+                  {/* <button
+                    onClick={() => applyToJob(jobPosting.id)}
                     className="inline-flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition duration-200"
                     aria-label={`Apply to job posting for ${jobPosting.title}`}
                   >
                     <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
                     Instant Apply
-                  </button>
+                  </button> */}
                   <a
                     href={jobPosting.url}
                     target="_blank"

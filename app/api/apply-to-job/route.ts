@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     }
 
     const { jobPostingId } = await request.json();
+    console.log("Job Posting ID:", jobPostingId);
 
     if (!jobPostingId) {
       return NextResponse.json(
@@ -77,6 +78,8 @@ export async function POST(request: Request) {
       },
     });
 
+    console.log("Document:", document);
+
     if (!document) {
       return NextResponse.json({ error: "No resume found" }, { status: 404 });
     }
@@ -90,6 +93,15 @@ export async function POST(request: Request) {
       },
     });
 
+    await prisma.jobPosting.update({
+      where: { id: jobPostingId },
+      data: {
+        applicationsReceived: {
+          increment: 1,
+        },
+      },
+    });
+    console.log("Application Created:", application);
     return NextResponse.json(application);
   } catch (error: unknown) {
     console.error("Error applying to job:", error);
