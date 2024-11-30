@@ -23,6 +23,7 @@ import {
   FaLevelUpAlt,
 } from "react-icons/fa";
 import { PiPencilLineFill, PiUsersFour } from "react-icons/pi";
+import { BsFillLightningChargeFill } from "react-icons/bs";
 
 const companySizeLabels = {
   Tiny_1_10: "1 - 10 employees",
@@ -161,6 +162,28 @@ function Jobs() {
     }
 
     return displayText;
+  };
+
+  const applyToJob = async (jobPostingId: string) => {
+    try {
+      const response = await fetch("/api/apply-to-job", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ jobPostingId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Successfully applied to the job!");
+      } else {
+        toast.error(data.error || "Something went wrong.");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+    }
   };
 
   if (userRole === "CANDIDATE") {
@@ -365,16 +388,24 @@ function Jobs() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex gap-x-4 justify-end">
+                  <button
+                    onClick={() => applyToJob(jobPosting.id)}
+                    className="inline-flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition duration-200"
+                    aria-label={`Apply to job posting for ${jobPosting.title}`}
+                  >
+                    <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
+                    Instant Apply
+                  </button>
                   <a
                     href={jobPosting.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition duration-200"
+                    className="inline-flex items-center bg-zinc-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-slate-700 transition duration-200"
                     aria-label={`Open link to apply to job at ${jobPosting.url}`}
                     role="button"
                   >
-                    <PiPencilLineFill className="inline-block mr-2" />
+                    <PiPencilLineFill className="inline-block mr-2 text-black" />
                     Apply
                   </a>
                 </div>
