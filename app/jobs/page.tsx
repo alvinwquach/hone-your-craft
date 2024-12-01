@@ -426,7 +426,7 @@ function Jobs() {
                       const status = getApplicationStatus(jobPosting.id);
                       if (status === "PENDING") return "Pending";
                       if (status === "REJECTED") return "Rejected";
-                      if (status === "ACCEPTED") return "Applied";
+                      if (status === "ACCEPTED") return "Accepted";
                       return "Instant Apply";
                     })()}
                   </button>
@@ -465,6 +465,27 @@ function Jobs() {
   if (error) {
     return <div>Error loading job postings</div>;
   }
+
+  const handleAcceptApplication = async (id: string) => {
+    try {
+      const response = await fetch(`/api/applications/${id}/accept`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "ACCEPTED" }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to accept application");
+      }
+
+      toast.success("Application accepted successfully!");
+    } catch (error) {
+      console.error("Error accepting application:", error);
+      toast.error("An error occurred while accepting the application.");
+    }
+  };
 
   const handleRejectApplication = async (id: string) => {
     try {
@@ -769,12 +790,13 @@ function Jobs() {
                             }
                           )}
                         </div>
-
                         <div className="mt-4">
                           <a
                             href={application.resumeUrl}
                             target="_blank"
+                            rel="noopener noreferrer"
                             className="text-blue-400 hover:underline"
+                            aria-label={`View resume of ${application.candidate.name}`}
                           >
                             View Resume
                           </a>
@@ -783,7 +805,12 @@ function Jobs() {
                         {application.status === "PENDING" && (
                           <div className="mt-4 flex justify-between items-center">
                             <div className="flex space-x-4">
-                              <button className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none transition duration-200 ease-in-out">
+                              <button
+                                className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none transition duration-200 ease-in-out"
+                                onClick={() =>
+                                  handleAcceptApplication(application.id)
+                                }
+                              >
                                 Accept
                               </button>
                               <button
