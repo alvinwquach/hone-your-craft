@@ -13,7 +13,6 @@ export async function GET() {
         { status: 401 }
       );
     }
-
     // Fetch job postings created by the current user
     const postedJobs = await prisma.jobPosting.findMany({
       where: {
@@ -32,6 +31,21 @@ export async function GET() {
           },
         },
         requiredDegree: true,
+        applications: {
+          select: {
+            candidate: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+            resumeUrl: true,
+            status: true,
+            appliedAt: true,
+            acceptedAt: true,
+            rejectedAt: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -39,7 +53,6 @@ export async function GET() {
     });
     console.log("Current User:", currentUser);
     console.log("Job Postings:", postedJobs);
-
     return NextResponse.json({ jobPostings: postedJobs }, { status: 200 });
   } catch (error) {
     console.error("Error fetching job postings:", error);

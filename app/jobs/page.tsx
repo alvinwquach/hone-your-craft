@@ -516,7 +516,7 @@ function Jobs() {
           </div>
         </div>
         <div className="w-full lg:w-1/2 rounded-lg shadow-lg border border-zinc-700">
-          <div className="bg-zinc-900 p-6 ">
+          <div className="bg-zinc-900 p-6">
             <div className="text-xl font-semibold text-blue-500">
               Posted Jobs
             </div>
@@ -594,6 +594,7 @@ function Jobs() {
                       leaveTo="transform opacity-0 scale-95"
                     >
                       <Menu.Items className="absolute right-0 mt-2 w-48 bg-zinc-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {/* Menu items for job status actions */}
                         {job.status === JobPostingStatus.DRAFT && (
                           <div className="py-1">
                             <Menu.Item>
@@ -702,10 +703,69 @@ function Jobs() {
                     )}
                   </div>
                 </div>
+                <div className="mt-4">
+                  <div className="text-lg font-semibold text-blue-500">
+                    Applications
+                  </div>
+                  {job.applications?.length === 0 ? (
+                    <p className="text-gray-400">No applications yet.</p>
+                  ) : (
+                    job.applications?.map((application, index) => (
+                      <div
+                        key={application.candidate.email}
+                        className="bg-zinc-800 p-4 mt-4 rounded-md shadow-md"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="text-lg font-semibold text-white">
+                              {application.candidate.name}
+                            </div>
+                            <div className="text-sm text-gray-400">
+                              {application.candidate.email}
+                            </div>
+                          </div>
+                          <div>
+                            <span
+                              className={`px-2 py-1 text-xs font-bold rounded-full ${
+                                application.status === "PENDING"
+                                  ? "bg-yellow-500"
+                                  : application.status === "ACCEPTED"
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              }`}
+                            >
+                              {application.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-400 mt-2">
+                          Applied{" "}
+                          {formatDistanceToNow(
+                            new Date(application.appliedAt),
+                            {
+                              addSuffix: true,
+                            }
+                          )}
+                        </div>
+                        <div className="mt-2">
+                          <a
+                            href={application.resumeUrl}
+                            target="_blank"
+                            className="text-blue-400 hover:underline"
+                          >
+                            View Resume
+                          </a>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             ))
           )}
         </div>
+
+        {/* Post Job Section */}
         <div className="w-full lg:w-1/4">
           <div className="bg-zinc-900 p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
             <Link href="/post-job">
