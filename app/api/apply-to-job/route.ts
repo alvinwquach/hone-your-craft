@@ -59,6 +59,7 @@ export async function POST(request: Request) {
     });
 
     if (existingApplication) {
+      console.log("Existing Application:", existingApplication);
       return NextResponse.json(
         { error: "You have already applied to this job posting." },
         { status: 400 }
