@@ -408,24 +408,26 @@ function Jobs() {
                   <button
                     onClick={() => applyToJob(jobPosting.id)}
                     className={`inline-flex items-center ${
-                      ["PENDING", "REJECTED", "ACCEPTED"].includes(
-                        getApplicationStatus(jobPosting.id)
-                      )
-                        ? "bg-gray-600 cursor-not-allowed" // Disable button if status is "PENDING", "REJECTED", or "ACCEPTED"
-                        : "bg-blue-600 hover:bg-blue-700" // Normal apply button
+                      getApplicationStatus(jobPosting.id) === "REJECTED"
+                        ? "bg-red-600 cursor-not-allowed"
+                        : getApplicationStatus(jobPosting.id) === "PENDING"
+                        ? "bg-yellow-600 cursor-not-allowed"
+                        : getApplicationStatus(jobPosting.id) === "ACCEPTED"
+                        ? "bg-green-600 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700"
                     } text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
                     disabled={["PENDING", "REJECTED", "ACCEPTED"].includes(
                       getApplicationStatus(jobPosting.id)
-                    )} // Disable if status is "PENDING", "REJECTED", or "ACCEPTED"
+                    )}
                     aria-label={`Apply to job posting for ${jobPosting.title}`}
                   >
                     <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
                     {(() => {
                       const status = getApplicationStatus(jobPosting.id);
-                      if (status === "PENDING") return "Pending"; // Show "Pending" if status is "PENDING"
-                      if (["REJECTED", "ACCEPTED"].includes(status))
-                        return "Applied"; // Show "Applied" if status is "REJECTED" or "ACCEPTED"
-                      return "Instant Apply"; // Default to "Instant Apply" if no application
+                      if (status === "PENDING") return "Pending";
+                      if (status === "REJECTED") return "Rejected";
+                      if (status === "ACCEPTED") return "Applied";
+                      return "Instant Apply";
                     })()}
                   </button>
                   {/* <button
@@ -463,6 +465,27 @@ function Jobs() {
   if (error) {
     return <div>Error loading job postings</div>;
   }
+
+  const handleRejectApplication = async (id: string) => {
+    try {
+      const response = await fetch(`/api/applications/${id}/reject`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "REJECTED" }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reject application");
+      }
+
+      toast.success("Application rejected successfully!");
+    } catch (error) {
+      console.error("Error rejecting application:", error);
+      toast.error("An error occurred while rejecting the application.");
+    }
+  };
 
   const handleDeleteJobPosting = async (jobId: string) => {
     const updatedJobs = jobPostings?.filter((job) => job.id !== jobId) ?? [];
@@ -594,7 +617,6 @@ function Jobs() {
                       leaveTo="transform opacity-0 scale-95"
                     >
                       <Menu.Items className="absolute right-0 mt-2 w-48 bg-zinc-700 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        {/* Menu items for job status actions */}
                         {job.status === JobPostingStatus.DRAFT && (
                           <div className="py-1">
                             <Menu.Item>
@@ -710,7 +732,7 @@ function Jobs() {
                   {job.applications?.length === 0 ? (
                     <p className="text-gray-400">No applications yet.</p>
                   ) : (
-                    job.applications?.map((application, index) => (
+                    job.applications?.map((application) => (
                       <div
                         key={application.candidate.email}
                         className="bg-zinc-800 p-4 mt-4 rounded-md shadow-md"
@@ -747,7 +769,8 @@ function Jobs() {
                             }
                           )}
                         </div>
-                        <div className="mt-2">
+
+                        <div className="mt-4">
                           <a
                             href={application.resumeUrl}
                             target="_blank"
@@ -756,6 +779,24 @@ function Jobs() {
                             View Resume
                           </a>
                         </div>
+                        <div className="my-4 border-t border-gray-600"></div>
+                        {application.status === "PENDING" && (
+                          <div className="mt-4 flex justify-between items-center">
+                            <div className="flex space-x-4">
+                              <button className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none transition duration-200 ease-in-out">
+                                Accept
+                              </button>
+                              <button
+                                className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none transition duration-200 ease-in-out"
+                                onClick={() =>
+                                  handleRejectApplication(application.id)
+                                }
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}

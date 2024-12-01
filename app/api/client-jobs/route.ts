@@ -33,8 +33,10 @@ export async function GET() {
         requiredDegree: true,
         applications: {
           select: {
+            id: true,
             candidate: {
               select: {
+                id: true,
                 name: true,
                 email: true,
               },
