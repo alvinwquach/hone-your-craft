@@ -764,8 +764,6 @@ function Jobs() {
             ))
           )}
         </div>
-
-        {/* Post Job Section */}
         <div className="w-full lg:w-1/4">
           <div className="bg-zinc-900 p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
             <Link href="/post-job">
