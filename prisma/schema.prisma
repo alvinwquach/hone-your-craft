@@ -378,7 +378,7 @@ model ClientInterviewAvailability {
 model TimeSlot {
   id                String          @id @default(auto()) @map("_id") @db.ObjectId
   interviewInviteId String          @unique @db.ObjectId 
-  interviewInvite   InterviewInvite @relation("InterviewInviteToTimeSlot", fields: [interviewInviteId], references: [id]) // Reference to InterviewInvite
+  interviewInvite   InterviewInvite @relation("InterviewInviteToTimeSlot", fields: [interviewInviteId], references: [id])
   startTime         DateTime       
   endTime           DateTime        
   isBooked          Boolean         @default(false) 
@@ -404,7 +404,7 @@ model InterviewInvite {
   duration      Int?       
   startTime     DateTime?
   endTime       DateTime?
-  status         InviteStatus  @default(PENDING)  // Status of the invite (Pending, Accepted, Declined)
+  status        InviteStatus  @default(PENDING)  
   @@map("interview_invites")
 }
 
