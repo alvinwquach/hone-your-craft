@@ -1,5 +1,6 @@
 "use client";
 
+
 import axios from "axios";
 import { Interview } from "@prisma/client";
 import { candidateInterviewTypes } from "@/app/lib/candidateInterviewTypes";
@@ -8,9 +9,11 @@ import DeleteInterviewContext from "../../context/DeleteInterviewContext";
 import InterviewCalendar from "../components/calendar/InterviewCalendar";
 import Legend from "../components/calendar/Legend";
 import useSWR, { mutate } from "swr";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
+import { FaCalendarCheck, FaCalendarPlus } from "react-icons/fa";
+import AvailabilityCalendar from "../components/calendar/AvailabilityCalendar";
 
 const fetcher = async (url: string, ...args: any[]) => {
   const response = await fetch(url, ...args);
@@ -20,6 +23,13 @@ const fetcher = async (url: string, ...args: any[]) => {
 function Calendar() {
   const { data: session } = useSession();
   const userRole = session?.user?.userRole;
+  const [activeTab, setActiveTab] = useState<"interviews" | "availability">(
+    "interviews"
+  );
+
+  const toggleTab = (tab: "interviews" | "availability") => {
+    setActiveTab(tab);
+  };
 
   const {
     data: interviews,
@@ -73,17 +83,56 @@ function Calendar() {
             </div>
 
             <div className="w-full md:w-4/5">
-              {loadingInterviews ? (
-                <div>
-                  <Suspense fallback={<InterviewCalendar interviews={[]} />}>
-                    <InterviewCalendar interviews={[]} />
-                  </Suspense>
+              <div className="flex justify-start mb-4">
+                <div className="flex p-2 bg-zinc-900 rounded-lg shadow-lg">
+                  <button
+                    onClick={() => toggleTab("interviews")}
+                    className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
+                      activeTab === "interviews"
+                        ? "bg-blue-600 text-white font-semibold border-b-2 border-blue-600"
+                        : "bg-transparent text-gray-300 cursor-pointer "
+                    }`}
+                  >
+                    <FaCalendarCheck />
+                    <span className="text-sm">Interview View</span>
+                  </button>
+                  <button
+                    onClick={() => toggleTab("availability")}
+                    className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
+                      activeTab === "availability"
+                        ? "bg-blue-600 text-white font-semibold border-b-4 border-blue-600"
+                        : "bg-transparent text-gray-300 cursor-pointer "
+                    }`}
+                  >
+                    <FaCalendarPlus />
+                    <span className="text-sm">Availability View</span>
+                  </button>
                 </div>
-              ) : (
-                <Suspense fallback={<InterviewCalendar interviews={[]} />}>
-                  <InterviewCalendar interviews={interviews} />
-                </Suspense>
-              )}
+              </div>
+              <div className="relative">
+                {activeTab === "interviews" && (
+                  <div>
+                    {loadingInterviews ? (
+                      <Suspense
+                        fallback={<InterviewCalendar interviews={[]} />}
+                      >
+                        <InterviewCalendar interviews={[]} />
+                      </Suspense>
+                    ) : (
+                      <Suspense
+                        fallback={<InterviewCalendar interviews={[]} />}
+                      >
+                        <InterviewCalendar interviews={interviews} />
+                      </Suspense>
+                    )}
+                  </div>
+                )}
+                {activeTab === "availability" && (
+                  <div>
+                    <AvailabilityCalendar />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : null}
@@ -93,3 +142,6 @@ function Calendar() {
 }
 
 export default Calendar;
+
+
+
