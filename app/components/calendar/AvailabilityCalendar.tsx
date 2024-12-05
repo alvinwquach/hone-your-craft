@@ -1,28 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
-import AddAvailabilityModal from "./AddAvailabilityModal";
 import { BsCalendarEventFill } from "react-icons/bs";
+import AddAvailabilityModal from "./AddAvailabilityModal";
+
+interface HeaderToolbar {
+  left: string;
+  center: string;
+  right: string;
+}
+
+interface Event {
+  title: string;
+  start: Date;
+  end: Date;
+  allDay: boolean;
+}
 
 function AvailabilityCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isRecurring, setIsRecurring] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(true);
-  const [availability, setAvailability] = useState<any[]>([]);
+  const [availability, setAvailability] = useState<Event[]>([]);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [currentMonth, setCurrentMonth] = useState(true);
+  const calendarRef = useRef<FullCalendar | null>(null);
+  const [headerToolbar, setHeaderToolbar] = useState<HeaderToolbar>({
+    left: "prev,next today",
+    center: "title",
+    right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+  });
+  const today = new Date();
 
   const handleDateClick = (arg: any) => {
-    const today = new Date();
     const clickedDate = arg.date;
-
+    const today = new Date();
     if (clickedDate < today.setHours(0, 0, 0, 0)) {
       return;
     }
-
     setSelectedDate(arg.date);
     setIsModalOpen(true);
   };
@@ -103,23 +121,11 @@ function AvailabilityCalendar() {
     setIsModalOpen(false);
   };
 
-  const today = new Date();
-
   const updateHeaderToolbar = (date: Date) => {
     const currentMonth = today.getMonth();
     const selectedMonth = date.getMonth();
     setCurrentMonth(currentMonth === selectedMonth);
   };
-
-  useEffect(() => {
-    const calendar = document.querySelector(".fc") as HTMLElement;
-    if (calendar) {
-      const calendarInstance = (calendar as any)._fullCalendar;
-      if (calendarInstance) {
-        updateHeaderToolbar(calendarInstance.getDate());
-      }
-    }
-  }, []);
 
   const hasAvailability = (date: Date) => {
     return availability.some((event) => {
@@ -148,16 +154,58 @@ function AvailabilityCalendar() {
     setSelectedDates([]);
   };
 
+  useEffect(() => {
+    const updateViewBasedOnScreenSize = () => {
+      const calendarApi = calendarRef.current?.getApi();
+
+      if (calendarApi) {
+        if (window.innerWidth >= 1280) {
+          calendarApi.changeView("dayGridMonth"); // Desktop: Month view
+          setHeaderToolbar({
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+          });
+        } else if (window.innerWidth >= 1024) {
+          calendarApi.changeView("dayGridMonth"); // Laptop: Month view
+          setHeaderToolbar({
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+          });
+        } else if (window.innerWidth >= 640) {
+          calendarApi.changeView("timeGridWeek"); // Tablet: Week view
+          setHeaderToolbar({
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "timeGridWeek,timeGridDay,listWeek",
+          });
+        } else {
+          calendarApi.changeView("timeGridDay"); // Mobile: Day view
+          setHeaderToolbar({
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "timeGridDay,listWeek",
+          });
+        }
+      }
+    };
+    window.addEventListener("resize", updateViewBasedOnScreenSize);
+
+    updateViewBasedOnScreenSize();
+
+    return () => {
+      window.removeEventListener("resize", updateViewBasedOnScreenSize);
+    };
+  }, [currentMonth]);
+
   return (
     <div>
       <FullCalendar
+        ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        headerToolbar={{
-          left: currentMonth ? "next today" : "prev next today",
-          center: "title",
-          right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-        }}
+        headerToolbar={headerToolbar}
         events={availability}
         selectable={true}
         dateClick={handleDateClick}
