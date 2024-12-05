@@ -163,6 +163,7 @@ function AvailabilityCalendar() {
         dateClick={handleDateClick}
         select={handleSelect}
         unselect={handleUnselect}
+        nowIndicator={true}
         dayCellClassNames={(date) => {
           const todayMidnight = new Date(today.setHours(0, 0, 0, 0));
           if (date.date < todayMidnight) {
