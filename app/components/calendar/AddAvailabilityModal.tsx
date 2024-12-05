@@ -22,6 +22,7 @@ interface AddAvailabilityModalProps {
   isOpen: boolean;
   closeModal: () => void;
   selectedDate: Date | null;
+  selectedDates: Date[];
   isRecurring: boolean;
   onSubmit: (dates: Date[], timeRanges: TimeRange[]) => void;
 }
@@ -30,6 +31,7 @@ function AddAvailabilityModal({
   isOpen,
   closeModal,
   selectedDate,
+  selectedDates,
   isRecurring,
   onSubmit,
 }: AddAvailabilityModalProps) {
@@ -39,13 +41,14 @@ function AddAvailabilityModal({
   const [dates, setDates] = useState<Date[]>([]);
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDates.length > 0) {
+      setDates(selectedDates);
+    } else if (selectedDate) {
       setDates([selectedDate]);
-    } else {
-      setDates([]);
     }
+
     setTimeRanges([{ startTime: "09:00 AM", endTime: "10:00 AM" }]);
-  }, [selectedDate, isOpen]);
+  }, [selectedDates, selectedDate, isOpen]);
 
   const timeOptions = useMemo(() => {
     const times: string[] = [];
@@ -96,12 +99,6 @@ function AddAvailabilityModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!dates.length || !timeRanges.length) {
-      alert("Please select at least one date and one time range.");
-      return;
-    }
-
     if (isRecurring && selectedDate) {
       const dayOfWeek = getDay(selectedDate);
       const recurringDates = [];

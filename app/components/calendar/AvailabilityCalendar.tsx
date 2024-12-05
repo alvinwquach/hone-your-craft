@@ -7,12 +7,13 @@ import interactionPlugin from "@fullcalendar/interaction";
 import AddAvailabilityModal from "./AddAvailabilityModal";
 import { BsCalendarEventFill } from "react-icons/bs";
 
-const AvailabilityCalendar: React.FC = () => {
+function AvailabilityCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isRecurring, setIsRecurring] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(true);
   const [availability, setAvailability] = useState<any[]>([]);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
   const handleDateClick = (arg: any) => {
     const today = new Date();
@@ -31,25 +32,69 @@ const AvailabilityCalendar: React.FC = () => {
     timeRanges: { startTime: string; endTime: string }[]
   ) => {
     const newEvents = dates
-      .map((date) => {
-        return timeRanges.map((timeRange) => ({
-          title: `${timeRange.startTime} - ${timeRange.endTime}`,
-          start: new Date(
-            date.setHours(
-              parseInt(timeRange.startTime.split(":")[0]),
-              parseInt(timeRange.startTime.split(":")[1].split(" ")[0])
-            )
-          ),
-          end: new Date(
-            date.setHours(
-              parseInt(timeRange.endTime.split(":")[0]),
-              parseInt(timeRange.endTime.split(":")[1].split(" ")[0])
-            )
-          ),
-          allDay: false,
-        }));
+      .flatMap((date) => {
+        return timeRanges.map((timeRange) => {
+          const eventStart = new Date(date);
+          const eventEnd = new Date(date);
+
+          const parseTime = (time: string) => {
+            const [timeStr, modifier] = time.split(" ");
+            const [hour, minute] = timeStr.split(":").map(Number);
+
+            let adjustedHour = hour;
+            if (modifier === "PM" && hour !== 12) {
+              adjustedHour += 12;
+            } else if (modifier === "AM" && hour === 12) {
+              adjustedHour = 0;
+            }
+
+            return { hour: adjustedHour, minute };
+          };
+
+          const { hour: startHour, minute: startMinute } = parseTime(
+            timeRange.startTime
+          );
+          eventStart.setHours(startHour, startMinute, 0, 0);
+
+          const { hour: endHour, minute: endMinute } = parseTime(
+            timeRange.endTime
+          );
+          eventEnd.setHours(endHour, endMinute, 0, 0);
+
+          const formatTime = (date: Date) => {
+            const options: Intl.DateTimeFormatOptions = {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            };
+            let formattedTime = new Intl.DateTimeFormat(
+              "en-US",
+              options
+            ).format(date);
+
+            formattedTime = formattedTime.replace(/(AM|PM)/, (match) =>
+              match.toLowerCase()
+            );
+            formattedTime = formattedTime.replace(" ", "");
+            return formattedTime;
+          };
+
+          return {
+            title: `${formatTime(eventStart)} - ${formatTime(eventEnd)}`,
+            start: eventStart,
+            end: eventEnd,
+            allDay: false,
+          };
+        });
       })
-      .flat();
+      .filter(
+        (newEvent) =>
+          !availability.some(
+            (existingEvent) =>
+              existingEvent.start.getTime() === newEvent.start.getTime() &&
+              existingEvent.end.getTime() === newEvent.end.getTime()
+          )
+      );
 
     setAvailability((prevEvents) => {
       const updatedEvents = [...prevEvents, ...newEvents];
@@ -85,6 +130,24 @@ const AvailabilityCalendar: React.FC = () => {
     });
   };
 
+  const handleSelect = (selectionInfo: any) => {
+    const { start, end } = selectionInfo;
+    const adjustedEndDate = new Date(end);
+    adjustedEndDate.setDate(end.getDate() - 1);
+    const dateRange: Date[] = [];
+    let currentDate = new Date(start);
+    while (currentDate <= adjustedEndDate) {
+      dateRange.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    setSelectedDates(dateRange);
+    setIsModalOpen(true);
+  };
+
+  const handleUnselect = () => {
+    setSelectedDates([]);
+  };
+
   return (
     <div>
       <FullCalendar
@@ -96,7 +159,10 @@ const AvailabilityCalendar: React.FC = () => {
           right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
         }}
         events={availability}
+        selectable={true}
         dateClick={handleDateClick}
+        select={handleSelect}
+        unselect={handleUnselect}
         dayCellClassNames={(date) => {
           const todayMidnight = new Date(today.setHours(0, 0, 0, 0));
           if (date.date < todayMidnight) {
@@ -121,11 +187,12 @@ const AvailabilityCalendar: React.FC = () => {
         isOpen={isModalOpen}
         closeModal={() => setIsModalOpen(false)}
         selectedDate={selectedDate!}
+        selectedDates={selectedDates}
         isRecurring={isRecurring}
         onSubmit={handleAddAvailability}
       />
     </div>
   );
-};
+}
 
 export default AvailabilityCalendar;
