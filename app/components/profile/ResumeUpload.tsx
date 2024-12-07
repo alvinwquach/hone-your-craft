@@ -2,12 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import {
-  BsFiletypeCsv,
-  BsFiletypePdf,
-  BsFiletypeDocx,
-  BsFiletypeTxt,
-} from "react-icons/bs";
+import { BsFiletypePdf, BsFiletypeDocx, BsFiletypeTxt } from "react-icons/bs";
+import { CiFileOn } from "react-icons/ci";
 import { PiFileDoc } from "react-icons/pi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,13 +12,12 @@ const ResumeUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [currentDocument, setCurrentDocument] = useState<any | null>(null);
 
-  useEffect(() => {
-    fetchDocumentDetails();
-  }, []);
-
   const fetchDocumentDetails = async () => {
     try {
-      const response = await fetch("/api/documents/current");
+      const response = await fetch("/api/documents/current", {
+        method: "GET",
+      });
+
       const data = await response.json();
 
       if (response.ok && data) {
@@ -35,6 +30,10 @@ const ResumeUpload = () => {
     }
   };
 
+  useEffect(() => {
+    fetchDocumentDetails();
+  }, []);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -44,10 +43,30 @@ const ResumeUpload = () => {
     }
   };
 
-  const handleRemoveFile = () => {
-    setFile(null);
-    setCurrentDocument(null);
-    console.log("File removed");
+  const handleRemoveFile = async () => {
+    if (!currentDocument?.id) {
+      toast.error("Document ID is missing. Unable to delete the document.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/documents/${currentDocument.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete document: ${response.statusText}`);
+      }
+
+      setFile(null);
+      setCurrentDocument(null);
+
+      toast.success("Your resume has been removed successfully.");
+    } catch (error) {
+      toast.error(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   };
 
   const getFileIcon = (file: File) => {
@@ -62,7 +81,7 @@ const ResumeUpload = () => {
       case "txt":
         return <BsFiletypeTxt className="w-12 h-12 mb-4 text-white" />;
       default:
-        return <BsFiletypeCsv className="w-12 h-12 mb-4 text-white" />;
+        return <CiFileOn className="w-12 h-12 mb-4 text-white" />;
     }
   };
 
@@ -186,7 +205,7 @@ const ResumeUpload = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <BsFiletypeCsv className="w-12 h-12 mb-4 text-white" />
+              <CiFileOn className="w-12 h-12 mb-4 text-white" />
               <p className="mb-2 text-sm text-gray-300">
                 <span className="font-semibold">Click to upload</span> or drag
                 and drop
@@ -205,15 +224,7 @@ const ResumeUpload = () => {
           />
         </label>
       </div>
-      <div className="mt-4 flex items-center justify-end w-full">
-        <button
-          className="text-gray-400 text-sm font-semibold"
-          onClick={handleRemoveFile}
-        >
-          Remove your resume
-        </button>
-      </div>
-      {file && (
+      {(file || currentDocument) && (
         <div className="mt-4 flex items-center justify-end w-full">
           <button
             className="text-gray-400 text-sm font-semibold"
