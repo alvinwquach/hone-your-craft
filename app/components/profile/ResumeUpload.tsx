@@ -39,7 +39,11 @@ const ResumeUpload = () => {
     if (selectedFile) {
       setFile(selectedFile);
       console.log("File selected:", selectedFile);
-      await handleFileUpload(selectedFile);
+      if (currentDocument?.id) {
+        await handleFileUpdate(selectedFile);
+      } else {
+        await handleFileUpload(selectedFile);
+      }
     }
   };
 
@@ -133,6 +137,42 @@ const ResumeUpload = () => {
     }
   };
 
+  const handleFileUpdate = async (selectedFile: File) => {
+    if (!currentDocument?.id) {
+      toast.error("No document found to update.");
+      return;
+    }
+
+    try {
+      console.log(
+        "Requesting document update with new file:",
+        selectedFile.name
+      );
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch(`/api/documents/${currentDocument.id}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update document.");
+      }
+
+      const responseData = await response.json();
+      console.log("Document updated successfully:", responseData);
+
+      toast.success("Document updated successfully!");
+      fetchDocumentDetails();
+    } catch (error) {
+      toast.error(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  };
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -146,7 +186,11 @@ const ResumeUpload = () => {
     if (droppedFile) {
       setFile(droppedFile);
       console.log("File dropped:", droppedFile);
-      await handleFileUpload(droppedFile);
+      if (currentDocument?.id) {
+        await handleFileUpdate(droppedFile);
+      } else {
+        await handleFileUpload(droppedFile);
+      }
     }
   };
 
@@ -160,6 +204,7 @@ const ResumeUpload = () => {
           <div className="flex flex-col items-start space-y-2 mt-2">
             <div className="flex items-center space-x-2 mt-2">
               <button
+                aria-label="Open resume preview in a new tab"
                 className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
                 onClick={() => window.open(currentDocument.url, "_blank")}
               >
@@ -184,17 +229,23 @@ const ResumeUpload = () => {
               <FaTimes className="w-4 h-4" />
             </button>
           )}
-          {file ? (
+          {file || currentDocument ? (
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              {getFileIcon(file)}
+              {getFileIcon(file || currentDocument)}
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2">
-                <p className="text-sm text-white mr-1">{file.name}</p>
+                <p className="text-sm text-white mr-1">
+                  {file?.name || currentDocument?.name}
+                </p>
                 <div className="flex items-center space-x-1">
                   <span className="text-sm text-gray-400">(</span>
                   <button
+                    aria-label="Open resume preview in a new tab"
                     className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
                     onClick={() =>
-                      window.open(URL.createObjectURL(file), "_blank")
+                      window.open(
+                        URL.createObjectURL(file || currentDocument),
+                        "_blank"
+                      )
                     }
                   >
                     preview
