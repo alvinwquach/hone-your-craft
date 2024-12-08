@@ -2,7 +2,6 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 
-// Get job by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -10,38 +9,30 @@ export async function GET(
   const jobId = params.id;
 
   try {
-    // Retrieve the current authenticated user
     const currentUser = await getCurrentUser();
     if (!currentUser) {
-      // Return an error response if the user is not authenticated
       return NextResponse.error();
     }
-    // Find the job posting using the jobId
     const job = await prisma.jobPosting.findUnique({
       where: { id: jobId },
       include: {
         requiredSkills: {
-          // Include the related required skills
           include: { skill: true },
         },
         bonusSkills: {
-          // Include the related bonus skills
           include: { skill: true },
         },
       },
     });
-    //  If the job posting does not exist, return a 404 error
     if (!job) {
       return NextResponse.json(
         { message: "Job posting not found" },
         { status: 404 }
       );
     }
-    // Return the job posting data as JSON in the response
     return NextResponse.json({ job });
   } catch (error) {
     console.error("Error fetching job:", error);
-    // Return a 500 error if something goes wrong while fetching the job
     return NextResponse.json(
       { message: "Error fetching job" },
       { status: 500 }
@@ -72,16 +63,21 @@ export async function DELETE(
         bonusSkills: true,
         interviewInvites: true,
         requiredDegree: true,
+        applications: true,
       },
     });
 
     if (!jobPosting) {
-      throw new Error("Job not found");
+      throw new Error("Job posting not found");
     }
 
     if (jobPosting.userId !== currentUser.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
     }
+
+    await prisma.application.deleteMany({
+      where: { jobPostingId: jobPostingId },
+    });
 
     await Promise.all([
       prisma.interviewInvite.deleteMany({
@@ -94,6 +90,7 @@ export async function DELETE(
       }),
       prisma.jobTag.deleteMany({ where: { jobPostingId: jobPostingId } }),
     ]);
+
     await prisma.jobPosting.delete({ where: { id: jobPostingId } });
 
     return NextResponse.json({
@@ -107,3 +104,4 @@ export async function DELETE(
     );
   }
 }
+
