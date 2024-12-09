@@ -17,14 +17,16 @@ import {
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { MdAssignmentInd } from "react-icons/md";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
+import { SiBaremetrics } from "react-icons/si";
 
 const navigation = [
   { href: "/", text: "Home", icon: AiOutlineHome },
   { href: "/profile", text: "Profile", icon: FiUser },
+  { href: "/metrics", text: "Metrics", icon: SiBaremetrics },
   { href: "/track", text: "Track", icon: FiClipboard },
   { href: "/calendar", text: "Calendar", icon: FiCalendar },
-  { href: "/messages", text: "Messages", icon: FiMessageCircle },
   { href: "/jobs", text: "Jobs", icon: MdAssignmentInd },
+  // { href: "/messages", text: "Messages", icon: FiMessageCircle },
 ];
 
 export default function CustomNavigation() {
