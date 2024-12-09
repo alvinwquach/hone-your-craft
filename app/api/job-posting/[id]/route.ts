@@ -75,11 +75,10 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
     }
 
-    await prisma.application.deleteMany({
-      where: { jobPostingId: jobPostingId },
-    });
-
     await Promise.all([
+      prisma.application.deleteMany({
+        where: { jobPostingId: jobPostingId },
+      }),
       prisma.interviewInvite.deleteMany({
         where: { jobPostingId: jobPostingId },
       }),
