@@ -21,6 +21,7 @@ import {
   FaUserClock,
   FaArrowAltCircleUp,
   FaLevelUpAlt,
+  FaTools,
 } from "react-icons/fa";
 import { PiPencilLineFill, PiUsersFour } from "react-icons/pi";
 import { BsFillLightningChargeFill } from "react-icons/bs";
@@ -105,28 +106,37 @@ enum JobPostingStatus {
   COMPLETED = "COMPLETED",
 }
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error("Failed to fetch data");
-  }
-  const data = await response.json();
-  return data.jobPostings || [];
+const fetcher = async (url: string, options: RequestInit) => {
+  const response = await fetch(url, options);
+  return response.json();
 };
 
 function Jobs() {
   const { data: session } = useSession();
-  const userRole = session?.user?.userRole;
+  const { data, isLoading: userDataLoading } = useSWR(
+    session ? `/api/user/${session?.user?.email}` : null,
+    (url) => fetcher(url, { method: "GET" })
+  );
   const [filter, setFilter] = useState<"all" | "drafts" | "posted">("all");
-
+  const userRole = data?.user?.userRole;
+  const userSkills = data?.user?.skills || [];
+  const userData = data || [];
+  const loadingUserData = !userData || userDataLoading;
+  const loadingUserSkills = !userSkills || userDataLoading;
   const jobPostingsUrl =
     userRole === "CANDIDATE" ? "/api/job-postings" : "/api/client-jobs";
 
-  const {
-    data: jobPostings,
-    isLoading: jobPostingsLoading,
-    error,
-  } = useSWR<JobPosting[]>(jobPostingsUrl, fetcher);
+  const { data: jobPostings, error: jobPostingsError } = useSWR(
+    jobPostingsUrl,
+    (url: any) => fetcher(url, { method: "GET" })
+  );
+
+  const loadingJobPostings = !jobPostings && !jobPostingsError;
+
+  if (loadingUserData || loadingJobPostings || loadingUserSkills) {
+    return <div>Loading...</div>;
+  }
+  const jobs = jobPostings?.jobPostings || jobPostings;
 
   const getSalaryDisplay = (salary: Salary) => {
     if (!salary) return null;
@@ -186,34 +196,33 @@ function Jobs() {
     }
   };
 
-    const getApplicationStatus = (jobPostingId: string) => {
-      const job = jobPostings?.find((job) => job.id === jobPostingId);
+  const getApplicationStatus = (jobPostingId: string) => {
+    const job = jobs?.find((job: any) => job.id === jobPostingId);
 
-      if (job && job.applications) {
-        const application = job.applications.find(
-          (app) => app.candidateId === session?.user?.userId
-        );
-        console.log("Application Status:", application?.status);
-        return application?.status || null;
-      }
+    if (job && job.applications) {
+      const application = job.applications.find(
+        (application: any) => application.candidateId === session?.user?.userId
+      );
+      console.log("Application Status:", application?.status);
+      return application?.status || null;
+    }
 
-      console.log("No application found");
-      return null;
-    };
+    console.log("No application found");
+    return null;
+  };
 
+  const isSkillMatch = (skillName: string) => {
+    return userSkills.includes(skillName);
+  };
 
   if (userRole === "CANDIDATE") {
     return (
       <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-        {jobPostings?.length === 0 ? (
-          <div className="text-center text-xl font-semibold text-gray-600">
-            No job postings available.
-          </div>
-        ) : (
-          <div className="space-y-8 w-full max-w-screen-lg mx-auto">
-            {jobPostings?.map((jobPosting) => (
+        <div className="space-y-8 w-full max-w-screen-lg mx-auto">
+          {jobs && jobs.length > 0 ? (
+            jobs.map((job: any) => (
               <div
-                key={jobPosting.id}
+                key={job.id}
                 className="bg-zinc-900 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300 my-6"
               >
                 <div className="lg:flex space-y-4 lg:space-y-0 lg:space-x-8">
@@ -221,12 +230,12 @@ function Jobs() {
                     <div className="flex flex-col sm:flex-row justify-between items-start mb-4 space-y-2 sm:space-y-0">
                       <div className="flex items-center space-x-3">
                         <h3 className="text-2xl font-semibold text-blue-600">
-                          {jobPosting.title}
+                          {job.title}
                         </h3>
                       </div>
                       <div className="flex items-center">
                         <span className="text-xl font-medium text-white">
-                          {jobPosting.company}
+                          {job.company}
                         </span>
                       </div>
                     </div>
@@ -234,40 +243,40 @@ function Jobs() {
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-semibold ${
                           jobTypeLabels[
-                            jobPosting.jobType as keyof typeof jobTypeLabels
+                            job.jobType as keyof typeof jobTypeLabels
                           ]
                             ? "bg-blue-600 text-white"
                             : "bg-gray-600 text-white"
                         }`}
                       >
                         {jobTypeLabels[
-                          jobPosting.jobType as keyof typeof jobTypeLabels
-                        ] || jobPosting.jobType}
+                          job.jobType as keyof typeof jobTypeLabels
+                        ] || job.jobType}
                       </span>
                     </div>
                     <div className="flex items-center text-gray-400 mb-2">
                       <FaCoins className="mr-2 text-white" />
                       <span className="text-lg font-semibold">
-                        {getSalaryDisplay(jobPosting.salary)}
-                        {jobPosting.paymentType && (
+                        {getSalaryDisplay(job.salary)}
+                        {job.paymentType && (
                           <span className="ml-2 text-gray-400">
                             (
                             {paymentTypeLabels[
-                              jobPosting.paymentType as keyof typeof paymentTypeLabels
-                            ] || jobPosting.paymentType}
+                              job.paymentType as keyof typeof paymentTypeLabels
+                            ] || job.paymentType}
                             )
                           </span>
                         )}
                       </span>
                     </div>
-                    {jobPosting.requiredDegree?.length > 0 && (
+                    {job.requiredDegree?.length > 0 && (
                       <div className="flex items-center text-gray-500 mb-4">
-                        <FaGraduationCap className="mr-2 text-white" />{" "}
+                        <FaGraduationCap className="mr-2 text-white" />
                         <h4 className="font-semibold text-gray-400 mr-2">
                           Required Education:
                         </h4>
                         <p className="text-gray-600">
-                          {jobPosting.requiredDegree.map((degree) => (
+                          {job.requiredDegree.map((degree: any) => (
                             <span key={degree.id} className="mr-2">
                               {degreeTypeLabels[
                                 degree.degreeType as keyof typeof degreeTypeLabels
@@ -277,65 +286,104 @@ function Jobs() {
                         </p>
                       </div>
                     )}
-                    {jobPosting.deadline && (
+                    {job.deadline && (
                       <div className="flex items-center text-gray-500 mb-4">
-                        <FaCalendarAlt className="mr-2 text-white" />{" "}
+                        <FaCalendarAlt className="mr-2 text-white" />
                         <span className="font-medium text-gray-400">
                           Deadline:{" "}
                           <span className="text-gray-600">
-                            {new Date(jobPosting.deadline).toLocaleString(
-                              "en-US",
-                              {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                hour: "numeric",
-                                minute: "numeric",
-                                second: "numeric",
-                                hour12: true,
-                                timeZone: "America/Los_Angeles",
-                              }
-                            )}
+                            {new Date(job.deadline).toLocaleString("en-US", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "numeric",
+                              second: "numeric",
+                              hour12: true,
+                              timeZone: "America/Los_Angeles",
+                            })}
                           </span>
                         </span>
                       </div>
                     )}
                     <div className="flex items-center text-gray-500 mb-4">
-                      <FaToolbox className="mr-2 text-white" />{" "}
+                      <FaToolbox className="mr-2 text-white" />
                       <h4 className="font-semibold text-gray-400">
                         Required Skills:
                       </h4>
                     </div>
                     <div className="max-h-40 flex flex-wrap gap-2">
-                      {jobPosting.requiredSkills
-                        .filter((skill) => skill.yearsOfExperience >= 1)
-                        .map((skill) => (
-                          <div key={skill.id} className="flex items-center">
-                            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                              {skill.skill.name}
+                      {[
+                        ...job.requiredSkills
+                          .filter((skill: any) => skill.yearsOfExperience >= 1)
+                          .filter((skill: any) =>
+                            isSkillMatch(skill.skill.name)
+                          )
+                          .sort((a: any, b: any) =>
+                            a.skill.name.localeCompare(b.skill.name)
+                          ),
+                        ...job.requiredSkills
+                          .filter((skill: any) => skill.yearsOfExperience >= 1)
+                          .filter(
+                            (skill: any) => !isSkillMatch(skill.skill.name)
+                          )
+                          .sort((a: any, b: any) =>
+                            a.skill.name.localeCompare(b.skill.name)
+                          ),
+                      ].map((skill: any) => (
+                        <div key={skill.id} className="flex items-center">
+                          <span
+                            className={`${
+                              isSkillMatch(skill.skill.name)
+                                ? "bg-blue-500 text-white"
+                                : "bg-gray-200 text-black"
+                            } px-3 py-1 rounded-full text-sm`}
+                          >
+                            {skill.skill.name}
+                          </span>
+                          {skill.yearsOfExperience > 0 && (
+                            <span className="ml-2 text-sm text-gray-500">
+                              ({skill.yearsOfExperience} yr
+                              {skill.yearsOfExperience > 1 ? "s" : ""})
                             </span>
-                            {skill.yearsOfExperience > 0 && (
-                              <span className="ml-2 text-sm text-gray-500">
-                                ({skill.yearsOfExperience} yr
-                                {skill.yearsOfExperience > 1 ? "s" : ""})
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    {jobPosting.bonusSkills.length > 0 && (
+                    {job.bonusSkills.length > 0 && (
                       <div className="mb-4">
                         <div className="flex items-center text-gray-500">
-                          <FaWrench className="mr-2 text-white" />{" "}
+                          <FaWrench className="mr-2 text-white" />
                           <h4 className="font-semibold text-gray-400">
                             Bonus Skills:
                           </h4>
                         </div>
                         <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2">
-                          {jobPosting.bonusSkills.map((skill) => (
+                          {[
+                            ...job.bonusSkills
+                              .filter((skill: any) =>
+                                isSkillMatch(skill.skill.name)
+                              )
+                              .sort((a: any, b: any) =>
+                                a.skill.name.localeCompare(b.skill.name)
+                              ),
+                            ...job.bonusSkills
+                              .filter(
+                                (skill: any) => !isSkillMatch(skill.skill.name)
+                              )
+                              .sort((a: any, b: any) =>
+                                a.skill.name.localeCompare(b.skill.name)
+                              ),
+                          ].map((skill: any) => (
                             <div key={skill.id} className="flex items-center">
-                              <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+                              <span
+                                className={`${
+                                  isSkillMatch(skill.skill.name)
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-gray-200 text-black"
+                                } px-3 py-1 rounded-full text-sm`}
+                              >
                                 {skill.skill.name}
                               </span>
                             </div>
@@ -344,12 +392,12 @@ function Jobs() {
                       </div>
                     )}
                     <div className="flex items-center text-gray-600 mb-2">
-                      <FaArrowAltCircleUp className="mr-2 text-white" />{" "}
+                      <FaArrowAltCircleUp className="mr-2 text-white" />
                       <span className="font-medium text-gray-400">
-                        {jobPosting.experienceLevels?.length > 0
-                          ? jobPosting.experienceLevels
+                        {job.experienceLevels?.length > 0
+                          ? job.experienceLevels
                               .map(
-                                (level) =>
+                                (level: any) =>
                                   experienceLevelLabels[
                                     level as keyof typeof experienceLevelLabels
                                   ] || level
@@ -359,11 +407,11 @@ function Jobs() {
                       </span>
                     </div>
                     <div className="flex items-center text-gray-500 mb-2">
-                      <FaLevelUpAlt className="mr-2 text-white" />{" "}
+                      <FaLevelUpAlt className="mr-2 text-white" />
                       <span className="font-medium text-gray-400">
                         {experienceLabels[
-                          jobPosting.yearsOfExperience as keyof typeof experienceLabels
-                        ] || jobPosting.yearsOfExperience}
+                          job.yearsOfExperience as keyof typeof experienceLabels
+                        ] || job.yearsOfExperience}
                       </span>
                     </div>
                   </div>
@@ -371,33 +419,33 @@ function Jobs() {
                   <div className="lg:block border-l-2 border-gray-700 mx-4"></div>
                   <div className="flex-1 space-y-4">
                     <div className="flex items-center text-gray-500 mb-4">
-                      <PiUsersFour className="mr-2 text-white" />{" "}
+                      <PiUsersFour className="mr-2 text-white" />
                       <span className="font-medium text-gray-400">
                         {companySizeLabels[
-                          jobPosting.companySize as keyof typeof companySizeLabels
-                        ] || jobPosting.companySize}
+                          job.companySize as keyof typeof companySizeLabels
+                        ] || job.companySize}
                       </span>
                     </div>
                     <div className="flex items-center text-gray-500 mb-4">
-                      <FaBriefcase className="mr-2 text-white" />{" "}
+                      <FaBriefcase className="mr-2 text-white" />
                       <p className="font-medium text-gray-400">
-                        {jobPosting.industry.join(", ")}
+                        {job.industry.join(", ")}
                       </p>
                     </div>
                     <div className="flex items-center text-gray-500 mb-4">
                       <FaMapMarkerAlt className="mr-2 text-white" />
                       <span className="font-medium text-gray-400">
-                        {jobPosting.location} (
+                        {job.location} (
                         {workLocationLabels[
-                          jobPosting.workLocation as keyof typeof workLocationLabels
-                        ] || jobPosting.workLocation}
+                          job.workLocation as keyof typeof workLocationLabels
+                        ] || job.workLocation}
                         )
                       </span>
                     </div>
                     <div className="flex items-center text-gray-500 mb-4">
                       <span className="text-xs text-gray-400 mx-2">
                         Posted{" "}
-                        {formatDistanceToNow(new Date(jobPosting.createdAt), {
+                        {formatDistanceToNow(new Date(job.createdAt), {
                           addSuffix: true,
                         })}
                       </span>
@@ -406,44 +454,37 @@ function Jobs() {
                 </div>
                 <div className="mt-4 flex gap-x-4 justify-end">
                   <button
-                    onClick={() => applyToJob(jobPosting.id)}
+                    onClick={() => applyToJob(job.id)}
                     className={`inline-flex items-center ${
-                      getApplicationStatus(jobPosting.id) === "REJECTED"
+                      getApplicationStatus(job.id) === "REJECTED"
                         ? "bg-red-600 cursor-not-allowed"
-                        : getApplicationStatus(jobPosting.id) === "PENDING"
+                        : getApplicationStatus(job.id) === "PENDING"
                         ? "bg-yellow-600 cursor-not-allowed"
-                        : getApplicationStatus(jobPosting.id) === "ACCEPTED"
+                        : getApplicationStatus(job.id) === "ACCEPTED"
                         ? "bg-green-600 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-700"
                     } text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
                     disabled={["PENDING", "REJECTED", "ACCEPTED"].includes(
-                      getApplicationStatus(jobPosting.id)
+                      getApplicationStatus(job.id)
                     )}
-                    aria-label={`Apply to job posting for ${jobPosting.title}`}
+                    aria-label={`Apply to job posting for ${job.title}`}
                   >
                     <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
                     {(() => {
-                      const status = getApplicationStatus(jobPosting.id);
+                      const status = getApplicationStatus(job.id);
                       if (status === "PENDING") return "Pending";
                       if (status === "REJECTED") return "Rejected";
                       if (status === "ACCEPTED") return "Accepted";
                       return "Instant Apply";
                     })()}
                   </button>
-                  {/* <button
-                    onClick={() => applyToJob(jobPosting.id)}
-                    className="inline-flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-blue-700 transition duration-200"
-                    aria-label={`Apply to job posting for ${jobPosting.title}`}
-                  >
-                    <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
-                    Instant Apply
-                  </button> */}
+
                   <a
-                    href={jobPosting.url}
+                    href={job.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center bg-zinc-600 text-white font-semibold py-2 px-4 rounded-full hover:bg-slate-700 transition duration-200"
-                    aria-label={`Open link to apply to job at ${jobPosting.url}`}
+                    aria-label={`Open link to apply to job at ${job.url}`}
                     role="button"
                   >
                     <PiPencilLineFill className="inline-block mr-2 text-black" />
@@ -451,19 +492,13 @@ function Jobs() {
                   </a>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          ) : (
+            <p>No job postings available.</p>
+          )}
+        </div>
       </section>
     );
-  }
-
-  if (jobPostingsLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error loading job postings</div>;
   }
 
   const handleAcceptApplication = async (id: string) => {
@@ -509,7 +544,8 @@ function Jobs() {
   };
 
   const handleDeleteJobPosting = async (jobId: string) => {
-    const updatedJobs = jobPostings?.filter((job) => job.id !== jobId) ?? [];
+    const updatedJobs =
+      jobPostings?.filter((job: any) => job.id !== jobId) ?? [];
     mutate("/api/job-postings", updatedJobs, false);
     try {
       const response = await fetch(`/api/job-posting/${jobId}`, {
@@ -526,17 +562,17 @@ function Jobs() {
     }
   };
 
-  const filteredJobs = jobPostings?.filter((job) => {
+  const filteredJobs = jobs?.filter((job: any) => {
     if (filter === "drafts") return job.status === JobPostingStatus.DRAFT;
     if (filter === "posted") return job.status === JobPostingStatus.OPEN;
     return true;
   });
 
-  const postedJobsCount = jobPostings?.filter(
-    (job) => job.status === JobPostingStatus.OPEN
+  const postedJobsCount = jobs?.filter(
+    (job: any) => job.status === JobPostingStatus.OPEN
   ).length;
-  const draftJobsCount = jobPostings?.filter(
-    (job) => job.status === JobPostingStatus.DRAFT
+  const draftJobsCount = jobs?.filter(
+    (job: any) => job.status === JobPostingStatus.DRAFT
   ).length;
 
   return (
@@ -601,7 +637,7 @@ function Jobs() {
               </p>
             </div>
           ) : (
-            filteredJobs?.map((job, index) => (
+            filteredJobs?.map((job: any, index: number) => (
               <div
                 key={job.id}
                 className={`bg-zinc-900 p-6 shadow-lg flex flex-col border-b border-zinc-700 ${
@@ -753,7 +789,7 @@ function Jobs() {
                   {job.applications?.length === 0 ? (
                     <p className="text-gray-400">No applications yet.</p>
                   ) : (
-                    job.applications?.map((application) => (
+                    job.applications?.map((application: any) => (
                       <div
                         key={application.candidate.email}
                         className="bg-zinc-800 p-4 mt-4 rounded-md shadow-md"
