@@ -203,16 +203,92 @@ function Jobs() {
       const application = job.applications.find(
         (application: any) => application.candidateId === session?.user?.userId
       );
-      console.log("Application Status:", application?.status);
       return application?.status || null;
     }
-
-    console.log("No application found");
     return null;
+  };
+
+  const getButtonClass = (jobId: string) => {
+    const status = getApplicationStatus(jobId);
+    switch (status) {
+      case "REJECTED":
+        return "bg-red-600 cursor-not-allowed";
+      case "PENDING":
+        return "bg-yellow-600 cursor-not-allowed";
+      case "ACCEPTED":
+        return "bg-green-600 cursor-not-allowed";
+      default:
+        return "bg-blue-600 hover:bg-blue-700";
+    }
+  };
+
+  const getButtonText = (jobId: string) => {
+    const status = getApplicationStatus(jobId);
+    switch (status) {
+      case "PENDING":
+        return "Pending";
+      case "REJECTED":
+        return "Rejected";
+      case "ACCEPTED":
+        return "Accepted";
+      default:
+        return "Instant Apply";
+    }
   };
 
   const isSkillMatch = (skillName: string) => {
     return userSkills.includes(skillName);
+  };
+
+  const getSortedRequiredSkills = (skills: any[], matchCondition: boolean) => {
+    return skills
+      .filter((skill: any) => skill.yearsOfExperience >= 1)
+      .filter((skill: any) =>
+        matchCondition
+          ? isSkillMatch(skill.skill.name)
+          : !isSkillMatch(skill.skill.name)
+      )
+      .sort((a: any, b: any) => a.skill.name.localeCompare(b.skill.name));
+  };
+
+  const renderRequiredSkill = (skill: any, isMatched: boolean) => {
+    return (
+      <div key={skill.id} className="flex items-center">
+        <span
+          className={`${
+            isMatched ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+          } px-3 py-1 rounded-full text-sm`}
+        >
+          {skill.skill.name}
+        </span>
+        {skill.yearsOfExperience > 0 && (
+          <span className="ml-2 text-sm text-gray-500">
+            ({skill.yearsOfExperience} yr
+            {skill.yearsOfExperience > 1 ? "s" : ""})
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const getSortedBonusSkills = (skills: any[], matchCondition: boolean) => {
+    return skills
+      .filter((skill: any) => isSkillMatch(skill.skill.name) === matchCondition)
+      .sort((a: any, b: any) => a.skill.name.localeCompare(b.skill.name));
+  };
+
+  const renderBonusSkill = (skill: any, isMatched: boolean) => {
+    return (
+      <div key={skill.id} className="flex items-center">
+        <span
+          className={`${
+            isMatched ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
+          } px-3 py-1 rounded-full text-sm`}
+        >
+          {skill.skill.name}
+        </span>
+      </div>
+    );
   };
 
   if (userRole === "CANDIDATE") {
@@ -314,83 +390,27 @@ function Jobs() {
                       </h4>
                     </div>
                     <div className="max-h-40 flex flex-wrap gap-2">
-                      {[
-                        ...job.requiredSkills
-                          .filter((skill: any) => skill.yearsOfExperience >= 1)
-                          .filter((skill: any) =>
-                            isSkillMatch(skill.skill.name)
-                          )
-                          .sort((a: any, b: any) =>
-                            a.skill.name.localeCompare(b.skill.name)
-                          ),
-                        ...job.requiredSkills
-                          .filter((skill: any) => skill.yearsOfExperience >= 1)
-                          .filter(
-                            (skill: any) => !isSkillMatch(skill.skill.name)
-                          )
-                          .sort((a: any, b: any) =>
-                            a.skill.name.localeCompare(b.skill.name)
-                          ),
-                      ].map((skill: any) => (
-                        <div key={skill.id} className="flex items-center">
-                          <span
-                            className={`${
-                              isSkillMatch(skill.skill.name)
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-200 text-black"
-                            } px-3 py-1 rounded-full text-sm`}
-                          >
-                            {skill.skill.name}
-                          </span>
-                          {skill.yearsOfExperience > 0 && (
-                            <span className="ml-2 text-sm text-gray-500">
-                              ({skill.yearsOfExperience} yr
-                              {skill.yearsOfExperience > 1 ? "s" : ""})
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                      {getSortedRequiredSkills(job.requiredSkills, true).map(
+                        (skill: any) => renderRequiredSkill(skill, true)
+                      )}
+                      {getSortedRequiredSkills(job.requiredSkills, false).map(
+                        (skill: any) => renderRequiredSkill(skill, false)
+                      )}
                     </div>
-                    {job.bonusSkills.length > 0 && (
-                      <div className="mb-4">
-                        <div className="flex items-center text-gray-500">
-                          <FaWrench className="mr-2 text-white" />
-                          <h4 className="font-semibold text-gray-400">
-                            Bonus Skills:
-                          </h4>
-                        </div>
-                        <div className="max-h-40 overflow-y-auto flex flex-wrap gap-2">
-                          {[
-                            ...job.bonusSkills
-                              .filter((skill: any) =>
-                                isSkillMatch(skill.skill.name)
-                              )
-                              .sort((a: any, b: any) =>
-                                a.skill.name.localeCompare(b.skill.name)
-                              ),
-                            ...job.bonusSkills
-                              .filter(
-                                (skill: any) => !isSkillMatch(skill.skill.name)
-                              )
-                              .sort((a: any, b: any) =>
-                                a.skill.name.localeCompare(b.skill.name)
-                              ),
-                          ].map((skill: any) => (
-                            <div key={skill.id} className="flex items-center">
-                              <span
-                                className={`${
-                                  isSkillMatch(skill.skill.name)
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-gray-200 text-black"
-                                } px-3 py-1 rounded-full text-sm`}
-                              >
-                                {skill.skill.name}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="flex items-center text-gray-500 mb-4">
+                      <FaWrench className="mr-2 text-white" />
+                      <h4 className="font-semibold text-gray-400">
+                        Bonus Skills:
+                      </h4>
+                    </div>
+                    <div className="max-h-40 flex flex-wrap gap-2">
+                      {getSortedBonusSkills(job.bonusSkills, true).map(
+                        (skill: any) => renderBonusSkill(skill, true)
+                      )}
+                      {getSortedBonusSkills(job.bonusSkills, false).map(
+                        (skill: any) => renderBonusSkill(skill, false)
+                      )}
+                    </div>
                     <div className="flex items-center text-gray-600 mb-2">
                       <FaArrowAltCircleUp className="mr-2 text-white" />
                       <span className="font-medium text-gray-400">
@@ -455,30 +475,17 @@ function Jobs() {
                 <div className="mt-4 flex gap-x-4 justify-end">
                   <button
                     onClick={() => applyToJob(job.id)}
-                    className={`inline-flex items-center ${
-                      getApplicationStatus(job.id) === "REJECTED"
-                        ? "bg-red-600 cursor-not-allowed"
-                        : getApplicationStatus(job.id) === "PENDING"
-                        ? "bg-yellow-600 cursor-not-allowed"
-                        : getApplicationStatus(job.id) === "ACCEPTED"
-                        ? "bg-green-600 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700"
-                    } text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
+                    className={`inline-flex items-center ${getButtonClass(
+                      job.id
+                    )} text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
                     disabled={["PENDING", "REJECTED", "ACCEPTED"].includes(
                       getApplicationStatus(job.id)
                     )}
                     aria-label={`Apply to job posting for ${job.title}`}
                   >
                     <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
-                    {(() => {
-                      const status = getApplicationStatus(job.id);
-                      if (status === "PENDING") return "Pending";
-                      if (status === "REJECTED") return "Rejected";
-                      if (status === "ACCEPTED") return "Accepted";
-                      return "Instant Apply";
-                    })()}
+                    {getButtonText(job.id)}
                   </button>
-
                   <a
                     href={job.url}
                     target="_blank"
@@ -574,6 +581,19 @@ function Jobs() {
   const draftJobsCount = jobs?.filter(
     (job: any) => job.status === JobPostingStatus.DRAFT
   ).length;
+
+  const getApplicationStatusClasses = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-500";
+      case "ACCEPTED":
+        return "bg-green-500";
+      case "REJECTED":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
@@ -805,13 +825,9 @@ function Jobs() {
                           </div>
                           <div>
                             <span
-                              className={`px-2 py-1 text-xs font-bold rounded-full ${
-                                application.status === "PENDING"
-                                  ? "bg-yellow-500"
-                                  : application.status === "ACCEPTED"
-                                  ? "bg-green-500"
-                                  : "bg-red-500"
-                              }`}
+                              className={`px-2 py-1 text-xs font-bold rounded-full ${getApplicationStatusClasses(
+                                application.status
+                              )}`}
                             >
                               {application.status}
                             </span>
