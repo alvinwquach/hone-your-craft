@@ -261,23 +261,19 @@ const PostJobForm = () => {
   );
 
   const handleHideSkill = (index: number) => {
-    // Get the current requiredSkills array from the form state
     const updatedSkills = [...watch("requiredSkills")];
 
-    // Update the skill at the given index
     updatedSkills[index] = {
       ...updatedSkills[index],
-      yearsOfExperience: 0, // Set yearsOfExperience to 0
-      isRequired: null, // Set isRequired to false
+      yearsOfExperience: 0,
+      isRequired: null,
     };
 
-    // Update the form state with the modified skills array
     setValue("requiredSkills", updatedSkills);
 
-    // Update the hiddenSkills state to hide the card
     setHiddenSkills((prevState) => ({
       ...prevState,
-      [index]: true, // Mark the skill as hidden
+      [index]: true,
     }));
   };
 
