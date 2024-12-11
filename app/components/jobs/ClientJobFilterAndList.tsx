@@ -261,15 +261,21 @@ function JobFilterAndList({
                           addSuffix: true,
                         })}
                         <div className="mt-4">
-                          <a
-                            href={application.resumeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:underline"
-                            aria-label={`View resume of ${application.candidate.name}`}
-                          >
-                            View Resume
-                          </a>
+                          {application.resumeUrl ? (
+                            <a
+                              href={application.resumeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:underline"
+                              aria-label={`View resume of ${application.candidate.name}`}
+                            >
+                              View Resume
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">
+                              Resume not available
+                            </span>
+                          )}
                         </div>
                       </span>
                       <div className="space-x-2">
