@@ -43,7 +43,6 @@ function LogRejectionModal({
 
   const onSubmit = async (data: any) => {
     try {
-      console.log("Submitting form data:", data);
       if (data.rejection) {
         const rejectionData = {
           userId: job.userId,
@@ -54,8 +53,6 @@ function LogRejectionModal({
           initiatedBy: data.rejection.initiatedBy,
           notes: data.rejection.notes,
         };
-
-        console.log("Rejection data:", rejectionData);
 
         if (job.rejection) {
           // If rejection already exists, update it
@@ -68,7 +65,6 @@ function LogRejectionModal({
 
       closeModal();
       toast.success("Rejection Logged");
-      console.log("Rejection data submitted successfully");
     } catch (error) {
       console.error("Error submitting rejection data:", error);
       toast.error("Failed To Log Rejection");

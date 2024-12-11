@@ -46,8 +46,6 @@ function LogInterviewModal({
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      console.log("Submitting form data:", data);
-
       if (data.interviews && data.interviews.length > 0) {
         const interviewDate = new Date(data.interviewDate);
         const isoDate = interviewDate.toISOString();
@@ -60,19 +58,15 @@ function LogInterviewModal({
           acceptedDate: new Date().toISOString(),
         };
 
-        console.log("Interview data:", interviewData);
-
         if (data.interviews[0].id) {
           // If interview ID exists, update the interview
           await axios.put(
             `/api/interview/${data.interviews[0].id}`,
             interviewData
           );
-          console.log("Interview updated successfully");
         } else {
           // If interview ID doesn't exist, create a new interview
           await axios.post(`/api/interview/${data.id}`, interviewData);
-          console.log("Interview created successfully");
         }
       }
       closeModal();

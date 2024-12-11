@@ -60,9 +60,7 @@ const authOptions: NextAuthOptions = {
               userRole: null,
             },
           });
-          console.log("New user created:", newUser);
         } else {
-          console.log("Existing user signed in:", existingUser);
         }
       }
       // Indicate successful sign-in
