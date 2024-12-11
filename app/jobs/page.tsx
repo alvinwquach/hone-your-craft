@@ -10,6 +10,7 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import CandidateJobPostingCard from "../components/jobs/CandidateJobPostingCard";
 import ClientJobStatistics from "../components/jobs/ClientJobStatistics";
 import JobFilterAndList from "../components/jobs/ClientJobFilterAndList";
+import { Application } from "@prisma/client";
 
 enum JobPostingStatus {
   OPEN = "OPEN",
@@ -32,7 +33,7 @@ function Jobs() {
     (url) => fetcher(url, { method: "GET" })
   );
   const [filteredJobPostings, setFilteredJobPostings] = useState<
-    "all" | "drafts" | "posted"
+    "all" | "drafts" | "posted" | "accepted" | "rejected" | "pending"
   >("all");
   const userRole = data?.user?.userRole;
   const userSkills = data?.user?.skills || [];
@@ -229,15 +230,30 @@ function Jobs() {
     }
   };
 
-  const filteredJobs = jobs?.filter((job: any) => {
-    if (filteredJobPostings === "drafts")
-      return job.status === JobPostingStatus.DRAFT;
-    if (filteredJobPostings === "posted")
-      return job.status === JobPostingStatus.OPEN;
+  const filteredJobs = jobs.filter((job: any) => {
+    if (filteredJobPostings === "drafts") return job.status === "DRAFT";
+    if (filteredJobPostings === "posted") return job.status === "OPEN";
+    if (filteredJobPostings === "pending") {
+      return job.applications.some(
+        (application: Application) => application.status === "PENDING"
+      );
+    }
+    if (filteredJobPostings === "accepted") {
+      return job.applications.some(
+        (application: Application) => application.status === "ACCEPTED"
+      );
+    }
+    if (filteredJobPostings === "rejected") {
+      return job.applications.some(
+        (application: Application) => application.status === "REJECTED"
+      );
+    }
     return true;
   });
 
-  const handleFilterChange = (newFilter: "all" | "drafts" | "posted") => {
+  const handleFilterChange = (
+    newFilter: "all" | "drafts" | "posted" | "pending" | "accepted" | "rejected"
+  ) => {
     setFilteredJobPostings(newFilter);
   };
 
@@ -255,7 +271,7 @@ function Jobs() {
       case "ACCEPTED":
         return { className: "bg-green-500", displayText: "Accepted" };
       case "REJECTED":
-        return { className: "bg-red-500", displayText: "Not Accepted" };
+        return { className: "bg-red-500", displayText: "Rejected" };
       default:
         return { className: "bg-gray-500", displayText: status };
     }

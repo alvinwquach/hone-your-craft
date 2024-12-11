@@ -38,9 +38,11 @@ interface Job {
 }
 
 interface JobFilterAndListProps {
-  filter: "all" | "drafts" | "posted";
+  filter: "all" | "drafts" | "posted" | "pending" | "accepted" | "rejected";
   filteredJobs: Job[];
-  onFilterChange: (filter: "all" | "drafts" | "posted") => void;
+  onFilterChange: (
+    filter: "all" | "drafts" | "posted" | "pending" | "accepted" | "rejected"
+  ) => void;
   handleDeleteJobPosting: (jobId: string) => void;
   handleAcceptApplication: (id: string) => void;
   handleRejectApplication: (id: string) => void;
@@ -63,31 +65,57 @@ function JobFilterAndList({
     <div className="w-full lg:w-1/2 rounded-lg shadow-lg border border-zinc-700">
       <div className="bg-zinc-900 p-6">
         <div className="text-xl font-semibold text-blue-500">Posted Jobs</div>
-        <div className="flex justify-start items-center gap-4 mt-4">
-          <button
-            onClick={() => onFilterChange("all")}
-            className={`px-4 py-2 rounded-full ${
-              filter === "all" ? "bg-blue-500" : "bg-zinc-700"
-            } text-white`}
-          >
-            All Jobs
-          </button>
-          <button
-            onClick={() => onFilterChange("drafts")}
-            className={`px-4 py-2 rounded-full ${
-              filter === "drafts" ? "bg-blue-500" : "bg-zinc-700"
-            } text-white`}
-          >
-            Drafts
-          </button>
-          <button
-            onClick={() => onFilterChange("posted")}
-            className={`px-4 py-2 rounded-full ${
-              filter === "posted" ? "bg-blue-500" : "bg-zinc-700"
-            } text-white`}
-          >
-            Posted
-          </button>
+        <div className="flex flex-wrap justify-start items-center mt-4">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 w-full">
+            <button
+              onClick={() => onFilterChange("all")}
+              className={`px-2 py-1 rounded-full ${
+                filter === "all" ? "bg-blue-500" : "bg-zinc-700"
+              } text-white`}
+            >
+              All Jobs
+            </button>
+            <button
+              onClick={() => onFilterChange("drafts")}
+              className={`px-2 py-1 rounded-full ${
+                filter === "drafts" ? "bg-blue-500" : "bg-zinc-700"
+              } text-white`}
+            >
+              Drafts
+            </button>
+            <button
+              onClick={() => onFilterChange("posted")}
+              className={`px-2 py-1 rounded-full ${
+                filter === "posted" ? "bg-blue-500" : "bg-zinc-700"
+              } text-white`}
+            >
+              Posted
+            </button>
+            <button
+              onClick={() => onFilterChange("pending")}
+              className={`px-2 py-1 rounded-full ${
+                filter === "pending" ? "bg-blue-500" : "bg-zinc-700"
+              } text-white`}
+            >
+              Pending
+            </button>
+            <button
+              onClick={() => onFilterChange("accepted")}
+              className={`px-2 py-1 rounded-full ${
+                filter === "accepted" ? "bg-blue-500" : "bg-zinc-700"
+              } text-white`}
+            >
+              Accepted
+            </button>
+            <button
+              onClick={() => onFilterChange("rejected")}
+              className={`px-2 py-1 rounded-full ${
+                filter === "rejected" ? "bg-blue-500" : "bg-zinc-700"
+              } text-white`}
+            >
+              Rejected
+            </button>
+          </div>
         </div>
       </div>
       {filteredJobs.length === 0 ? (
