@@ -28,16 +28,15 @@ const fetcher = async (url: string, options: RequestInit) => {
 
 function Jobs() {
   const { data: session } = useSession();
-  const { data, isLoading: userDataLoading } = useSWR(
+  const { data: userData, isLoading: userDataLoading } = useSWR(
     session ? `/api/user/${session?.user?.email}` : null,
     (url) => fetcher(url, { method: "GET" })
   );
   const [filteredJobPostings, setFilteredJobPostings] = useState<
     "all" | "drafts" | "posted" | "accepted" | "rejected" | "pending"
   >("all");
-  const userRole = data?.user?.userRole;
-  const userSkills = data?.user?.skills || [];
-  const userData = data || [];
+  const userRole = userData?.user?.userRole;
+  const userSkills = userData?.user?.skills || [];
   const loadingUserData = !userData || userDataLoading;
   const loadingUserSkills = !userSkills || userDataLoading;
   const jobPostingsUrl =
