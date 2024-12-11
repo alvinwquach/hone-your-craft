@@ -73,15 +73,10 @@ function EditInterviewModal({
 
   const onSubmit = async (data: any) => {
     try {
-      console.log("Submitting form data:", data);
-
       const updatedInterview = {
         interviewDate: new Date(data.interviewDate).toISOString(),
         interviewType: data.interviewType,
       };
-
-      console.log("Updated interview data:", updatedInterview);
-
       // Update interview data
       await axios.put(`/api/interview/${interview.id}`, updatedInterview);
 
@@ -89,7 +84,6 @@ function EditInterviewModal({
 
       closeModal();
       toast.success("Interview Updated");
-      console.log("Interview data updated successfully");
     } catch (error) {
       console.error("Error updating interview:", error);
       toast.error("Failed To Update Interview");

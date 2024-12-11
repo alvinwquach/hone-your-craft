@@ -53,8 +53,7 @@ export async function GET() {
         createdAt: "desc",
       },
     });
-    console.log("Current User:", currentUser);
-    console.log("Job Postings:", postedJobs);
+
     return NextResponse.json({ jobPostings: postedJobs }, { status: 200 });
   } catch (error) {
     console.error("Error fetching job postings:", error);

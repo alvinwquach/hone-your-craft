@@ -46,7 +46,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      console.log("Submitting form data:", data);
 
       const offerData = {
         userId: job.userId,
@@ -55,8 +54,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
         offerDeadline: data.offerDeadline,
         salary: data.offerSalary,
       };
-
-      console.log("Offer data:", offerData);
 
       if (job.offer) {
         // If offer exists, update it
@@ -68,7 +65,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
       mutate("api/jobs");
       closeModal();
       toast.success("Offer Added");
-      console.log("Offer data submitted successfully");
     } catch (error) {
       console.error("Error submitting offer data:", error);
       toast.error("Failed to Add Offer");
@@ -77,37 +73,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
     }
   };
 
-  // const onSubmit = async (data: any) => {
-  //   try {
-  //     console.log("Submitting form data:", data);
-  //     if (data.offer) {
-  //       const offerData = {
-  //         userId: job.userId,
-  //         jobId: job.id,
-  //         company: job.company,
-  //         title: job.title,
-  //         offerDate: new Date(data.offerDate).toISOString(),
-  //         offerDeadline: data.offerDeadline,
-  //         salary: data.offerSalary,
-  //       };
-
-  //       console.log("Offer data:", offerData);
-
-  //       if (job.offer) {
-  //         // If rejection already exists, update it
-  //         await axios.put(`/api/offer/${job.id}`, offerData);
-  //       } else {
-  //         // If rejection doesn't exist, create a new one
-  //         await axios.post(`/api/offer/${job.id}`, offerData);
-  //       }
-  //     }
-
-  //     closeModal();
-  //     console.log("Offer data submitted successfully");
-  //   } catch (error) {
-  //     console.error("Error submitting Offer data:", error);
-  //   }
-  // };
 
   const drawDollarBill = (ctx: CanvasRenderingContext2D) => {
     const billWidth = 80;

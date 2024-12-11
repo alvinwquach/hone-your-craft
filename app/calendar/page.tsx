@@ -59,9 +59,10 @@ function Calendar() {
       <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
         {userRole === "CANDIDATE" ? (
           <div className="flex flex-wrap">
-            <div className="w-full md:w-1/5 pr-4 mt-4 sm:mt-6 md:mt-0">
+            <div className="w-full md:w-1/5 pr-0 md:pr-4 my-4 sm:mt-6 md:mt-0">
               <Legend interviewTypes={candidateInterviewTypes} />
             </div>
+
             <div className="w-full md:w-4/5">
               {loadingInterviews ? (
                 <div>
@@ -78,10 +79,9 @@ function Calendar() {
           </div>
         ) : userRole === "CLIENT" ? (
           <div className="flex flex-wrap">
-            <div className="w-full md:w-1/5 mt-4 sm:mt-6 md:mt-0 pr-0 md:pr-4">
+            <div className="w-full md:w-1/5 my-4 sm:mt-6 md:mt-0 pr-0 md:pr-4">
               <Legend interviewTypes={clientInterviewTypes} />
             </div>
-
             <div className="w-full md:w-4/5">
               <div className="flex justify-start mb-4">
                 <div className="flex p-2 bg-zinc-900 rounded-lg shadow-lg">

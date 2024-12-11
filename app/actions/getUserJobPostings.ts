@@ -62,9 +62,6 @@ const getUserJobPostings = async () => {
         job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
       skills: extractSkillsFromDescription(job.description),
     }));
-
-    console.log(jobPostings);
-
     return jobPostings;
   } catch (error) {
     console.error("Error fetching user jobs or extracting skills:", error);

@@ -414,8 +414,6 @@ const PostJobForm = () => {
   };
 
   const onSubmit = async (data: JobFormData) => {
-    console.log("Form Data Submitted", data);
-
     try {
       const response = await fetch("/api/job-posting", {
         method: "POST",
@@ -427,7 +425,6 @@ const PostJobForm = () => {
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log("Success:", responseData);
 
         toast.success("Job posted successfully!");
         setTimeout(() => {

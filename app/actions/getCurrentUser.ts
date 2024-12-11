@@ -12,7 +12,6 @@ export default async function getCurrentUser() {
   try {
     // Retrieve the current session
     const session = await getSession();
-    console.log("User session:", session);
     // Check if the session exists and the user has an email
     if (!session?.user?.email) {
       // If no email is found, return null

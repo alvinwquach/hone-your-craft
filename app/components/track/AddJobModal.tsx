@@ -65,7 +65,6 @@ function AddJobModal({
   const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
     // Extract the selected category from the event
     const category = e.target.value as ApplicationStatus;
-    console.log(category);
   };
 
   const {
