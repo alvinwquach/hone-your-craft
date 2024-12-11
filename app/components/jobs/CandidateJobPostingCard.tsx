@@ -101,33 +101,35 @@ function CandidateJobPostingCard({
   getSortedRequiredSkills,
   getSortedBonusSkills,
 }: CandidateJobPostingCardProps) {
-  const getButtonClass = (jobId: string) => {
+  const getButtonDetails = (jobId: string) => {
     const status = getApplicationStatus(jobId);
+
+    let buttonClass = "bg-blue-600 hover:bg-blue-700";
+    let buttonText = "Instant Apply";
+    let showIcon = true;
+
     switch (status) {
-      case "REJECTED":
-        return "bg-red-600 cursor-not-allowed";
       case "PENDING":
-        return "bg-yellow-600 cursor-not-allowed";
+        buttonClass = "bg-yellow-600 cursor-not-allowed";
+        buttonText = "Pending";
+        showIcon = false;
+        break;
+      case "REJECTED":
+        buttonClass = "bg-red-600 cursor-not-allowed";
+        buttonText = "Not Accepted";
+        showIcon = false;
+        break;
       case "ACCEPTED":
-        return "bg-green-600 cursor-not-allowed";
-      default:
-        return "bg-blue-600 hover:bg-blue-700";
+        buttonClass = "bg-green-600 cursor-not-allowed";
+        buttonText = "Accepted";
+        showIcon = false;
+        break;
     }
+
+    return { buttonClass, buttonText, showIcon };
   };
 
-  const getButtonText = (jobId: string) => {
-    const status = getApplicationStatus(jobId);
-    switch (status) {
-      case "PENDING":
-        return "Pending";
-      case "REJECTED":
-        return "Rejected";
-      case "ACCEPTED":
-        return "Accepted";
-      default:
-        return "Instant Apply";
-    }
-  };
+  const { buttonClass, buttonText, showIcon } = getButtonDetails(job.id);
 
   const renderRequiredSkill = (skill: any, isMatched: boolean) => {
     return (
@@ -335,16 +337,16 @@ function CandidateJobPostingCard({
       <div className="mt-4 flex gap-x-4 justify-end">
         <button
           onClick={() => applyToJob(job.id)}
-          className={`inline-flex items-center ${getButtonClass(
-            job.id
-          )} text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
+          className={`inline-flex items-center ${buttonClass} text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
           disabled={["PENDING", "REJECTED", "ACCEPTED"].includes(
             getApplicationStatus(job.id)
           )}
           aria-label={`Apply to job posting for ${job.title}`}
         >
-          <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
-          {getButtonText(job.id)}
+          {showIcon && (
+            <BsFillLightningChargeFill className="inline-block mr-2 text-black" />
+          )}
+          {buttonText}
         </button>
         <a
           href={job.url}
