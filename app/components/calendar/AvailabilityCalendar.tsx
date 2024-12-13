@@ -42,6 +42,7 @@ function AvailabilityCalendar() {
       return;
     }
     setSelectedDate(arg.date);
+    setSelectedDates([]);
     setIsModalOpen(true);
   };
 
@@ -146,7 +147,9 @@ function AvailabilityCalendar() {
       dateRange.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
+
     setSelectedDates(dateRange);
+    setSelectedDate(null);
     setIsModalOpen(true);
   };
 

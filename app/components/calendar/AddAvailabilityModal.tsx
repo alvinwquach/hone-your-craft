@@ -99,6 +99,13 @@ function AddAvailabilityModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    let datesToSubmit = selectedDates;
+
+    if (selectedDate && selectedDates.length === 0) {
+      datesToSubmit = [selectedDate];
+    }
+
     if (isRecurring && selectedDate) {
       const dayOfWeek = getDay(selectedDate);
       const recurringDates = [];
