@@ -211,20 +211,23 @@ function Jobs() {
   };
 
   const handleDeleteJobPosting = async (jobId: string) => {
-    const updatedJobs =
-      jobPostings?.filter((job: any) => job.id !== jobId) ?? [];
-    mutate("/api/job-postings", updatedJobs, false);
+    const updatedJobs = jobs.filter((job: any) => job.id !== jobId);
+    mutate(jobPostingsUrl, { jobs: updatedJobs }, false);
+
     try {
       const response = await fetch(`/api/job-posting/${jobId}`, {
         method: "DELETE",
       });
+
       if (!response.ok) {
         throw new Error("Failed to delete job posting");
       }
+
       toast.success("Job posting deleted successfully!");
     } catch (error) {
       console.error("Error deleting job:", error);
-      mutate("/api/job-postings", jobPostings, false);
+      mutate(jobPostingsUrl);
+
       toast.error("An error occurred while deleting the job posting.");
     }
   };
