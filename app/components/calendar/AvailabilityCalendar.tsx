@@ -6,6 +6,7 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { BsCalendarEventFill } from "react-icons/bs";
 import AddAvailabilityModal from "./AddAvailabilityModal";
+import { startOfDay } from "date-fns";
 
 interface HeaderToolbar {
   left: string;
@@ -36,11 +37,13 @@ function AvailabilityCalendar() {
   const today = new Date();
 
   const handleDateClick = (arg: any) => {
-    const clickedDate = arg.date;
-    const today = new Date();
-    if (clickedDate < today.setHours(0, 0, 0, 0)) {
+    const clickedDate = startOfDay(arg.date);
+    const today = startOfDay(new Date());
+
+    if (clickedDate < today) {
       return;
     }
+
     setSelectedDate(arg.date);
     setSelectedDates([]);
     setIsModalOpen(true);
@@ -139,10 +142,22 @@ function AvailabilityCalendar() {
 
   const handleSelect = (selectionInfo: any) => {
     const { start, end } = selectionInfo;
+
+    const normalizedStart = startOfDay(start);
+    const normalizedEnd = startOfDay(end);
+
+    const today = startOfDay(new Date());
+
+    if (normalizedStart < today || normalizedEnd < today) {
+      return;
+    }
+
     const adjustedEndDate = new Date(end);
     adjustedEndDate.setDate(end.getDate() - 1);
+
     const dateRange: Date[] = [];
     let currentDate = new Date(start);
+
     while (currentDate <= adjustedEndDate) {
       dateRange.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
@@ -214,6 +229,14 @@ function AvailabilityCalendar() {
         dateClick={handleDateClick}
         select={handleSelect}
         unselect={handleUnselect}
+        selectAllow={(selectInfo) => {
+          const today = startOfDay(new Date());
+          const selectedStartDate = startOfDay(selectInfo.start);
+          if (selectedStartDate < today) {
+            return false;
+          }
+          return true;
+        }}
         nowIndicator={true}
         dayCellClassNames={(date) => {
           const todayMidnight = new Date(today.setHours(0, 0, 0, 0));
