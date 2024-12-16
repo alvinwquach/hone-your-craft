@@ -4,8 +4,6 @@ import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { mutate } from "swr";
-import axios from "axios";
 import Image from "next/image";
 import { FiUser } from "react-icons/fi";
 import { useSession } from "next-auth/react";
@@ -26,6 +24,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
   const { data: session } = useSession();
   const [editing, setEditing] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
 
   const toggleOptionsMenu = () => {
@@ -46,23 +45,32 @@ function ProfileCard({ userData }: ProfileCardProps) {
   };
 
   const onSubmit = async (data: any) => {
+    if (isSubmitting) {
+      return;
+    }
+    setIsSubmitting(true);
+
     try {
-      await axios.put(`/api/user/${session?.user?.email}`, {
-        role: data.role,
-        skills: data.skills,
+      const response = await fetch(`/api/user/${session?.user?.email}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          role: data.role,
+        }),
       });
-      mutate(`/api/user/${session?.user?.email}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
+
       setEditing(false);
       toast.success("User Updated");
     } catch (error) {
-      console.error("Error updating role and skills:", error);
       toast.error("Failed To Update User");
-    }
-  };
-
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
-      handleSubmit(onSubmit)();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -97,7 +105,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
   }, []);
 
   return (
-    <div className="w-full max-w-lg border rounded-lg shadow bg-gray-800 border-gray-700 mx-auto">
+    <div className="w-full max-w-lg border rounded-lg shadow bg-zinc-900 border-gray-700 mx-auto">
       <div
         className="flex justify-end px-4 pt-4 relative w-full"
         ref={optionsMenuRef}
@@ -105,7 +113,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
         <button
           id="dropdownButton"
           onClick={toggleOptionsMenu}
-          className="inline-block text-gray-400  hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-700 rounded-lg text-xs md:text-sm p-1.5"
+          className="inline-block text-gray-400 hover:bg-zinc-700 focus:ring-4 focus:outline-none focus:ring-zinc-700 rounded-lg text-xs md:text-sm p-1.5"
           type="button"
         >
           <span className="sr-only">Open dropdown</span>
@@ -120,7 +128,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
             <div className="bg-white shadow rounded-lg mr-4">
               <button
                 onClick={handleEditRole}
-                className="block w-full text-xs text-left px-4 py-2 text-black hover:bg-gray-100 rounded-lg"
+                className="block w-full text-xs text-left px-4 py-2 text-black hover:bg-zinc-100 rounded-lg"
               >
                 Edit Role
               </button>
@@ -163,11 +171,9 @@ function ProfileCard({ userData }: ProfileCardProps) {
                       type="text"
                       defaultValue={userData?.user?.role || ""}
                       {...register("role")}
-                      className="block w-full max-w-lg p-4 pl-10 text-xs md:text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      className="block w-full max-w-lg p-4 pl-10 text-xs md:text-sm  border  rounded-lg bg-zinc-700 focus:ring-blue-500 focus:border-blue-500  border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                       placeholder="Update role"
-                      onKeyPress={handleKeyPress}
                     />
-
                     {errors.role && (
                       <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
                         {errors.role.message}
@@ -184,10 +190,9 @@ function ProfileCard({ userData }: ProfileCardProps) {
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <FiUser className="h-4 w-4 text-gray-500" />
                   </div>
-
                   <input
                     type="text"
-                    className="block w-full max-w-lg p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    className="block w-full max-w-lg p-4 pl-10 text-xs md:text-sm  border  rounded-lg bg-zinc-700 focus:ring-blue-500 focus:border-blue-500  border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     readOnly
                     value={userData?.user?.role || ""}
                   />
@@ -207,7 +212,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
                     {...register("role")}
                     className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                     placeholder="Add a role"
-                    onKeyPress={handleKeyPress}
+                    disabled={isSubmitting}
                   />
                   {errors.role && (
                     <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
@@ -225,4 +230,3 @@ function ProfileCard({ userData }: ProfileCardProps) {
 }
 
 export default ProfileCard;
-
