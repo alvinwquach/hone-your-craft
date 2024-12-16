@@ -93,7 +93,6 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
 
   const handleRequiredSkillChange = async (selected: any) => {
     setSelectedSkills(selected);
-
     if (selected === null || selected.length < selectedSkills.length) {
       const removedSkills = selectedSkills.filter(
         (skill: SkillOption) =>
@@ -101,32 +100,41 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
       );
 
       try {
-        const updatedSkills = skillsList.filter(
-          (skill) => !removedSkills.some((removed) => removed.value === skill)
-        );
+        for (const removedSkill of removedSkills) {
+          const response = await fetch(
+            `/api/user/${session?.user?.email}/skills`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-        const response = await fetch(`/api/user/${session?.user?.email}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            skills: updatedSkills,
-          }),
-        });
+          if (!response.ok) {
+            throw new Error("Failed to delete skill");
+          }
 
-        if (!response.ok) {
-          throw new Error("Failed to update skills");
+          const updatedSkills = skillsList.filter(
+            (skill) => skill !== removedSkill.value
+          );
+          setSkillsList(updatedSkills);
+          setSelectedSkills(
+            updatedSkills.map((skill) => ({
+              value: skill,
+              label: skill,
+            }))
+          );
+
+          mutate(`/api/user/${session?.user?.email}`);
+          toast.success("Skill Removed");
         }
-
-        setSkillsList(updatedSkills);
-        mutate(`/api/user/${session?.user?.email}`);
-        toast.success("Skill Deleted");
       } catch (error) {
-        console.error("Error deleting skill:", error);
-        toast.error("Failed to delete skill");
+        console.error("Error removing skill:", error);
+        toast.error("Failed to remove skill");
       }
     }
+
     if (selected && selected.length > selectedSkills.length) {
       const skillsToAdd = selected
         .filter((skill: SkillOption) => !skillsList.includes(skill.value))
@@ -134,15 +142,18 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
 
       if (skillsToAdd.length) {
         try {
-          const response = await fetch(`/api/user/${session?.user?.email}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              skills: skillsToAdd,
-            }),
-          });
+          const response = await fetch(
+            `/api/user/${session?.user?.email}/skills`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                skills: skillsToAdd,
+              }),
+            }
+          );
 
           if (!response.ok) {
             throw new Error("Failed to add skills");
