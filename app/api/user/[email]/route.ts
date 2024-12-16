@@ -109,16 +109,13 @@ export async function DELETE(
   try {
     // Fetching current user
     const currentUser = await getCurrentUser();
-    // If no current user, return an error response
     if (!currentUser) {
       return NextResponse.error();
     }
 
-    // Extracting email and skill name from request parameters
     const userEmail = params.email;
     const skillName = params.skill;
 
-    // Updating user's skills in the database by removing the specified skill
     const updatedUser = await prisma.user.update({
       where: { email: userEmail },
       data: {
@@ -128,10 +125,8 @@ export async function DELETE(
       },
     });
 
-    // Returning the updated user as a JSON response
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    // Handling errors and returning a 500 response
     console.error("Error deleting skill from user:", error);
     return NextResponse.json(
       { message: "Error deleting skill from user" },

@@ -10,7 +10,6 @@ import { skillKeywords } from "@/app/lib/skillKeywords";
 
 interface UserSkillsCardProps {
   userSkills?: string[];
-  skillKeywords: string[];
 }
 
 interface SkillOption {
