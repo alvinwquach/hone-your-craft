@@ -1,101 +1,176 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { mutate } from "swr";
-import axios from "axios";
-import { FiX } from "react-icons/fi";
 import { GiStoneCrafting } from "react-icons/gi";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
+import Select from "react-select";
+import { skillKeywords } from "@/app/lib/skillKeywords";
 
 interface UserSkillsCardProps {
   userSkills?: string[];
+  skillKeywords: string[];
 }
+
+interface SkillOption {
+  value: string;
+  label: string;
+}
+
+const customSelectStyles = {
+  control: (styles: any) => ({
+    ...styles,
+    backgroundColor: "#2d2d2d",
+    borderColor: "#444",
+    color: "#fff",
+    borderRadius: "0.375rem",
+    padding: "0.5rem",
+    "&:hover": {
+      borderColor: "#666",
+    },
+  }),
+  menu: (styles: any) => ({
+    ...styles,
+    backgroundColor: "#2c2c2c",
+    color: "#eee",
+  }),
+  option: (styles: any) => ({
+    ...styles,
+    backgroundColor: "#2c2c2c",
+    color: "#eee",
+    ":hover": {
+      backgroundColor: "#444",
+      color: "#fff",
+    },
+  }),
+  multiValue: (styles: any) => ({
+    ...styles,
+    backgroundColor: "#444",
+    color: "#fff",
+  }),
+  multiValueLabel: (styles: any) => ({
+    ...styles,
+    color: "#fff",
+  }),
+  multiValueRemove: (styles: any) => ({
+    ...styles,
+    color: "#fff",
+    ":hover": {
+      backgroundColor: "#f00",
+      color: "#fff",
+    },
+  }),
+  placeholder: (styles: any) => ({
+    ...styles,
+    color: "#bbb",
+  }),
+  input: (styles: any) => ({
+    ...styles,
+    color: "#fff",
+  }),
+};
 
 function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
   const { data: session } = useSession();
-  const [displayedSkills, setDisplayedSkills] = useState(10);
-  const [newSkill, setNewSkill] = useState("");
   const [skillsList, setSkillsList] = useState<string[]>(userSkills);
+  const [selectedSkills, setSelectedSkills] = useState<SkillOption[]>([]);
+
+  const uniqueSkillKeywords = [...new Set(skillKeywords)];
+
+  const alphabeticalSkillKeywords = uniqueSkillKeywords.sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase())
+  );
 
   useEffect(() => {
     setSkillsList(userSkills);
+    setSelectedSkills(
+      userSkills.map((skill) => ({
+        value: skill,
+        label: skill,
+      }))
+    );
   }, [userSkills]);
 
-  const handleShowMore = () => {
-    setDisplayedSkills(displayedSkills + 5);
-  };
+  const handleRequiredSkillChange = async (selected: any) => {
+    setSelectedSkills(selected);
 
-  const handleShowLess = () => {
-    setDisplayedSkills(Math.max(displayedSkills - 5, 10));
-  };
-
-  const handleKeyPress = async (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
-      const trimmedSkill = newSkill.trim();
-      if (trimmedSkill === "") return;
-
-      // Split the input value by commas to handle multiple skills
-      const newSkills = trimmedSkill.split(",").map((skill) => skill.trim());
-
-      try {
-        // Make separate POST requests for each skill added
-        await Promise.all(
-          newSkills.map(async (skill) => {
-            await axios.post(`/api/user/${session?.user?.email}`, {
-              skill,
-            });
-          })
-        );
-
-        setSkillsList((prevSkillsList) => [...newSkills, ...prevSkillsList]);
-        mutate(`/api/user/${session?.user?.email}`);
-
-        const toastMessage =
-          newSkills.length > 1 ? "Skills Added" : "Skill Added";
-        toast.success(toastMessage);
-      } catch (error) {
-        console.error("Error Adding Skill:", error);
-        toast.error("Failed To Add Skill");
-      }
-
-      setNewSkill("");
-    }
-  };
-
-  const handleRemoveSkill = useCallback(
-    async (skillToRemove: string) => {
-      const confirmed = window.confirm(
-        "Are you sure you want to delete this skill?"
+    if (selected === null || selected.length < selectedSkills.length) {
+      const removedSkills = selectedSkills.filter(
+        (skill: SkillOption) =>
+          !selected.some((s: SkillOption) => s.value === skill.value)
       );
-      if (!confirmed) return;
 
       try {
-        // Filter out the skill to remove from the userSkills array
-        const updatedSkills = userSkills?.filter(
-          (skill: string) => skill !== skillToRemove
+        const updatedSkills = skillsList.filter(
+          (skill) => !removedSkills.some((removed) => removed.value === skill)
         );
 
-        await axios.put(`/api/user/${session?.user?.email}`, {
-          skills: updatedSkills,
+        const response = await fetch(`/api/user/${session?.user?.email}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            skills: updatedSkills,
+          }),
         });
+
+        if (!response.ok) {
+          throw new Error("Failed to update skills");
+        }
 
         setSkillsList(updatedSkills);
         mutate(`/api/user/${session?.user?.email}`);
         toast.success("Skill Deleted");
       } catch (error) {
-        console.error("Error updating user skills:", error);
-        toast.error("Failed To Delete Skill");
+        console.error("Error deleting skill:", error);
+        toast.error("Failed to delete skill");
       }
-    },
-    [userSkills, session, setSkillsList]
-  );
+    }
+    if (selected && selected.length > selectedSkills.length) {
+      const skillsToAdd = selected
+        .filter((skill: SkillOption) => !skillsList.includes(skill.value))
+        .map((skill: SkillOption) => skill.value);
 
-  const showMoreSkills = skillsList.length > displayedSkills;
-  const showLessSkills = displayedSkills > 10;
+      if (skillsToAdd.length) {
+        try {
+          const response = await fetch(`/api/user/${session?.user?.email}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              skills: skillsToAdd,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to add skills");
+          }
+
+          const updatedSkillsList = [...skillsList, ...skillsToAdd];
+          setSkillsList(updatedSkillsList);
+
+          setSelectedSkills(
+            updatedSkillsList.map((skill) => ({
+              value: skill,
+              label: skill,
+            }))
+          );
+
+          mutate(`/api/user/${session?.user?.email}`);
+          toast.success("Skill Added");
+        } catch (error) {
+          console.error("Error adding skill:", error);
+          toast.error("Failed to add skills");
+        }
+      }
+    }
+  };
 
   return (
-    <div className="w-full border rounded-lg shadow bg-gray-800 border-gray-700">
+    <div className="w-full border rounded-lg shadow bg-zinc-900 border-gray-700">
       <div className="p-4">
         <div className="mt-4">
           <div className="relative mb-4">
@@ -105,55 +180,21 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
             <label htmlFor="skills" className="text-gray-400 sr-only">
               Skills:
             </label>
-            <input
-              type="text"
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-              className="w-full p-4 pl-10 text-xs md:text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Add a skill or skills (TypeScript, Python)"
-              onKeyPress={handleKeyPress}
+            <Select
+              isMulti
+              options={alphabeticalSkillKeywords.map((skill) => ({
+                label: skill,
+                value: skill,
+              }))}
+              onChange={handleRequiredSkillChange}
+              value={selectedSkills}
+              styles={customSelectStyles}
+              placeholder="Select skills"
+              isClearable
+              maxMenuHeight={225}
             />
           </div>
         </div>
-        <div className="flex flex-wrap items-center">
-          {skillsList
-            .slice(0, displayedSkills)
-            .reverse()
-            .map((skill: string) => (
-              <div
-                key={skill}
-                className="bg-gray-600 text-white rounded-lg px-3 py-1 flex items-center m-1"
-              >
-                <span className="mr-2">{skill}</span>
-                <button
-                  className="text-gray-300 hover:text-gray-100 focus:outline-none"
-                  onClick={() => handleRemoveSkill(skill)}
-                >
-                  <FiX />
-                </button>
-              </div>
-            ))}
-        </div>
-        {(showMoreSkills || showLessSkills) && (
-          <div className="mt-4 flex justify-center">
-            {showMoreSkills && (
-              <button
-                className="text-gray-400 mt-2 text-sm hover:text-gray-200 focus:outline-none relative"
-                onClick={handleShowMore}
-              >
-                Show more
-              </button>
-            )}
-            {showLessSkills && (
-              <button
-                className="text-gray-400 mt-2 ml-2 text-sm hover:text-gray-200 focus:outline-none relative"
-                onClick={handleShowLess}
-              >
-                Show less
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
