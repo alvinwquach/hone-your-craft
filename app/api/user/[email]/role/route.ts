@@ -2,7 +2,7 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { email: string } }
 ) {
@@ -13,30 +13,21 @@ export async function GET(
     }
 
     const userEmail = params.email;
+    const { role, yearsOfExperience } = await request.json();
 
-    const user = await prisma.user.findUnique({
+    const updatedUser = await prisma.user.update({
       where: { email: userEmail },
-      select: {
-        name: true,
-        image: true,
-        role: true,
-        yearsOfExperience: true,
-        openToRoles: true,
-        skills: true,
-        userRole: true,
-        createdAt: true,
+      data: {
+        role: role,
+        yearsOfExperience: yearsOfExperience,
       },
     });
 
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: updatedUser });
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { message: "Error fetching user" },
+      { message: "Error updating user" },
       { status: 500 }
     );
   }

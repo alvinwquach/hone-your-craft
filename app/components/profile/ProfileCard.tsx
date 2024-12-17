@@ -1,229 +1,208 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { useState, Suspense, useEffect } from "react";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { FiUser } from "react-icons/fi";
 import { useSession } from "next-auth/react";
-import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
-import { HiDotsHorizontal } from "react-icons/hi";
 import { toast } from "react-toastify";
+import { mutate } from "swr";
+import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
+import { YearsOfExperience } from "@prisma/client";
 
-const schema = yup.object().shape({
-  role: yup.string(),
-  skills: yup.array().of(yup.string()),
+const schema = z.object({
+  role: z.string().min(1, "Role is required"),
+  yearsOfExperience: z.string().min(1, "Years of experience is required"),
 });
 
 interface ProfileCardProps {
   userData: any;
 }
 
+const experienceLabels = {
+  LESS_THAN_1_YEAR: "< 1 Year",
+  ONE_YEAR: "1 Year",
+  TWO_YEARS: "2 Years",
+  THREE_YEARS: "3 Years",
+  FOUR_YEARS: "4 Years",
+  FIVE_YEARS: "5 Years",
+  SIX_YEARS: "6 Years",
+  SEVEN_YEARS: "7 Years",
+  EIGHT_YEARS: "8 Years",
+  NINE_YEARS: "9 Years",
+  TEN_YEARS: "10 Years",
+  TEN_PLUS_YEARS: "10+ Years",
+};
+
 function ProfileCard({ userData }: ProfileCardProps) {
   const { data: session } = useSession();
-  const [editing, setEditing] = useState(false);
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const optionsMenuRef = useRef<HTMLDivElement>(null);
-
-  const toggleOptionsMenu = () => {
-    setShowOptionsMenu(!showOptionsMenu);
-  };
 
   const {
     handleSubmit,
     register,
     formState: { errors },
+    watch,
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: zodResolver(schema),
+    defaultValues: {
+      role: userData?.user?.role || "",
+      yearsOfExperience: userData?.user?.yearsOfExperience || "",
+    },
   });
 
-  const handleEditRole = () => {
-    setShowOptionsMenu(false);
-    setEditing(true);
-  };
+  const selectedRole = watch("role");
+  const selectedExperience = watch("yearsOfExperience");
 
-  const onSubmit = async (data: any) => {
-    if (isSubmitting) {
-      return;
+  useEffect(() => {
+    if (selectedExperience) {
+      updateProfile();
     }
+  }, [selectedExperience]);
+
+  const updateProfile = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/user/${session?.user?.email}`, {
+      const response = await fetch(`/api/user/${session?.user?.email}/role`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          role: data.role,
+          role: selectedRole,
+          yearsOfExperience: selectedExperience,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update user");
+        throw new Error("Failed to update role and experience");
       }
 
-      setEditing(false);
-      toast.success("User Updated");
+      mutate(
+        `/api/user/${session?.user?.email}/role`,
+        {
+          ...userData,
+          user: {
+            ...userData.user,
+            role: selectedRole,
+            yearsOfExperience: selectedExperience,
+          },
+        },
+        false
+      );
+
+      if (selectedRole !== userData?.user?.role) {
+        toast.success("Role Updated");
+      }
+
+      if (selectedExperience !== userData?.user?.yearsOfExperience) {
+        toast.success("Experience Updated");
+      }
     } catch (error) {
-      toast.error("Failed To Update User");
+      toast.error("Failed to update role and experience");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    const handleClickOutsideMenu = (e: MouseEvent) => {
-      if (
-        optionsMenuRef.current &&
-        !optionsMenuRef.current.contains(e.target as Node)
-      ) {
-        setShowOptionsMenu(false);
-      }
-    };
-
-    const handleClickOutsideInput = (e: MouseEvent) => {
-      const inputField = document.getElementById("roleInput");
-      if (
-        inputField &&
-        !inputField.contains(e.target as Node) &&
-        !optionsMenuRef.current?.contains(e.target as Node)
-      ) {
-        setEditing(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutsideMenu);
-    document.addEventListener("mousedown", handleClickOutsideInput);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutsideMenu);
-      document.removeEventListener("mousedown", handleClickOutsideInput);
-    };
-  }, []);
+  const onSubmit = () => {
+    updateProfile();
+  };
 
   return (
-    <div className="w-full max-w-lg border rounded-lg shadow bg-zinc-900 border-gray-700 mx-auto">
-      <div
-        className="flex justify-end px-4 pt-4 relative w-full"
-        ref={optionsMenuRef}
-      >
-        <button
-          id="dropdownButton"
-          onClick={toggleOptionsMenu}
-          className="inline-block text-gray-400 hover:bg-zinc-700 focus:ring-4 focus:outline-none focus:ring-zinc-700 rounded-lg text-xs md:text-sm p-1.5"
-          type="button"
-        >
-          <span className="sr-only">Open dropdown</span>
-          <HiDotsHorizontal className="w-5 h-5" />
-        </button>
-        {showOptionsMenu && (
-          <div
-            id="dropdown"
-            className="text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow absolute right-0 mt-10"
-            ref={optionsMenuRef}
-          >
-            <div className="bg-white shadow rounded-lg mr-4">
-              <button
-                onClick={handleEditRole}
-                className="block w-full text-xs text-left px-4 py-2 text-black hover:bg-zinc-100 rounded-lg"
-              >
-                Edit Role
-              </button>
-            </div>
-          </div>
-        )}
+    <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 border border-gray-700 rounded-lg bg-zinc-900 mt-4 sm:mt-0">
+      <div className="flex-1 sm:max-w-md lg:max-w-xs">
+        <h2 className="text-base font-semibold text-white mb-2">About</h2>
+        <p className="text-gray-400 text-sm">Tell us about yourself.</p>
       </div>
-
-      <div className="p-4">
-        <div className="flex flex-col items-center pb-10">
+      <div className="w-full max-w-lg lg:w-96 rounded-lg shadow bg-zinc-900 border-gray-700 mx-auto">
+        <div className="mb-6">
+          <h5 className="text-base font-semibold text-white">Your Name</h5>
+          <div className="relative mt-2 w-full">
+            <input
+              type="text"
+              className="block w-full lg:w-[400px] xl:w-[675px] p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+              readOnly
+              value={userData?.user?.name || ""}
+            />
+          </div>
+        </div>
+        <div className="flex justify-start mb-6">
           <Suspense fallback={<p>Loading user...</p>}>
             <Image
-              className="w-24 h-24 mb-3 rounded-full shadow-lg"
+              className="rounded-full shadow-lg"
               src={userData?.user?.image || defaultPfp}
-              alt={
-                `${userData?.user?.name}'s profile picture` ||
-                "A default profile picture"
-              }
-              height={96}
-              width={96}
+              alt={`${userData?.user?.name}'s profile picture`}
+              height={70}
+              width={70}
               priority
             />
           </Suspense>
-          <h5 className="mb-1 text-xl font-medium text-white">
-            {userData?.user?.name}
-          </h5>
-          <div className="max-w-7xl">
-            {userData?.user?.role ? (
-              editing ? (
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <div className="relative mt-4">
-                    <label htmlFor="role" className="text-gray-400 sr-only">
-                      Role:
-                    </label>
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <FiUser className="h-4 w-4 text-gray-500" />
-                    </div>
-                    <input
-                      id="roleInput"
-                      type="text"
-                      defaultValue={userData?.user?.role || ""}
-                      {...register("role")}
-                      className="block w-full max-w-lg p-4 pl-10 text-xs md:text-sm  border  rounded-lg bg-zinc-700 focus:ring-blue-500 focus:border-blue-500  border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      placeholder="Update role"
-                    />
-                    {errors.role && (
-                      <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
-                        {errors.role.message}
-                      </span>
-                    )}
-                  </div>
-                </form>
-              ) : (
-                <div className="relative mt-4">
-                  <label htmlFor="role" className="text-gray-400 sr-only">
-                    Role:
-                  </label>
-
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FiUser className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <input
-                    type="text"
-                    className="block w-full max-w-lg p-4 pl-10 text-xs md:text-sm  border  rounded-lg bg-zinc-700 focus:ring-blue-500 focus:border-blue-500  border-gray-600 placeholder-gray-400 text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    readOnly
-                    value={userData?.user?.role || ""}
-                  />
-                </div>
-              )
-            ) : (
-              <form onSubmit={handleSubmit(onSubmit)} className="mx-auto">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FiUser className="h-4 w-4 text-gray-500" />
-                  </div>
-                  <label htmlFor="role" className="text-gray-400 sr-only">
-                    Role:
-                  </label>
-                  <input
-                    type="text"
-                    {...register("role")}
-                    className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Add a role"
-                    disabled={isSubmitting}
-                  />
-                  {errors.role && (
-                    <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
-                      {errors.role.message}
-                    </span>
-                  )}
-                </div>
-              </form>
-            )}
-          </div>
         </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full mt-4">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Role input */}
+            <div className="relative w-full lg:w-[500px]">
+              <label
+                htmlFor="role"
+                className="text-base font-semibold text-white mb-2 block"
+              >
+                Provide your primary role
+              </label>
+              <div className="relative w-full">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <FiUser className="h-5 w-5 text-white" />
+                </div>
+                <input
+                  type="text"
+                  id="role"
+                  {...register("role")}
+                  className="block w-full lg:w-[475px] p-4 pl-10 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
+                  placeholder="Enter your role"
+                  defaultValue={userData?.user?.role || ""}
+                />
+                {errors.role?.message && (
+                  <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
+                    {String(errors.role?.message)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="relative w-full lg:w-[200px] ml-auto">
+              <label
+                htmlFor="yearsOfExperience"
+                className="text-base font-semibold text-white mb-2 block"
+              >
+                Years of experience*
+              </label>
+              <select
+                id="yearsOfExperience"
+                {...register("yearsOfExperience")}
+                className="block w-full lg:w-[175px] p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400 max-h-[200px] overflow-y-auto"
+                defaultValue={userData?.user?.yearsOfExperience || ""}
+              >
+                {Object.values(YearsOfExperience).map((experience) => (
+                  <option
+                    key={experience}
+                    value={experience}
+                    className="overflow-y-auto"
+                  >
+                    {experienceLabels[experience]}
+                  </option>
+                ))}
+              </select>
+              {errors.yearsOfExperience?.message && (
+                <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
+                  {String(errors.yearsOfExperience?.message)}{" "}
+                </span>
+              )}
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );
