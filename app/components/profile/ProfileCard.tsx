@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, Suspense, useEffect } from "react";
+import { useState, Suspense, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +9,8 @@ import { toast } from "react-toastify";
 import { mutate } from "swr";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 import { YearsOfExperience } from "@prisma/client";
+import { Combobox } from "@headlessui/react";
+import { jobRoles } from "@/app/lib/jobRoles";
 
 const schema = z.object({
   role: z.string().min(1, "Role is required"),
@@ -39,6 +39,10 @@ const experienceLabels = {
 function ProfileCard({ userData }: ProfileCardProps) {
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(
+    userData?.user?.openToRoles || []
+  );
+  const [query, setQuery] = useState("");
 
   const {
     handleSubmit,
@@ -61,6 +65,59 @@ function ProfileCard({ userData }: ProfileCardProps) {
       updateProfile();
     }
   }, [selectedExperience]);
+
+  const handleOpenToRoleAdd = async (role: string) => {
+    if (selectedRoles.includes(role)) return;
+
+    try {
+      const response = await fetch(`/api/user/${session?.user?.email}/role`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ openToRoles: [role] }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add role");
+      }
+
+      setSelectedRoles((prev) => [...prev, role]);
+
+      mutate(`/api/user/${session?.user?.email}/role`);
+      toast.success("Open to Role Added");
+
+      setQuery("");
+    } catch (error) {
+      console.error("Error adding role:", error);
+      toast.error("Failed to add role");
+    }
+  };
+
+  const handleOpenToRoleRemove = async (role: string) => {
+    try {
+      const response = await fetch(`/api/user/${session?.user?.email}/role`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ openToRoles: [role] }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove role");
+      }
+
+      const updatedRolesList = selectedRoles.filter((r) => r !== role);
+      setSelectedRoles(updatedRolesList);
+
+      mutate(`/api/user/${session?.user?.email}/role`);
+      toast.success("Open to Role Removed");
+    } catch (error) {
+      console.error("Error removing role:", error);
+      toast.error("Failed to remove role");
+    }
+  };
 
   const updateProfile = async () => {
     if (isSubmitting) return;
@@ -113,19 +170,33 @@ function ProfileCard({ userData }: ProfileCardProps) {
     updateProfile();
   };
 
+  const filteredRoles = useMemo(() => {
+    return query === ""
+      ? jobRoles
+          .flatMap((category) => category.roles)
+          .filter((role) => !selectedRoles.includes(role))
+      : jobRoles
+          .flatMap((category) => category.roles)
+          .filter(
+            (role) =>
+              role.toLowerCase().includes(query.toLowerCase()) &&
+              !selectedRoles.includes(role)
+          );
+  }, [query, selectedRoles]);
+
   return (
     <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
-      <div className="flex-1 sm:max-w-md lg:max-w-xs">
+      <div className="w-4/12">
         <h2 className="text-base font-semibold text-white mb-2">About</h2>
         <p className="text-gray-400 text-sm">Tell us about yourself.</p>
       </div>
-      <div className="w-full max-w-lg lg:w-96 rounded-lg shadow  mx-auto">
+      <div className="w-full lg:w-8/12 rounded-lg shadow mx-auto">
         <div className="mb-6">
-          <h5 className="text-base font-semibold text-white">Your Name</h5>
+          <h5 className="text-base font-semibold text-white">Your name</h5>
           <div className="relative mt-2 w-full">
             <input
               type="text"
-              className="block w-full lg:w-[400px] xl:w-[675px] p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+              className="block w-full p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
               readOnly
               value={userData?.user?.name || ""}
             />
@@ -145,7 +216,8 @@ function ProfileCard({ userData }: ProfileCardProps) {
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="w-full mt-4">
           <div className="flex flex-col lg:flex-row gap-6">
-            <div className="relative w-full lg:w-[500px]">
+            {/* Role Input */}
+            <div className="relative w-full lg:w-3/4">
               <label
                 htmlFor="role"
                 className="text-base font-semibold text-white mb-2 block"
@@ -160,7 +232,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
                   type="text"
                   id="role"
                   {...register("role")}
-                  className="block w-full lg:w-[475px] p-4 pl-10 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
+                  className="block w-full  p-4 pl-10 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
                   placeholder="Enter your role"
                   defaultValue={userData?.user?.role || ""}
                 />
@@ -171,7 +243,9 @@ function ProfileCard({ userData }: ProfileCardProps) {
                 )}
               </div>
             </div>
-            <div className="relative w-full lg:w-[200px] ml-auto">
+
+            {/* Years of Experience Input */}
+            <div className="relative w-full lg:w-1/4 ml-auto">
               <label
                 htmlFor="yearsOfExperience"
                 className="text-base font-semibold text-white mb-2 block"
@@ -181,7 +255,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
               <select
                 id="yearsOfExperience"
                 {...register("yearsOfExperience")}
-                className="block w-full lg:w-[175px] p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400 max-h-[200px] overflow-y-auto"
+                className="block w-full  p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400 max-h-[200px] overflow-y-auto"
                 defaultValue={userData?.user?.yearsOfExperience || ""}
               >
                 {Object.values(YearsOfExperience).map((experience) => (
@@ -196,11 +270,58 @@ function ProfileCard({ userData }: ProfileCardProps) {
               </select>
               {errors.yearsOfExperience?.message && (
                 <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
-                  {String(errors.yearsOfExperience?.message)}{" "}
+                  {String(errors.yearsOfExperience?.message)}
                 </span>
               )}
             </div>
           </div>
+
+          {/* Open to Roles */}
+          <label
+            htmlFor="openToRoles"
+            className="text-base font-semibold text-white my-2 block"
+          >
+            Open to the following roles
+          </label>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {selectedRoles.map((role) => (
+              <div
+                key={role}
+                className="bg-zinc-700 text-white px-3 py-1 text-sm inline-flex items-center gap-2"
+              >
+                {role}
+                <button
+                  onClick={() => handleOpenToRoleRemove(role)}
+                  className="ml-2 text-red-500 hover:text-red-300"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+          <Combobox as="div" value={query} onChange={setQuery}>
+            <Combobox.Input
+              onChange={(e) => setQuery(e.target.value)}
+              className="block w-full  p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
+              placeholder="Select role"
+              value={query}
+            />
+            {filteredRoles.length > 0 && (
+              <Combobox.Options className="mt-2 bg-zinc-800 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
+                {filteredRoles.map((role) => (
+                  <Combobox.Option
+                    key={role}
+                    value={role}
+                    as="div"
+                    className="cursor-pointer px-3 py-1 hover:bg-zinc-600 rounded-lg w-full"
+                    onClick={() => handleOpenToRoleAdd(role)}
+                  >
+                    {role}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            )}
+          </Combobox>
         </form>
       </div>
     </div>

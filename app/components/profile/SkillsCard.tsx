@@ -97,8 +97,8 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
   }, [query, alphabeticalSkillKeywords, selectedSkills]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-x-32 p-6 sm:p-8 mt-4 sm:mt-0">
-      <div className="lg:w-1/3">
+    <div className="flex flex-col lg:flex-row gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
+      <div className="w-4/12">
         <h2 className="text-base font-semibold text-white mb-2">Your Skills</h2>
         <p className="text-gray-400 text-sm mb-2">
           Add skills as you hone your craft. We use your skills to determine how
@@ -106,7 +106,7 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
         </p>
       </div>
 
-      <div className="w-full max-w-[625px] mx-auto lg:w-2/3">
+      <div className="w-8/12 rounded-lg shadow mx-auto">
         <div className="mb-4">
           <div className="flex flex-wrap gap-2 mb-4">
             {selectedSkills.map((skill) => (
@@ -127,8 +127,8 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
           <Combobox as="div" value={query} onChange={setQuery}>
             <Combobox.Input
               onChange={(e) => setQuery(e.target.value)}
-              className="block w-full lg:w-[400px] xl:w-[675px] p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
-              placeholder="Search and add skills..."
+              className="block w-full p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+              placeholder="Select skill"
             />
             {filteredSkills.length > 0 && (
               <Combobox.Options className="mt-2 bg-zinc-800 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
