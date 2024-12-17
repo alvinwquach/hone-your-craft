@@ -15,7 +15,7 @@ function SuggestedSkillsCard({
 
   return (
     <div className="flex flex-col lg:flex-row justify-center gap-2 p-6 sm:p-8 mt-4 sm:mt-0">
-      <div className="w-4/12">
+      <div className="w-full lg:w-4/12">
         <h2 className="text-base font-semibold text-white mb-2">
           Suggested Skills
         </h2>
@@ -30,7 +30,7 @@ function SuggestedSkillsCard({
           </p>
         )}
       </div>
-      <div className="w-8/12 mx-auto">
+      <div className="w-full lg:w-8/12">
         <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-4 p-4">
           {missingSkills.map((missingSkill, index) => (
             <span
