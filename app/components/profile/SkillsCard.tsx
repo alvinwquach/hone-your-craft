@@ -105,8 +105,7 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
           much of a match you are for jobs that you apply to.
         </p>
       </div>
-
-      <div className="w-full lg:w-8/12 rounded-lg shadow mx-auto">
+      <div className="w-full lg:w-8/12">
         <div className="mb-4">
           <div className="flex flex-wrap gap-2 mb-4">
             {selectedSkills.map((skill) => (
