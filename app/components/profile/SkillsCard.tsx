@@ -97,11 +97,12 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
   }, [query, alphabeticalSkillKeywords, selectedSkills]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-x-40 p-6 sm:p-8 mt-4 sm:mt-0">
+    <div className="flex flex-col lg:flex-row gap-x-32 p-6 sm:p-8 mt-4 sm:mt-0">
       <div className="lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">Your Skills</h2>
-        <p className="text-gray-400 text-sm mb-4">
-          Add skills as you hone your craft.
+        <p className="text-gray-400 text-sm mb-2">
+          Add skills as you hone your craft. We use your skills to determine how
+          much of a match you are for jobs that you apply to.
         </p>
       </div>
 
