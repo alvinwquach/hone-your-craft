@@ -30,8 +30,8 @@ function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
   if (jobOffers.length == 0) {
     return (
       <div className="relative overflow-x-auto">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-400">
-          <thead className="text-xs uppercase bg-gray-900 text-gray-400">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-200">
+          <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
             <tr>
               <th scope="col" className="px-6 py-3">
                 Offer Date
@@ -54,7 +54,7 @@ function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b bg-gray-800 border-gray-700">
+            <tr className="border-b bg-zinc-700 border-gray-700">
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
@@ -70,8 +70,8 @@ function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
 
   return (
     <div className="relative overflow-x-auto">
-      <table className="w-full text-sm text-left rtl:text-right text-gray-400">
-        <thead className="text-xs uppercase bg-gray-900 text-gray-400">
+      <table className="w-full text-sm text-left rtl:text-right text-gray-200">
+        <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
           <tr>
             <th scope="col" className="px-6 py-3">
               Offer Date
