@@ -123,21 +123,19 @@ function Profile() {
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userRole === "CANDIDATE" ? (
         <>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="">
             {/* Profile Card */}
             {loadingUserData ? (
-              <div className="mt-4">
-                <Suspense fallback={<ProfileCard userData={[]} />}>
-                  <ProfileCard userData={[]} />
-                </Suspense>
-              </div>
+              <Suspense fallback={<ProfileCard userData={[]} />}>
+                <ProfileCard userData={[]} />
+              </Suspense>
             ) : (
               <Suspense fallback={<ProfileCard userData={[]} />}>
                 <ProfileCard userData={userData} />
               </Suspense>
             )}
             {/* Suggested Skills */}
-            {loadingUserSkills ? (
+            {/* {loadingUserSkills ? (
               <div className="mt-4">
                 <Suspense
                   fallback={
@@ -158,9 +156,9 @@ function Profile() {
                   suggestedSkills={suggestedSkills}
                 />
               </Suspense>
-            )}
+            )} */}
             {/* User Skills */}
-            {loadingUserSkills ? (
+            {/* {loadingUserSkills ? (
               <div className="mt-4">
                 <Suspense fallback={<SkillsCard userSkills={[]} />}>
                   <SkillsCard userSkills={[]} />
@@ -170,7 +168,7 @@ function Profile() {
               <Suspense fallback={<SkillsCard userSkills={[]} />}>
                 <SkillsCard userSkills={userSkills} />
               </Suspense>
-            )}
+            )} */}
           </div>
           <>
             <ResumeUpload />
