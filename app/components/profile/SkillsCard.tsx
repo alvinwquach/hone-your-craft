@@ -1,79 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { mutate } from "swr";
-import { GiStoneCrafting } from "react-icons/gi";
 import { useSession } from "next-auth/react";
+import { useState, useEffect, useMemo } from "react";
+import { mutate } from "swr";
 import { toast } from "react-toastify";
-import Select from "react-select";
 import { skillKeywords } from "@/app/lib/skillKeywords";
+import { Combobox } from "@headlessui/react";
 
-interface UserSkillsCardProps {
+interface SkillsCardProps {
   userSkills?: string[];
 }
 
-interface SkillOption {
-  value: string;
-  label: string;
-}
-
-const customSelectStyles = {
-  control: (styles: any) => ({
-    ...styles,
-    backgroundColor: "#2d2d2d",
-    borderColor: "#444",
-    color: "#fff",
-    borderRadius: "0.375rem",
-    padding: "0.5rem",
-    "&:hover": {
-      borderColor: "#666",
-    },
-  }),
-  menu: (styles: any) => ({
-    ...styles,
-    backgroundColor: "#2c2c2c",
-    color: "#eee",
-  }),
-  option: (styles: any) => ({
-    ...styles,
-    backgroundColor: "#2c2c2c",
-    color: "#eee",
-    ":hover": {
-      backgroundColor: "#444",
-      color: "#fff",
-    },
-  }),
-  multiValue: (styles: any) => ({
-    ...styles,
-    backgroundColor: "#444",
-    color: "#fff",
-  }),
-  multiValueLabel: (styles: any) => ({
-    ...styles,
-    color: "#fff",
-  }),
-  multiValueRemove: (styles: any) => ({
-    ...styles,
-    color: "#fff",
-    ":hover": {
-      backgroundColor: "#f00",
-      color: "#fff",
-    },
-  }),
-  placeholder: (styles: any) => ({
-    ...styles,
-    color: "#bbb",
-  }),
-  input: (styles: any) => ({
-    ...styles,
-    color: "#fff",
-  }),
-};
-
-function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
+function SkillsCard({ userSkills = [] }: SkillsCardProps) {
   const { data: session } = useSession();
   const [skillsList, setSkillsList] = useState<string[]>(userSkills);
-  const [selectedSkills, setSelectedSkills] = useState<SkillOption[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
 
   const uniqueSkillKeywords = [...new Set(skillKeywords)];
 
@@ -83,126 +25,124 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
 
   useEffect(() => {
     setSkillsList(userSkills);
-    setSelectedSkills(
-      userSkills.map((skill) => ({
-        value: skill,
-        label: skill,
-      }))
-    );
+    setSelectedSkills(userSkills);
   }, [userSkills]);
 
-  const handleRequiredSkillChange = async (selected: any) => {
-    setSelectedSkills(selected);
-    if (selected === null || selected.length < selectedSkills.length) {
-      const removedSkills = selectedSkills.filter(
-        (skill: SkillOption) =>
-          !selected.some((s: SkillOption) => s.value === skill.value)
-      );
+  const handleSkillAdd = async (skill: string) => {
+    if (selectedSkills.includes(skill)) return;
 
-      try {
-        for (const removedSkill of removedSkills) {
-          const response = await fetch(
-            `/api/user/${session?.user?.email}/skills`,
-            {
-              method: "DELETE",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+    try {
+      const response = await fetch(`/api/user/${session?.user?.email}/skills`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ skills: [skill] }),
+      });
 
-          if (!response.ok) {
-            throw new Error("Failed to delete skill");
-          }
-
-          const updatedSkills = skillsList.filter(
-            (skill) => skill !== removedSkill.value
-          );
-          setSkillsList(updatedSkills);
-          setSelectedSkills(
-            updatedSkills.map((skill) => ({
-              value: skill,
-              label: skill,
-            }))
-          );
-
-          mutate(`/api/user/${session?.user?.email}`);
-          toast.success("Skill Removed");
-        }
-      } catch (error) {
-        console.error("Error removing skill:", error);
-        toast.error("Failed to remove skill");
+      if (!response.ok) {
+        throw new Error("Failed to add skill");
       }
-    }
 
-    if (selected && selected.length > selectedSkills.length) {
-      const skillsToAdd = selected
-        .filter((skill: SkillOption) => !skillsList.includes(skill.value))
-        .map((skill: SkillOption) => skill.value);
+      const updatedSkillsList = [...skillsList, skill];
+      setSkillsList(updatedSkillsList);
+      setSelectedSkills(updatedSkillsList);
 
-      if (skillsToAdd.length) {
-        try {
-          const response = await fetch(
-            `/api/user/${session?.user?.email}/skills`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                skills: skillsToAdd,
-              }),
-            }
-          );
+      mutate(`/api/user/${session?.user?.email}`);
+      toast.success("Skill Added");
 
-          if (!response.ok) {
-            throw new Error("Failed to add skills");
-          }
-
-          const updatedSkillsList = [...skillsList, ...skillsToAdd];
-          setSkillsList(updatedSkillsList);
-
-          setSelectedSkills(
-            updatedSkillsList.map((skill) => ({
-              value: skill,
-              label: skill,
-            }))
-          );
-
-          mutate(`/api/user/${session?.user?.email}`);
-          toast.success("Skill Added");
-        } catch (error) {
-          console.error("Error adding skill:", error);
-          toast.error("Failed to add skills");
-        }
-      }
+      setQuery("");
+    } catch (error) {
+      console.error("Error adding skill:", error);
+      toast.error("Failed to add skill");
     }
   };
 
+  const handleSkillRemove = async (skill: string) => {
+    try {
+      const response = await fetch(`/api/user/${session?.user?.email}/skills`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ skills: [skill] }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove skill");
+      }
+
+      const updatedSkillsList = skillsList.filter((s) => s !== skill);
+      setSkillsList(updatedSkillsList);
+      setSelectedSkills(updatedSkillsList);
+
+      mutate(`/api/user/${session?.user?.email}/skills`);
+      toast.success("Skill Removed");
+    } catch (error) {
+      console.error("Error removing skill:", error);
+      toast.error("Failed to remove skill");
+    }
+  };
+
+  const filteredSkills = useMemo(() => {
+    return query === ""
+      ? alphabeticalSkillKeywords.filter(
+          (skill) => !selectedSkills.includes(skill)
+        )
+      : alphabeticalSkillKeywords.filter(
+          (skill) =>
+            skill.toLowerCase().includes(query.toLowerCase()) &&
+            !selectedSkills.includes(skill)
+        );
+  }, [query, alphabeticalSkillKeywords, selectedSkills]);
+
   return (
-    <div className="w-full border rounded-lg shadow bg-zinc-900 border-gray-700">
-      <div className="p-4">
-        <div className="mt-4">
-          <div className="relative mb-4">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <GiStoneCrafting className="h-4 w-4 text-gray-100" />
-            </div>
-            <label htmlFor="skills" className="text-gray-400 sr-only">
-              Skills:
-            </label>
-            <Select
-              isMulti
-              options={alphabeticalSkillKeywords.map((skill) => ({
-                label: skill,
-                value: skill,
-              }))}
-              onChange={handleRequiredSkillChange}
-              value={selectedSkills}
-              styles={customSelectStyles}
-              placeholder="Select skills"
-              isClearable
-              maxMenuHeight={225}
-            />
+    <div className="flex flex-col lg:flex-row gap-x-96 p-6 sm:p-8 mt-4 sm:mt-0">
+      <div className="">
+        <h2 className="text-base font-semibold text-white mb-2">Your Skills</h2>
+        <p className="text-gray-400 text-sm mb-4">
+          Add skills as you hone your craft.
+        </p>
+      </div>
+      <div className="w-full max-w-[625px] mx-auto">
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-2">
+            {selectedSkills.map((skill) => (
+              <div
+                key={skill}
+                className="bg-zinc-700 text-white px-3 py-1 text-sm inline-flex items-center gap-2 rounded-lg"
+              >
+                {skill}
+                <button
+                  onClick={() => handleSkillRemove(skill)}
+                  className="ml-2 text-red-500 hover:text-red-300"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+            <Combobox as="div" value={query} onChange={setQuery}>
+              <Combobox.Input
+                onChange={(e) => setQuery(e.target.value)}
+                className="block w-full lg:w-[400px] xl:w-[675px] p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+                placeholder="Search and add skills..."
+              />
+              {filteredSkills.length > 0 && (
+                <Combobox.Options className="mt-2 bg-zinc-800 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
+                  {filteredSkills.map((skill) => (
+                    <Combobox.Option
+                      key={skill}
+                      value={skill}
+                      as="div"
+                      className="cursor-pointer px-3 py-1 hover:bg-zinc-600 rounded-lg w-full"
+                      onClick={() => handleSkillAdd(skill)}
+                    >
+                      {skill}
+                    </Combobox.Option>
+                  ))}
+                </Combobox.Options>
+              )}
+            </Combobox>
           </div>
         </div>
       </div>
@@ -210,4 +150,4 @@ function UserSkillsCard({ userSkills = [] }: UserSkillsCardProps) {
   );
 }
 
-export default UserSkillsCard;
+export default SkillsCard;

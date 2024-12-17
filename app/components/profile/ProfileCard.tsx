@@ -114,12 +114,12 @@ function ProfileCard({ userData }: ProfileCardProps) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 border border-gray-700 rounded-lg bg-zinc-900 mt-4 sm:mt-0">
+    <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
       <div className="flex-1 sm:max-w-md lg:max-w-xs">
         <h2 className="text-base font-semibold text-white mb-2">About</h2>
         <p className="text-gray-400 text-sm">Tell us about yourself.</p>
       </div>
-      <div className="w-full max-w-lg lg:w-96 rounded-lg shadow bg-zinc-900 border-gray-700 mx-auto">
+      <div className="w-full max-w-lg lg:w-96 rounded-lg shadow  mx-auto">
         <div className="mb-6">
           <h5 className="text-base font-semibold text-white">Your Name</h5>
           <div className="relative mt-2 w-full">
@@ -145,7 +145,6 @@ function ProfileCard({ userData }: ProfileCardProps) {
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="w-full mt-4">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Role input */}
             <div className="relative w-full lg:w-[500px]">
               <label
                 htmlFor="role"

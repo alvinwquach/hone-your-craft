@@ -66,7 +66,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { email: string; skill: string } }
+  { params }: { params: { email: string } }
 ) {
   try {
     const currentUser = await getCurrentUser();
@@ -74,15 +74,17 @@ export async function DELETE(
       return NextResponse.error();
     }
 
-    const userEmail = params.email;
-    const skillName = params.skill;
+    const { email } = params;
+    const { skills } = await request.json();
+
+    const updatedSkills = currentUser.skills.filter(
+      (skill: string) => !skills.includes(skill)
+    );
 
     const updatedUser = await prisma.user.update({
-      where: { email: userEmail },
+      where: { email: email },
       data: {
-        skills: {
-          set: currentUser.skills.filter((s: string) => s !== skillName),
-        },
+        skills: updatedSkills,
       },
     });
 
@@ -95,3 +97,4 @@ export async function DELETE(
     );
   }
 }
+
