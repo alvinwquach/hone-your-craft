@@ -14,29 +14,33 @@ function SuggestedSkillsCard({
     .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
   return (
-    <div className="bg-zinc-900 p-6 rounded-lg shadow-lg w-full max-w-lg mx-auto border border-gray-700">
-      <h2 className="text-xl font-bold text-gray-100 mb-4">Suggested Skills</h2>
-      {missingSkills.length === 0 && (
-        <p className="text-gray-300 mb-4">
-          Welcome! As you begin to apply to roles, we&apos;ll suggest skills to
-          add to your profile.
-        </p>
-      )}
-      {missingSkills.length > 0 && (
-        <p className="text-gray-300 mb-4">
-          Based on the roles you&apos;ve applied to, here are some skills we
-          suggest adding to your profile:
-        </p>
-      )}
-      <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-4">
-        {missingSkills.map((missingSkill, index) => (
-          <span
-            key={index}
-            className="bg-zinc-700 text-white rounded-lg px-3 py-1 text-base"
-          >
-            {missingSkill}
-          </span>
-        ))}
+    <div className="flex flex-col lg:flex-row justify-center gap-x-56 p-6 sm:p-8 mt-4 sm:mt-0">
+      <div>
+        <h2 className="text-base font-semibold text-white mb-2">
+          Suggested Skills
+        </h2>
+        {missingSkills.length === 0 && (
+          <p className="text-gray-400 text-sm">
+            As you begin to apply to roles, we&apos;ll suggest skills to add.
+          </p>
+        )}
+        {missingSkills.length > 0 && (
+          <p className="text-gray-400 text-sm">
+            Based on the roles you&apos;ve applied to, here are some key skills:
+          </p>
+        )}
+      </div>
+      <div className="w-full lg:w-[400px] xl:w-[700px] mx-auto">
+        <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-4 p-4">
+          {missingSkills.map((missingSkill, index) => (
+            <span
+              key={index}
+              className="bg-zinc-700 text-white px-3 py-1 text-sm"
+            >
+              {missingSkill}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -242,13 +242,57 @@ function Profile() {
                 </li>
               </ul>
             </div>
-            <div className="mt-6">
+            <div className="mt-6 border bg-zinc-900 border-gray-700 rounded-lg">
               {activeTab === "profile" && (
                 <Suspense fallback={<ProfileCard userData={[]} />}>
                   {!loadingUserData ? (
                     <ProfileCard userData={userData} />
                   ) : (
                     <div>Loading Profile...</div>
+                  )}
+                  <div className="my-4 border-t border-gray-600" />
+                  {loadingUserSkills ? (
+                    <div className="mt-4">
+                      <Suspense fallback={<SkillsCard userSkills={[]} />}>
+                        <SkillsCard userSkills={[]} />
+                      </Suspense>
+                    </div>
+                  ) : (
+                    <Suspense fallback={<SkillsCard userSkills={[]} />}>
+                      <SkillsCard userSkills={userSkills} />
+                    </Suspense>
+                  )}
+                  <div className="my-4 border-t border-gray-600" />
+                  {loadingUserSkills ? (
+                    <div className="mt-4">
+                      <Suspense
+                        fallback={
+                          <SuggestedSkillsCard
+                            userSkills={[]}
+                            suggestedSkills={[]}
+                          />
+                        }
+                      >
+                        <SuggestedSkillsCard
+                          userSkills={[]}
+                          suggestedSkills={[]}
+                        />
+                      </Suspense>
+                    </div>
+                  ) : (
+                    <Suspense
+                      fallback={
+                        <SuggestedSkillsCard
+                          userSkills={[]}
+                          suggestedSkills={[]}
+                        />
+                      }
+                    >
+                      <SuggestedSkillsCard
+                        userSkills={userSkills}
+                        suggestedSkills={suggestedSkills}
+                      />
+                    </Suspense>
                   )}
                 </Suspense>
               )}
