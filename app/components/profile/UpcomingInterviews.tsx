@@ -20,7 +20,6 @@ interface UpcomingInterviewsProps {
 }
 
 function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
-  // Filter interviews within the next week
   const upcomingInterviews = jobInterviews.filter((interview) => {
     const interviewDate = new Date(interview.interviewDate);
     const today = new Date();
@@ -28,7 +27,6 @@ function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
     return interviewDate >= today && interviewDate <= oneWeekFromNow;
   });
 
-  // Sort the interviews in ascending order based on interview date
   upcomingInterviews.sort((a, b) => {
     return (
       new Date(a.interviewDate).getTime() - new Date(b.interviewDate).getTime()
@@ -38,8 +36,8 @@ function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
   if (upcomingInterviews.length === 0) {
     return (
       <div className="relative overflow-x-auto">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-400">
-          <thead className="text-xs uppercase bg-gray-900 text-gray-400">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-200">
+          <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
             <tr>
               <th scope="col" className="px-6 py-3">
                 Interview Date
@@ -56,7 +54,7 @@ function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b bg-gray-800 border-gray-700">
+            <tr className="border-b bg-zinc-700 border-gray-700">
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
               <td className="px-6 py-4">N/A</td>
@@ -70,8 +68,8 @@ function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
 
   return (
     <div className="relative overflow-x-auto">
-      <table className="w-full text-sm text-left rtl:text-right text-gray-400">
-        <thead className="text-xs  uppercase  bg-gray-900 text-gray-400">
+      <table className="w-full text-sm text-left rtl:text-right text-gray-200">
+        <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
           <tr>
             <th scope="col" className="px-6 py-3">
               Interview Date
@@ -91,10 +89,9 @@ function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
           {upcomingInterviews.map((interview) => (
             <tr
               key={interview.id}
-              className=" border-b bg-gray-800 border-gray-700"
+              className="border-b bg-zinc-700 border-gray-700"
             >
               <td className="px-6 py-4">
-                {/* Format the date with last two digits of year */}
                 <span className="md:hidden">
                   {format(new Date(interview.interviewDate), "MM/dd/yy h:mm a")}
                 </span>
