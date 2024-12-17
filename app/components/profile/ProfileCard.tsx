@@ -43,6 +43,8 @@ function ProfileCard({ userData }: ProfileCardProps) {
     userData?.user?.openToRoles || []
   );
   const [query, setQuery] = useState("");
+  const [bio, setBio] = useState(userData?.user?.bio || "");
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const {
     handleSubmit,
@@ -166,9 +168,40 @@ function ProfileCard({ userData }: ProfileCardProps) {
     }
   };
 
-  const onSubmit = () => {
-    updateProfile();
+  const cancelEditBio = () => {
+    setBio(userData?.user?.bio || "");
+    setIsEditingBio(false);
   };
+
+  const handleBioChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setBio(event.target.value);
+    setIsEditingBio(true);
+  };
+
+  const saveBio = async () => {
+    if (!bio || bio === userData?.user?.bio) return;
+
+    try {
+      const response = await fetch(`/api/user/${session?.user?.email}/bio`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ bio }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update bio");
+      }
+
+      mutate(`/api/user/${session?.user?.email}/bio`, { bio }, false);
+      toast.success("Bio updated successfully");
+      setIsEditingBio(false);
+    } catch (error) {
+      toast.error("Failed to update bio");
+    }
+  };
+
 
   const filteredRoles = useMemo(() => {
     return query === ""
@@ -183,6 +216,10 @@ function ProfileCard({ userData }: ProfileCardProps) {
               !selectedRoles.includes(role)
           );
   }, [query, selectedRoles]);
+
+  const onSubmit = async () => {
+    updateProfile();
+  };
 
   return (
     <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
@@ -216,7 +253,6 @@ function ProfileCard({ userData }: ProfileCardProps) {
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="w-full mt-4">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Role Input */}
             <div className="relative w-full lg:w-3/4">
               <label
                 htmlFor="role"
@@ -243,8 +279,6 @@ function ProfileCard({ userData }: ProfileCardProps) {
                 )}
               </div>
             </div>
-
-            {/* Years of Experience Input */}
             <div className="relative w-full lg:w-1/4 ml-auto">
               <label
                 htmlFor="yearsOfExperience"
@@ -275,8 +309,6 @@ function ProfileCard({ userData }: ProfileCardProps) {
               )}
             </div>
           </div>
-
-          {/* Open to Roles */}
           <label
             htmlFor="openToRoles"
             className="text-base font-semibold text-white my-2 block"
@@ -322,6 +354,32 @@ function ProfileCard({ userData }: ProfileCardProps) {
               </Combobox.Options>
             )}
           </Combobox>
+          <label
+            htmlFor="bio"
+            className="text-base font-semibold text-white mt-4 mb-2 block"
+          >
+            Your bio
+          </label>
+          <textarea
+            value={bio}
+            onChange={handleBioChange}
+            className="mt-2 p-3 rounded-md bg-zinc-700 w-full text-white border border-gray-600 focus:ring-0 focus:border-gray-600"
+            placeholder="Please tell us a bit about yourself."
+            rows={6}
+          />
+          {isEditingBio && (
+            <div className="flex justify-end gap-6 mt-4">
+              <button onClick={cancelEditBio} className=" text-white">
+                Cancel
+              </button>
+              <button
+                onClick={saveBio}
+                className="bg-zinc-700 text-white px-4 py-2 rounded-lg hover:bg-zinc-600"
+              >
+                Save
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
