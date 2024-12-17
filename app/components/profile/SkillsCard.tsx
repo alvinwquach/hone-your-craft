@@ -123,8 +123,6 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
               </div>
             ))}
           </div>
-
-          {/* Combobox input below the selected skills */}
           <Combobox as="div" value={query} onChange={setQuery}>
             <Combobox.Input
               onChange={(e) => setQuery(e.target.value)}
