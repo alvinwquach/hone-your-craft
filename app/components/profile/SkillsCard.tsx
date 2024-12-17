@@ -97,20 +97,21 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
   }, [query, alphabeticalSkillKeywords, selectedSkills]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-x-96 p-6 sm:p-8 mt-4 sm:mt-0">
-      <div className="">
+    <div className="flex flex-col lg:flex-row gap-x-40 p-6 sm:p-8 mt-4 sm:mt-0">
+      <div className="lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">Your Skills</h2>
         <p className="text-gray-400 text-sm mb-4">
           Add skills as you hone your craft.
         </p>
       </div>
-      <div className="w-full max-w-[625px] mx-auto">
+
+      <div className="w-full max-w-[625px] mx-auto lg:w-2/3">
         <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-4">
             {selectedSkills.map((skill) => (
               <div
                 key={skill}
-                className="bg-zinc-700 text-white px-3 py-1 text-sm inline-flex items-center gap-2 rounded-lg"
+                className="bg-zinc-700 text-white px-3 py-1 text-sm inline-flex items-center gap-2"
               >
                 {skill}
                 <button
@@ -121,29 +122,31 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
                 </button>
               </div>
             ))}
-            <Combobox as="div" value={query} onChange={setQuery}>
-              <Combobox.Input
-                onChange={(e) => setQuery(e.target.value)}
-                className="block w-full lg:w-[400px] xl:w-[675px] p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
-                placeholder="Search and add skills..."
-              />
-              {filteredSkills.length > 0 && (
-                <Combobox.Options className="mt-2 bg-zinc-800 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
-                  {filteredSkills.map((skill) => (
-                    <Combobox.Option
-                      key={skill}
-                      value={skill}
-                      as="div"
-                      className="cursor-pointer px-3 py-1 hover:bg-zinc-600 rounded-lg w-full"
-                      onClick={() => handleSkillAdd(skill)}
-                    >
-                      {skill}
-                    </Combobox.Option>
-                  ))}
-                </Combobox.Options>
-              )}
-            </Combobox>
           </div>
+
+          {/* Combobox input below the selected skills */}
+          <Combobox as="div" value={query} onChange={setQuery}>
+            <Combobox.Input
+              onChange={(e) => setQuery(e.target.value)}
+              className="block w-full lg:w-[400px] xl:w-[675px] p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+              placeholder="Search and add skills..."
+            />
+            {filteredSkills.length > 0 && (
+              <Combobox.Options className="mt-2 bg-zinc-800 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
+                {filteredSkills.map((skill) => (
+                  <Combobox.Option
+                    key={skill}
+                    value={skill}
+                    as="div"
+                    className="cursor-pointer px-3 py-1 hover:bg-zinc-600 rounded-lg w-full"
+                    onClick={() => handleSkillAdd(skill)}
+                  >
+                    {skill}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            )}
+          </Combobox>
         </div>
       </div>
     </div>

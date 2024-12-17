@@ -195,7 +195,7 @@ const ResumeUpload = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-start gap-8 p-6 sm:p-8 border border-gray-700 rounded-lg bg-zinc-900 mt-4 sm:mt-0">
+    <div className="flex flex-col lg:flex-row justify-start gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
       <div className="">
         <h2 className="text-base font-semibold text-white mb-2">
           Upload your resume
