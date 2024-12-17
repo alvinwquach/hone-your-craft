@@ -5,6 +5,7 @@ import { FaTimes } from "react-icons/fa";
 import { BsFiletypePdf, BsFiletypeDocx, BsFiletypeTxt } from "react-icons/bs";
 import { CiFileOn } from "react-icons/ci";
 import { PiFileDoc } from "react-icons/pi";
+import { TbFileCv } from "react-icons/tb";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -57,7 +58,6 @@ const ResumeUpload = () => {
       const response = await fetch(`/api/documents/${currentDocument.id}`, {
         method: "DELETE",
       });
-
       if (!response.ok) {
         throw new Error(`Failed to delete document: ${response.statusText}`);
       }
@@ -195,30 +195,42 @@ const ResumeUpload = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full space-y-4 mt-5">
-      {currentDocument && (
-        <div className="w-full text-left">
-          <p className="text-sm font-medium text-white break-words">
-            {currentDocument.name}
-          </p>
-          <div className="flex flex-col items-start space-y-2 mt-2">
-            <div className="flex items-center space-x-2 mt-2">
-              <button
-                aria-label="Open resume preview in a new tab"
-                className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
-                onClick={() => window.open(currentDocument.url, "_blank")}
-              >
-                View your resume
-              </button>
-              <p className="text-xs text-gray-400">or upload a new one</p>
+    <div className="flex flex-col lg:flex-row justify-start gap-8 p-6 sm:p-8 border border-gray-700 rounded-lg bg-zinc-900 mt-4 sm:mt-0">
+      <div className="">
+        <h2 className="text-base font-semibold text-white mb-2">
+          Upload your resume
+        </h2>
+        <p className="text-gray-400 text-sm">
+          File types: PDF, DOCX, DOC, TXT (MAX. 10 MB)
+        </p>
+      </div>
+      <div
+        className="flex flex-col items-center justify-center w-full  space-y-4 mt-4 lg:mt-0"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        {currentDocument && (
+          <div className="w-full text-left mb-4">
+            <p className="text-sm font-medium text-white break-words">
+              {currentDocument.name}
+            </p>
+
+            <div className="flex flex-col items-start space-y-2 mt-2">
+              <div className="flex items-center space-x-2">
+                <button
+                  aria-label="Open resume preview in a new tab"
+                  className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
+                  onClick={() => window.open(currentDocument.url, "_blank")}
+                >
+                  View your resume
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      <div className="w-full" onDragOver={handleDragOver} onDrop={handleDrop}>
+        )}
         <label
           htmlFor="dropzone-file"
-          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-zinc-800 hover:bg-zinc-700 transition-colors relative"
+          className="flex flex-col items-center justify-center w-full h-36 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-zinc-800 hover:bg-zinc-700 transition-colors relative"
         >
           {file && (
             <button
@@ -230,7 +242,7 @@ const ResumeUpload = () => {
             </button>
           )}
           {file || currentDocument ? (
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <div className="flex flex-col items-center justify-center">
               {getFileIcon(file || currentDocument)}
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2">
                 <p className="text-sm text-white mr-1">
@@ -256,13 +268,10 @@ const ResumeUpload = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <CiFileOn className="w-12 h-12 mb-4 text-white" />
+              <TbFileCv className="w-12 h-12 mb-4 text-white" />
               <p className="mb-2 text-sm text-gray-300">
                 <span className="font-semibold">Click to upload</span> or drag
                 and drop
-              </p>
-              <p className="text-xs text-gray-400">
-                Accepted file types: PDF, DOCX, DOC, TXT (MAX. 10 MB)
               </p>
             </div>
           )}
@@ -270,23 +279,24 @@ const ResumeUpload = () => {
             id="dropzone-file"
             type="file"
             className="hidden"
-            accept=".pdf,.docx,.doc,.txt"
+            accept=".pdf,.doc,.docx,.txt"
             onChange={handleFileChange}
           />
         </label>
+        {(file || currentDocument) && (
+          <div className="mt-4 flex items-center justify-end w-full">
+            <button
+              className="text-gray-400 text-sm font-semibold"
+              onClick={handleRemoveFile}
+            >
+              Remove your resume
+            </button>
+          </div>
+        )}
       </div>
-      {(file || currentDocument) && (
-        <div className="mt-4 flex items-center justify-end w-full">
-          <button
-            className="text-gray-400 text-sm font-semibold"
-            onClick={handleRemoveFile}
-          >
-            Remove your resume
-          </button>
-        </div>
-      )}
     </div>
   );
 };
 
 export default ResumeUpload;
+
