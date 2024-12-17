@@ -19,6 +19,7 @@ export async function GET(
       select: {
         name: true,
         image: true,
+        bio: true,
         role: true,
         yearsOfExperience: true,
         openToRoles: true,
