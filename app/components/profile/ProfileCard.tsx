@@ -223,11 +223,11 @@ function ProfileCard({ userData }: ProfileCardProps) {
 
   return (
     <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
-      <div className="w-4/12">
+      <div className="w-full lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">About</h2>
         <p className="text-gray-400 text-sm">Tell us about yourself.</p>
       </div>
-      <div className="w-full lg:w-8/12 rounded-lg shadow mx-auto">
+      <div className="w-full lg:w-2/3 rounded-lg shadow mx-auto">
         <div className="mb-6">
           <h5 className="text-base font-semibold text-white">Your name</h5>
           <div className="relative mt-2 w-full">
