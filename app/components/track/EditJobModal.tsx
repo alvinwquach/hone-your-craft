@@ -2,33 +2,30 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import axios from "axios";
-import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+import { toast } from "react-toastify";
+import { RiCloseCircleLine, RiCalendarCheckLine } from "react-icons/ri";
+import { LuCircleDollarSign } from "react-icons/lu";
 import LogOfferModal from "./LogOfferModal";
 import LogRejectionModal from "./LogRejectionModal";
 import LogInterviewModal from "./LogInterviewModal";
-import { RiCloseCircleLine, RiCalendarCheckLine } from "react-icons/ri";
-import { LuCircleDollarSign } from "react-icons/lu";
+import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { ApplicationStatus, WorkLocation } from "@prisma/client";
 import { mutate } from "swr";
-import { toast } from "react-toastify";
 
-const schema = yup.object().shape({
-  company: yup.string().required("Company is required"),
-  title: yup.string().required("Title is required"),
-  postUrl: yup.string().required("Post URL is required"),
-  description: yup.string().required("Description is required"),
-  salary: yup.string().notRequired(),
-  industry: yup.string().notRequired(),
-  location: yup.string().notRequired(),
-  workLocation: yup.mixed().notRequired(),
-  applicationStatus: yup
-    .mixed<ApplicationStatus>()
-    .oneOf(Object.values(ApplicationStatus)),
+const schema = z.object({
+  company: z.string().min(1, "Company is required"),
+  title: z.string().min(1, "Title is required"),
+  postUrl: z.string().min(1, "Post URL is required"),
+  description: z.string().min(1, "Description is required"),
+  salary: z.string().optional(),
+  industry: z.string().optional(),
+  location: z.string().optional(),
+  workLocation: z.unknown().optional(),
+  applicationStatus: z.nativeEnum(ApplicationStatus),
 });
 
 type EditJobModalProps = {
@@ -45,7 +42,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
     formState: { errors },
     setValue,
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: zodResolver(schema),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLogOfferModalOpen, setIsLogOfferModalOpen] = useState(false);
@@ -53,7 +50,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
   const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Populate form fields with existing job data when job prop changes
   useEffect(() => {
     if (job) {
       setValue("company", job.company || "");
@@ -84,10 +80,24 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
         salary: data.salary || "",
       };
 
-      await axios.put(`/api/job/${job.id}`, jobData);
-      mutate("api/jobs");
-      closeModal();
+      const response = await fetch(`/api/job/${job.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(jobData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update job");
+      }
+
+      mutate(`/api/job/${job.id}`, { ...job, ...jobData }, false);
+
+      mutate("/api/jobs");
+
       toast.success("Job Updated");
+      closeModal();
     } catch (error) {
       console.error("Error updating job:", error);
       toast.error("Failed To Update Job");
@@ -155,7 +165,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                   <Dialog.Title className="text-lg font-medium text-center text-gray-900 ">
                     Edit Job
                   </Dialog.Title>
-
                   <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-full">
                       <div className="flex flex-row gap-2 mb-2">
@@ -169,7 +178,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                             Interview
                           </span>
                         </button>
-
                         <button
                           type="button"
                           onClick={openRejectionModal}
@@ -180,7 +188,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                             Rejection
                           </span>
                         </button>
-
                         <button
                           type="button"
                           onClick={openLogOfferModal}
