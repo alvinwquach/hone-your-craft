@@ -31,7 +31,7 @@ function SuggestedSkillsCard({
         )}
       </div>
       <div className="w-full lg:w-8/12">
-        <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-4 p-4">
+        <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto lg:pl-4">
           {missingSkills.map((missingSkill, index) => (
             <span
               key={index}
