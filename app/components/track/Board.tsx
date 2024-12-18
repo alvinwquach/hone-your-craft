@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { mutate } from "swr";
 import { toast } from "react-toastify";
 import Confetti from "react-confetti";
@@ -25,20 +24,29 @@ function Board({ userJobs, onDeleteJob }: any) {
 
   const addJobToBoard = async (newJobData: Job) => {
     try {
-      const response = await axios.post(
-        `/api/job/${newJobData.id}`,
-        newJobData
-      );
+      const response = await fetch(`/api/job/${newJobData.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newJobData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add job");
+      }
+      const data = await response.json();
+
       // Update the board state to include the new job
       setBoard((prevBoard: BoardType) => {
         // Map through the current columns in the board
         const updatedColumns = prevBoard.columns.map((column) => {
           // Check if the current column matches the new job's status
-          if (column.id === response.data.job.status) {
+          if (column.id === data.job.status) {
             return {
               ...column,
               // Add the new job to the top of the jobs array
-              jobs: [response.data.job, ...column.jobs],
+              jobs: [data.job, ...column.jobs],
             };
           }
           // Return the column unchanged if it doesn't match
@@ -57,7 +65,13 @@ function Board({ userJobs, onDeleteJob }: any) {
 
   const handleDeleteJob = async (jobId: string) => {
     try {
-      await axios.delete(`/api/job/${jobId}`);
+      const response = await fetch(`/api/job/${jobId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete job");
+      }
       // Update the board state to remove the deleted job
       setBoard((prevBoard: BoardType) => {
         // Map through the current columns in the board
@@ -169,14 +183,26 @@ function Board({ userJobs, onDeleteJob }: any) {
           jobs: finishJobs,
         };
         try {
-          await axios.put(`/api/job/${jobMoved.id}`, {
-            status: finishCol.id,
-            company: jobMoved.company,
-            title: jobMoved.title,
-            postUrl: jobMoved.postUrl,
-            description: jobMoved.description,
+          const response = await fetch(`/api/job/${jobMoved.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: finishCol.id,
+              company: jobMoved.company,
+              title: jobMoved.title,
+              postUrl: jobMoved.postUrl,
+              description: jobMoved.description,
+            }),
           });
+
+          if (!response.ok) {
+            throw new Error("Failed to update job status");
+          }
+
           mutate("/api/jobs");
+
           switch (finishCol.id) {
             case "OFFER":
               setShowConfetti(true);
@@ -195,7 +221,6 @@ function Board({ userJobs, onDeleteJob }: any) {
         } catch (error) {
           console.error("Error updating job:", error);
         }
-
         setBoard({
           ...board,
           columns: newColumns,
@@ -224,7 +249,6 @@ function Board({ userJobs, onDeleteJob }: any) {
   return (
     <DragDropContext onDragEnd={handleOnDragEnd}>
       {showConfetti && <Confetti />}
-
       <Droppable droppableId="board" type="column" direction="horizontal">
         {(provided) => (
           <div

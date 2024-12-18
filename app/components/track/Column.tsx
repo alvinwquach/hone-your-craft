@@ -14,7 +14,6 @@ type ColumnProps = {
   onJobAdded: (job: Job) => void;
 };
 
-// A mapping of column IDs to their corresponding display text
 export const iDToColumnText: {
   [key in ApplicationStatus]: string;
 } = {
@@ -26,7 +25,6 @@ export const iDToColumnText: {
 };
 
 function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
-  // Get the search string from the board store
   const [titleSearchString, companySearchString] = useBoardStore((state) => [
     state.titleSearchString,
     state.companySearchString,
@@ -52,16 +50,14 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 className={`p-2 rounded-2xl shadow-md ${
-                  snapshot.isDraggingOver ? "bg-gray-900" : "bg-black"
+                  snapshot.isDraggingOver ? "bg-zinc-900" : "bg-black"
                 }`}
               >
-                {/* Column Header */}
                 <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 bg-black rounded-t-2xl">
                   {iDToColumnText[id]}
-                  {/* Display the count of jobs in the column */}
                   <span className="bg-gray-500 text-white text-sm font-normal rounded-full px-2 py-1">
                     {!titleSearchString && !companySearchString
-                      ? jobs.length // Display total job count if no search strings
+                      ? jobs.length
                       : jobs.filter(
                           (job) =>
                             job.title
@@ -71,14 +67,11 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                               .toLowerCase()
                               .includes(companySearchString.toLowerCase())
                         ).length}
-                    {/* Display filtered job count if there's any search string */}
                   </span>
                 </h2>
-
-                {/* Add Job Button */}
                 <div className="flex justify-center">
                   <button
-                    className="py-2 px-4 my-2 bg-neutral-800 hover:bg-neutral-700 w-full text-center rounded-lg text-white"
+                    className="py-2 px-4 my-2 bg-zinc-800 hover:bg-zinc-700 w-full text-center rounded-lg text-white"
                     onClick={openAddJobModal}
                   >
                     <HiPlusCircle className="h-10 w-10 inline-block" />
@@ -92,8 +85,6 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                     />
                   )}
                 </div>
-
-                {/* Job Cards List */}
                 <div className="overflow-y-auto overflow-x-hidden max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {jobs.map((job, index) => {
                     if (
@@ -104,9 +95,8 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                           .toLowerCase()
                           .includes(companySearchString))
                     ) {
-                      return null; // Skip jobs that don't match the search criteria
+                      return null;
                     }
-
                     return (
                       <Draggable
                         key={job.id}
