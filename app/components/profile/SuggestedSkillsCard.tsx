@@ -26,12 +26,13 @@ function SuggestedSkillsCard({
         )}
         {missingSkills.length > 0 && (
           <p className="text-gray-400 text-sm">
-            Based on the roles you&apos;ve applied to, here are some key skills:
+            To further hone your craft, here are some skills you might consider
+            adding to your growing skillset:
           </p>
         )}
       </div>
       <div className="w-full lg:w-8/12">
-        <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-4 p-4">
+        <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto lg:pl-4">
           {missingSkills.map((missingSkill, index) => (
             <span
               key={index}
