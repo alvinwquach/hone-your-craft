@@ -26,7 +26,8 @@ function SuggestedSkillsCard({
         )}
         {missingSkills.length > 0 && (
           <p className="text-gray-400 text-sm">
-            Based on the roles you&apos;ve applied to, here are some key skills:
+            To further hone your craft, here are some skills you might consider
+            adding to your growing skillset:
           </p>
         )}
       </div>
