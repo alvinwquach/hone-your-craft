@@ -79,7 +79,7 @@ function JobCard({
   return (
     <div>
       <div
-        className="relative bg-neutral-800 hover:bg-neutral-700 rounded-lg shadow-md mb-2 "
+        className="relative bg-zinc-800 hover:bg-zinc-700 rounded-lg shadow-md mb-2 "
         {...draggableProps}
         {...draghandleProps}
         ref={innerRef}

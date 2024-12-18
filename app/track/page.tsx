@@ -5,7 +5,6 @@ import { useBoardStore } from "@/store/BoardStore";
 import Board from "../components/track/Board";
 import useSWR, { mutate } from "swr";
 import { Suspense } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import JobTitleSearchForm from "../components/track/JobTitleSearchForm";
 import CompanyTitleSearchForm from "../components/track/CompanyTitleSearchForm";
@@ -13,6 +12,9 @@ import { FaTools } from "react-icons/fa";
 
 const fetcher = async (url: string, ...args: any[]) => {
   const response = await fetch(url, ...args);
+  if (!response.ok) {
+    throw new Error("Failed to fetch data");
+  }
   return response.json();
 };
 
@@ -56,7 +58,14 @@ function Track() {
     if (!confirmed) return;
 
     try {
-      await axios.delete(`/api/job/${job.id}`);
+      const response = await fetch(`/api/job/${job.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete job");
+      }
+
       mutate("/api/jobs");
       toast.success("Job Deleted");
     } catch (error) {
