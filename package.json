@@ -22,7 +22,7 @@
     "@hello-pangea/dnd": "^16.5.0",
     "@hookform/resolvers": "^3.3.4",
     "@next/third-parties": "^14.1.4",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^6.1.0",
     "@react-spring/parallax": "^9.7.3",
     "@react-spring/web": "^9.7.3",
     "@stitches/react": "^1.2.8",
@@ -67,7 +67,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "postcss": "^8",
-    "prisma": "^5.22.0",
+    "prisma": "^6.1.0",
     "tailwindcss": "^3.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
