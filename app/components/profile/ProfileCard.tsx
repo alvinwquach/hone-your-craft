@@ -45,6 +45,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
     userData?.user?.openToRoles || []
   );
   const [query, setQuery] = useState("");
+  const [headline, setHeadline] = useState(userData?.user?.headline || "");
   const [bio, setBio] = useState(userData?.user?.bio || "");
   const [isEditingBio, setIsEditingBio] = useState(false);
 
@@ -204,6 +205,39 @@ function ProfileCard({ userData }: ProfileCardProps) {
     }
   };
 
+  const handleHeadlineChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setHeadline(event.target.value);
+  };
+
+  const handleHeadlineKeyDown = async (event: React.KeyboardEvent) => {
+    if (event.key === "Enter" && headline !== userData?.user?.headline) {
+      try {
+        const response = await fetch(
+          `/api/user/${session?.user?.email}/headline`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ headline }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update headline");
+        }
+
+        mutate(
+          `/api/user/${session?.user?.email}/headline`,
+          { headline },
+          false
+        );
+        toast.success("Headline updated successfully");
+      } catch (error) {
+        toast.error("Failed to update headline");
+      }
+    }
+  };
 
   const filteredRoles = useMemo(() => {
     return query === ""
@@ -231,7 +265,9 @@ function ProfileCard({ userData }: ProfileCardProps) {
       </div>
       <div className="w-full lg:w-2/3 rounded-lg shadow mx-auto">
         <div className="mb-6">
-          <h5 className="text-base font-semibold text-white">Your name</h5>
+          <label htmlFor="name" className="text-base font-semibold text-white">
+            Your name
+          </label>
           <div className="relative mt-2 w-full">
             <input
               type="text"
@@ -252,6 +288,21 @@ function ProfileCard({ userData }: ProfileCardProps) {
               priority
             />
           </Suspense>
+        </div>
+        <div className="relative w-full">
+          <label
+            htmlFor="headline"
+            className="text-base font-semibold text-white"
+          >
+            Headline
+          </label>
+          <input
+            type="text"
+            className="mt-2 block w-full p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+            value={headline}
+            onChange={handleHeadlineChange}
+            onKeyDown={handleHeadlineKeyDown}
+          />
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="w-full mt-4">
           <div className="flex flex-col lg:flex-row gap-6">

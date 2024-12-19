@@ -807,6 +807,7 @@ model User {
   emailVerified               DateTime?
   image                       String?
   company                     String?
+  headline                    String?
   bio                         String?
   website                     String?
   socialLinks                 SocialLinks?        @relation("UserSocialLinks")
