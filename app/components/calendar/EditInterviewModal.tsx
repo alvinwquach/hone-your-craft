@@ -9,9 +9,12 @@ import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
 
 const schema = z.object({
-  interviewDate: z.date().refine((date) => !isNaN(date.getTime()), {
-    message: "Interview date is required",
-  }),
+  interviewDate: z
+    .string()
+    .refine((dateStr) => !isNaN(new Date(dateStr).getTime()), {
+      message: "Interview date is required",
+    })
+    .transform((dateStr) => new Date(dateStr)), // Convert the string to a Date object
   interviewType: z
     .enum([
       InterviewType.ADDITIONAL_DOCS_REQUIRED,
