@@ -93,7 +93,7 @@ function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
         </thead>
         <tbody>
           {jobOffers.map((offer) => (
-            <tr className="border-b bg-gray-800 border-gray-700" key={offer.id}>
+            <tr className="border-b bg-zinc-700 border-gray-700" key={offer.id}>
               <td className="px-6 py-4">
                 <span className="hidden md:inline">
                   {format(offer.offerDate, "MM/dd/yy @ h:mm a")}
@@ -116,7 +116,7 @@ function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
               <td className="px-6 py-4">
                 <button
                   onClick={() => onDeleteOffer(offer.id)}
-                  className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                  className="font-medium text-white hover:underline"
                 >
                   Delete
                 </button>
