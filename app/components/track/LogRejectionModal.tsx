@@ -2,23 +2,28 @@
 
 import React from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Dialog, Transition } from "@headlessui/react";
 import { RejectionInitiator } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
 
-const schema = yup.object().shape({
-  rejection: yup.object().shape({
-    date: yup.date().required("Rejection date is required"),
-    initiatedBy: yup
-      .mixed<RejectionInitiator>()
-      .oneOf(Object.values(RejectionInitiator))
-      .required("Initiator is required"),
-    notes: yup.string(),
+const schema = z.object({
+  rejection: z.object({
+    date: z.date().refine((date) => !isNaN(date.getTime()), {
+      message: "Rejection date is required",
+    }),
+    initiatedBy: z
+      .enum([RejectionInitiator.APPLICANT, RejectionInitiator.COMPANY])
+      .refine((value) => Object.values(RejectionInitiator).includes(value), {
+        message: "Initiator is required",
+      }),
+    notes: z.string().optional(),
   }),
 });
+
+type FormData = z.infer<typeof schema>;
 
 type LogRejectionModalProps = {
   isOpen: boolean;
@@ -35,9 +40,8 @@ function LogRejectionModal({
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-  } = useForm({
-    resolver: yupResolver(schema),
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
 
   const onSubmit = async (data: any) => {

@@ -28,6 +28,8 @@ const schema = z.object({
   applicationStatus: z.nativeEnum(ApplicationStatus),
 });
 
+type FormData = z.infer<typeof schema>;
+
 type EditJobModalProps = {
   isOpen: boolean;
   closeModal: () => void;
@@ -41,7 +43,7 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
     handleSubmit,
     formState: { errors },
     setValue,
-  } = useForm({
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -17,6 +17,8 @@ const schema = z.object({
   yearsOfExperience: z.string().min(1, "Years of experience is required"),
 });
 
+type FormData = z.infer<typeof schema>;
+
 interface ProfileCardProps {
   userData: any;
 }
@@ -51,7 +53,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
     register,
     formState: { errors },
     watch,
-  } = useForm({
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       role: userData?.user?.role || "",

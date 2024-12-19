@@ -1,8 +1,8 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ChangeEvent, Fragment, useEffect, useRef, useState } from "react";
 import { Dialog, Transition, Switch } from "@headlessui/react";
 import { toast } from "react-toastify";
@@ -18,13 +18,15 @@ interface RequiredJobData {
   description: string;
 }
 
-const schema = yup.object().shape({
-  referral: yup.boolean(),
-  company: yup.string().required("Company is required"),
-  postUrl: yup.string().required("Post URL is required"),
-  title: yup.string().required("Title is required"),
-  description: yup.string().required("Description is required"),
+const schema = z.object({
+  referral: z.boolean().optional(),
+  company: z.string().min(1, "Company is required"),
+  postUrl: z.string().min(1, "Post URL is required"),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
 });
+
+type FormData = z.infer<typeof schema>;
 
 interface AddJobModalProps {
   isOpen: boolean;
@@ -71,8 +73,8 @@ function AddJobModal({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
 
   const onSubmit = async (data: any) => {
