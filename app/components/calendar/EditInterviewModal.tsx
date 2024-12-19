@@ -1,11 +1,10 @@
-"use client";
-
+import { Fragment, useEffect, useRef } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Dialog, Transition } from "@headlessui/react";
-import { InterviewType } from "@prisma/client";
-import React, { useState } from "react";
+import { mutate } from "swr";
+import { Interview, InterviewType } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
 
@@ -16,138 +15,136 @@ const schema = z.object({
       message: "Interview date is required",
     })
     .transform((dateStr) => new Date(dateStr)),
-  interviews: z.array(
-    z.object({
-      type: z
-        .enum([
-          InterviewType.ADDITIONAL_DOCS_REQUIRED,
-          InterviewType.ASSESSMENT,
-          InterviewType.CANDIDATE_WITHDREW,
-          InterviewType.CONTRACT_SIGNED,
-          InterviewType.FINAL_DECISION,
-          InterviewType.FINAL_OFFER,
-          InterviewType.FINAL_ROUND,
-          InterviewType.FOLLOW_UP,
-          InterviewType.GROUP_INTERVIEW,
-          InterviewType.HIRING_FREEZE,
-          InterviewType.INTERVIEW,
-          InterviewType.NEGOTIATION_PHASE,
-          InterviewType.NO_SHOW,
-          InterviewType.OFFER_ACCEPTED,
-          InterviewType.OFFER_EXTENDED,
-          InterviewType.OFFER_REJECTED,
-          InterviewType.OFFER_WITHDRAWN,
-          InterviewType.ON_SITE,
-          InterviewType.PANEL,
-          InterviewType.PHONE_SCREEN,
-          InterviewType.PRE_SCREENING,
-          InterviewType.REFERENCE_CHECK,
-          InterviewType.REJECTION,
-          InterviewType.SALARY_NEGOTIATION,
-          InterviewType.TAKE_HOME_ASSESSMENT,
-          InterviewType.TECHNICAL,
-          InterviewType.TRIAL_PERIOD,
-          InterviewType.VIDEO_INTERVIEW,
-        ])
-        .refine((val) => Object.values(InterviewType).includes(val), {
-          message: "Interview type is required",
-        }),
-    })
-  ),
+  interviewType: z
+    .enum([
+      InterviewType.ADDITIONAL_DOCS_REQUIRED,
+      InterviewType.ASSESSMENT,
+      InterviewType.CANDIDATE_WITHDREW,
+      InterviewType.CONTRACT_SIGNED,
+      InterviewType.FINAL_DECISION,
+      InterviewType.FINAL_OFFER,
+      InterviewType.FINAL_ROUND,
+      InterviewType.FOLLOW_UP,
+      InterviewType.GROUP_INTERVIEW,
+      InterviewType.HIRING_FREEZE,
+      InterviewType.INTERVIEW,
+      InterviewType.NEGOTIATION_PHASE,
+      InterviewType.NO_SHOW,
+      InterviewType.OFFER_ACCEPTED,
+      InterviewType.OFFER_EXTENDED,
+      InterviewType.OFFER_REJECTED,
+      InterviewType.OFFER_WITHDRAWN,
+      InterviewType.ON_SITE,
+      InterviewType.PANEL,
+      InterviewType.PHONE_SCREEN,
+      InterviewType.PRE_SCREENING,
+      InterviewType.REFERENCE_CHECK,
+      InterviewType.REJECTION,
+      InterviewType.SALARY_NEGOTIATION,
+      InterviewType.TAKE_HOME_ASSESSMENT,
+      InterviewType.TECHNICAL,
+      InterviewType.TRIAL_PERIOD,
+      InterviewType.VIDEO_INTERVIEW,
+    ])
+    .refine((value) => Object.values(InterviewType).includes(value), {
+      message: "Interview type is required",
+    }),
 });
+
+type EditInterviewModalProps = {
+  isOpen: boolean;
+  closeModal: () => void;
+  interview: Interview;
+};
 
 type FormData = z.infer<typeof schema>;
 
-type LogInterviewModalProps = {
-  isOpen: boolean;
-  closeModal: () => void;
-  job: Job;
-};
-
-function LogInterviewModal({
+function EditInterviewModal({
   isOpen,
   closeModal,
-  job,
-}: LogInterviewModalProps) {
+  interview,
+}: EditInterviewModalProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        closeModal();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isOpen, closeModal]);
+
+  useEffect(() => {
+    if (interview) {
+      const date = interview.interviewDate;
+      if (date !== null) {
+        setValue("interviewDate", date);
+      }
+
+      setValue("interviewType", interview.interviewType || "");
+    }
+  }, [interview, setValue]);
 
   const onSubmit = async (data: any) => {
     try {
-      setIsSubmitting(true);
-      if (data.interviews && data.interviews.length > 0) {
-        const interviewDate = new Date(data.interviewDate);
-        const isoDate = interviewDate.toISOString();
+      const updatedInterview = {
+        interviewDate: new Date(data.interviewDate).toISOString(),
+        interviewType: data.interviewType,
+      };
 
-        const interviewData = {
-          userId: job.userId,
-          jobId: job.id,
-          interviewDate: isoDate,
-          interviewType: data.interviews[0].type,
-          acceptedDate: new Date().toISOString(),
-        };
+      const response = await fetch(`/api/interview/${interview.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedInterview),
+      });
 
-        if (data.interviews[0].id) {
-          const response = await fetch(
-            `/api/interview/${data.interviews[0].id}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(interviewData),
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error("Failed to update interview.");
-          }
-        } else {
-          const response = await fetch(`/api/interview/${data.id}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(interviewData),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to create interview.");
-          }
-        }
+      if (!response.ok) {
+        throw new Error("Failed to update interview");
       }
+
+      mutate("/api/interviews");
+
       closeModal();
-      toast.success("Interview Added To Calendar");
+      toast.success("Interview Updated");
     } catch (error) {
-      console.error("Error updating and creating interview:", error);
-      toast.error("Failed To Add Interview");
-    } finally {
-      setIsSubmitting(false);
+      console.error("Error updating interview:", error);
+      toast.error("Failed To Update Interview");
     }
   };
 
   return (
-    <Transition appear show={isOpen}>
+    <Transition appear show={isOpen} as={Fragment}>
       <Dialog
         as="form"
         className="fixed inset-0 z-50 overflow-y-auto"
-        onClose={() => {
-          if (!isSubmitting) {
-            closeModal();
-          }
-        }}
+        onClose={closeModal}
         onSubmit={handleSubmit(onSubmit)}
         static
       >
         <div className="flex items-center justify-center">
           <Transition.Child
-            as="div"
+            as={Fragment}
             enter="transition-opacity ease-out duration-300"
             enterFrom="opacity-0"
             enterTo="opacity-100"
@@ -159,7 +156,7 @@ function LogInterviewModal({
           </Transition.Child>
 
           <Transition.Child
-            as={React.Fragment}
+            as={Fragment}
             enter="transition ease-out duration-300 transform"
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
@@ -168,30 +165,32 @@ function LogInterviewModal({
             leaveTo="opacity-0 scale-95"
           >
             <div className="fixed inset-0 flex items-center justify-center">
-              <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div
+                className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+                ref={modalRef}
+              >
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
-                  Log Interview
+                  Edit Interview
                 </Dialog.Title>
                 <div className="grid grid-cols-1 gap-2">
                   <label
                     htmlFor="interviewDate"
                     className="block mb-2 text-sm font-medium text-gray-900"
                   >
-                    Interview Date
+                    Interview Date and Time
                   </label>
                   <input
                     type="datetime-local"
                     id="interviewDate"
                     {...register("interviewDate")}
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
-                    required
                   />
                   {errors.interviewDate && (
                     <p className="text-red-500 text-sm">
                       Please provide a date.
                     </p>
                   )}
-                  <div className="">
+                  <div>
                     <label
                       htmlFor="interviewType"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -200,20 +199,16 @@ function LogInterviewModal({
                     </label>
                     <select
                       id="interviewType"
-                      {...register("interviews.0.type")}
+                      {...register("interviewType")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
-                      defaultValue=""
                     >
-                      <option value="" disabled>
-                        Select an interview type
-                      </option>
                       {Object.values(InterviewType).map((type) => (
                         <option key={type} value={type}>
                           {convertToSentenceCase(type)}
                         </option>
                       ))}
                     </select>
-                    {errors.interviews && (
+                    {errors.interviewType && (
                       <p className="text-red-500 text-sm">
                         Please provide an interview type.
                       </p>
@@ -222,17 +217,10 @@ function LogInterviewModal({
                 </div>
                 <div className="flex justify-end mt-4">
                   <button
-                    type="button"
-                    onClick={closeModal}
-                    className="text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
-                  >
-                    Discard
-                  </button>
-                  <button
                     type="submit"
-                    className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ml-2"
+                    className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                   >
-                    Save
+                    Save Changes
                   </button>
                 </div>
               </div>
@@ -244,4 +232,4 @@ function LogInterviewModal({
   );
 }
 
-export default LogInterviewModal;
+export default EditInterviewModal;
