@@ -11,9 +11,12 @@ import { toast } from "react-toastify";
 
 const schema = z.object({
   rejection: z.object({
-    date: z.date().refine((date) => !isNaN(date.getTime()), {
-      message: "Rejection date is required",
-    }),
+    date: z
+      .string()
+      .refine((dateStr) => !isNaN(new Date(dateStr).getTime()), {
+        message: "Rejection date is required",
+      })
+      .transform((dateStr) => new Date(dateStr)),
     initiatedBy: z
       .enum([RejectionInitiator.APPLICANT, RejectionInitiator.COMPANY])
       .refine((value) => Object.values(RejectionInitiator).includes(value), {
@@ -22,6 +25,7 @@ const schema = z.object({
     notes: z.string().optional(),
   }),
 });
+
 
 type FormData = z.infer<typeof schema>;
 

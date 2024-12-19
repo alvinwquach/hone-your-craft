@@ -19,6 +19,7 @@ interface JobRejectionsProps {
   jobRejections: JobRejection[];
   onDeleteRejection: (id: string) => void;
 }
+
 function JobRejections({
   jobRejections,
   onDeleteRejection,
@@ -92,8 +93,8 @@ function JobRejections({
         <tbody>
           {jobRejections.map((rejection) => (
             <tr
-              className="border-b bg-zinc-700 border-gray-700"
               key={rejection.id}
+              className="border-b bg-zinc-700 border-gray-700 hover:bg-zinc-600"
             >
               <td className="px-6 py-4">
                 <span className="md:hidden">
@@ -112,7 +113,7 @@ function JobRejections({
               <td className="px-6 py-4">
                 <button
                   onClick={() => onDeleteRejection(rejection.id)}
-                  className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                  className="text-red-700 hover:text-red-500 hover:underline font-medium transition-colors"
                 >
                   Delete
                 </button>
