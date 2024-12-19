@@ -14,7 +14,7 @@ const schema = z.object({
     .refine((dateStr) => !isNaN(new Date(dateStr).getTime()), {
       message: "Interview date is required",
     })
-    .transform((dateStr) => new Date(dateStr)), // Convert the string to a Date object
+    .transform((dateStr) => new Date(dateStr)),
   interviewType: z
     .enum([
       InterviewType.ADDITIONAL_DOCS_REQUIRED,
