@@ -10,12 +10,27 @@ import { toast } from "react-toastify";
 import { mutate } from "swr";
 
 const schema = z.object({
-  offerDate: z.date().refine((date) => !isNaN(date.getTime()), {
-    message: "Offer date is required",
-  }),
-  offerDeadline: z.date().optional(),
+  offerDate: z
+    .string()
+    .refine((dateStr) => !isNaN(new Date(dateStr).getTime()), {
+      message: "Interview date is required",
+    })
+    .transform((dateStr) => new Date(dateStr)),
+  offerDeadline: z
+    .union([
+      z.date(),
+      z.string().refine((dateStr) => !isNaN(new Date(dateStr).getTime()), {
+        message: "Invalid deadline date",
+      }),
+    ])
+    .optional()
+    .transform((dateStr) =>
+      typeof dateStr === "string" ? new Date(dateStr) : dateStr
+    ),
+
   offerSalary: z.string().min(1, "Salary is required"),
 });
+
 
 type LogOfferModalProps = {
   isOpen: boolean;
