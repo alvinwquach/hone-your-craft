@@ -1,25 +1,57 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Dialog, Transition } from "@headlessui/react";
 import { InterviewType } from "@prisma/client";
 import React, { useState } from "react";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
 
-const schema = yup.object().shape({
-  interviewDate: yup.date(),
-  interviews: yup.array().of(
-    yup.object().shape({
-      type: yup
-        .mixed<InterviewType>()
-        .oneOf(Object.values(InterviewType))
-        .required("Interview type is required"),
+const schema = z.object({
+  interviewDate: z.date(),
+  interviews: z.array(
+    z.object({
+      type: z
+        .enum([
+          InterviewType.ADDITIONAL_DOCS_REQUIRED,
+          InterviewType.ASSESSMENT,
+          InterviewType.CANDIDATE_WITHDREW,
+          InterviewType.CONTRACT_SIGNED,
+          InterviewType.FINAL_DECISION,
+          InterviewType.FINAL_OFFER,
+          InterviewType.FINAL_ROUND,
+          InterviewType.FOLLOW_UP,
+          InterviewType.GROUP_INTERVIEW,
+          InterviewType.HIRING_FREEZE,
+          InterviewType.INTERVIEW,
+          InterviewType.NEGOTIATION_PHASE,
+          InterviewType.NO_SHOW,
+          InterviewType.OFFER_ACCEPTED,
+          InterviewType.OFFER_EXTENDED,
+          InterviewType.OFFER_REJECTED,
+          InterviewType.OFFER_WITHDRAWN,
+          InterviewType.ON_SITE,
+          InterviewType.PANEL,
+          InterviewType.PHONE_SCREEN,
+          InterviewType.PRE_SCREENING,
+          InterviewType.REFERENCE_CHECK,
+          InterviewType.REJECTION,
+          InterviewType.SALARY_NEGOTIATION,
+          InterviewType.TAKE_HOME_ASSESSMENT,
+          InterviewType.TECHNICAL,
+          InterviewType.TRIAL_PERIOD,
+          InterviewType.VIDEO_INTERVIEW,
+        ])
+        .refine((val) => Object.values(InterviewType).includes(val), {
+          message: "Interview type is required",
+        }),
     })
   ),
 });
+
+type FormData = z.infer<typeof schema>;
 
 type LogInterviewModalProps = {
   isOpen: boolean;
@@ -36,8 +68,8 @@ function LogInterviewModal({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -57,13 +89,16 @@ function LogInterviewModal({
         };
 
         if (data.interviews[0].id) {
-          const response = await fetch(`/api/interview/${data.interviews[0].id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(interviewData),
-          });
+          const response = await fetch(
+            `/api/interview/${data.interviews[0].id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(interviewData),
+            }
+          );
 
           if (!response.ok) {
             throw new Error("Failed to update interview.");
@@ -173,7 +208,7 @@ function LogInterviewModal({
                         </option>
                       ))}
                     </select>
-                    {errors.interviews && errors.interviews[0] && (
+                    {errors.interviews && (
                       <p className="text-red-500 text-sm">
                         Please provide an interview type.
                       </p>

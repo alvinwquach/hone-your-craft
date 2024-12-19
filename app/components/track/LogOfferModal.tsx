@@ -2,17 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Dialog, Transition } from "@headlessui/react";
 import Confetti from "react-confetti";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
 
-const schema = yup.object().shape({
-  offerDate: yup.date().required("Offer date is required"),
-  offerDeadline: yup.date(),
-  offerSalary: yup.string().required("Salary is required"),
+const schema = z.object({
+  offerDate: z.date().refine((date) => !isNaN(date.getTime()), {
+    message: "Offer date is required",
+  }),
+  offerDeadline: z.date().optional(),
+  offerSalary: z.string().min(1, "Salary is required"),
 });
 
 type LogOfferModalProps = {
@@ -28,7 +30,7 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
     formState: { errors },
     setValue,
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: zodResolver(schema),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
