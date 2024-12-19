@@ -3,7 +3,6 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import { InterviewType } from "@prisma/client";
 import React, { useState } from "react";
@@ -37,7 +36,6 @@ function LogInterviewModal({
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
   } = useForm({
     resolver: yupResolver(schema),
   });
@@ -59,14 +57,29 @@ function LogInterviewModal({
         };
 
         if (data.interviews[0].id) {
-          // If interview ID exists, update the interview
-          await axios.put(
-            `/api/interview/${data.interviews[0].id}`,
-            interviewData
-          );
+          const response = await fetch(`/api/interview/${data.interviews[0].id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(interviewData),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to update interview.");
+          }
         } else {
-          // If interview ID doesn't exist, create a new interview
-          await axios.post(`/api/interview/${data.id}`, interviewData);
+          const response = await fetch(`/api/interview/${data.id}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(interviewData),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to create interview.");
+          }
         }
       }
       closeModal();

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { toast } from "react-toastify";
 import Confetti from "react-confetti";
 import { FaArrowRight } from "react-icons/fa";
@@ -24,10 +23,15 @@ function Onboarding() {
       return;
     }
     try {
-      const response = await axios.put(`/api/onboarding`, {
-        userRole,
+      const response = await fetch(`/api/onboarding`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userRole }),
       });
-      if (response.status === 200) {
+
+      if (response.ok) {
         toast.success(`🎉 Role updated to "${userRole}" successfully!`);
         await update({ userRole });
         router.push("/profile");

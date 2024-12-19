@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
-import axios from "axios";
 import ProfileCard from "../components/profile/ProfileCard";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import SkillsCard from "../components/profile/SkillsCard";
@@ -32,6 +31,9 @@ interface JobPosting {
 
 const fetcher = async (url: string, options: RequestInit) => {
   const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
   return response.json();
 };
 
@@ -44,15 +46,15 @@ function Profile() {
   );
   const { data: userInterviews, isLoading: userInterviewsLoading } = useSWR(
     "/api/interviews",
-    (url) => axios.get(url).then((res) => res.data)
+    (url) => fetch(url).then((res) => res.json())
   );
   const { data: userOffers, isLoading: userOffersLoading } = useSWR(
     "/api/offers",
-    (url) => axios.get(url).then((res) => res.data)
+    (url) => fetch(url).then((res) => res.json())
   );
   const { data: userRejections, isLoading: userRejectionsLoading } = useSWR(
     "/api/rejections",
-    (url) => axios.get(url).then((res) => res.data)
+    (url) => fetch(url).then((res) => res.json())
   );
 
   const [activeTab, setActiveTab] = useState<string>("profile");
@@ -95,9 +97,15 @@ function Profile() {
     if (!confirmed) return;
 
     try {
-      await axios.delete(`/api/rejection/${id}`);
-      mutate("/api/rejections");
-      toast.success("Rejection Deleted");
+      const response = await fetch(`/api/rejection/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        mutate("/api/rejections");
+        toast.success("Rejection Deleted");
+      } else {
+        throw new Error("Failed to delete rejection");
+      }
     } catch (error) {
       console.error("Error deleting rejection:", error);
       toast.error("Failed To Delete Rejection");
@@ -112,9 +120,15 @@ function Profile() {
     if (!confirmed) return;
 
     try {
-      await axios.delete(`/api/offer/${offerId}`);
-      mutate("/api/offers");
-      toast.success("Offer Deleted");
+      const response = await fetch(`/api/offer/${offerId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        mutate("/api/offers");
+        toast.success("Offer Deleted");
+      } else {
+        throw new Error("Failed to delete offer");
+      }
     } catch (error) {
       console.error("Error deleting offer:", error);
       toast.error("Failed To Delete Offer");
