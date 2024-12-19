@@ -4,7 +4,6 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import { RejectionInitiator } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
@@ -53,13 +52,30 @@ function LogRejectionModal({
           initiatedBy: data.rejection.initiatedBy,
           notes: data.rejection.notes,
         };
-
         if (job.rejection) {
-          // If rejection already exists, update it
-          await axios.put(`/api/rejection/${job.id}`, rejectionData);
+          const response = await fetch(`/api/rejection/${job.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(rejectionData),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to update rejection.");
+          }
         } else {
-          // If rejection doesn't exist, create a new one
-          await axios.post(`/api/rejection/${job.id}`, rejectionData);
+          const response = await fetch(`/api/rejection/${job.id}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(rejectionData),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to create rejection.");
+          }
         }
       }
 
@@ -70,6 +86,7 @@ function LogRejectionModal({
       toast.error("Failed To Log Rejection");
     }
   };
+
   return (
     <Transition appear show={isOpen}>
       <Dialog
@@ -91,7 +108,6 @@ function LogRejectionModal({
           >
             <Dialog.Overlay className="fixed inset-0 bg-black opacity-25" />
           </Transition.Child>
-
           <Transition.Child
             as={React.Fragment}
             enter="transition ease-out duration-300 transform"

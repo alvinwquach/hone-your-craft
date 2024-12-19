@@ -3,7 +3,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
 import { mutate } from "swr";
 import { Interview, InterviewType } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
@@ -57,13 +56,10 @@ function EditInterviewModal({
     };
   }, [isOpen, closeModal]);
 
-  // Populate form fields with existing interview data when interview prop changes
   useEffect(() => {
     if (interview) {
       const date = interview.interviewDate;
-      // Only set the value if date isn't null
       if (date !== null) {
-        // Only set the value if it's a valid Date
         setValue("interviewDate", date);
       }
 
@@ -77,8 +73,18 @@ function EditInterviewModal({
         interviewDate: new Date(data.interviewDate).toISOString(),
         interviewType: data.interviewType,
       };
-      // Update interview data
-      await axios.put(`/api/interview/${interview.id}`, updatedInterview);
+
+      const response = await fetch(`/api/interview/${interview.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedInterview),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update interview");
+      }
 
       mutate("/api/interviews");
 

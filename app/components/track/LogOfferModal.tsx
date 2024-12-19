@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import Confetti from "react-confetti";
 import { toast } from "react-toastify";
@@ -56,12 +55,31 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
       };
 
       if (job.offer) {
-        // If offer exists, update it
-        await axios.put(`/api/offer/${job.id}`, offerData);
+        const response = await fetch(`/api/offer/${job.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(offerData),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update offer.");
+        }
       } else {
-        // If offer doesn't exist, create a new one
-        await axios.post(`/api/offer/${job.id}`, offerData);
+        const response = await fetch(`/api/offer/${job.id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(offerData),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create offer.");
+        }
       }
+
       mutate("api/jobs");
       closeModal();
       toast.success("Offer Added");
@@ -72,7 +90,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
       setIsSubmitting(false);
     }
   };
-
 
   const drawDollarBill = (ctx: CanvasRenderingContext2D) => {
     const billWidth = 80;
@@ -87,7 +104,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
   };
 
   const formatSalary = (value: string) => {
-    // Remove non-numeric characters and format with commas for thousands
     return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
@@ -137,7 +153,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                     <Confetti drawShape={drawDollarBill} numberOfPieces={10} />
                   </div>
                 )}
-
                 <div className="grid grid-cols-1 gap-2">
                   <label
                     htmlFor="offerDate"
@@ -157,7 +172,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                       Please provide a date.
                     </p>
                   )}
-
                   <div>
                     <label
                       htmlFor="offerDeadline"
@@ -203,7 +217,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                     )}
                   </div>
                 </div>
-
                 <div className="flex justify-end mt-4">
                   <button
                     type="button"
@@ -229,4 +242,3 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
 }
 
 export default LogOfferModal;
-

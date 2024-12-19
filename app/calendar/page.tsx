@@ -1,7 +1,5 @@
 "use client";
 
-
-import axios from "axios";
 import { Interview } from "@prisma/client";
 import { candidateInterviewTypes } from "@/app/lib/candidateInterviewTypes";
 import { clientInterviewTypes } from "@/app/lib/clientInterviewTypes";
@@ -15,8 +13,11 @@ import { useSession } from "next-auth/react";
 import { FaCalendarCheck, FaCalendarPlus } from "react-icons/fa";
 import AvailabilityCalendar from "../components/calendar/AvailabilityCalendar";
 
-const fetcher = async (url: string, ...args: any[]) => {
-  const response = await fetch(url, ...args);
+const fetcher = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch data");
+  }
   return response.json();
 };
 
@@ -44,7 +45,14 @@ function Calendar() {
 
   const handleDeleteInterview = async (id: string) => {
     try {
-      await axios.delete(`/api/interview/${id}`);
+      const response = await fetch(`/api/interview/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete interview");
+      }
+
       mutate("/api/interviews");
       toast.success("Interview Deleted");
       console.log("Interview deleted successfully");
@@ -142,6 +150,3 @@ function Calendar() {
 }
 
 export default Calendar;
-
-
-

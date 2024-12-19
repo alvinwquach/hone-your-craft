@@ -1,6 +1,4 @@
 import { format } from "date-fns";
-import axios from "axios";
-import { mutate } from "swr";
 
 interface Job {
   company: string;
