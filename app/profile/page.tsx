@@ -6,6 +6,8 @@ import useSWR, { mutate } from "swr";
 import ProfileCard from "../components/profile/ProfileCard";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import SkillsCard from "../components/profile/SkillsCard";
+import SkillsTable from "../components/profile/SkillsTable";
+import MissingSkillsTable from "../components/profile/MissingSkillsTable";
 import ResumeUpload from "../components/profile/ResumeUpload";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
@@ -256,7 +258,7 @@ function Profile() {
                 </li>
               </ul>
             </div>
-            <div className="mt-6 border bg-zinc-900 border-gray-700 rounded-lg">
+            <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
               {activeTab === "profile" && (
                 <Suspense fallback={<ProfileCard userData={[]} />}>
                   {!loadingUserData ? (
@@ -310,7 +312,16 @@ function Profile() {
                   )}
                 </Suspense>
               )}
-              {activeTab === "dashboard" && <div></div>}
+              {/* {activeTab === "dashboard" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="w-full">
+                    <SkillsTable />
+                  </div>
+                  <div className="w-full">
+                    <MissingSkillsTable />
+                  </div>
+                </div>
+              )} */}
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload />}>
                   <ResumeUpload />
@@ -364,6 +375,16 @@ function Profile() {
                 </Suspense>
               )}
             </div>
+            {activeTab === "dashboard" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                <div className="w-full">
+                  <SkillsTable />
+                </div>
+                <div className="w-full">
+                  <MissingSkillsTable />
+                </div>
+              </div>
+            )}
           </div>
         </>
       ) : userRole === "CLIENT" ? (
