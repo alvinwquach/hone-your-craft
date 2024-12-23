@@ -6,9 +6,10 @@ import useSWR, { mutate } from "swr";
 import ProfileCard from "../components/profile/ProfileCard";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import SkillsCard from "../components/profile/SkillsCard";
-import SkillsTable from "../components/profile/SkillsTable";
-import MissingSkillsTable from "../components/profile/MissingSkillsTable";
-import ResumeUpload from "../components/profile/ResumeUpload";
+import SkillsTable from "../components/profile/dashboard/SkillsTable";
+import MissingSkillsTable from "../components/profile/dashboard/MissingSkillsTable";
+import ApplicationStatusChart from "../components/profile/dashboard/ApplicationStatusChart";
+import ResumeUpload from "../components/profile/resume/ResumeUpload";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
 import JobRejections from "../components/profile/JobRejections";
@@ -382,6 +383,9 @@ function Profile() {
                 </div>
                 <div className="w-full">
                   <MissingSkillsTable />
+                </div>
+                <div className="w-full">
+                  <ApplicationStatusChart />
                 </div>
               </div>
             )}
