@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
 
@@ -25,10 +24,13 @@ type StatusData = {
   borderColor: string;
 };
 
-const ApplicationStatusChart = () => {
-  const [statusPercentages, setStatusPercentages] = useState<
-    Map<string, number>
-  >(new Map());
+interface ApplicationStatusChartProps {
+  statusPercentages: Map<string, number>;
+}
+
+const ApplicationStatusChart = ({
+  statusPercentages,
+}: ApplicationStatusChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
@@ -49,18 +51,6 @@ const ApplicationStatusChart = () => {
       border: "rgba(59, 130, 246, 1)",
     },
   };
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const { percentages } = await getJobsByApplicationStatus();
-        setStatusPercentages(percentages);
-      } catch (error) {
-        console.error("Error fetching application status:", error);
-      }
-    }
-    fetchData();
-  }, []);
 
   useEffect(() => {
     const renderChart = () => {
@@ -87,17 +77,14 @@ const ApplicationStatusChart = () => {
         borderColor: statusColors[status].border,
       }));
 
-      // X scale for percentage (0 to 100)
       const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
 
-      // Y scale for application statuses
       const y = d3
         .scaleBand()
         .domain(data.map((d) => d.status))
         .range([0, height])
         .padding(0.1);
 
-      // Create bars for the chart
       svg
         .selectAll(".bar")
         .data(data)
@@ -183,7 +170,7 @@ const ApplicationStatusChart = () => {
 
   return (
     <div
-      className="bg-zinc-900 border-gray-700 rounded-lg w-full h-[375px] mt-2 p-4"
+      className="bg-zinc-900 border-gray-700 rounded-lg w-full mt-2 p-4"
       ref={chartRef}
     ></div>
   );

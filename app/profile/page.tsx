@@ -13,7 +13,6 @@ import ResumeUpload from "../components/profile/resume/ResumeUpload";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
 import JobRejections from "../components/profile/JobRejections";
-import getUserJobPostings from "../actions/getUserJobPostings";
 import { toast } from "react-toastify";
 import {
   FaUser,
@@ -24,6 +23,10 @@ import {
   FaTools,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
+import getUserJobPostings from "../actions/getUserJobPostings";
+import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
+import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
+import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
 
 interface JobPosting {
   title: string;
@@ -70,6 +73,15 @@ function Profile() {
   const userData = data || [];
 
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
+  const [skills, setSkills] = useState<string[]>([]);
+  const [frequencies, setFrequencies] = useState<number[]>([]);
+  const [missingSkills, setMissingSkills] = useState<string[]>([]);
+  const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
+    number[]
+  >([]);
+  const [statusPercentages, setStatusPercentages] = useState<
+    Map<string, number>
+  >(new Map());
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -81,6 +93,45 @@ function Profile() {
       }
     }
     fetchJobPostings();
+  }, []);
+
+  useEffect(() => {
+    async function fetchSkillsData() {
+      try {
+        const { sortedSkills, sortedFrequencies } =
+          await getUserJobSkillsAndFrequency();
+        setSkills(sortedSkills);
+        setFrequencies(sortedFrequencies);
+      } catch (error) {
+        console.error("Error fetching user skills:", error);
+      }
+    }
+
+    async function fetchMissingSkillsData() {
+      try {
+        const { sortedMissingSkills, sortedMissingFrequencies } =
+          await getUserMissingSkillsAndFrequency();
+        setMissingSkills(sortedMissingSkills);
+        setMissingSkillsFrequency(sortedMissingFrequencies);
+      } catch (error) {
+        console.error("Error fetching missing skills:", error);
+      }
+    }
+
+    fetchSkillsData();
+    fetchMissingSkillsData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchApplicationStatusData() {
+      try {
+        const { percentages } = await getJobsByApplicationStatus();
+        setStatusPercentages(percentages);
+      } catch (error) {
+        console.error("Error fetching application status:", error);
+      }
+    }
+    fetchApplicationStatusData();
   }, []);
 
   const suggestedSkills = Array.from(
@@ -379,13 +430,18 @@ function Profile() {
             {activeTab === "dashboard" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                 <div className="w-full">
-                  <SkillsTable />
+                  <SkillsTable skills={skills} frequencies={frequencies} />
                 </div>
                 <div className="w-full">
-                  <MissingSkillsTable />
+                  <MissingSkillsTable
+                    missingSkills={missingSkills}
+                    missingSkillsFrequency={missingSkillsFrequency}
+                  />
                 </div>
                 <div className="w-full">
-                  <ApplicationStatusChart />
+                  <ApplicationStatusChart
+                    statusPercentages={statusPercentages}
+                  />
                 </div>
               </div>
             )}

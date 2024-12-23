@@ -1,29 +1,14 @@
 "use client";
 
-import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
-import { useEffect, useState } from "react";
+interface MissingSkillsTableProps {
+  missingSkills: string[];
+  missingSkillsFrequency: number[];
+}
 
-function MissingSkillsTable() {
-  const [missingSkills, setMissingSkills] = useState<string[]>([]);
-  const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
-    number[]
-  >([]);
-
-  useEffect(() => {
-    async function fetchMissingSkillsData() {
-      try {
-        const { sortedMissingSkills, sortedMissingFrequencies } =
-          await getUserMissingSkillsAndFrequency();
-        setMissingSkills(sortedMissingSkills);
-        setMissingSkillsFrequency(sortedMissingFrequencies);
-      } catch (error) {
-        console.error("Error fetching missing skills:", error);
-      }
-    }
-
-    fetchMissingSkillsData();
-  }, []);
-
+function MissingSkillsTable({
+  missingSkills,
+  missingSkillsFrequency,
+}: MissingSkillsTableProps) {
   return (
     <div className="relative overflow-x-auto max-h-[400px] overflow-y-auto border border-gray-700 rounded-lg shadow-lg bg-zinc-800">
       <table className="min-w-full table-auto text-sm text-gray-200">

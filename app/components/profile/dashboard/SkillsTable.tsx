@@ -1,27 +1,9 @@
-"use client";
+interface SkillsTableProps {
+  skills: string[];
+  frequencies: number[];
+}
 
-import { useEffect, useState } from "react";
-import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
-
-function SkillsTable() {
-  const [skills, setSkills] = useState<string[]>([]);
-  const [frequencies, setFrequencies] = useState<number[]>([]);
-
-  useEffect(() => {
-    async function fetchSkillsData() {
-      try {
-        const { sortedSkills, sortedFrequencies } =
-          await getUserJobSkillsAndFrequency();
-        setSkills(sortedSkills);
-        setFrequencies(sortedFrequencies);
-      } catch (error) {
-        console.error("Error fetching user skills:", error);
-      }
-    }
-
-    fetchSkillsData();
-  }, []);
-
+function SkillsTable({ skills, frequencies }: SkillsTableProps) {
   return (
     <div className="relative overflow-x-auto max-h-[400px] overflow-y-auto border border-gray-700 rounded-lg shadow-lg bg-zinc-800">
       <table className="min-w-full table-auto text-sm text-gray-200">
