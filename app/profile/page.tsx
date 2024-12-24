@@ -27,6 +27,8 @@ import getUserJobPostings from "../actions/getUserJobPostings";
 import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
 import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
 import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
+import { getCandidateJobInterviews } from "@/app/actions/getCandidateJobInterviews";
+import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
 
 interface JobPosting {
   title: string;
@@ -82,6 +84,9 @@ function Profile() {
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
+  const [interviewTypeFrequency, setInterviewTypeFrequency] = useState<
+    Record<string, number>
+  >({});
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -132,6 +137,18 @@ function Profile() {
       }
     }
     fetchApplicationStatusData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { interviewTypeFrequency } = await getCandidateJobInterviews();
+        setInterviewTypeFrequency(interviewTypeFrequency);
+      } catch (error) {
+        console.error("Error fetching user job interviews:", error);
+      }
+    };
+    fetchData();
   }, []);
 
   const suggestedSkills = Array.from(
@@ -441,6 +458,11 @@ function Profile() {
                 <div className="w-full">
                   <ApplicationStatusChart
                     statusPercentages={statusPercentages}
+                  />
+                </div>
+                <div className="w-full">
+                  <InterviewFrequencyChart
+                    interviewFrequencies={interviewTypeFrequency}
                   />
                 </div>
               </div>
