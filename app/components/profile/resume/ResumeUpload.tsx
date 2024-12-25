@@ -1,39 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { FaTimes } from "react-icons/fa";
 import { BsFiletypePdf, BsFiletypeDocx, BsFiletypeTxt } from "react-icons/bs";
 import { CiFileOn } from "react-icons/ci";
 import { PiFileDoc } from "react-icons/pi";
 import { TbFileCv } from "react-icons/tb";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
+const fetchDocument = async () => {
+  const response = await fetch("/api/documents/current", { method: "GET" });
+  if (!response.ok) {
+    throw new Error("Failed to fetch document.");
+  }
+  return response.json();
+};
 
 const ResumeUpload = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [currentDocument, setCurrentDocument] = useState<any | null>(null);
-
-  const fetchDocumentDetails = async () => {
-    try {
-      const response = await fetch("/api/documents/current", {
-        method: "GET",
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data) {
-        setCurrentDocument(data);
-      } else {
-        console.log("No document found.");
-      }
-    } catch (error) {
-      toast.error("Error fetching document.");
-    }
-  };
-
-  useEffect(() => {
-    fetchDocumentDetails();
-  }, []);
+  const {
+    data: currentDocument,
+    isLoading,
+    error,
+  } = useSWR("/api/documents/current", fetchDocument, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  const { mutate } = useSWRConfig();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -63,7 +58,7 @@ const ResumeUpload = () => {
       }
 
       setFile(null);
-      setCurrentDocument(null);
+      mutate("api/documents");
 
       toast.success("Your resume has been removed successfully.");
     } catch (error) {
@@ -73,8 +68,13 @@ const ResumeUpload = () => {
     }
   };
 
-  const getFileIcon = (file: File) => {
+  const getFileIcon = (file: File | null | undefined) => {
+    if (!file || !file.name) {
+      return <CiFileOn className="w-12 h-12 mb-4 text-white" />;
+    }
+
     const extension = file.name.split(".").pop()?.toLowerCase();
+
     switch (extension) {
       case "pdf":
         return <BsFiletypePdf className="w-12 h-12 mb-4 text-white" />;
@@ -126,7 +126,7 @@ const ResumeUpload = () => {
 
       if (uploadResponse.ok) {
         toast.success("Resume uploaded successfully!");
-        fetchDocumentDetails();
+        mutate("api/documents");
       } else {
         throw new Error("Upload to S3 failed");
       }
@@ -139,15 +139,12 @@ const ResumeUpload = () => {
 
   const handleFileUpdate = async (selectedFile: File) => {
     if (!currentDocument?.id) {
-      toast.error("No document found to update.");
+      toast.error("No resume found to update.");
       return;
     }
 
     try {
-      console.log(
-        "Requesting document update with new file:",
-        selectedFile.name
-      );
+      console.log("Requesting resume update with new file:", selectedFile.name);
 
       const formData = new FormData();
       formData.append("file", selectedFile);
@@ -158,14 +155,14 @@ const ResumeUpload = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update document.");
+        throw new Error("Failed to update resume.");
       }
 
       const responseData = await response.json();
-      console.log("Document updated successfully:", responseData);
+      console.log("Resume updated successfully:", responseData);
 
-      toast.success("Document updated successfully!");
-      fetchDocumentDetails();
+      toast.success("Resume updated successfully!");
+      mutate("api/documents");
     } catch (error) {
       toast.error(
         `Error: ${error instanceof Error ? error.message : "Unknown error"}`
@@ -196,7 +193,7 @@ const ResumeUpload = () => {
 
   return (
     <div className="flex flex-col lg:flex-row justify-start gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
-      <div className="">
+      <div>
         <h2 className="text-base font-semibold text-white mb-2">
           Upload your resume
         </h2>
@@ -205,16 +202,15 @@ const ResumeUpload = () => {
         </p>
       </div>
       <div
-        className="flex flex-col items-center justify-center w-full  space-y-4 mt-4 lg:mt-0"
+        className="flex flex-col items-center justify-center w-full space-y-4 mt-4 lg:mt-0"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        {currentDocument && (
+        {currentDocument?.name ? (
           <div className="w-full text-left mb-4">
             <p className="text-sm font-medium text-white break-words">
-              {currentDocument.name}
+              {currentDocument?.name}
             </p>
-
             <div className="flex flex-col items-start space-y-2 mt-2">
               <div className="flex items-center space-x-2">
                 <button
@@ -227,12 +223,13 @@ const ResumeUpload = () => {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
+
         <label
           htmlFor="dropzone-file"
           className="flex flex-col items-center justify-center w-full h-36 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-zinc-800 hover:bg-zinc-700 transition-colors relative"
         >
-          {file && (
+          {currentDocument?.name && (
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-white"
               onClick={handleRemoveFile}
@@ -241,12 +238,12 @@ const ResumeUpload = () => {
               <FaTimes className="w-4 h-4" />
             </button>
           )}
-          {file || currentDocument ? (
+          {currentDocument?.name ? (
             <div className="flex flex-col items-center justify-center">
-              {getFileIcon(file || currentDocument)}
+              {getFileIcon(currentDocument)}
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2">
                 <p className="text-sm text-white mr-1">
-                  {file?.name || currentDocument?.name}
+                  {currentDocument?.name}
                 </p>
                 <div className="flex items-center space-x-1">
                   <span className="text-sm text-gray-400">(</span>
@@ -283,7 +280,7 @@ const ResumeUpload = () => {
             onChange={handleFileChange}
           />
         </label>
-        {(file || currentDocument) && (
+        {currentDocument?.name && (
           <div className="mt-4 flex items-center justify-end w-full">
             <button
               className="text-gray-400 text-sm font-semibold"
@@ -299,4 +296,3 @@ const ResumeUpload = () => {
 };
 
 export default ResumeUpload;
-

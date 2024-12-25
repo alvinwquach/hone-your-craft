@@ -65,15 +65,14 @@ function Profile() {
     (url) => fetch(url).then((res) => res.json())
   );
 
-  const [activeTab, setActiveTab] = useState<string>("profile");
   const userRole = data?.user?.userRole;
   const jobOffers = userOffers || [];
   const jobRejections = userRejections || [];
   const jobInterviews = userInterviews || [];
   const userSkills = data?.user?.skills || [];
-
   const userData = data || [];
 
+  const [activeTab, setActiveTab] = useState<string>("profile");
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [frequencies, setFrequencies] = useState<number[]>([]);
@@ -381,16 +380,6 @@ function Profile() {
                   )}
                 </Suspense>
               )}
-              {/* {activeTab === "dashboard" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="w-full">
-                    <SkillsTable />
-                  </div>
-                  <div className="w-full">
-                    <MissingSkillsTable />
-                  </div>
-                </div>
-              )} */}
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload />}>
                   <ResumeUpload />
