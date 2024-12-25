@@ -22,14 +22,11 @@ export const getJobsByApplicationStatus = async () => {
       },
     });
 
-    // Initialize a Map to store the counts of each application status
-    const statusCounts = new Map<string, number>(); // Change the map type to string
+    const statusCounts = new Map<string, number>();
 
-    // Count the occurrences of each application status
     userJobs.forEach((job) => {
       const status: ApplicationStatus | null = job.status;
       if (status) {
-        // Convert the status to sentence case
         const capitalizedStatus = convertToSentenceCase(status);
         statusCounts.set(
           capitalizedStatus,
@@ -38,12 +35,10 @@ export const getJobsByApplicationStatus = async () => {
       }
     });
 
-    // Calculate percentages based on the counts
     const totalCount = userJobs.length;
     const percentages = new Map<string, number>();
     statusCounts.forEach((count, status) => {
       const percentage = (count / totalCount) * 100;
-      // Round the percentage to two decimal places
       const roundedPercentage = parseFloat(percentage.toFixed(2));
       percentages.set(status, roundedPercentage);
     });

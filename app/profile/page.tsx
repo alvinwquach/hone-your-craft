@@ -8,7 +8,9 @@ import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import SkillsCard from "../components/profile/SkillsCard";
 import SkillsTable from "../components/profile/dashboard/SkillsTable";
 import MissingSkillsTable from "../components/profile/dashboard/MissingSkillsTable";
+import JobPostingSourceCountChart from "../components/profile/dashboard/JobPostingSourceCountChart";
 import ApplicationStatusChart from "../components/profile/dashboard/ApplicationStatusChart";
+import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
 import ResumeUpload from "../components/profile/resume/ResumeUpload";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
@@ -28,7 +30,7 @@ import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndF
 import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
 import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
 import { getCandidateJobInterviews } from "@/app/actions/getCandidateJobInterviews";
-import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
+import { getUserJobPostingSourceCount } from "@/app/actions/getUserJobPostingSourceCount";
 
 interface JobPosting {
   title: string;
@@ -86,6 +88,21 @@ function Profile() {
   const [interviewTypeFrequency, setInterviewTypeFrequency] = useState<
     Record<string, number>
   >({});
+  const [jobPostingSourceCount, setJobPostingSourceCount] = useState<
+    Record<string, number>
+  >({});
+
+  useEffect(() => {
+    async function fetchJobPostingSourceCount() {
+      try {
+        const sourceCount = await getUserJobPostingSourceCount();
+        setJobPostingSourceCount(sourceCount);
+      } catch (error) {
+        console.error("Error fetching job posting source count:", error);
+      }
+    }
+    fetchJobPostingSourceCount();
+  }, []);
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -442,6 +459,11 @@ function Profile() {
                   <MissingSkillsTable
                     missingSkills={missingSkills}
                     missingSkillsFrequency={missingSkillsFrequency}
+                  />
+                </div>
+                <div className="w-full">
+                  <JobPostingSourceCountChart
+                    jobPostingSourceCount={jobPostingSourceCount}
                   />
                 </div>
                 <div className="w-full">
