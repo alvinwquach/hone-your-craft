@@ -3,6 +3,13 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
+import getUserJobPostings from "../actions/getUserJobPostings";
+import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
+import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
+import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
+import { getCandidateJobInterviews } from "@/app/actions/getCandidateJobInterviews";
+import { getUserJobPostingSourceCount } from "@/app/actions/getUserJobPostingSourceCount";
+import { getCandidateApplicationStatus } from "../actions/getCandidateApplicationStatus";
 import ProfileCard from "../components/profile/ProfileCard";
 import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
 import SkillsCard from "../components/profile/SkillsCard";
@@ -11,6 +18,7 @@ import MissingSkillsTable from "../components/profile/dashboard/MissingSkillsTab
 import JobPostingSourceCountChart from "../components/profile/dashboard/JobPostingSourceCountChart";
 import ApplicationStatusChart from "../components/profile/dashboard/ApplicationStatusChart";
 import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
+import JobApplicationStatusChart from "../components/profile/dashboard/JobApplicationStatusChart";
 import ResumeUpload from "../components/profile/resume/ResumeUpload";
 import UpcomingInterviews from "../components/profile/UpcomingInterviews";
 import JobOffers from "../components/profile/JobOffers";
@@ -25,18 +33,17 @@ import {
   FaTools,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
-import getUserJobPostings from "../actions/getUserJobPostings";
-import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
-import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
-import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
-import { getCandidateJobInterviews } from "@/app/actions/getCandidateJobInterviews";
-import { getUserJobPostingSourceCount } from "@/app/actions/getUserJobPostingSourceCount";
 
 interface JobPosting {
   title: string;
   company: string;
   postUrl: string;
   skills: string[];
+}
+
+interface JobApplicationStatus {
+  status: string;
+  count: number;
 }
 
 const fetcher = async (url: string, options: RequestInit) => {
@@ -91,18 +98,9 @@ function Profile() {
   const [jobPostingSourceCount, setJobPostingSourceCount] = useState<
     Record<string, number>
   >({});
-
-  useEffect(() => {
-    async function fetchJobPostingSourceCount() {
-      try {
-        const sourceCount = await getUserJobPostingSourceCount();
-        setJobPostingSourceCount(sourceCount);
-      } catch (error) {
-        console.error("Error fetching job posting source count:", error);
-      }
-    }
-    fetchJobPostingSourceCount();
-  }, []);
+  const [jobApplicationStatusCount, setJobApplicationStatusCount] = useState<
+    JobApplicationStatus[]
+  >([]);
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -156,7 +154,7 @@ function Profile() {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCandidateJobInterviews = async () => {
       try {
         const { interviewTypeFrequency } = await getCandidateJobInterviews();
         setInterviewTypeFrequency(interviewTypeFrequency);
@@ -164,7 +162,32 @@ function Profile() {
         console.error("Error fetching user job interviews:", error);
       }
     };
-    fetchData();
+    fetchCandidateJobInterviews();
+  }, []);
+
+  useEffect(() => {
+    async function fetchJobPostingSourceCount() {
+      try {
+        const sourceCount = await getUserJobPostingSourceCount();
+        setJobPostingSourceCount(sourceCount);
+      } catch (error) {
+        console.error("Error fetching job posting source count:", error);
+      }
+    }
+    fetchJobPostingSourceCount();
+  }, []);
+
+  useEffect(() => {
+    const fetchCandidateApplicationStatusCount = async () => {
+      try {
+        const result = await getCandidateApplicationStatus();
+        setJobApplicationStatusCount(result.statusData);
+      } catch (error) {
+        console.error("Failed to fetch pie chart data", error);
+      }
+    };
+
+    fetchCandidateApplicationStatusCount();
   }, []);
 
   const suggestedSkills = Array.from(
@@ -474,6 +497,11 @@ function Profile() {
                 <div className="w-full">
                   <InterviewFrequencyChart
                     interviewFrequencies={interviewTypeFrequency}
+                  />
+                </div>
+                <div className="w-full">
+                  <JobApplicationStatusChart
+                    jobApplicationStatus={jobApplicationStatusCount}
                   />
                 </div>
               </div>
