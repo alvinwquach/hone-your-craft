@@ -85,12 +85,15 @@ function Profile() {
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [frequencies, setFrequencies] = useState<number[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [currentPageSkills, setCurrentPageSkills] = useState(1);
+  const [totalPagesSkills, setTotalPagesSkills] = useState(1);
+
   const [missingSkills, setMissingSkills] = useState<string[]>([]);
   const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
     number[]
   >([]);
+  const [currentPageMissingSkills, setCurrentPageMissingSkills] = useState(1);
+  const [totalPagesMissingSkills, setTotalPagesMissingSkills] = useState(1);
   const [statusPercentages, setStatusPercentages] = useState<
     Map<string, number>
   >(new Map());
@@ -120,36 +123,61 @@ function Profile() {
     async function fetchSkillsData() {
       try {
         const { sortedSkills, sortedFrequencies, totalPages } =
-          await getUserJobSkillsAndFrequency(currentPage);
+          await getUserJobSkillsAndFrequency(currentPageSkills);
         setSkills(sortedSkills);
         setFrequencies(sortedFrequencies);
-        setTotalPages(totalPages);
+        setTotalPagesSkills(totalPages);
       } catch (error) {
         console.error("Error fetching user skills:", error);
       }
     }
+    fetchSkillsData();
+  }, [currentPageSkills]);
 
+  useEffect(() => {
     async function fetchMissingSkillsData() {
       try {
-        const { sortedMissingSkills, sortedMissingFrequencies } =
-          await getUserMissingSkillsAndFrequency();
+        const { sortedMissingSkills, sortedMissingFrequencies, totalPages } =
+          await getUserMissingSkillsAndFrequency(currentPageMissingSkills);
         setMissingSkills(sortedMissingSkills);
         setMissingSkillsFrequency(sortedMissingFrequencies);
+        setTotalPagesMissingSkills(totalPages);
       } catch (error) {
         console.error("Error fetching missing skills:", error);
       }
     }
-
-    fetchSkillsData();
     fetchMissingSkillsData();
-  }, [currentPage]);
+  }, [currentPageMissingSkills]);
 
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+  const goToFirstPageSkills = () => {
+    setCurrentPageSkills(1);
+  };
+
+  const goToLastPageSkills = () => {
+    setCurrentPageSkills(totalPagesSkills);
+  };
+
+  const goToPreviousPageSkills = () => {
+    if (currentPageSkills > 1) {
+      setCurrentPageSkills(currentPageSkills - 1);
     }
   };
 
+  const goToNextPageSkills = () => {
+    if (currentPageSkills < totalPagesSkills) {
+      setCurrentPageSkills(currentPageSkills + 1);
+    }
+  };
+
+  const goToFirstPageMissingSkills = () => setCurrentPageMissingSkills(1);
+  const goToLastPageMissingSkills = () =>
+    setCurrentPageMissingSkills(totalPagesMissingSkills);
+  const goToPreviousPageMissingSkills = () =>
+    setCurrentPageMissingSkills((prev) => Math.max(prev - 1, 1));
+  const goToNextPageMissingSkills = () =>
+    setCurrentPageMissingSkills((prev) =>
+      Math.min(prev + 1, totalPagesMissingSkills)
+    );
   useEffect(() => {
     async function fetchApplicationStatusData() {
       try {
@@ -488,15 +516,24 @@ function Profile() {
                   <SkillsTable
                     skills={skills}
                     frequencies={frequencies}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    goToPage={goToPage}
+                    currentPage={currentPageSkills}
+                    totalPages={totalPagesSkills}
+                    goToFirstPage={goToFirstPageSkills}
+                    goToPreviousPage={goToPreviousPageSkills}
+                    goToNextPage={goToNextPageSkills}
+                    goToLastPage={goToLastPageSkills}
                   />
                 </div>
                 <div className="w-full">
                   <MissingSkillsTable
                     missingSkills={missingSkills}
                     missingSkillsFrequency={missingSkillsFrequency}
+                    currentPage={currentPageMissingSkills}
+                    totalPages={totalPagesMissingSkills}
+                    goToFirstPage={goToFirstPageMissingSkills}
+                    goToPreviousPage={goToPreviousPageMissingSkills}
+                    goToNextPage={goToNextPageMissingSkills}
+                    goToLastPage={goToLastPageMissingSkills}
                   />
                 </div>
                 <div className="w-full">

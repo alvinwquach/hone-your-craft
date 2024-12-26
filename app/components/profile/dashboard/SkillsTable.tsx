@@ -3,7 +3,10 @@ interface SkillsTableProps {
   frequencies: number[];
   currentPage: number;
   totalPages: number;
-  goToPage: (page: number) => void;
+  goToPreviousPage: () => void;
+  goToNextPage: () => void;
+  goToFirstPage: () => void;
+  goToLastPage: () => void;
 }
 
 function SkillsTable({
@@ -11,7 +14,10 @@ function SkillsTable({
   frequencies,
   currentPage,
   totalPages,
-  goToPage,
+  goToPreviousPage,
+  goToNextPage,
+  goToFirstPage,
+  goToLastPage,
 }: SkillsTableProps) {
   return (
     <div>
@@ -46,14 +52,14 @@ function SkillsTable({
       </div>
       <div className="mt-4 flex justify-center space-x-4">
         <button
-          onClick={() => goToPage(1)}
+          onClick={goToFirstPage}
           disabled={currentPage <= 1}
           className="px-4 py-2 bg-zinc-600 rounded-md text-white hover:bg-zinc-500 disabled:bg-zinc-400"
         >
           First
         </button>
         <button
-          onClick={() => goToPage(currentPage - 1)}
+          onClick={goToPreviousPage}
           disabled={currentPage <= 1}
           className="px-4 py-2 bg-zinc-600 rounded-md text-white hover:bg-zinc-500 disabled:bg-zinc-400"
         >
@@ -62,15 +68,16 @@ function SkillsTable({
         <span className="text-gray-200">
           Page {currentPage} of {totalPages}
         </span>
+
         <button
-          onClick={() => goToPage(currentPage + 1)}
+          onClick={goToNextPage}
           disabled={currentPage >= totalPages}
           className="px-4 py-2 bg-zinc-600 rounded-md text-white hover:bg-zinc-500 disabled:bg-zinc-400"
         >
           Next
         </button>
         <button
-          onClick={() => goToPage(totalPages)}
+          onClick={goToLastPage}
           disabled={currentPage >= totalPages}
           className="px-4 py-2 bg-zinc-600 rounded-md text-white hover:bg-zinc-500 disabled:bg-zinc-400"
         >
