@@ -4,6 +4,7 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
 
+// Update the missing skills frequency map
 const updateMissingSkillsFrequencyMap = (
   missingSkillsFrequencyMap: Map<string, number>,
   jobSkills: string[],
@@ -20,7 +21,10 @@ const updateMissingSkillsFrequencyMap = (
   }
 };
 
-export const getUserMissingSkillsAndFrequency = async () => {
+export const getUserMissingSkillsAndFrequency = async (
+  page: number = 1,
+  pageSize: number = 10
+) => {
   try {
     // Retrieve the current user
     const currentUser = await getCurrentUser();
@@ -64,15 +68,29 @@ export const getUserMissingSkillsAndFrequency = async () => {
     // Sort the missing skills frequency array by frequency in descending order
     missingSkillsFrequencyArray.sort((a, b) => b.frequency - a.frequency);
 
-    // Extract sorted missing skills and their frequencies
-    const sortedMissingSkills = missingSkillsFrequencyArray.map(
+    const totalPages = Math.ceil(missingSkillsFrequencyArray.length / pageSize);
+
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedMissingSkills = missingSkillsFrequencyArray.slice(
+      startIndex,
+      endIndex
+    );
+
+    const sortedMissingSkills = paginatedMissingSkills.map(
       (entry) => entry.skill
     );
-    const sortedMissingFrequencies = missingSkillsFrequencyArray.map(
+    const sortedMissingFrequencies = paginatedMissingSkills.map(
       (entry) => entry.frequency
     );
 
-    return { sortedMissingSkills, sortedMissingFrequencies };
+    return {
+      sortedMissingSkills,
+      sortedMissingFrequencies,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    };
   } catch (error) {
     console.error(
       "Error fetching user jobs or calculating missing skills frequency:",
