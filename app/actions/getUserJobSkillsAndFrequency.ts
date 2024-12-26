@@ -17,12 +17,13 @@ const updateSkillFrequencyMap = (
   }
 };
 
-export const getUserJobSkillsAndFrequency = async () => {
+export const getUserJobSkillsAndFrequency = async (
+  page: number = 1,
+  pageSize: number = 10
+) => {
   try {
-    // Retrieve the current user
     const currentUser = await getCurrentUser();
 
-    // Check if the user ID is missing
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
@@ -36,7 +37,6 @@ export const getUserJobSkillsAndFrequency = async () => {
 
     // Initialize a Map to store the frequency of skills
     const skillFrequencyMap = new Map<string, number>();
-
     // Initialize an array to store job skills
     const jobSkills: string[] = [];
 
@@ -47,8 +47,8 @@ export const getUserJobSkillsAndFrequency = async () => {
       // Push the extracted skills into the jobSkills array
       jobSkills.push(...extractedSkills);
     }
-
     // Update skill frequency map
+
     updateSkillFrequencyMap(skillFrequencyMap, jobSkills);
 
     // Convert the skillFrequencyMap to an array of objects for sorting
@@ -59,13 +59,22 @@ export const getUserJobSkillsAndFrequency = async () => {
     // Sort the skillFrequencyArray by frequency in descending order
     skillFrequencyArray.sort((a, b) => b.frequency - a.frequency);
 
-    // Extract sorted skills and frequencies
-    const sortedSkills = skillFrequencyArray.map((entry) => entry.skill);
-    const sortedFrequencies = skillFrequencyArray.map(
-      (entry) => entry.frequency
-    );
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedSkills = skillFrequencyArray.slice(startIndex, endIndex);
 
-    return { sortedSkills, sortedFrequencies };
+    const sortedSkills = paginatedSkills.map((entry) => entry.skill);
+    const sortedFrequencies = paginatedSkills.map((entry) => entry.frequency);
+
+    const totalPages = Math.ceil(skillFrequencyArray.length / pageSize);
+
+    return {
+      sortedSkills,
+      sortedFrequencies,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    };
   } catch (error) {
     console.error(
       "Error fetching user jobs or calculating skill frequency:",

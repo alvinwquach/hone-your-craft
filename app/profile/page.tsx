@@ -85,6 +85,8 @@ function Profile() {
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [frequencies, setFrequencies] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [missingSkills, setMissingSkills] = useState<string[]>([]);
   const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
     number[]
@@ -117,10 +119,11 @@ function Profile() {
   useEffect(() => {
     async function fetchSkillsData() {
       try {
-        const { sortedSkills, sortedFrequencies } =
-          await getUserJobSkillsAndFrequency();
+        const { sortedSkills, sortedFrequencies, totalPages } =
+          await getUserJobSkillsAndFrequency(currentPage);
         setSkills(sortedSkills);
         setFrequencies(sortedFrequencies);
+        setTotalPages(totalPages);
       } catch (error) {
         console.error("Error fetching user skills:", error);
       }
@@ -139,7 +142,13 @@ function Profile() {
 
     fetchSkillsData();
     fetchMissingSkillsData();
-  }, []);
+  }, [currentPage]);
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   useEffect(() => {
     async function fetchApplicationStatusData() {
@@ -476,7 +485,13 @@ function Profile() {
             {activeTab === "dashboard" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                 <div className="w-full">
-                  <SkillsTable skills={skills} frequencies={frequencies} />
+                  <SkillsTable
+                    skills={skills}
+                    frequencies={frequencies}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    goToPage={goToPage}
+                  />
                 </div>
                 <div className="w-full">
                   <MissingSkillsTable
