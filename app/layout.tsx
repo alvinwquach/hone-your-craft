@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import SessionProvider from "./SessionProvider";
 import Header from "./components/common/Header";
 import "./globals.css";
+import Top10MissingSkillsTicker from "./components/common/Top10MissingSkillsTicker";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
           <main className="bg-zinc-800">{children}</main>
           <ToastContainer />
         </SessionProvider>
+        <Top10MissingSkillsTicker />
       </body>
     </html>
   );
