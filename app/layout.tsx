@@ -32,7 +32,7 @@ export default function RootLayout({
           <main className="bg-zinc-800">{children}</main>
           <ToastContainer />
         </SessionProvider>
-        <Top10MissingSkillsTicker />
+        {/* <Top10MissingSkillsTicker /> */}
       </body>
     </html>
   );

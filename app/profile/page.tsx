@@ -33,6 +33,7 @@ import {
   FaTools,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
+import EducationList from "../components/profile/EducationList";
 
 interface JobPosting {
   title: string;
@@ -455,6 +456,8 @@ function Profile() {
                       />
                     </Suspense>
                   )}
+                  <div className="my-4 border-t border-gray-600" />
+                  <EducationList />
                 </Suspense>
               )}
               {activeTab === "resume" && (
