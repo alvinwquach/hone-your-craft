@@ -62,13 +62,14 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
+      const salaryWithoutFormatting = data.offerSalary.replace(/[^\d.-]/g, "");
 
       const offerData = {
         userId: job.userId,
         jobId: job.id,
         offerDate: new Date(data.offerDate).toISOString(),
         offerDeadline: data.offerDeadline,
-        salary: data.offerSalary,
+        salary: salaryWithoutFormatting,
       };
 
       if (job.offer) {
@@ -121,7 +122,16 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
   };
 
   const formatSalary = (value: string) => {
-    return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const numericValue = value.replace(/\D/g, "");
+    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return formattedValue;
+  };
+
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    const formattedValue = formatSalary(rawValue);
+    const displayValue = `$${formattedValue}`;
+    setValue("offerSalary", displayValue);
   };
 
   return (
@@ -219,10 +229,7 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                       type="text"
                       id="offerSalary"
                       {...register("offerSalary")}
-                      onChange={(e) => {
-                        const formattedValue = formatSalary(e.target.value);
-                        setValue("offerSalary", formattedValue);
-                      }}
+                      onChange={handleSalaryChange} // Updated to handle salary change
                       placeholder="Salary"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 outline-none"
                       required
