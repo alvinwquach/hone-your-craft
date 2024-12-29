@@ -238,6 +238,34 @@ function Profile() {
     )
   );
 
+  const handleEditOffer = async (id: string, updatedSalary: string) => {
+    try {
+      const currentOffer = jobOffers.find((offer: any) => offer.id === id);
+      const response = await fetch(`/api/offer/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          salary: updatedSalary,
+          offerDate: currentOffer?.offerDate,
+          offerDeadline: currentOffer?.offerDeadline,
+        }),
+      });
+
+      if (response.ok) {
+        mutate("/api/offers");
+        toast.success("Offer Updated");
+      } else {
+        throw new Error("Failed to update offer");
+      }
+    } catch (error) {
+      console.error("Error updating offer:", error);
+      toast.error("Failed To Update Offer");
+      throw error;
+    }
+  };
+
   const handleEditRejection = async (id: string, updatedNotes: string) => {
     try {
       const currentRejection = jobRejections.find(
@@ -509,6 +537,7 @@ function Profile() {
                   fallback={
                     <JobOffers
                       jobOffers={[]}
+                      onEditOffer={handleEditOffer}
                       onDeleteOffer={handleDeleteOffer}
                     />
                   }
@@ -516,6 +545,7 @@ function Profile() {
                   {!loadingUserOffers ? (
                     <JobOffers
                       jobOffers={jobOffers}
+                      onEditOffer={handleEditOffer}
                       onDeleteOffer={handleDeleteOffer}
                     />
                   ) : (

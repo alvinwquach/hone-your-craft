@@ -15,7 +15,6 @@ function validateRequiredOfferData(offerData: RequiredOfferData) {
   return null;
 }
 
-// Get offer by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -24,26 +23,20 @@ export async function GET(
 
   try {
     const currentUser = await getCurrentUser();
-    // If no current user, return an error response
     if (!currentUser) {
       return NextResponse.error();
     }
 
-    // Attempt to find the offer by ID
     const offer = await prisma.offer.findUnique({
       where: { id: offerId },
-      // Include related data if needed
     });
 
-    // If offer is not found, return a 404 response
     if (!offer) {
       return NextResponse.json({ message: "Offer not found" }, { status: 404 });
     }
 
-    // Return the offer as a JSON response
     return NextResponse.json({ offer });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error fetching offer:", error);
     return NextResponse.json(
       { message: "Error fetching offer" },
@@ -52,7 +45,6 @@ export async function GET(
   }
 }
 
-// Create a new offer
 export async function POST(request: NextRequest) {
   const offerData = await request.json();
 
@@ -64,20 +56,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const currentUser = await getCurrentUser();
-    // If no current user, return an error response
     if (!currentUser) {
       return NextResponse.error();
     }
 
-    // Attempt to create a new offer
     const offer = await prisma.offer.create({
       data: offerData,
     });
 
-    // Return the created offer as a JSON response with a 201 status code
     return NextResponse.json({ offer }, { status: 201 });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error creating offer:", error);
     return NextResponse.json(
       { message: "Error creating offer" },
@@ -86,7 +74,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Update offer by ID
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -95,28 +82,45 @@ export async function PUT(
   const offerData = await request.json();
 
   const validationError = validateRequiredOfferData(offerData);
-
   if (validationError) {
     return NextResponse.json({ message: validationError }, { status: 400 });
   }
 
   try {
     const currentUser = await getCurrentUser();
-    // If no current user, return an error response
     if (!currentUser) {
       return NextResponse.error();
     }
 
-    // Attempt to update the offer
-    const updatedOffer = await prisma.offer.update({
+    const existingOffer = await prisma.offer.findUnique({
       where: { id: offerId },
-      data: offerData,
     });
 
-    // Return the updated offer as a JSON response
+    if (!existingOffer) {
+      return NextResponse.json({ message: "Offer not found" }, { status: 404 });
+    }
+
+    if (existingOffer.userId !== currentUser.id) {
+      return NextResponse.json(
+        { message: "Unauthorized to edit this offer" },
+        { status: 403 }
+      );
+    }
+
+    const updateData: any = {};
+
+    if (offerData.offerDate) updateData.offerDate = offerData.offerDate;
+    if (offerData.offerDeadline)
+      updateData.offerDeadline = offerData.offerDeadline;
+    if (offerData.salary) updateData.salary = offerData.salary;
+
+    const updatedOffer = await prisma.offer.update({
+      where: { id: offerId },
+      data: updateData,
+    });
+
     return NextResponse.json({ offer: updatedOffer });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error updating offer:", error);
     return NextResponse.json(
       { message: "Error updating offer" },
@@ -125,7 +129,6 @@ export async function PUT(
   }
 }
 
-// Delete offer by ID
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -134,20 +137,16 @@ export async function DELETE(
 
   try {
     const currentUser = await getCurrentUser();
-    // If no current user, return an error response
     if (!currentUser) {
       return NextResponse.error();
     }
 
-    // Attempt to delete the offer
     await prisma.offer.delete({
       where: { id: offerId },
     });
 
-    // Return a success message as a JSON response
     return NextResponse.json({ message: "Offer deleted successfully" });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error deleting offer:", error);
     return NextResponse.json(
       { message: "Error deleting offer" },

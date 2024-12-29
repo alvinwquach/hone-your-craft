@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface Job {
   company: string;
@@ -15,119 +16,111 @@ interface JobOffer {
 
 interface JobOffersProps {
   jobOffers: JobOffer[];
+  onEditOffer: (offerId: string, updatedSalary: string) => void;
   onDeleteOffer: (offerId: string) => void;
 }
 
-function JobOffers({ jobOffers, onDeleteOffer }: JobOffersProps) {
-  jobOffers.sort((a, b) => {
-    return (
-      new Date(a.offerDeadline).getTime() - new Date(b.offerDeadline).getTime()
-    );
-  });
+function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
+  const [editingOffer, setEditingOffer] = useState<{ [key: string]: string }>(
+    {}
+  );
 
-  if (jobOffers.length == 0) {
+  jobOffers.sort(
+    (a, b) =>
+      new Date(a.offerDeadline).getTime() - new Date(b.offerDeadline).getTime()
+  );
+
+  const formatSalaryDisplay = (value: string) => {
+    const numericValue = value.replace(/\D/g, "");
+    const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return `$${formattedValue}`;
+  };
+
+  const formatSalaryInput = (value: string) => {
+    return value.replace(/[^\d.-]/g, "");
+  };
+
+  const handleOfferChange = (id: string, value: string) => {
+    const formattedValue = formatSalaryInput(value);
+    const displayValue = formatSalaryDisplay(formattedValue);
+    setEditingOffer((prev) => ({ ...prev, [id]: displayValue }));
+  };
+
+  const getRawSalary = (formattedValue: string) => {
+    return formattedValue.replace(/[^\d.-]/g, "");
+  };
+
+  const handleSaveOffer = (id: string) => {
+    const formattedSalary = editingOffer[id] || "";
+    const rawSalary = getRawSalary(formattedSalary);
+
+    if (rawSalary) {
+      onEditOffer(id, rawSalary);
+      setEditingOffer((prev) => {
+        const { [id]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  if (jobOffers.length === 0) {
     return (
-      <div className="relative overflow-x-auto">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-200">
-          <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
-            <tr>
-              <th scope="col" className="px-6 py-3">
-                Offer Date
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Offer Deadline
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Company
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Job Title
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Salary
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b bg-zinc-700 border-gray-700">
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="flex flex-col items-center justify-center p-8 text-gray-200">
+        <h2>No Job Offers Found</h2>
       </div>
     );
   }
 
   return (
-    <div className="relative overflow-x-auto">
-      <table className="w-full text-sm text-left rtl:text-right text-gray-200">
-        <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
-          <tr>
-            <th scope="col" className="px-6 py-3">
-              Offer Date
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Offer Deadline
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Company
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Job Title
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Salary
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Action
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {jobOffers.map((offer) => (
-            <tr
-              className="border-b bg-zinc-700 border-gray-700 hover:bg-zinc-600"
-              key={offer.id}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
+      {jobOffers.map((offer) => (
+        <div
+          key={offer.id}
+          className="bg-zinc-800 p-6 rounded-lg shadow-md w-full"
+        >
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <h3 className="text-lg font-semibold text-white">
+                {offer.job.company}
+              </h3>
+            </div>
+          </div>
+          <p className="text-sm text-gray-300 mb-2">{offer.job.title}</p>
+          <div className="text-sm text-gray-300">
+            <strong>Offer Received:</strong>{" "}
+            {format(new Date(offer.offerDate), "MM/dd/yy @ h:mm a")}
+          </div>
+          <div className="text-sm text-gray-300 mb-4">
+            <strong>Offer Deadline:</strong>{" "}
+            {format(new Date(offer.offerDeadline), "MM/dd/yy @ h:mm a")}
+          </div>
+          <div className="mb-4">
+            <strong>Salary:</strong>
+            <input
+              type="text"
+              value={
+                editingOffer[offer.id] || formatSalaryDisplay(offer.salary)
+              }
+              onChange={(e) => handleOfferChange(offer.id, e.target.value)}
+              className="w-full mt-2 bg-transparent text-gray-200 border border-gray-700 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={() => onDeleteOffer(offer.id)}
+              className="px-4 py-2 border border-gray-300 text-white rounded-md hover:bg-gray-700"
             >
-              <td className="px-6 py-4">
-                <span className="hidden md:inline">
-                  {format(offer.offerDate, "MM/dd/yy @ h:mm a")}
-                </span>
-                <span className="md:hidden">
-                  {format(offer.offerDate, "MM/dd/yy  h:mm a")}
-                </span>
-              </td>
-              <td className="px-6 py-4">
-                <span className="hidden md:inline">
-                  {format(offer.offerDeadline, "MM/dd/yy @ h:mm a")}
-                </span>
-                <span className="md:hidden">
-                  {format(offer.offerDeadline, "MM/dd/yy  h:mm a")}
-                </span>
-              </td>
-              <td className="px-6 py-4">{offer.job.company}</td>
-              <td className="px-6 py-4">{offer.job.title}</td>
-              <td className="px-6 py-4">${offer.salary}</td>
-              <td className="px-6 py-4">
-                <button
-                  onClick={() => onDeleteOffer(offer.id)}
-                  className="text-red-700 hover:text-red-500 hover:underline font-medium transition-colors"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              Delete Offer
+            </button>
+            <button
+              onClick={() => handleSaveOffer(offer.id)} // Save the offer
+              className="px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-md hover:bg-gray-100"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
