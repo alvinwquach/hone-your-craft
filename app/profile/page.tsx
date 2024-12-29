@@ -10,9 +10,10 @@ import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationSt
 import { getCandidateJobInterviews } from "@/app/actions/getCandidateJobInterviews";
 import { getUserJobPostingSourceCount } from "@/app/actions/getUserJobPostingSourceCount";
 import { getCandidateApplicationStatus } from "../actions/getCandidateApplicationStatus";
-import ProfileCard from "../components/profile/ProfileCard";
-import SuggestedSkillsCard from "../components/profile/SuggestedSkillsCard";
-import SkillsCard from "../components/profile/SkillsCard";
+import ProfileCard from "../components/profile/profile/ProfileCard";
+import SkillsCard from "../components/profile/profile/SkillsCard";
+import SuggestedSkillsCard from "../components/profile/profile/SuggestedSkillsCard";
+import EducationList from "../components/profile/profile/EducationList";
 import SkillsTable from "../components/profile/dashboard/SkillsTable";
 import MissingSkillsTable from "../components/profile/dashboard/MissingSkillsTable";
 import JobPostingSourceCountChart from "../components/profile/dashboard/JobPostingSourceCountChart";
@@ -20,9 +21,9 @@ import ApplicationStatusChart from "../components/profile/dashboard/ApplicationS
 import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
 import JobApplicationStatusChart from "../components/profile/dashboard/JobApplicationStatusChart";
 import ResumeUpload from "../components/profile/resume/ResumeUpload";
-import UpcomingInterviews from "../components/profile/UpcomingInterviews";
-import JobOffers from "../components/profile/JobOffers";
-import JobRejections from "../components/profile/JobRejections";
+import UpcomingInterviews from "../components/profile/interviews/UpcomingInterviews";
+import JobOffers from "../components/profile/offers/JobOffers";
+import JobRejections from "../components/profile/rejections/JobRejections";
 import { toast } from "react-toastify";
 import {
   FaUser,
@@ -33,7 +34,6 @@ import {
   FaTools,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
-import EducationList from "../components/profile/EducationList";
 
 interface JobPosting {
   title: string;
