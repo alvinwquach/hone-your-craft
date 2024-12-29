@@ -7,7 +7,7 @@ import { FiUser } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
-import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
+import defaultPfp from "../../../../public/images/icons/default_pfp.jpeg";
 import { YearsOfExperience } from "@prisma/client";
 import { Combobox } from "@headlessui/react";
 import { jobRoles } from "@/app/lib/jobRoles";

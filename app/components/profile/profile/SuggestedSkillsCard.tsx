@@ -51,7 +51,7 @@ function SuggestedSkillsCard({
         </h2>
         <p className="text-gray-400 text-sm">
           {missingSkills.length === 0
-            ? "As you begin to apply to roles, we&rsquoll suggest skills to add."
+            ? "As you begin to apply to roles, we'll suggest skills to add."
             : "To further hone your craft, here are some skills you might consider adding to your growing skillset:"}
         </p>
       </div>
