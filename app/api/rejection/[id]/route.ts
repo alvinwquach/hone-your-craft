@@ -113,10 +113,17 @@ export async function PUT(
   }
 
   try {
+    const updateData: any = {};
+    if (date) updateData.date = date;
+    if (initiatedBy) updateData.initiatedBy = initiatedBy;
+    if (notes !== undefined) updateData.notes = notes;
+    if (jobId) updateData.jobId = jobId;
+    if (userId) updateData.userId = userId;
+
     // Attempt to update the rejection
     const updatedRejection = await prisma.rejection.update({
       where: { id: rejectionId },
-      data: { date, initiatedBy, notes, jobId, userId },
+      data: updateData,
     });
 
     // Return the updated rejection as a JSON response
@@ -130,6 +137,7 @@ export async function PUT(
     );
   }
 }
+
 
 // Delete rejection by ID
 export async function DELETE(
