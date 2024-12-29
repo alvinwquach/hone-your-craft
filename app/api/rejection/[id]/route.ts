@@ -14,7 +14,6 @@ function validateRequiredRejectionData(rejectionData: RequiredRejectionData) {
   return null;
 }
 
-// Get rejection by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -23,18 +22,15 @@ export async function GET(
 
   try {
     const currentUser = await getCurrentUser();
-    // If no current user, return an error response
     if (!currentUser) {
       return NextResponse.error();
     }
 
-    // Attempt to find the rejection by ID
     const rejection = await prisma.rejection.findUnique({
       where: { id: rejectionId },
-      include: { job: true, user: true }, // Include related job and user data
+      include: { job: true, user: true },
     });
 
-    // If rejection is not found, return a 404 response
     if (!rejection) {
       return NextResponse.json(
         { message: "Rejection not found" },
@@ -42,10 +38,8 @@ export async function GET(
       );
     }
 
-    // Return the rejection as a JSON response
     return NextResponse.json({ rejection });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error fetching rejection:", error);
     return NextResponse.json(
       { message: "Error fetching rejection" },
@@ -54,10 +48,8 @@ export async function GET(
   }
 }
 
-// Create a new rejection
 export async function POST(request: NextRequest) {
   const currentUser = await getCurrentUser();
-  // If no current user, return an error response
   if (!currentUser) {
     return NextResponse.error();
   }
@@ -70,7 +62,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Attempt to create a new rejection
     const rejection = await prisma.rejection.create({
       data: {
         date,
@@ -81,10 +72,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Return the created rejection as a JSON response with a 201 status code
     return NextResponse.json({ rejection }, { status: 201 });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error creating rejection:", error);
     return NextResponse.json(
       { message: "Error creating rejection" },
@@ -93,13 +82,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Update rejection by ID
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const currentUser = await getCurrentUser();
-  // If no current user, return an error response
   if (!currentUser) {
     return NextResponse.error();
   }
@@ -120,16 +107,13 @@ export async function PUT(
     if (jobId) updateData.jobId = jobId;
     if (userId) updateData.userId = userId;
 
-    // Attempt to update the rejection
     const updatedRejection = await prisma.rejection.update({
       where: { id: rejectionId },
       data: updateData,
     });
 
-    // Return the updated rejection as a JSON response
     return NextResponse.json({ rejection: updatedRejection });
   } catch (error) {
-    // Handle errors and return a 500 response
     console.error("Error updating rejection:", error);
     return NextResponse.json(
       { message: "Error updating rejection" },

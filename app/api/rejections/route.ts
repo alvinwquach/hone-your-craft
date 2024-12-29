@@ -5,10 +5,8 @@ import { Rejection } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the current user
     const currentUser = await getCurrentUser();
 
-    // If user is not authenticated, return a 401 response
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
