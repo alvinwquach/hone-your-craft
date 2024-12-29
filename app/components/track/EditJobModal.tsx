@@ -403,7 +403,6 @@ function EditJobModal({ isOpen, closeModal, job, id }: EditJobModalProps) {
                       Log Rejection
                     </span>
                   </button>
-
                   <button
                     type="button"
                     onClick={openLogOfferModal}

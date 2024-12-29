@@ -238,6 +238,36 @@ function Profile() {
     )
   );
 
+  const handleEditRejection = async (id: string, updatedNotes: string) => {
+    try {
+      const currentRejection = jobRejections.find(
+        (rejection: any) => rejection.id === id
+      );
+      const response = await fetch(`/api/rejection/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notes: updatedNotes,
+          date: currentRejection?.date,
+          initiatedBy: currentRejection?.initiatedBy,
+        }),
+      });
+
+      if (response.ok) {
+        mutate("/api/rejections");
+        toast.success("Rejection Updated");
+      } else {
+        throw new Error("Failed to update rejection");
+      }
+    } catch (error) {
+      console.error("Error updating rejection:", error);
+      toast.error("Failed To Update Rejection");
+      throw error;
+    }
+  };
+
   const handleDeleteRejection = async (id: string) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this rejection?"
@@ -498,6 +528,7 @@ function Profile() {
                   fallback={
                     <JobRejections
                       jobRejections={[]}
+                      onEditRejection={handleEditRejection}
                       onDeleteRejection={handleDeleteRejection}
                     />
                   }
@@ -505,6 +536,7 @@ function Profile() {
                   {!loadingUserRejections ? (
                     <JobRejections
                       jobRejections={jobRejections}
+                      onEditRejection={handleEditRejection}
                       onDeleteRejection={handleDeleteRejection}
                     />
                   ) : (

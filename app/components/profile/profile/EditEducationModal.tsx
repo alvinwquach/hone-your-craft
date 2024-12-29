@@ -367,7 +367,7 @@ function EditEducationModal({
               <button
                 type="button"
                 onClick={handleDelete}
-                className="  text-gray-800 rounded-md "
+                className="text-gray-800 rounded-md"
               >
                 Delete Education
               </button>
