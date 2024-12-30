@@ -21,7 +21,10 @@ type ViewCountProps = {
   jobId: string;
 };
 
-export default function JobViewCount({ initialViews, jobId }: ViewCountProps) {
+export default function JobPostingViewCount({
+  initialViews,
+  jobId,
+}: ViewCountProps) {
   const [views, setViews] = useState(initialViews);
   const hasMounted = useRef(false);
 

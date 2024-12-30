@@ -12,7 +12,7 @@ import {
 import { BsFillLightningChargeFill } from "react-icons/bs";
 import { PiPencilLineFill, PiUsersFour } from "react-icons/pi";
 import { formatDistanceToNow } from "date-fns";
-import JobViewCount from "./JobViewCount";
+import JobPostingViewCount from "./JobPostingViewCount";
 
 const companySizeLabels = {
   Tiny_1_10: "1 - 10 employees",
@@ -198,7 +198,7 @@ function CandidateJobPostingCard({
             </span>
           </div>
           <div className="mt-4">
-            <JobViewCount initialViews={job.views} jobId={job.id} />
+            <JobPostingViewCount initialViews={job.views} jobId={job.id} />
           </div>
           <div className="flex items-center text-gray-400 mb-2">
             <FaCoins className="mr-2 text-white" />
