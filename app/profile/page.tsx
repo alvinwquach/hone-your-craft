@@ -34,6 +34,7 @@ import {
   FaTools,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
+import RolesCard from "../components/profile/profile/RolesCard";
 
 interface JobPosting {
   title: string;
@@ -626,15 +627,16 @@ function Profile() {
           </div>
         </>
       ) : userRole === "CLIENT" ? (
-        <section className="flex flex-col items-center justify-center min-h-screen">
-          <FaTools className="text-6xl text-yellow-500 mb-4" />
-          <h2 className="text-xl font-bold text-gray-700 mb-2">
-            We&rsquo;re Building Something Great!
-          </h2>
-          <p className="text-center text-gray-500">
-            This page is currently in development. We can&rsquo;t wait to share
-            it with you! Please check back soon for updates.
-          </p>
+        <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+          <Suspense fallback={<RolesCard userData={[]} />}>
+            {!loadingUserData ? (
+              <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
+                <RolesCard userData={userData} />
+              </div>
+            ) : (
+              <div>Loading Profile...</div>
+            )}
+          </Suspense>
         </section>
       ) : null}
     </section>
