@@ -113,7 +113,7 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
               Delete Offer
             </button>
             <button
-              onClick={() => handleSaveOffer(offer.id)} // Save the offer
+              onClick={() => handleSaveOffer(offer.id)}
               className="px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-md hover:bg-gray-100"
             >
               Save

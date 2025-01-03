@@ -25,6 +25,7 @@ import UpcomingInterviews from "../components/profile/interviews/UpcomingIntervi
 import JobOffers from "../components/profile/offers/JobOffers";
 import JobRejections from "../components/profile/rejections/JobRejections";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   FaUser,
   FaCalendarAlt,
@@ -37,6 +38,17 @@ import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
 import { GiThreeFriends } from "react-icons/gi";
 import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+  userRole?: string;
+  image?: string;
+  headline?: string;
+  connectionStatus?: string;
+}
 
 interface JobPosting {
   title: string;
@@ -124,6 +136,51 @@ function Profile() {
   const [jobApplicationStatusCount, setJobApplicationStatusCount] = useState<
     JobApplicationStatus[]
   >([]);
+
+  const [pendingRequests, setPendingRequests] = useState<Set<string>>(
+    new Set()
+  );
+
+  const sendConnectionRequest = async (receiverId: string) => {
+    const connectionStatus = users.find(
+      (user: User) => user.id === receiverId
+    )?.connectionStatus;
+
+    if (connectionStatus === "NONE") {
+      try {
+        const response = await fetch("/api/connections", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ receiverId }),
+        });
+
+        if (response.ok) {
+          // Assume `mutate` will update the data
+          mutate("/api/connections/sent");
+          mutate("/api/users");
+          toast.success("Connection sent successfully!");
+        } else {
+          console.error("Failed to send connection request");
+          toast.error("Failed to send connection request.");
+        }
+      } catch (error) {
+        console.error("Error sending connection request:", error);
+        toast.error("Error sending connection request.");
+      } finally {
+        setTimeout(() => {
+          setPendingRequests((prev) => {
+            const updated = new Set(prev);
+            updated.delete(receiverId);
+            return updated;
+          });
+        }, 3000);
+      }
+    } else {
+      toast.info("You have already interacted with this user.");
+    }
+  };
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -359,6 +416,54 @@ function Profile() {
     }
   };
 
+  const rejectConnectionRequest = async (connectionId: string) => {
+    try {
+      const response = await fetch("/api/connections/reject", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ connectionId }),
+      });
+
+      if (response.ok) {
+        mutate("/api/connections/received");
+        mutate("/api/connections/sent");
+        mutate("/api/users");
+        toast.success("Connection rejected successfully!");
+      } else {
+        toast.error("Failed to reject connection request.");
+      }
+    } catch (error) {
+      console.error("Error rejecting connection:", error);
+      toast.error("Error rejecting connection request.");
+    }
+  };
+
+  const acceptConnectionRequest = async (connectionId: string) => {
+    try {
+      const response = await fetch("/api/connections/accept", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ connectionId }),
+      });
+
+      if (response.ok) {
+        mutate("/api/connections/received");
+        mutate("/api/connections/sent");
+        mutate("/api/connections");
+        toast.success("Connection accepted successfully!");
+      } else {
+        toast.error("Failed to accept connection request.");
+      }
+    } catch (error) {
+      console.error("Error accepting connection:", error);
+      toast.error("Error accepting connection request.");
+    }
+  };
+
   const loadingUserData = !userData || userDataLoading;
   const loadingUserInterviews = !userInterviews || userInterviewsLoading;
   const loadingUserOffers = !userOffers || userOffersLoading;
@@ -504,6 +609,10 @@ function Profile() {
                     connections={[]}
                     connectionsReceived={[]}
                     connectionsSent={[]}
+                    sendConnectionRequest={sendConnectionRequest}
+                    pendingRequests={pendingRequests}
+                    acceptConnectionRequest={acceptConnectionRequest}
+                    rejectionConnectionRequest={rejectConnectionRequest}
                   />
                 }
               >
@@ -512,6 +621,10 @@ function Profile() {
                   connections={connections}
                   connectionsReceived={connectionsReceived}
                   connectionsSent={connectionsSent}
+                  sendConnectionRequest={sendConnectionRequest}
+                  pendingRequests={pendingRequests}
+                  acceptConnectionRequest={acceptConnectionRequest}
+                  rejectionConnectionRequest={rejectConnectionRequest}
                 />
               </Suspense>
             )}
@@ -772,6 +885,10 @@ function Profile() {
                   connections={[]}
                   connectionsReceived={[]}
                   connectionsSent={[]}
+                  sendConnectionRequest={sendConnectionRequest}
+                  pendingRequests={pendingRequests}
+                  acceptConnectionRequest={acceptConnectionRequest}
+                  rejectionConnectionRequest={rejectConnectionRequest}
                 />
               }
             >
@@ -780,6 +897,10 @@ function Profile() {
                 connections={connections}
                 connectionsReceived={connectionsReceived}
                 connectionsSent={connectionsSent}
+                sendConnectionRequest={sendConnectionRequest}
+                pendingRequests={pendingRequests}
+                acceptConnectionRequest={acceptConnectionRequest}
+                rejectionConnectionRequest={rejectConnectionRequest}
               />
             </Suspense>
           )}
