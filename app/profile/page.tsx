@@ -32,7 +32,6 @@ import {
   FaMoneyCheckAlt,
   FaFileAlt,
   FaBan,
-  FaTools,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
@@ -157,7 +156,6 @@ function Profile() {
         });
 
         if (response.ok) {
-          // Assume `mutate` will update the data
           mutate("/api/connections/sent");
           mutate("/api/users");
           toast.success("Connection sent successfully!");
