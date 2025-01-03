@@ -157,7 +157,6 @@ function Profile() {
         });
 
         if (response.ok) {
-          // Assume `mutate` will update the data
           mutate("/api/connections/sent");
           mutate("/api/users");
           toast.success("Connection sent successfully!");
