@@ -35,6 +35,8 @@ import {
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
+import { GiThreeFriends } from "react-icons/gi";
+import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
 
 interface JobPosting {
   title: string;
@@ -74,6 +76,20 @@ function Profile() {
   const { data: userRejections, isLoading: userRejectionsLoading } = useSWR(
     "/api/rejections",
     (url) => fetch(url).then((res) => res.json())
+  );
+  const { data: users } = useSWR("/api/users", (url) =>
+    fetch(url).then((res) => res.json())
+  );
+  const { data: connections } = useSWR("/api/connections/", (url) =>
+    fetch(url).then((res) => res.json())
+  );
+  const { data: connectionsReceived } = useSWR(
+    "/api/connections/received",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
+  const { data: connectionsSent } = useSWR("/api/connections/sent", (url) =>
+    fetch(url).then((res) => res.json())
   );
 
   const userRole = data?.user?.userRole;
@@ -375,6 +391,23 @@ function Profile() {
                 </li>
                 <li className="me-2">
                   <button
+                    onClick={() => setActiveTab("connections")}
+                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                      activeTab === "connections"
+                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                        : ""
+                    }`}
+                  >
+                    <GiThreeFriends
+                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                        activeTab === "connections" ? "text-blue-600" : ""
+                      }`}
+                    />
+                    Connections
+                  </button>
+                </li>
+                <li className="me-2">
+                  <button
                     onClick={() => setActiveTab("dashboard")}
                     className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
                       activeTab === "dashboard"
@@ -463,6 +496,25 @@ function Profile() {
                 </li>
               </ul>
             </div>
+            {activeTab === "connections" && (
+              <Suspense
+                fallback={
+                  <ConnectionsCard
+                    users={[]}
+                    connections={[]}
+                    connectionsReceived={[]}
+                    connectionsSent={[]}
+                  />
+                }
+              >
+                <ConnectionsCard
+                  users={users}
+                  connections={connections}
+                  connectionsReceived={connectionsReceived}
+                  connectionsSent={connectionsSent}
+                />
+              </Suspense>
+            )}
             <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
               {activeTab === "profile" && (
                 <Suspense fallback={<ProfileCard userData={[]} />}>
@@ -628,15 +680,109 @@ function Profile() {
         </>
       ) : userRole === "CLIENT" ? (
         <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-          <Suspense fallback={<RolesCard userData={[]} />}>
-            {!loadingUserData ? (
-              <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
-                <RolesCard userData={userData} />
-              </div>
-            ) : (
-              <div>Loading Profile...</div>
-            )}
-          </Suspense>
+          <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+            <ul className="flex flex-wrap -mb-px justify-start">
+              <li className="me-2">
+                <button
+                  onClick={() => setActiveTab("profile")}
+                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                    activeTab === "profile"
+                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                      : ""
+                  }`}
+                >
+                  <FaUser
+                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                      activeTab === "profile" ? "text-blue-600" : ""
+                    }`}
+                  />
+                  Profile
+                </button>
+              </li>
+              <li className="me-2">
+                <button
+                  onClick={() => setActiveTab("connections")}
+                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                    activeTab === "connections"
+                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                      : ""
+                  }`}
+                >
+                  <GiThreeFriends
+                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                      activeTab === "connections" ? "text-blue-600" : ""
+                    }`}
+                  />
+                  Connections
+                </button>
+              </li>
+              <li className="me-2">
+                <button
+                  onClick={() => setActiveTab("dashboard")}
+                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                    activeTab === "dashboard"
+                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                      : ""
+                  }`}
+                  aria-current={activeTab === "dashboard" ? "page" : undefined}
+                >
+                  <SiBaremetrics
+                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                      activeTab === "dashboard" ? "text-blue-600" : ""
+                    }`}
+                  />
+                  Dashboard
+                </button>
+              </li>
+              <li className="me-2">
+                <button
+                  onClick={() => setActiveTab("interviews")}
+                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                    activeTab === "interviews"
+                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                      : ""
+                  }`}
+                >
+                  <FaCalendarAlt
+                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                      activeTab === "interviews" ? "text-blue-600" : ""
+                    }`}
+                  />
+                  Interviews
+                </button>
+              </li>
+            </ul>
+          </div>
+          {activeTab === "profile" && (
+            <Suspense fallback={<RolesCard userData={[]} />}>
+              {!loadingUserData ? (
+                <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
+                  <RolesCard userData={userData} />
+                </div>
+              ) : (
+                <div>Loading Profile...</div>
+              )}
+            </Suspense>
+          )}
+          {activeTab === "connections" && (
+            <Suspense
+              fallback={
+                <ConnectionsCard
+                  users={[]}
+                  connections={[]}
+                  connectionsReceived={[]}
+                  connectionsSent={[]}
+                />
+              }
+            >
+              <ConnectionsCard
+                users={users}
+                connections={connections}
+                connectionsReceived={connectionsReceived}
+                connectionsSent={connectionsSent}
+              />
+            </Suspense>
+          )}
         </section>
       ) : null}
     </section>
