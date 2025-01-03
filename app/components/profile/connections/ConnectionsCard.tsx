@@ -7,12 +7,7 @@ import {
   AiOutlineClockCircle,
 } from "react-icons/ai";
 import { IoIosContacts } from "react-icons/io";
-
 import defaultPfp from "../../../../public/images/icons/default_pfp.jpeg";
-
-import { mutate } from "swr";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 interface User {
   id: string;
@@ -41,6 +36,10 @@ interface ConnectionsCardProps {
   connections: User[];
   connectionsReceived: Connection[];
   connectionsSent: Connection[];
+  sendConnectionRequest: (receiverId: string) => void;
+  pendingRequests: Set<string>;
+  acceptConnectionRequest: (connectionId: string) => void;
+  rejectionConnectionRequest: (connectionId: string) => void;
 }
 
 const ConnectionsCard = ({
@@ -48,12 +47,12 @@ const ConnectionsCard = ({
   users,
   connectionsSent,
   connectionsReceived,
+  sendConnectionRequest,
+  pendingRequests,
+  acceptConnectionRequest,
+  rejectionConnectionRequest,
 }: ConnectionsCardProps) => {
   const [activeTab, setActiveTab] = useState("users");
-  const [pendingRequests, setPendingRequests] = useState<Set<string>>(
-    new Set()
-  );
-
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
@@ -67,69 +66,6 @@ const ConnectionsCard = ({
       ));
     }
     return null;
-  };
-
-  const sendConnectionRequest = async (receiverId: string) => {
-    const connectionStatus = users.find(
-      (user) => user.id === receiverId
-    )?.connectionStatus;
-
-    if (connectionStatus === "NONE") {
-      try {
-        const response = await fetch("/api/connections", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ receiverId }),
-        });
-
-        if (response.ok) {
-          mutate("/api/users");
-          toast.success("Connection sent successfully!");
-        } else {
-          console.error("Failed to send connection request");
-          toast.error("Failed to send connection request.");
-        }
-      } catch (error) {
-        console.error("Error sending connection request:", error);
-        toast.error("Error sending connection request.");
-      } finally {
-        setTimeout(() => {
-          setPendingRequests((prev) => {
-            const updated = new Set(prev);
-            updated.delete(receiverId);
-            return updated;
-          });
-        }, 3000);
-      }
-    } else {
-      toast.info("You have already interacted with this user.");
-    }
-  };
-
-  const acceptConnectionRequest = async (connectionId: string) => {
-    try {
-      const response = await fetch("/api/connections/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ connectionId }),
-      });
-
-      if (response.ok) {
-        mutate("/api/connections/received");
-        mutate("/api/connections/sent");
-        mutate("/api/connections");
-        toast.success("Connection accepted successfully!");
-      } else {
-        toast.error("Failed to accept connection request.");
-      }
-    } catch (error) {
-      console.error("Error accepting connection:", error);
-      toast.error("Error accepting connection request.");
-    }
   };
 
   return (
@@ -397,6 +333,14 @@ const ConnectionsCard = ({
                           className="p-3 px-6 rounded-lg  text-white bg-zinc-700 hover:bg-zinc-600 border-gray-700 border-2 transition-all duration-200"
                         >
                           Accept
+                        </button>
+                        <button
+                          onClick={() =>
+                            rejectionConnectionRequest(connection.id)
+                          }
+                          className="p-3 px-6 rounded-lg  text-white bg-zinc-700 hover:bg-zinc-600 border-gray-700 border-2 transition-all duration-200"
+                        >
+                          Reject
                         </button>
                       </div>
                     )}

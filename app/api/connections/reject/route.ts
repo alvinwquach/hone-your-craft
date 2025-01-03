@@ -1,58 +1,60 @@
-import prisma from "@/app/lib/db/prisma"; 
-import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/app/lib/db/prisma";
+import getCurrentUser from "@/app/actions/getCurrentUser";
 
 export async function PUT(request: NextRequest) {
-  try {
-    const currentUser = await getCurrentUser(); 
-    if (!currentUser) {
-      return NextResponse.error(); 
-    }
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return NextResponse.error();
+  }
 
-    const { receiverId } = await request.json();
+  const { connectionId } = await request.json();
 
-    const receiver = await prisma.user.findUnique({
-      where: { id: receiverId },
-    });
+  const connection = await prisma.connection.findUnique({
+    where: { id: connectionId },
+    include: {
+      requester: true,
+      receiver: true,
+    },
+  });
 
-    if (!receiver) {
-      return NextResponse.json(
-        { message: "Receiver not found" },
-        { status: 404 }
-      );
-    }
-
-    const connection = await prisma.connection.findUnique({
-      where: {
-        requesterId_receiverId: {
-          requesterId: currentUser.id,
-          receiverId,
-        },
-      },
-    });
-
-    if (!connection) {
-      return NextResponse.json(
-        { message: "No connection found between users" },
-        { status: 404 }
-      );
-    }
-
-    await prisma.connection.update({
-      where: { id: currentUser.id },
-      data: {
-        status: "NONE",
-      },
-    });
-
+  if (!connection) {
     return NextResponse.json(
-      { message: "Connection rejected and reset successfully" },
-      { status: 200 }
+      { message: "Connection not found" },
+      { status: 404 }
     );
-  } catch (error) {
-    console.error("Error rejecting connection:", error);
+  }
+
+  // Ensure the current user is the receiver of this request
+  if (connection.receiverId !== currentUser.id) {
     return NextResponse.json(
-      { message: "Error rejecting connection" },
+      { message: "You are not the receiver of this connection request" },
+      { status: 400 }
+    );
+  }
+
+  if (connection.status !== "PENDING") {
+    return NextResponse.json(
+      { message: "Connection request is no longer pending" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const rejectedConnection = await prisma.connection.update({
+      where: { id: connectionId },
+      data: { status: "NONE" },
+      include: {
+        requester: true,
+        receiver: true,
+      },
+    });
+
+    return NextResponse.json(rejectedConnection, { status: 200 });
+  } catch (error) {
+    console.error("Error rejecting connection request:", error);
+    return NextResponse.json(
+      { message: "Error rejecting connection request" },
       { status: 500 }
     );
   }
