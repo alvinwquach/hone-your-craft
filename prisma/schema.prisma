@@ -278,8 +278,9 @@ model Message {
   id                String      @id @default(auto()) @map("_id") @db.ObjectId
   sender            User        @relation("SentMessages", fields: [senderId], references: [id])
   senderId          String      @db.ObjectId
-  recipient         User        @relation("ReceivedMessages", fields: [recipientId], references: [id])
-  recipientId       String      @db.ObjectId
+  recipients        User        @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  recipientId       String[]    @db.ObjectId
+  subject           String?
   content           String
   messageType       MessageType @default(TEXT)
   mentionedUserIds  String[]
@@ -865,6 +866,8 @@ model User {
 
   @@map("users")
 }
+
+
 
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId

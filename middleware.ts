@@ -9,7 +9,14 @@ export default withAuth(
     // Check if a token exists
     const isAuthenticated = !!token;
     // Define a list of protected routes that require authentication
-    const authRoutes = ["/profile", "/calendar", "/track", "/metrics", "/jobs"];
+    const authRoutes = [
+      "/profile",
+      "/messages",
+      "/calendar",
+      "/track",
+      "/metrics",
+      "/jobs",
+    ];
     // Check if the requested route is in the list of protected routes
     if (authRoutes.includes(req.nextUrl.pathname)) {
       // If the user is authenticated, allow access to the requested route
@@ -39,5 +46,12 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/profile", "/calendar", "/track", "/metrics", "/jobs"],
+  matcher: [
+    "/profile",
+    "/messages",
+    "/calendar",
+    "/track",
+    "/metrics",
+    "/jobs",
+  ],
 };

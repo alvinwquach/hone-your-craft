@@ -1,11 +1,33 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    domains: [
+      "lh3.googleusercontent.com",
+      "cdn.discordapp.com",
+      "avatars.githubusercontent.com",
+      "hone-your-craft.s3.us-east-2.amazonaws.com",
+    ],
     remotePatterns: [
-      { hostname: "lh3.googleusercontent.com" },
-      { hostname: "cdn.discordapp.com" },
-      { hostname: "avatars.githubusercontent.com" },
-      { hostname: "hone-your-craft.s3.us-east-2.amazonaws.com" },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.discordapp.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "hone-your-craft.s3.us-east-2.amazonaws.com",
+        pathname: "/**",
+      },
     ],
   },
   async headers() {
