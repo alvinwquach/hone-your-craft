@@ -26,6 +26,11 @@ function Messages() {
   const { data: receivedMessages } = useSWR("/api/message/receive", (url) =>
     fetch(url).then((res) => res.json())
   );
+  const { data: trashedSentMessages } = useSWR(
+    "/api/message/sent/trash",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
@@ -46,6 +51,7 @@ function Messages() {
         sentMessages={sentMessages}
         receivedMessages={receivedMessages}
         replies={replies}
+        trashedSentMessages={trashedSentMessages}
       />
       {isModalOpen && <MessageModal users={users} closeModal={toggleModal} />}
     </section>

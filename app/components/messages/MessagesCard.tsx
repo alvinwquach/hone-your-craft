@@ -61,6 +61,7 @@ interface Message {
 interface MessagesCardProps {
   receivedMessages: { message: string; data: Message[] } | undefined;
   sentMessages: { message: string; data: Message[] } | undefined;
+  trashedSentMessages: { message: string; data: Message[] } | undefined;
   userData: any;
   replies: any;
 }
@@ -73,6 +74,7 @@ const MessagesCard = ({
   replies,
   receivedMessages,
   sentMessages,
+  trashedSentMessages,
   userData,
 }: MessagesCardProps) => {
   const [activeTab, setActiveTab] = useState("inbox");
@@ -144,6 +146,44 @@ const MessagesCard = ({
     }
   };
 
+  const handleTrash = async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/message/sent/trash`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        mutate(
+          "api/message/sent",
+          (prevData: any) => {
+            const updatedMessages = prevData?.data.filter(
+              (message: Message) => message.id !== messageId
+            );
+            return { ...prevData, data: updatedMessages };
+          },
+          false
+        );
+
+        toast.success("Message moved to trash!");
+        mutate("api/message/sent");
+        mutate("api/trash");
+      } else {
+        toast.error(result.message || "Failed to move message to trash.");
+      }
+    } catch (error) {
+      console.error("Error trashing message:", error);
+      toast.error("An error occurred while moving the message to trash.");
+    }
+  };
+
   const handleCloseReply = () => {
     setReplyMessage("");
   };
@@ -162,7 +202,7 @@ const MessagesCard = ({
     });
   };
 
-  const handleTrash = () => {
+  const handleResetMessage = () => {
     reset({
       replyMessage: "",
     });
@@ -404,7 +444,7 @@ const MessagesCard = ({
                         <button
                           className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full"
                           type="button"
-                          onClick={handleTrash}
+                          onClick={handleResetMessage}
                         >
                           <FaTrash />
                         </button>
@@ -425,7 +465,18 @@ const MessagesCard = ({
         {activeTab === "sent" && hasSentMessages ? (
           <div className="rounded-lg h-full">
             {sentMessages.data?.map((message) => (
-              <div key={message.id} className="mb-6 p-4 bg-zinc-800 rounded-lg">
+              <div
+                key={message.id}
+                className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
+              >
+                {/* Trash Icon in Top Right */}
+                <button
+                  className="absolute top-4 right-4 px-3 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-full shadow-md transition-all duration-200 ease-in-out"
+                  onClick={() => handleTrash(message.id)} // Trashing the message
+                >
+                  <FaTrash className="w-5 h-5" />
+                </button>
+
                 <h3 className="text-lg font-semibold text-zinc-300">
                   {message.subject}
                 </h3>
@@ -468,7 +519,61 @@ const MessagesCard = ({
             </p>
           </div>
         ) : null}
-
+        {activeTab === "sent" && hasSentMessages ? (
+          <div className="rounded-lg h-full">
+            {sentMessages.data?.map((message) => (
+              <div
+                key={message.id}
+                className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
+              >
+                <button
+                  className="absolute top-2 right-2 text-zinc-400 hover:text-white transition-all duration-200"
+                  onClick={() => handleTrash(message.id)}
+                >
+                  <FaTrash className="w-5 h-5" />
+                </button>
+                <h3 className="text-lg font-semibold text-zinc-300">
+                  {message.subject}
+                </h3>
+                <p className="text-zinc-400 mt-2">{message.content}</p>
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-zinc-500">
+                    Recipients:
+                  </h4>
+                  <div className="mt-2 space-y-2">
+                    {message.recipients?.map((recipient) => (
+                      <div
+                        key={recipient.id}
+                        className="flex items-center space-x-2"
+                      >
+                        <Image
+                          src={recipient.image}
+                          alt={recipient.name}
+                          width={32}
+                          height={32}
+                          className="rounded-full"
+                        />
+                        <div className="text-sm">
+                          <p className="text-zinc-300">{recipient.name}</p>
+                          <p className="text-zinc-400">{recipient.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-500 mt-2">
+                  {formatMessageDate(message.createdAt)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : activeTab === "sent" ? (
+          <div className="rounded-lg h-full">
+            <p className="text-center text-zinc-500 mt-2">
+              No Sent Messages Found
+            </p>
+          </div>
+        ) : null}
         {activeTab === "interviews" && (
           <div className="rounded-lg h-full">
             <p className="text-center text-zinc-500 mt-2">
@@ -476,11 +581,53 @@ const MessagesCard = ({
             </p>
           </div>
         )}
-        {activeTab === "trash" && (
+        {activeTab === "trash" ? (
+          <div className="rounded-lg h-full">
+            {trashedSentMessages?.data.map((message) => (
+              <div
+                key={message.id}
+                className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
+              >
+                <h3 className="text-lg font-semibold text-zinc-300">
+                  {message.subject}
+                </h3>
+                <p className="text-zinc-400 mt-2">{message.content}</p>
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-zinc-500">
+                    Recipients:
+                  </h4>
+                  <div className="mt-2 space-y-2">
+                    {message.recipients?.map((recipient) => (
+                      <div
+                        key={recipient.id}
+                        className="flex items-center space-x-2"
+                      >
+                        <Image
+                          src={recipient.image}
+                          alt={recipient.name}
+                          width={32}
+                          height={32}
+                          className="rounded-full"
+                        />
+                        <div className="text-sm">
+                          <p className="text-zinc-300">{recipient.name}</p>
+                          <p className="text-zinc-400">{recipient.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-500 mt-2">
+                  {formatMessageDate(message.createdAt)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : activeTab === "trash" ? (
           <div className="rounded-lg h-full">
             <p className="text-center text-zinc-500 mt-2">No Trash Found</p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -288,6 +288,7 @@ model Message {
   updatedAt         DateTime    @updatedAt
   isReadByRecipient Boolean     @default(false)
   isDeletedBySender Boolean     @default(false)
+  isDeletedByRecipient Boolean @default(false) 
   replyToId         String?     @db.ObjectId
   threadId          String?     @db.ObjectId
   deliveryStatus    String?

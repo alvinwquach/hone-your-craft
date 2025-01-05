@@ -13,19 +13,20 @@ export async function GET(request: NextRequest) {
     const sentMessages = await prisma.message.findMany({
       where: {
         senderId: currentUser.id,
+        isDeletedBySender: false,
       },
       select: {
         id: true,
         subject: true,
         content: true,
         messageType: true,
-        isReadByRecipient: true,
+        isDeletedBySender: true,
         createdAt: true,
         mentionedUserIds: true,
         recipientId: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "desc", // Order by creation date
       },
     });
 
