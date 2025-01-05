@@ -5,9 +5,19 @@ import MessagesCard from "../components/messages/MessagesCard";
 import MessageModal from "../components/messages/MessagesModal";
 import { MdOutlineForwardToInbox } from "react-icons/md";
 import useSWR from "swr";
+import { useSession } from "next-auth/react";
 
 function Messages() {
+  const { data: session } = useSession();
+  const { data: userData, isLoading: userDataLoading } = useSWR(
+    session ? `/api/user/${session?.user?.email}` : null,
+    (url) => fetch(url).then((res) => res.json())
+  );
+
   const { data: users } = useSWR("/api/users", (url) =>
+    fetch(url).then((res) => res.json())
+  );
+  const { data: replies } = useSWR("/api/replies", (url) =>
     fetch(url).then((res) => res.json())
   );
   const { data: sentMessages } = useSWR("/api/message/sent", (url) =>
@@ -32,8 +42,10 @@ function Messages() {
         </button>
       </div>
       <MessagesCard
+        userData={userData}
         sentMessages={sentMessages}
         receivedMessages={receivedMessages}
+        replies={replies}
       />
       {isModalOpen && <MessageModal users={users} closeModal={toggleModal} />}
     </section>

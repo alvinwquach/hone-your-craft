@@ -867,8 +867,6 @@ model User {
   @@map("users")
 }
 
-
-
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   identifier String
