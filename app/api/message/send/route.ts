@@ -49,17 +49,18 @@ export async function POST(request: NextRequest) {
     const recipientIds = receivers.map((receiver) => receiver.id);
 
     const messages = await Promise.all(
-      recipientIds.map(() =>
+      recipientIds.map((recipientId) =>
         prisma.message.create({
           data: {
             senderId: currentUser.id,
-            recipientId: recipientIds,
+            recipientId: [recipientId],
             subject,
             content,
             messageType: messageTypeEnum,
             mentionedUserIds: mentionedUserIdsArray,
             isReadByRecipient: false,
             isDeletedBySender: false,
+            isDeletedByRecipient: false,
             replyToId: null,
             threadId: null,
             deliveryStatus: null,
