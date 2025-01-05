@@ -310,7 +310,7 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
               <p className="text-xs text-red-400">{errors.message.message}</p>
             )}
           </div>
-          <div className="flex justify-end gap-x-6 mt-4">
+          <div className="flex justify-between gap-x-6 mt-4">
             <button
               type="submit"
               className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
