@@ -42,6 +42,7 @@ interface Message {
   content: string;
   messageType: string;
   isReadByRecipient: boolean;
+  isDeletedFromTrashBySender: boolean;
   createdAt: string;
   sender: {
     id: string;
@@ -146,7 +147,44 @@ const MessagesCard = ({
     }
   };
 
-  const handleTrash = async (messageId: string) => {
+  const handleDeleteTrashedSentMessage = async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/message/sent/trash/${messageId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        mutate(
+          "api/message/sent/trash",
+          (prevData: any) => {
+            const updatedMessages = prevData?.data.filter(
+              (message: Message) => message.id !== messageId
+            );
+            return { ...prevData, data: updatedMessages };
+          },
+          false
+        );
+
+        toast.success("Message deleted from trash!");
+        mutate("api/message/sent/trash");
+      } else {
+        toast.error(result.message || "Failed to trash message from trash.");
+      }
+    } catch (error) {
+      console.error("Error trashing message:", error);
+      toast.error("An error occurred while trashing the message from trash.");
+    }
+  };
+
+  const handleSentMessageToTrash = async (messageId: string) => {
     try {
       const response = await fetch(`/api/message/sent/trash`, {
         method: "POST",
@@ -212,6 +250,10 @@ const MessagesCard = ({
     receivedMessages?.data && receivedMessages.data.length > 0;
 
   const hasSentMessages = sentMessages?.data && sentMessages.data.length > 0;
+
+  const filteredTrashedMessages = trashedSentMessages?.data.filter(
+    (message) => message.isDeletedFromTrashBySender === false
+  );
 
   return (
     <div className="mt-4 md:flex bg-zinc-900 rounded-lg overflow-hidden">
@@ -469,14 +511,12 @@ const MessagesCard = ({
                 key={message.id}
                 className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
               >
-                {/* Trash Icon in Top Right */}
                 <button
                   className="absolute top-4 right-4 px-3 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-full shadow-md transition-all duration-200 ease-in-out"
-                  onClick={() => handleTrash(message.id)} // Trashing the message
+                  onClick={() => handleSentMessageToTrash(message.id)}
                 >
                   <FaTrash className="w-5 h-5" />
                 </button>
-
                 <h3 className="text-lg font-semibold text-zinc-300">
                   {message.subject}
                 </h3>
@@ -528,7 +568,7 @@ const MessagesCard = ({
               >
                 <button
                   className="absolute top-2 right-2 text-zinc-400 hover:text-white transition-all duration-200"
-                  onClick={() => handleTrash(message.id)}
+                  onClick={() => handleSentMessageToTrash(message.id)}
                 >
                   <FaTrash className="w-5 h-5" />
                 </button>
@@ -583,7 +623,7 @@ const MessagesCard = ({
         )}
         {activeTab === "trash" ? (
           <div className="rounded-lg h-full">
-            {trashedSentMessages?.data.map((message) => (
+            {filteredTrashedMessages?.map((message) => (
               <div
                 key={message.id}
                 className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
@@ -591,6 +631,13 @@ const MessagesCard = ({
                 <h3 className="text-lg font-semibold text-zinc-300">
                   {message.subject}
                 </h3>
+                <button
+                  className="absolute top-4 right-4 px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-full shadow-md"
+                  type="button"
+                  onClick={() => handleDeleteTrashedSentMessage(message.id)}
+                >
+                  <FaTrash />
+                </button>
                 <p className="text-zinc-400 mt-2">{message.content}</p>
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-zinc-500">
