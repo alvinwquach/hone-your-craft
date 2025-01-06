@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         recipientId: true,
       },
       orderBy: {
-        createdAt: "desc", // Order by creation date
+        createdAt: "desc",
       },
     });
 
