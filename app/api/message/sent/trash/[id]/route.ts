@@ -7,12 +7,10 @@ export async function POST(request: NextRequest) {
     const { messageId } = await request.json();
     const currentUser = await getCurrentUser();
 
-    // Check if user is authenticated
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if messageId is provided
     if (!messageId) {
       return NextResponse.json(
         { message: "Message ID is required" },
@@ -20,12 +18,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the message in the database
     const message = await prisma.message.findUnique({
       where: { id: messageId },
     });
 
-    // If message is not found
     if (!message) {
       return NextResponse.json(
         { message: "Message not found" },
@@ -33,7 +29,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure the current user is the sender
     if (message.senderId !== currentUser.id) {
       return NextResponse.json(
         { message: "You can only restore your own trashed messages" },
@@ -41,7 +36,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if the message is trashed by the sender
     if (!message.isDeletedBySender) {
       return NextResponse.json(
         { message: "This message is not in the trash" },
@@ -49,16 +43,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Restore the message by unsetting the trash flag (does not delete it)
     const restoredMessage = await prisma.message.update({
       where: { id: messageId },
       data: {
-        isDeletedBySender: true, // Unset the trash flag
-        isDeletedFromTrashBySender: true, // Mark as restored
+        isDeletedBySender: true, 
+        isDeletedFromTrashBySender: true, 
       },
     });
 
-    // Respond with success
     return NextResponse.json({
       message: "Message restored from trash",
       data: restoredMessage,
@@ -87,16 +79,14 @@ export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
 
-    // Check if user is authenticated
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch all trashed messages by the current user
     const trashedMessages = await prisma.message.findMany({
       where: {
-        senderId: currentUser.id, // Ensure the message is from the current user
-        isDeletedBySender: true, // Ensure the message is trashed by the sender
+        senderId: currentUser.id, 
+        isDeletedBySender: true, 
       },
     });
 
