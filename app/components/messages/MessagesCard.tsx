@@ -212,7 +212,7 @@ const MessagesCard = ({
 
         toast.success("Message moved to trash!");
         mutate("api/message/sent");
-        mutate("api/trash");
+        mutate("api/message/sent/trash");
       } else {
         toast.error(result.message || "Failed to move message to trash.");
       }
@@ -250,10 +250,6 @@ const MessagesCard = ({
     receivedMessages?.data && receivedMessages.data.length > 0;
 
   const hasSentMessages = sentMessages?.data && sentMessages.data.length > 0;
-
-  const filteredTrashedMessages = trashedSentMessages?.data.filter(
-    (message) => message.isDeletedFromTrashBySender === false
-  );
 
   return (
     <div className="mt-4 md:flex bg-zinc-900 rounded-lg overflow-hidden">
@@ -623,7 +619,7 @@ const MessagesCard = ({
         )}
         {activeTab === "trash" ? (
           <div className="rounded-lg h-full">
-            {filteredTrashedMessages?.map((message) => (
+            {trashedSentMessages?.data.map((message) => (
               <div
                 key={message.id}
                 className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
