@@ -38,6 +38,8 @@ import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
 import { GiThreeFriends } from "react-icons/gi";
 import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
+import { GoGoal } from "react-icons/go";
+import WeeklyGoalForm from "../components/profile/goal/WeeklyGoalForm";
 
 interface User {
   id: string;
@@ -102,6 +104,11 @@ function Profile() {
 
   const { data: connectionsSent } = useSWR("/api/connections/sent", (url) =>
     fetch(url).then((res) => res.json())
+  );
+
+  const { data: currentGoalData, error } = useSWR(
+    "/api/weekly-application-goal",
+    (url) => fetch(url).then((res) => res.json())
   );
 
   const userRole = data?.user?.userRole;
@@ -512,6 +519,24 @@ function Profile() {
                 </li>
                 <li className="me-2">
                   <button
+                    onClick={() => setActiveTab("goal")}
+                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                      activeTab === "goal"
+                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                        : ""
+                    }`}
+                    aria-current={activeTab === "goal" ? "page" : undefined}
+                  >
+                    <GoGoal
+                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                        activeTab === "goal" ? "text-blue-600" : ""
+                      }`}
+                    />
+                    Goal
+                  </button>
+                </li>
+                <li className="me-2">
+                  <button
                     onClick={() => setActiveTab("dashboard")}
                     className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
                       activeTab === "dashboard"
@@ -682,6 +707,9 @@ function Profile() {
                   <div className="my-4 border-t border-gray-600" />
                   <EducationList />
                 </Suspense>
+              )}
+              {activeTab === "goal" && (
+                <WeeklyGoalForm currentGoalData={currentGoalData} />
               )}
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload />}>
