@@ -11,39 +11,79 @@ export async function PUT(request: NextRequest) {
       return NextResponse.error();
     }
 
-    const { jobsAppliedToDaysPerWeekGoal } = await request.json();
+    const {
+      jobsAppliedToDaysPerWeekGoal,
+      jobsAppliedToWeeklyGoalMin,
+      jobsAppliedToWeeklyGoalMax,
+    } = await request.json();
+
+    let updateData: Record<string, any> = {};
+
+    if (jobsAppliedToDaysPerWeekGoal !== undefined) {
+      if (
+        !Number.isInteger(jobsAppliedToDaysPerWeekGoal) ||
+        jobsAppliedToDaysPerWeekGoal < 0 ||
+        jobsAppliedToDaysPerWeekGoal > 7
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Invalid days per week goal target. It must be between 0 and 7 days.",
+          },
+          { status: 400 }
+        );
+      }
+      updateData.jobsAppliedToDaysPerWeekGoal = jobsAppliedToDaysPerWeekGoal;
+    }
 
     if (
-      typeof jobsAppliedToDaysPerWeekGoal !== "number" ||
-      jobsAppliedToDaysPerWeekGoal < 1 ||
-      jobsAppliedToDaysPerWeekGoal > 7
+      jobsAppliedToWeeklyGoalMin !== undefined &&
+      jobsAppliedToWeeklyGoalMax !== undefined
     ) {
-      console.warn(
-        `Invalid weekly goal: ${jobsAppliedToDaysPerWeekGoal}. It must be between 1 and 7.`
-      );
-      return NextResponse.json(
-        {
-          message:
-            "Invalid days per week goal target. It must be between 1 and 7 days.",
-        },
-        { status: 400 }
-      );
+      if (
+        !Number.isInteger(jobsAppliedToWeeklyGoalMin) ||
+        !Number.isInteger(jobsAppliedToWeeklyGoalMax)
+      ) {
+        return NextResponse.json(
+          { message: "Weekly goals must be integers." },
+          { status: 400 }
+        );
+      }
+
+      if (jobsAppliedToWeeklyGoalMin === jobsAppliedToWeeklyGoalMax) {
+        return NextResponse.json(
+          { message: "Weekly goal max must be greater than weekly goal min." },
+          { status: 400 }
+        );
+      }
+
+      if (jobsAppliedToWeeklyGoalMin > jobsAppliedToWeeklyGoalMax) {
+        return NextResponse.json(
+          { message: "Weekly goal min must be less than weekly goal max." },
+          { status: 400 }
+        );
+      }
+
+      updateData.jobsAppliedToWeeklyGoalMin = jobsAppliedToWeeklyGoalMin;
+      updateData.jobsAppliedToWeeklyGoalMax = jobsAppliedToWeeklyGoalMax;
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: currentUser.id },
-      data: { jobsAppliedToDaysPerWeekGoal },
+      data: updateData,
     });
 
     console.log(
-      `Successfully updated weekly application goal to ${jobsAppliedToDaysPerWeekGoal}.`
+      `Successfully updated application goal with values: ${JSON.stringify(
+        updateData
+      )}`
     );
 
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("Error updating weekly application goal:", error);
+    console.error("Error updating job application goals:", error);
     return NextResponse.json(
-      { message: "Error updating jobs applied to days per week goal target" },
+      { message: "Error updating job application goals" },
       { status: 500 }
     );
   }
@@ -60,7 +100,11 @@ export async function GET(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: currentUser.id },
-      select: { jobsAppliedToDaysPerWeekGoal: true },
+      select: {
+        jobsAppliedToDaysPerWeekGoal: true,
+        jobsAppliedToWeeklyGoalMin: true,
+        jobsAppliedToWeeklyGoalMax: true,
+      },
     });
 
     if (!user) {
@@ -72,9 +116,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error("Error fetching weekly application goal:", error);
+    console.error("Error fetching weekly application goals:", error);
     return NextResponse.json(
-      { message: "Error fetching jobs applied to days per week goal" },
+      { message: "Error fetching weekly application goals" },
       { status: 500 }
     );
   }
