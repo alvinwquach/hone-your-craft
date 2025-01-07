@@ -15,6 +15,7 @@ export async function PUT(request: NextRequest) {
       jobsAppliedToDaysPerWeekGoal,
       jobsAppliedToWeeklyGoalMin,
       jobsAppliedToWeeklyGoalMax,
+      monthlyInterviewGoal,
     } = await request.json();
 
     let updateData: Record<string, any> = {};
@@ -68,6 +69,19 @@ export async function PUT(request: NextRequest) {
       updateData.jobsAppliedToWeeklyGoalMax = jobsAppliedToWeeklyGoalMax;
     }
 
+    if (monthlyInterviewGoal !== undefined) {
+      if (!Number.isInteger(monthlyInterviewGoal) || monthlyInterviewGoal < 0) {
+        return NextResponse.json(
+          {
+            message:
+              "Invalid monthly interviews scheduled goal. It must be a positive integer.",
+          },
+          { status: 400 }
+        );
+      }
+      updateData.monthlyInterviewGoal = monthlyInterviewGoal;
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: currentUser.id },
       data: updateData,
@@ -104,6 +118,7 @@ export async function GET(request: NextRequest) {
         jobsAppliedToDaysPerWeekGoal: true,
         jobsAppliedToWeeklyGoalMin: true,
         jobsAppliedToWeeklyGoalMax: true,
+        monthlyInterviewGoal: true,
       },
     });
 
