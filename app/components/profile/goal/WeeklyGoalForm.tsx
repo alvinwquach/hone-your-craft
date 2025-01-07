@@ -12,9 +12,12 @@ const schema = z.object({
   weeklyGoal: z
     .number()
     .min(1, "Please select a goal for your weekly applications"),
-
   weeklyGoalMin: z.number().min(1, "Minimum goal must be at least 1"),
   weeklyGoalMax: z.number().min(1, "Maximum goal must be at least 1"),
+  monthlyInterviewGoal: z
+    .number()
+    .min(0, "Monthly interviews scheduled goal must be a positive number")
+    .int("Please enter a valid integer value."),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -24,6 +27,7 @@ interface WeeklyGoalFormProps {
     jobsAppliedToDaysPerWeekGoal: number;
     jobsAppliedToWeeklyGoalMin: number;
     jobsAppliedToWeeklyGoalMax: number;
+    monthlyInterviewGoal: number;
   };
 }
 
@@ -39,26 +43,36 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
       weeklyGoal: 1,
       weeklyGoalMin: 1,
       weeklyGoalMax: 2,
+      monthlyInterviewGoal: 0,
     },
   });
 
   const [selectedGoal, setSelectedGoal] = useState<number | null>(1);
   const [goalMin, setGoalMin] = useState<number>(1);
   const [goalMax, setGoalMax] = useState<number>(2);
+  const [monthlyInterviewsGoal, setMonthlyInterviewsGoal] = useState<number>(0);
 
   useEffect(() => {
-    if (currentGoalData && currentGoalData.jobsAppliedToDaysPerWeekGoal) {
-      const currentGoal = Number(currentGoalData.jobsAppliedToDaysPerWeekGoal);
-      setSelectedGoal(currentGoal);
-      setValue("weeklyGoal", currentGoal);
-    }
-    if (currentGoalData.jobsAppliedToWeeklyGoalMin) {
-      setGoalMin(Number(currentGoalData.jobsAppliedToWeeklyGoalMin));
-      setValue("weeklyGoalMin", currentGoalData.jobsAppliedToWeeklyGoalMin);
-    }
-    if (currentGoalData.jobsAppliedToWeeklyGoalMax) {
-      setGoalMax(Number(currentGoalData.jobsAppliedToWeeklyGoalMax));
-      setValue("weeklyGoalMax", currentGoalData.jobsAppliedToWeeklyGoalMax);
+    if (currentGoalData) {
+      if (currentGoalData.jobsAppliedToDaysPerWeekGoal) {
+        const currentGoal = Number(
+          currentGoalData.jobsAppliedToDaysPerWeekGoal
+        );
+        setSelectedGoal(currentGoal);
+        setValue("weeklyGoal", currentGoal);
+      }
+      if (currentGoalData.jobsAppliedToWeeklyGoalMin) {
+        setGoalMin(Number(currentGoalData.jobsAppliedToWeeklyGoalMin));
+        setValue("weeklyGoalMin", currentGoalData.jobsAppliedToWeeklyGoalMin);
+      }
+      if (currentGoalData.jobsAppliedToWeeklyGoalMax) {
+        setGoalMax(Number(currentGoalData.jobsAppliedToWeeklyGoalMax));
+        setValue("weeklyGoalMax", currentGoalData.jobsAppliedToWeeklyGoalMax);
+      }
+      if (currentGoalData.monthlyInterviewGoal !== undefined) {
+        setMonthlyInterviewsGoal(currentGoalData.monthlyInterviewGoal);
+        setValue("monthlyInterviewGoal", currentGoalData.monthlyInterviewGoal);
+      }
     }
   }, [currentGoalData, setValue]);
 
@@ -73,6 +87,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
           jobsAppliedToDaysPerWeekGoal: data.weeklyGoal,
           jobsAppliedToWeeklyGoalMin: data.weeklyGoalMin,
           jobsAppliedToWeeklyGoalMax: data.weeklyGoalMax,
+          monthlyInterviewGoal: data.monthlyInterviewGoal,
         }),
       });
 
@@ -85,12 +100,13 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
       const result = await response.json();
       const isPlural = result.jobsAppliedToDaysPerWeekGoal > 1;
       toast.success(
-        `Your goal is to apply to ${result.jobsAppliedToWeeklyGoalMin} - ${
-          result.jobsAppliedToWeeklyGoalMax
-        } jobs per week.
-        Your goal is to apply for ${result.jobsAppliedToDaysPerWeekGoal} ${
-          isPlural ? "days" : "day"
-        } per week.`
+        `Your weekly goal is to apply to ${
+          result.jobsAppliedToWeeklyGoalMin
+        } - ${result.jobsAppliedToWeeklyGoalMax} jobs and apply ${
+          result.jobsAppliedToDaysPerWeekGoal
+        } ${isPlural ? "days" : "day"} per week. Your monthly goal is to have ${
+          result.monthlyInterviewGoal
+        } interviews.`
       );
       mutate("/api/weekly-application-goal");
       reset();
@@ -147,6 +163,15 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
     setGoalMax(newGoalMax);
     setValue("weeklyGoalMax", newGoalMax);
   };
+
+  const handleMonthlyInterviewsGoalChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newInterviewsGoal = Number(e.target.value);
+    setMonthlyInterviewsGoal(newInterviewsGoal);
+    setValue("monthlyInterviewGoal", newInterviewsGoal);
+  };
+
   return (
     <div>
       <div className="rounded-lg p-6 shadow-lg relative">
@@ -233,6 +258,21 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+          <div className="mt-6 text-white">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+              How many interviews are you aiming for each month? (optional)
+            </h4>
+            <div className="flex flex-col">
+              <input
+                type="number"
+                id="monthlyInterviewGoal"
+                value={monthlyInterviewsGoal}
+                onChange={handleMonthlyInterviewsGoalChange}
+                className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                min={0}
+              />
             </div>
           </div>
           <div className="flex justify-start mt-6">

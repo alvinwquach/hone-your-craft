@@ -867,7 +867,8 @@ model User {
   clientInterviewAvailability  ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
   jobsAppliedToDaysPerWeekGoal Int?
   jobsAppliedToWeeklyGoalMin   Int? 
-  jobsAppliedToWeeklyGoalMax   Int? 
+  jobsAppliedToWeeklyGoalMax   Int?
+  monthlyInterviewGoal Int? 
 
   @@map("users")
 }
