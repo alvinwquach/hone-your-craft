@@ -39,7 +39,7 @@ import RolesCard from "../components/profile/profile/RolesCard";
 import { GiThreeFriends } from "react-icons/gi";
 import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
 import { GoGoal } from "react-icons/go";
-import WeeklyGoalForm from "../components/profile/goal/WeeklyGoalForm";
+import GoalForm from "../components/profile/goal/GoalForm";
 
 interface User {
   id: string;
@@ -709,7 +709,7 @@ function Profile() {
                 </Suspense>
               )}
               {activeTab === "goal" && (
-                <WeeklyGoalForm currentGoalData={currentGoalData} />
+                <GoalForm currentGoalData={currentGoalData} />
               )}
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload />}>

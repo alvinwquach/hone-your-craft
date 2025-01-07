@@ -16,6 +16,7 @@ export async function PUT(request: NextRequest) {
       jobsAppliedToWeeklyGoalMin,
       jobsAppliedToWeeklyGoalMax,
       monthlyInterviewGoal,
+      candidateGoal,
     } = await request.json();
 
     let updateData: Record<string, any> = {};
@@ -82,6 +83,25 @@ export async function PUT(request: NextRequest) {
       updateData.monthlyInterviewGoal = monthlyInterviewGoal;
     }
 
+    if (candidateGoal !== undefined) {
+      const validGoals = [
+        "ChangeMyCareer",
+        "GrowInMyExistingRole",
+        "ExploreNewOpportunities",
+        "ImproveSkillset",
+        "LookingForANewJob",
+        "ReceiveAnOffer",
+        "NotSureYet",
+      ];
+      if (!validGoals.includes(candidateGoal)) {
+        return NextResponse.json(
+          { message: "Invalid career goal. Please select from valid options." },
+          { status: 400 }
+        );
+      }
+      updateData.candidateGoal = candidateGoal;
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: currentUser.id },
       data: updateData,
@@ -119,6 +139,7 @@ export async function GET(request: NextRequest) {
         jobsAppliedToWeeklyGoalMin: true,
         jobsAppliedToWeeklyGoalMax: true,
         monthlyInterviewGoal: true,
+        candidateGoal: true,
       },
     });
 

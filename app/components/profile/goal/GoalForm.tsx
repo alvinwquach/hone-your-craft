@@ -11,13 +11,33 @@ import { FaMinus } from "react-icons/fa";
 const schema = z.object({
   weeklyGoal: z
     .number()
-    .min(1, "Please select a goal for your weekly applications"),
-  weeklyGoalMin: z.number().min(1, "Minimum goal must be at least 1"),
-  weeklyGoalMax: z.number().min(1, "Maximum goal must be at least 1"),
+    .min(1, "Please select a goal for your weekly applications")
+    .optional(),
+  weeklyGoalMin: z
+    .number()
+    .min(1, "Minimum goal must be at least 1")
+    .optional(),
+  weeklyGoalMax: z
+    .number()
+    .min(1, "Maximum goal must be at least 1")
+    .optional(),
   monthlyInterviewGoal: z
     .number()
     .min(0, "Monthly interviews scheduled goal must be a positive number")
-    .int("Please enter a valid integer value."),
+    .int("Please enter a valid integer value.")
+    .optional(),
+  candidateGoal: z
+    .enum([
+      "ChangeMyCareer",
+      "GrowInMyExistingRole",
+      "BuildAPortfolio",
+      "ExploreNewOpportunities",
+      "ImproveSkillset",
+      "LookingForANewJob",
+      "ReceiveAnOffer",
+      "NotSureYet",
+    ])
+    .optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -28,6 +48,7 @@ interface WeeklyGoalFormProps {
     jobsAppliedToWeeklyGoalMin: number;
     jobsAppliedToWeeklyGoalMax: number;
     monthlyInterviewGoal: number;
+    candidateGoal: string;
   };
 }
 
@@ -44,6 +65,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
       weeklyGoalMin: 1,
       weeklyGoalMax: 2,
       monthlyInterviewGoal: 0,
+      candidateGoal: "NotSureYet",
     },
   });
 
@@ -51,6 +73,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
   const [goalMin, setGoalMin] = useState<number>(1);
   const [goalMax, setGoalMax] = useState<number>(2);
   const [monthlyInterviewsGoal, setMonthlyInterviewsGoal] = useState<number>(0);
+  const [candidateGoal, setCandidateGoal] = useState<string>("NotSureYet");
 
   useEffect(() => {
     if (currentGoalData) {
@@ -73,6 +96,31 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
         setMonthlyInterviewsGoal(currentGoalData.monthlyInterviewGoal);
         setValue("monthlyInterviewGoal", currentGoalData.monthlyInterviewGoal);
       }
+      if (currentGoalData.candidateGoal) {
+        setCandidateGoal(
+          currentGoalData.candidateGoal as
+            | "NotSureYet"
+            | "ChangeMyCareer"
+            | "GrowInMyExistingRole"
+            | "ExploreNewOpportunities"
+            | "ImproveSkillset"
+            | "LookingForANewJob"
+            | "ReceiveAnOffer"
+            | "BuildAPortfolio"
+        );
+        setValue(
+          "candidateGoal",
+          currentGoalData.candidateGoal as
+            | "NotSureYet"
+            | "ChangeMyCareer"
+            | "GrowInMyExistingRole"
+            | "ExploreNewOpportunities"
+            | "ImproveSkillset"
+            | "LookingForANewJob"
+            | "ReceiveAnOffer"
+            | "BuildAPortfolio"
+        );
+      }
     }
   }, [currentGoalData, setValue]);
 
@@ -88,6 +136,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
           jobsAppliedToWeeklyGoalMin: data.weeklyGoalMin,
           jobsAppliedToWeeklyGoalMax: data.weeklyGoalMax,
           monthlyInterviewGoal: data.monthlyInterviewGoal,
+          candidateGoal: data.candidateGoal,
         }),
       });
 
@@ -99,6 +148,12 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
 
       const result = await response.json();
       const isPlural = result.jobsAppliedToDaysPerWeekGoal > 1;
+      function formatCamelCase(str: string) {
+        return str
+          .replace(/([a-z])([A-Z])/g, "$1 $2")
+          .toLowerCase()
+          .replace(/^./, (match) => match.toUpperCase());
+      }
       toast.success(
         `Your weekly goal is to apply to ${
           result.jobsAppliedToWeeklyGoalMin
@@ -106,7 +161,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
           result.jobsAppliedToDaysPerWeekGoal
         } ${isPlural ? "days" : "day"} per week. Your monthly goal is to have ${
           result.monthlyInterviewGoal
-        } interviews.`
+        } interviews. Your goal: ${formatCamelCase(result.candidateGoal)}.`
       );
       mutate("/api/weekly-application-goal");
       reset();
@@ -172,12 +227,114 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
     setValue("monthlyInterviewGoal", newInterviewsGoal);
   };
 
+  const handleCandidateGoalChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value as
+      | "ChangeMyCareer"
+      | "GrowInMyExistingRole"
+      | "ExploreNewOpportunities"
+      | "ImproveSkillset"
+      | "LookingForANewJob"
+      | "ReceiveAnOffer"
+      | "NotSureYet";
+    setCandidateGoal(value);
+    setValue("candidateGoal", value);
+  };
+
   return (
     <div>
       <div className="rounded-lg p-6 shadow-lg relative">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+        <div className="mt-6 text-white">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+            What is your goal? (optional)
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ReceiveAnOffer"
+                checked={candidateGoal === "ReceiveAnOffer"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Receive an Offer
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ChangeMyCareer"
+                checked={candidateGoal === "ChangeMyCareer"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Change My Career
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="LookingForANewJob"
+                checked={candidateGoal === "LookingForANewJob"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Looking for a New Job
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ExploreNewOpportunities"
+                checked={candidateGoal === "ExploreNewOpportunities"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Explore New Opportunities
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ImproveSkillset"
+                checked={candidateGoal === "ImproveSkillset"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Improve Skillset
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="GrowInMyExistingRole"
+                checked={candidateGoal === "GrowInMyExistingRole"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Grow In My Existing Role
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="BuildAPortfolio"
+                checked={candidateGoal === "BuildAPortfolio"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Build A Portfolio
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="NotSureYet"
+                checked={candidateGoal === "NotSureYet"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Not Sure Yet
+            </label>
+          </div>
+        </div>
+        <h3 className="text-lg sm:text-xl font-semibold my-4 text-white">
           How many days a week do you plan on applying? (optional)
-        </h2>
+        </h3>
         <div className="flex gap-6 justify-start">
           {[1, 2, 3, 4, 5, 6, 7].map((day) => (
             <div
@@ -195,9 +352,9 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
         </div>
         <form onSubmit={handleSubmit(handleSave)} className="mt-8">
           <div className="mt-6 text-white">
-            <h3 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many jobs do you plan on applying to each week? (optional)
-            </h3>
+            </h4>
             <div className="flex max-w-sm justify-between">
               <div className="flex flex-col">
                 <label htmlFor="weeklyGoalMin" className="mb-2 sr-only">
@@ -261,9 +418,9 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
             </div>
           </div>
           <div className="mt-6 text-white">
-            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+            <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many interviews are you aiming for each month? (optional)
-            </h4>
+            </h5>
             <div className="flex flex-col">
               <input
                 type="number"
