@@ -865,6 +865,7 @@ model User {
   interviewInvitesAsClient    InterviewInvite[]             @relation("ClientInvites")
   interviewInvitesAsCandidate InterviewInvite[]             @relation("CandidateInvites")
   clientInterviewAvailability ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
+  jobsAppliedToDaysPerWeekGoal    Int? 
 
   @@map("users")
 }
