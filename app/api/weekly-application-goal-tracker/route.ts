@@ -3,6 +3,7 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfWeek, endOfWeek } from "date-fns";
 import { ApplicationStatus } from "@prisma/client";
+import { toZonedTime } from "date-fns-tz";
 
 type DayOfWeek =
   | "Sunday"
@@ -22,8 +23,14 @@ export async function GET(request: NextRequest) {
     }
 
     const now = new Date();
-    const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 0 });
-    const endOfCurrentWeek = endOfWeek(now, { weekStartsOn: 0 });
+    const timeZone = "America/Los_Angeles";
+
+    const currentPSTTime = toZonedTime(now, timeZone);
+    const startOfCurrentWeek = startOfWeek(currentPSTTime, { weekStartsOn: 0 });
+    const endOfCurrentWeek = endOfWeek(currentPSTTime, { weekStartsOn: 0 });
+
+    const startOfCurrentWeekUTC = toZonedTime(startOfCurrentWeek, timeZone);
+    const endOfCurrentWeekUTC = toZonedTime(endOfCurrentWeek, timeZone);
 
     const userJobs = await prisma.job.findMany({
       where: {
@@ -32,8 +39,8 @@ export async function GET(request: NextRequest) {
           in: [ApplicationStatus.APPLIED, ApplicationStatus.INTERVIEW],
         },
         createdAt: {
-          gte: startOfCurrentWeek,
-          lte: endOfCurrentWeek,
+          gte: startOfCurrentWeekUTC,
+          lte: endOfCurrentWeekUTC,
         },
       },
     });
@@ -48,15 +55,16 @@ export async function GET(request: NextRequest) {
       "Saturday",
     ];
 
-    const trackedJob = new Map<DayOfWeek, { presence: boolean; count: number }>(
-      daysOfWeek.map((day) => [day, { presence: false, count: 0 }])
-    );
+    const applicationPresence = new Map<
+      DayOfWeek,
+      { presence: boolean; count: number }
+    >(daysOfWeek.map((day) => [day, { presence: false, count: 0 }]));
 
     userJobs.forEach((job) => {
       const jobCreatedDate = new Date(job.createdAt);
       const jobDayOfWeek = daysOfWeek[jobCreatedDate.getDay()];
 
-      const dayData = trackedJob.get(jobDayOfWeek);
+      const dayData = applicationPresence.get(jobDayOfWeek);
       if (dayData) {
         dayData.presence = true;
         dayData.count += 1;
@@ -64,10 +72,9 @@ export async function GET(request: NextRequest) {
     });
 
     const currentDayIndex = new Date().getDay();
-
-    const filteredApplicationPresence = Array.from(trackedJob.entries()).filter(
-      ([dayKey]) => daysOfWeek.indexOf(dayKey) <= currentDayIndex
-    );
+    const filteredApplicationPresence = Array.from(
+      applicationPresence.entries()
+    ).filter(([dayKey]) => daysOfWeek.indexOf(dayKey) <= currentDayIndex);
 
     const totalApplications = userJobs.length;
 

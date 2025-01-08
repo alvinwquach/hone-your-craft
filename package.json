@@ -31,6 +31,7 @@
     "clsx": "^2.1.0",
     "d3": "^7.8.5",
     "date-fns": "^3.3.1",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^16.4.4",
     "force-resolutions": "^1.0.11",
     "gsap": "^3.12.5",
