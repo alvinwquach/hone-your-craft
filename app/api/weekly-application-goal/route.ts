@@ -17,6 +17,9 @@ export async function PUT(request: NextRequest) {
       jobsAppliedToWeeklyGoalMax,
       monthlyInterviewGoal,
       candidateGoal,
+      offerReceivedByDateGoal,
+      offerReceivedByDateGoalStart,
+      offerReceivedByDateGoalEnd,
     } = await request.json();
 
     let updateData: Record<string, any> = {};
@@ -102,13 +105,59 @@ export async function PUT(request: NextRequest) {
       updateData.candidateGoal = candidateGoal;
     }
 
+    if (offerReceivedByDateGoal !== undefined) {
+      const parsedOfferReceivedByDateGoal = new Date(offerReceivedByDateGoal);
+      if (isNaN(parsedOfferReceivedByDateGoal.getTime())) {
+        return NextResponse.json(
+          { message: "Invalid offer received date goal format." },
+          { status: 400 }
+        );
+      }
+      updateData.offerReceivedByDateGoal = parsedOfferReceivedByDateGoal;
+    }
+
+    if (
+      offerReceivedByDateGoalStart !== undefined &&
+      offerReceivedByDateGoalEnd !== undefined
+    ) {
+      const parsedStart = new Date(offerReceivedByDateGoalStart);
+      const parsedEnd = new Date(offerReceivedByDateGoalEnd);
+
+      if (isNaN(parsedStart.getTime()) || isNaN(parsedEnd.getTime())) {
+        return NextResponse.json(
+          { message: "Invalid date range format." },
+          { status: 400 }
+        );
+      }
+
+      if (parsedStart > parsedEnd) {
+        return NextResponse.json(
+          { message: "Start date must be earlier than end date." },
+          { status: 400 }
+        );
+      }
+
+      updateData.offerReceivedByDateGoalStart = parsedStart;
+      updateData.offerReceivedByDateGoalEnd = parsedEnd;
+
+      updateData.offerReceivedByDateGoal = null;
+    } else {
+      if (
+        offerReceivedByDateGoalStart === undefined ||
+        offerReceivedByDateGoalEnd === undefined
+      ) {
+        updateData.offerReceivedByDateGoalStart = null;
+        updateData.offerReceivedByDateGoalEnd = null;
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: currentUser.id },
       data: updateData,
     });
 
     console.log(
-      `Successfully updated application goal with values: ${JSON.stringify(
+      `Successfully updated user goals with values: ${JSON.stringify(
         updateData
       )}`
     );
@@ -140,14 +189,36 @@ export async function GET(request: NextRequest) {
         jobsAppliedToWeeklyGoalMax: true,
         monthlyInterviewGoal: true,
         candidateGoal: true,
+        offerReceivedByDateGoal: true,
+        offerReceivedByDateGoalStart: true,
+        offerReceivedByDateGoalEnd: true,
       },
     });
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
+
     console.log(
-      `Successfully retrieved weekly application goal of ${user.jobsAppliedToDaysPerWeekGoal} for user ${currentUser.id}.`
+      `Successfully retrieved user data for user ${currentUser.email}:`
+    );
+    console.log(
+      `- jobsAppliedToDaysPerWeekGoal: ${user.jobsAppliedToDaysPerWeekGoal}`
+    );
+    console.log(
+      `- jobsAppliedToWeeklyGoalMin: ${user.jobsAppliedToWeeklyGoalMin}`
+    );
+    console.log(
+      `- jobsAppliedToWeeklyGoalMax: ${user.jobsAppliedToWeeklyGoalMax}`
+    );
+    console.log(`- monthlyInterviewGoal: ${user.monthlyInterviewGoal}`);
+    console.log(`- candidateGoal: ${user.candidateGoal}`);
+    console.log(`- offerReceivedByDateGoal: ${user.offerReceivedByDateGoal}`);
+    console.log(
+      `- offerReceivedByDateGoalStart: ${user.offerReceivedByDateGoalStart}`
+    );
+    console.log(
+      `- offerReceivedByDateGoalEnd: ${user.offerReceivedByDateGoalEnd}`
     );
 
     return NextResponse.json(user);
