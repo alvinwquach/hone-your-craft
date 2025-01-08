@@ -48,26 +48,33 @@ export async function GET(request: NextRequest) {
       "Saturday",
     ];
 
-    const applicationPresence = new Map<DayOfWeek, boolean>(
-      daysOfWeek.map((day) => [day, false])
+    const trackedJob = new Map<DayOfWeek, { presence: boolean; count: number }>(
+      daysOfWeek.map((day) => [day, { presence: false, count: 0 }])
     );
 
     userJobs.forEach((job) => {
       const jobCreatedDate = new Date(job.createdAt);
       const jobDayOfWeek = daysOfWeek[jobCreatedDate.getDay()];
 
-      applicationPresence.set(jobDayOfWeek, true);
+      const dayData = trackedJob.get(jobDayOfWeek);
+      if (dayData) {
+        dayData.presence = true;
+        dayData.count += 1;
+      }
     });
 
     const currentDayIndex = new Date().getDay();
 
-    const filteredApplicationPresence = Array.from(
-      applicationPresence.entries()
-    ).filter(([dayKey]) => daysOfWeek.indexOf(dayKey) <= currentDayIndex);
+    const filteredApplicationPresence = Array.from(trackedJob.entries()).filter(
+      ([dayKey]) => daysOfWeek.indexOf(dayKey) <= currentDayIndex
+    );
+
+    const totalApplications = userJobs.length;
 
     return NextResponse.json({
       applicationPresence: filteredApplicationPresence,
       jobsAppliedToDaysPerWeekGoal: currentUser.jobsAppliedToDaysPerWeekGoal,
+      totalApplications,
     });
   } catch (error) {
     console.error("Error fetching or filtering jobs:", error);
