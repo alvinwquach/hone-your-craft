@@ -822,65 +822,68 @@ model Session {
 }
 
 model User {
-  id                          String                        @id @default(auto()) @map("_id") @db.ObjectId
-  name                        String?
-  email                       String?                       @unique
-  emailVerified               DateTime?
-  image                       String?
-  company                     String?
-  headline                    String?
-  bio                         String?
-  website                     String?
-  socialLinks                 SocialLinks?                  @relation("UserSocialLinks")
-  title                       String?
-  role                        String?
-  userRole                    UserRole?
-  primaryRole                 String?
-  openToRoles                 String[]
-  yearsOfExperience           YearsOfExperience?
-  skills                      String[]
-  status                      UserStatus?                   @relation("UserStatusRelation")
-  jobAlert                    Boolean                       @default(true)
-  candidateAlert              Boolean                       @default(true)
-  lookingForMentor            Boolean                       @default(false)
-  offeringMentorship          Boolean                       @default(false)
-  mentorshipsOffered          Mentorship[]                  @relation("MentorRelationships")
-  mentorshipsRequested        Mentorship[]                  @relation("MenteeRelationships")
-  profileCompletion           Int                           @default(0)
-  isProfilePublic             Boolean                       @default(true)
-  lastActive                  DateTime?
-  connectionsSent             Connection[]                  @relation("ConnectionsSent")
-  connectionsReceived         Connection[]                  @relation("ConnectionsReceived")
-  documents                   Document[]                    @relation("UserDocuments")
-  workExperience              WorkExperience[]
+  id                           String                        @id @default(auto()) @map("_id") @db.ObjectId
+  name                         String?
+  email                        String?                       @unique
+  emailVerified                DateTime?
+  image                        String?
+  company                      String?
+  headline                     String?
+  bio                          String?
+  website                      String?
+  socialLinks                  SocialLinks?                  @relation("UserSocialLinks")
+  title                        String?
+  role                         String?
+  userRole                     UserRole?
+  primaryRole                  String?
+  openToRoles                  String[]
+  yearsOfExperience            YearsOfExperience?
+  skills                       String[]
+  status                       UserStatus?                   @relation("UserStatusRelation")
+  jobAlert                     Boolean                       @default(true)
+  candidateAlert               Boolean                       @default(true)
+  lookingForMentor             Boolean                       @default(false)
+  offeringMentorship           Boolean                       @default(false)
+  mentorshipsOffered           Mentorship[]                  @relation("MentorRelationships")
+  mentorshipsRequested         Mentorship[]                  @relation("MenteeRelationships")
+  profileCompletion            Int                           @default(0)
+  isProfilePublic              Boolean                       @default(true)
+  lastActive                   DateTime?
+  connectionsSent              Connection[]                  @relation("ConnectionsSent")
+  connectionsReceived          Connection[]                  @relation("ConnectionsReceived")
+  documents                    Document[]                    @relation("UserDocuments")
+  workExperience               WorkExperience[]
   // projects                    Project[]
-  education                   Education[]
-  accounts                    Account[]
-  sessions                    Session[]
-  jobs                        Job[]
-  offers                      Offer[]
-  interviews                  Interview[]
-  rejections                  Rejection[]
-  notifications               Notification[]
-  applications                Application[]                 @relation("JobApplications")
-  jobPostings                 JobPosting[]                  @relation("JobPostings")
-  messagesSent                Message[]                     @relation("SentMessages")
-  messagesReceived            Message[]                     @relation("ReceivedMessages")
-  jobRecommendations          JobRecommendation[]           @relation("JobRecommendations")
-  endorsementsGiven           SkillEndorsement[]            @relation("Endorser")
-  endorsementsReceived        SkillEndorsement[]            @relation("Endorsees")
-  collaborations              Collaboration[]               @relation("UserCollaborations")
-  badges                      UserBadge[]                   @relation("UserBadges")
-  createdAt                   DateTime                      @default(now())
-  updatedAt                   DateTime                      @updatedAt
-  interviewInvitesAsClient    InterviewInvite[]             @relation("ClientInvites")
-  interviewInvitesAsCandidate InterviewInvite[]             @relation("CandidateInvites")
-  clientInterviewAvailability ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
+  education                    Education[]
+  accounts                     Account[]
+  sessions                     Session[]
+  jobs                         Job[]
+  offers                       Offer[]
+  interviews                   Interview[]
+  rejections                   Rejection[]
+  notifications                Notification[]
+  applications                 Application[]                 @relation("JobApplications")
+  jobPostings                  JobPosting[]                  @relation("JobPostings")
+  messagesSent                 Message[]                     @relation("SentMessages")
+  messagesReceived             Message[]                     @relation("ReceivedMessages")
+  jobRecommendations           JobRecommendation[]           @relation("JobRecommendations")
+  endorsementsGiven            SkillEndorsement[]            @relation("Endorser")
+  endorsementsReceived         SkillEndorsement[]            @relation("Endorsees")
+  collaborations               Collaboration[]               @relation("UserCollaborations")
+  badges                       UserBadge[]                   @relation("UserBadges")
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime                      @updatedAt
+  interviewInvitesAsClient     InterviewInvite[]             @relation("ClientInvites")
+  interviewInvitesAsCandidate  InterviewInvite[]             @relation("CandidateInvites")
+  clientInterviewAvailability  ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
   jobsAppliedToDaysPerWeekGoal Int?
   jobsAppliedToWeeklyGoalMin   Int?
   jobsAppliedToWeeklyGoalMax   Int?
   monthlyInterviewGoal         Int?
   candidateGoal                CandidateGoal?
+  offerReceivedByDateGoal      DateTime?
+  offerReceivedByDateGoalStart DateTime?
+  offerReceivedByDateGoalEnd   DateTime?
 
   @@map("users")
 }

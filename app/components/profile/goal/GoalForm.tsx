@@ -7,17 +7,22 @@ import "react-toastify/dist/ReactToastify.css";
 import { mutate } from "swr";
 import { MdAdd, MdRemove } from "react-icons/md";
 import { FaMinus } from "react-icons/fa";
+import { Calendar, DateObject } from "react-multi-date-picker";
+import { isSameDay, isToday } from "date-fns";
 
 const schema = z.object({
-  weeklyGoal: z
+  jobsAppliedToDaysPerWeekGoal: z
     .number()
-    .min(1, "Please select a goal for your weekly applications")
+    .min(
+      1,
+      "Please select a goal for how many days a week you plan on applying"
+    )
     .optional(),
-  weeklyGoalMin: z
+  jobsAppliedToWeeklyGoalMin: z
     .number()
     .min(1, "Minimum goal must be at least 1")
     .optional(),
-  weeklyGoalMax: z
+  jobsAppliedToWeeklyGoalMax: z
     .number()
     .min(1, "Maximum goal must be at least 1")
     .optional(),
@@ -38,21 +43,27 @@ const schema = z.object({
       "NotSureYet",
     ])
     .optional(),
+  offerReceivedByDateGoal: z.date().nullable().optional(),
+  offerReceivedByDateGoalStart: z.date().nullable().optional(),
+  offerReceivedByDateGoalEnd: z.date().nullable().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
 
-interface WeeklyGoalFormProps {
+interface GoalFormProps {
   currentGoalData: {
     jobsAppliedToDaysPerWeekGoal: number;
     jobsAppliedToWeeklyGoalMin: number;
     jobsAppliedToWeeklyGoalMax: number;
     monthlyInterviewGoal: number;
     candidateGoal: string;
+    offerReceivedByDateGoal: Date;
+    offerReceivedByDateGoalStart: Date;
+    offerReceivedByDateGoalEnd: Date;
   };
 }
 
-const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
+const GoalForm = ({ currentGoalData }: GoalFormProps) => {
   const {
     reset,
     handleSubmit,
@@ -61,11 +72,19 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      weeklyGoal: 1,
-      weeklyGoalMin: 1,
-      weeklyGoalMax: 2,
-      monthlyInterviewGoal: 0,
+      jobsAppliedToDaysPerWeekGoal:
+        currentGoalData?.jobsAppliedToDaysPerWeekGoal || 1,
+      jobsAppliedToWeeklyGoalMin:
+        currentGoalData?.jobsAppliedToWeeklyGoalMin || 1,
+      jobsAppliedToWeeklyGoalMax:
+        currentGoalData?.jobsAppliedToWeeklyGoalMax || 1,
+      monthlyInterviewGoal: currentGoalData?.monthlyInterviewGoal || 0,
       candidateGoal: "NotSureYet",
+      offerReceivedByDateGoal: currentGoalData?.offerReceivedByDateGoal || null,
+      offerReceivedByDateGoalStart:
+        currentGoalData?.offerReceivedByDateGoalStart || null,
+      offerReceivedByDateGoalEnd:
+        currentGoalData?.offerReceivedByDateGoalEnd || null,
     },
   });
 
@@ -74,6 +93,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
   const [goalMax, setGoalMax] = useState<number>(2);
   const [monthlyInterviewsGoal, setMonthlyInterviewsGoal] = useState<number>(0);
   const [candidateGoal, setCandidateGoal] = useState<string>("NotSureYet");
+  const [selectedDates, setSelectedDates] = useState<DateObject[]>([]);
 
   useEffect(() => {
     if (currentGoalData) {
@@ -82,20 +102,30 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
           currentGoalData.jobsAppliedToDaysPerWeekGoal
         );
         setSelectedGoal(currentGoal);
-        setValue("weeklyGoal", currentGoal);
+        setValue("jobsAppliedToDaysPerWeekGoal", currentGoal);
       }
+
       if (currentGoalData.jobsAppliedToWeeklyGoalMin) {
         setGoalMin(Number(currentGoalData.jobsAppliedToWeeklyGoalMin));
-        setValue("weeklyGoalMin", currentGoalData.jobsAppliedToWeeklyGoalMin);
+        setValue(
+          "jobsAppliedToWeeklyGoalMin",
+          currentGoalData.jobsAppliedToWeeklyGoalMin
+        );
       }
+
       if (currentGoalData.jobsAppliedToWeeklyGoalMax) {
         setGoalMax(Number(currentGoalData.jobsAppliedToWeeklyGoalMax));
-        setValue("weeklyGoalMax", currentGoalData.jobsAppliedToWeeklyGoalMax);
+        setValue(
+          "jobsAppliedToWeeklyGoalMax",
+          currentGoalData.jobsAppliedToWeeklyGoalMax
+        );
       }
+
       if (currentGoalData.monthlyInterviewGoal !== undefined) {
         setMonthlyInterviewsGoal(currentGoalData.monthlyInterviewGoal);
         setValue("monthlyInterviewGoal", currentGoalData.monthlyInterviewGoal);
       }
+
       if (currentGoalData.candidateGoal) {
         setCandidateGoal(
           currentGoalData.candidateGoal as
@@ -121,22 +151,93 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
             | "BuildAPortfolio"
         );
       }
+      if (currentGoalData.offerReceivedByDateGoal) {
+        const offerReceivedByDateGoal = new Date(
+          currentGoalData.offerReceivedByDateGoal
+        );
+        setValue("offerReceivedByDateGoal", offerReceivedByDateGoal);
+        setSelectedDates([new DateObject(offerReceivedByDateGoal)]);
+      }
+
+      if (
+        currentGoalData.offerReceivedByDateGoalStart &&
+        currentGoalData.offerReceivedByDateGoalEnd
+      ) {
+        const offerReceivedByDateGoalStart = new Date(
+          currentGoalData.offerReceivedByDateGoalStart
+        );
+        const offerReceivedByDateGoalEnd = new Date(
+          currentGoalData.offerReceivedByDateGoalEnd
+        );
+
+        setValue("offerReceivedByDateGoalStart", offerReceivedByDateGoalStart);
+        setValue("offerReceivedByDateGoalEnd", offerReceivedByDateGoalEnd);
+
+        setSelectedDates([
+          new DateObject(offerReceivedByDateGoalStart),
+          new DateObject(offerReceivedByDateGoalEnd),
+        ]);
+      } else if (
+        currentGoalData.offerReceivedByDateGoalStart === null &&
+        currentGoalData.offerReceivedByDateGoalEnd === null
+      ) {
+        if (currentGoalData.offerReceivedByDateGoal) {
+          const offerReceivedByDateGoal = new Date(
+            currentGoalData.offerReceivedByDateGoal
+          );
+          setSelectedDates([new DateObject(offerReceivedByDateGoal)]);
+        } else {
+          setSelectedDates([]);
+        }
+      }
     }
   }, [currentGoalData, setValue]);
 
   const handleSave: SubmitHandler<FormData> = async (data) => {
     try {
+      let offerReceivedByDateGoal: Date | null = null;
+      let offerReceivedByDateGoalStart: Date | null = null;
+      let offerReceivedByDateGoalEnd: Date | null = null;
+
+      if (selectedDates.length === 1) {
+        offerReceivedByDateGoal = selectedDates[0]?.toDate();
+      }
+
+      if (selectedDates.length === 2) {
+        offerReceivedByDateGoalStart = selectedDates[0]?.toDate();
+        offerReceivedByDateGoalEnd =
+          selectedDates[selectedDates.length - 1]?.toDate();
+      }
+
+      function formatCamelCase(str: string) {
+        return str
+          .replace(/([a-z])([A-Z])/g, "$1 $2")
+          .toLowerCase()
+          .replace(/^./, (match) => match.toUpperCase());
+      }
+
+      let offerGoalMessage = "";
+      if (offerReceivedByDateGoal) {
+        offerGoalMessage = `Your goal is to get an offer by ${offerReceivedByDateGoal.toLocaleDateString()}`;
+      } else if (offerReceivedByDateGoalStart && offerReceivedByDateGoalEnd) {
+        offerGoalMessage = `Your goal is to get an offer between ${offerReceivedByDateGoalStart.toLocaleDateString()} and ${offerReceivedByDateGoalEnd.toLocaleDateString()}`;
+      }
+
       const response = await fetch("/api/weekly-application-goal", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          jobsAppliedToDaysPerWeekGoal: data.weeklyGoal,
-          jobsAppliedToWeeklyGoalMin: data.weeklyGoalMin,
-          jobsAppliedToWeeklyGoalMax: data.weeklyGoalMax,
+          jobsAppliedToDaysPerWeekGoal: data.jobsAppliedToDaysPerWeekGoal,
+          jobsAppliedToWeeklyGoalMin: data.jobsAppliedToWeeklyGoalMin,
+          jobsAppliedToWeeklyGoalMax: data.jobsAppliedToWeeklyGoalMax,
           monthlyInterviewGoal: data.monthlyInterviewGoal,
           candidateGoal: data.candidateGoal,
+          offerReceivedByDateGoal: offerReceivedByDateGoal || undefined,
+          offerReceivedByDateGoalStart:
+            offerReceivedByDateGoalStart || undefined,
+          offerReceivedByDateGoalEnd: offerReceivedByDateGoalEnd || undefined,
         }),
       });
 
@@ -148,12 +249,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
 
       const result = await response.json();
       const isPlural = result.jobsAppliedToDaysPerWeekGoal > 1;
-      function formatCamelCase(str: string) {
-        return str
-          .replace(/([a-z])([A-Z])/g, "$1 $2")
-          .toLowerCase()
-          .replace(/^./, (match) => match.toUpperCase());
-      }
+
       toast.success(
         `Your weekly goal is to apply to ${
           result.jobsAppliedToWeeklyGoalMin
@@ -161,8 +257,11 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
           result.jobsAppliedToDaysPerWeekGoal
         } ${isPlural ? "days" : "day"} per week. Your monthly goal is to have ${
           result.monthlyInterviewGoal
-        } interviews. Your goal: ${formatCamelCase(result.candidateGoal)}.`
+        } interviews. Your goal: ${formatCamelCase(
+          result.candidateGoal
+        )}. ${offerGoalMessage}`
       );
+
       mutate("/api/weekly-application-goal");
       reset();
     } catch (error) {
@@ -170,16 +269,39 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
     }
   };
 
+  const handleDateChange = (dateObjects: DateObject[]) => {
+    setSelectedDates(dateObjects);
+    if (dateObjects.length === 1) {
+      const selectedDate = dateObjects[0].toDate();
+      setValue("offerReceivedByDateGoal", selectedDate);
+      setValue("offerReceivedByDateGoalStart", null);
+      setValue("offerReceivedByDateGoalEnd", null);
+    } else if (dateObjects.length === 2) {
+      const sortedDates = dateObjects.sort(
+        (a, b) => a.toDate().getTime() - b.toDate().getTime()
+      );
+      const startDate = sortedDates[0].toDate();
+      const endDate = sortedDates[1].toDate();
+      setValue("offerReceivedByDateGoalStart", startDate);
+      setValue("offerReceivedByDateGoalEnd", endDate);
+      setValue("offerReceivedByDateGoal", null);
+    } else {
+      setValue("offerReceivedByDateGoal", null);
+      setValue("offerReceivedByDateGoalStart", null);
+      setValue("offerReceivedByDateGoalEnd", null);
+    }
+  };
+
   const handleHexagonClick = (day: number) => {
     setSelectedGoal(day);
-    setValue("weeklyGoal", day);
+    setValue("jobsAppliedToDaysPerWeekGoal", day);
   };
 
   const handleMinIncrement = () => {
     if (goalMin < goalMax) {
       const newGoalMin = goalMin + 1;
       setGoalMin(newGoalMin);
-      setValue("weeklyGoalMin", newGoalMin);
+      setValue("jobsAppliedToWeeklyGoalMin", newGoalMin);
     }
   };
 
@@ -187,7 +309,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
     if (goalMin > 1) {
       const newGoalMin = goalMin - 1;
       setGoalMin(newGoalMin);
-      setValue("weeklyGoalMin", newGoalMin);
+      setValue("jobsAppliedToWeeklyGoalMin", newGoalMin);
     }
   };
 
@@ -195,7 +317,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
     if (goalMax > 1) {
       const newGoalMax = goalMax + 1;
       setGoalMax(newGoalMax);
-      setValue("weeklyGoalMax", newGoalMax);
+      setValue("jobsAppliedToWeeklyGoalMax", newGoalMax);
     }
   };
 
@@ -203,20 +325,20 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
     if (goalMax > goalMin) {
       const newGoalMax = goalMax - 1;
       setGoalMax(newGoalMax);
-      setValue("weeklyGoalMax", newGoalMax);
+      setValue("jobsAppliedToWeeklyGoalMax", newGoalMax);
     }
   };
 
   const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newGoalMin = Number(e.target.value);
     setGoalMin(newGoalMin);
-    setValue("weeklyGoalMin", newGoalMin);
+    setValue("jobsAppliedToWeeklyGoalMin", newGoalMin);
   };
 
   const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newGoalMax = Number(e.target.value);
     setGoalMax(newGoalMax);
-    setValue("weeklyGoalMax", newGoalMax);
+    setValue("jobsAppliedToWeeklyGoalMax", newGoalMax);
   };
 
   const handleMonthlyInterviewsGoalChange = (
@@ -241,6 +363,8 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
     setCandidateGoal(value);
     setValue("candidateGoal", value);
   };
+
+  const today = new Date();
 
   return (
     <div>
@@ -357,7 +481,10 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
             </h4>
             <div className="flex max-w-sm justify-between">
               <div className="flex flex-col">
-                <label htmlFor="weeklyGoalMin" className="mb-2 sr-only">
+                <label
+                  htmlFor="jobsAppliedToWeeklyGoalMin"
+                  className="mb-2 sr-only"
+                >
                   Jobs Applied to Weekly Goal (Min)
                 </label>
                 <div className="relative flex items-center max-w-[8rem]">
@@ -370,7 +497,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
                   </button>
                   <input
                     type="number"
-                    id="weeklyGoalMin"
+                    id="jobsAppliedToWeeklyGoalMin"
                     value={goalMin}
                     onChange={handleMinChange}
                     className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
@@ -388,7 +515,10 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
                 <FaMinus className="h-6 w-6" />
               </span>
               <div className="flex flex-col">
-                <label htmlFor="weeklyGoalMax" className="mb-2 sr-only">
+                <label
+                  htmlFor="jobsAppliedToWeeklyGoalMax"
+                  className="mb-2 sr-only"
+                >
                   Jobs Applied to Weekly Goal (Max)
                 </label>
                 <div className="relative flex items-center max-w-[8rem]">
@@ -401,7 +531,7 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
                   </button>
                   <input
                     type="number"
-                    id="weeklyGoalMax"
+                    id="jobsAppliedToWeeklyGoalMax"
                     value={goalMax}
                     onChange={handleMaxChange}
                     className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
@@ -418,9 +548,9 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
             </div>
           </div>
           <div className="mt-6 text-white">
-            <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many interviews are you aiming for each month? (optional)
-            </h5>
+            </h4>
             <div className="flex flex-col">
               <input
                 type="number"
@@ -432,6 +562,74 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
               />
             </div>
           </div>
+          {candidateGoal === "ReceiveAnOffer" && (
+            <div className="mt-6 text-white z-10">
+              <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+                When do you want to receive an offer by? (optional)
+              </h5>
+              <div className="flex flex-col relative z-10">
+                <Calendar
+                  multiple
+                  minDate={today}
+                  value={selectedDates}
+                  onChange={handleDateChange}
+                  headerOrder={["MONTH_YEAR", "LEFT_BUTTON", "RIGHT_BUTTON"]}
+                  monthYearSeparator={" "}
+                  showOtherDays={true}
+                  mapDays={({ date }) => {
+                    const isTodayDate = isToday(date.toDate());
+                    const isSelected = selectedDates.some((d) =>
+                      isSameDay(d.toDate(), date.toDate())
+                    );
+                    const isBeforeToday = date.toDate() < today;
+                    const isInRange =
+                      selectedDates.length > 1 &&
+                      selectedDates[0].toDate() <= date.toDate() &&
+                      selectedDates[selectedDates.length - 1].toDate() >=
+                        date.toDate();
+
+                    let dayClasses = "cursor-pointer";
+
+                    if (isBeforeToday) {
+                      dayClasses = "text-gray-400";
+                    } else if (isSelected) {
+                      dayClasses = "bg-blue-700 text-white";
+                    } else if (isTodayDate) {
+                      dayClasses = "bg-transparent text-blue-700";
+                    } else if (isInRange) {
+                      dayClasses = "bg-blue-300 text-white";
+                    } else {
+                      dayClasses = "bg-blue-100 text-blue-700 font-bold";
+                    }
+
+                    return {
+                      className: dayClasses,
+                      children: isTodayDate ? (
+                        <div>
+                          <div>{date.day}</div>
+                          <div
+                            style={{
+                              position: "absolute",
+                              bottom: 2,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              width: 4,
+                              height: 4,
+                              backgroundColor: "white",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                        </div>
+                      ) : (
+                        date.day
+                      ),
+                    };
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-start mt-6">
             <button
               type="submit"
@@ -446,4 +644,4 @@ const WeeklyGoalForm = ({ currentGoalData }: WeeklyGoalFormProps) => {
   );
 };
 
-export default WeeklyGoalForm;
+export default GoalForm;
