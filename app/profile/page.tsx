@@ -111,8 +111,13 @@ function Profile() {
     (url) => fetch(url).then((res) => res.json())
   );
 
-  const { data: weeklyApplicationTargetData } = useSWR(
+  const { data: weeklyApplicationDayTrackerData } = useSWR(
     "/api/weekly-application-day-tracker",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
+  const { data: weeklyApplicationGoalTrackerData } = useSWR(
+    "/api/weekly-application-goal-tracker",
     (url) => fetch(url).then((res) => res.json())
   );
 
@@ -716,7 +721,12 @@ function Profile() {
               {activeTab === "goal" && (
                 <GoalForm
                   currentGoalData={currentGoalData}
-                  weeklyApplicationTargetData={weeklyApplicationTargetData}
+                  weeklyApplicationDayTrackerData={
+                    weeklyApplicationDayTrackerData
+                  }
+                  weeklyApplicationGoalTrackerData={
+                    weeklyApplicationGoalTrackerData
+                  }
                 />
               )}
               {activeTab === "resume" && (

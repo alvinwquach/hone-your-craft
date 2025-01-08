@@ -59,8 +59,13 @@ type DayOfWeek =
   | "Friday"
   | "Saturday";
 
-interface WeeklyApplicationTargetData {
+interface weeklyApplicationDayTrackerData {
   applicationPresence: [DayOfWeek, boolean][];
+}
+
+interface weeklyApplicationGoalTrackerData {
+  applicationPresence: [DayOfWeek, { presence: boolean; count: number }][];
+  totalApplications: number;
 }
 
 interface GoalFormProps {
@@ -74,12 +79,16 @@ interface GoalFormProps {
     offerReceivedByDateGoalStart: Date;
     offerReceivedByDateGoalEnd: Date;
   };
-  weeklyApplicationTargetData: WeeklyApplicationTargetData | undefined;
+  weeklyApplicationDayTrackerData: weeklyApplicationDayTrackerData | undefined;
+  weeklyApplicationGoalTrackerData:
+    | weeklyApplicationGoalTrackerData
+    | undefined;
 }
 
 const GoalForm = ({
   currentGoalData,
-  weeklyApplicationTargetData,
+  weeklyApplicationDayTrackerData,
+  weeklyApplicationGoalTrackerData,
 }: GoalFormProps) => {
   const {
     reset,
@@ -394,9 +403,42 @@ const GoalForm = ({
   ]);
 
   const appliedDaysCount: number =
-    weeklyApplicationTargetData?.applicationPresence?.filter(
+    weeklyApplicationDayTrackerData?.applicationPresence?.filter(
       ([_, applied]) => applied
     ).length || 0;
+
+  const numberOfDaysInAWeek = [1, 2, 3, 4, 5, 6, 7];
+
+  const totalApplications =
+    weeklyApplicationGoalTrackerData?.totalApplications || 0;
+
+  const jobsAppliedToDaysPerWeekGoalMessage =
+    appliedDaysCount >= currentGoalData?.jobsAppliedToDaysPerWeekGoal
+      ? "Great job! You've met your weekly target!"
+      : `${
+          currentGoalData?.jobsAppliedToDaysPerWeekGoal - appliedDaysCount
+        } days left to meet your weekly target. Keep up the good work!`;
+
+  let jobsAppliedToWeeklyGoalMessage = "";
+
+  if (totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMin) {
+    const remainingApplications =
+      currentGoalData?.jobsAppliedToWeeklyGoalMin - totalApplications;
+    jobsAppliedToWeeklyGoalMessage = `You're almost there! You need to apply to ${remainingApplications} more jobs to meet your minimum goal.`;
+  } else if (
+    totalApplications === currentGoalData?.jobsAppliedToWeeklyGoalMax
+  ) {
+    jobsAppliedToWeeklyGoalMessage = `Awesome! You've exactly met your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Well done!`;
+  } else if (
+    totalApplications > currentGoalData?.jobsAppliedToWeeklyGoalMin &&
+    totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMax
+  ) {
+    jobsAppliedToWeeklyGoalMessage = `You're on track! You've applied within your weekly goal range.`;
+  } else {
+    const exceededApplications =
+      totalApplications - currentGoalData?.jobsAppliedToWeeklyGoalMax;
+    jobsAppliedToWeeklyGoalMessage = `Great job! You've surpassed your goal by ${exceededApplications} applications. Keep it up!`;
+  }
 
   return (
     <div>
@@ -492,7 +534,7 @@ const GoalForm = ({
           How many days a week do you plan on applying? (optional)
         </h3>
         <div className="flex gap-6 justify-start">
-          {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+          {numberOfDaysInAWeek.map((day) => (
             <div
               key={day}
               onClick={() => handleHexagonClick(day)}
@@ -509,19 +551,14 @@ const GoalForm = ({
         <form onSubmit={handleSubmit(handleSave)} className="mt-8">
           <div>
             <p className="text-white mb-4">
-              {appliedDaysCount >= currentGoalData.jobsAppliedToDaysPerWeekGoal
-                ? "Great job! You've met your weekly target!"
-                : `${
-                    currentGoalData.jobsAppliedToDaysPerWeekGoal -
-                    appliedDaysCount
-                  } days left to meet your weekly target. Keep up the good work!`}
+              {jobsAppliedToDaysPerWeekGoalMessage}
             </p>
             <div className="flex gap-6 justify-start">
               {[...weeklyDayTargetMap.keys()].map((day, index) => {
                 const dayAbbreviation = weeklyDayTargetMap.get(day);
 
                 const wasApplied =
-                  weeklyApplicationTargetData?.applicationPresence.find(
+                  weeklyApplicationDayTrackerData?.applicationPresence.find(
                     ([dayKey]: [DayOfWeek, boolean]) => dayKey === day
                   )?.[1] || false;
 
@@ -545,7 +582,6 @@ const GoalForm = ({
               <span>{currentGoalData.jobsAppliedToDaysPerWeekGoal}</span> days
             </div>
           </div>
-
           <div className="mt-6 text-white">
             <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many jobs do you plan on applying to each week? (optional)
@@ -618,7 +654,44 @@ const GoalForm = ({
               </div>
             </div>
           </div>
+          <div className="">
+            <div className="text-white mt-4">
+              <p>{jobsAppliedToWeeklyGoalMessage}</p>
+            </div>
+            <div className="mt-4 flex gap-6 justify-start">
+              {[...weeklyDayTargetMap.keys()].map((day, index) => {
+                const dayAbbreviation = weeklyDayTargetMap.get(day);
 
+                const dayData =
+                  weeklyApplicationGoalTrackerData?.applicationPresence.find(
+                    ([dayKey]) => dayKey === day
+                  )?.[1] || { presence: false, count: 0 };
+
+                const wasApplied = dayData.presence;
+                const applicationCount = dayData.count;
+
+                return (
+                  <div key={index} className="flex flex-col items-center">
+                    <div
+                      className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30 
+                    ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
+                      style={{
+                        clipPath:
+                          "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                      }}
+                    >
+                      <span className="text-lg text-white">
+                        {dayAbbreviation}
+                      </span>
+                    </div>
+                    <div className="text-xs mt-2 text-white">
+                      {applicationCount}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           <div className="mt-6 text-white">
             <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many interviews are you aiming to have each month? (optional)
