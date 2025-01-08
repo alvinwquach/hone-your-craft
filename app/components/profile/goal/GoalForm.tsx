@@ -50,6 +50,19 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+type DayOfWeek =
+  | "Sunday"
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday";
+
+interface WeeklyApplicationTargetData {
+  applicationPresence: [DayOfWeek, boolean][];
+}
+
 interface GoalFormProps {
   currentGoalData: {
     jobsAppliedToDaysPerWeekGoal: number;
@@ -61,9 +74,13 @@ interface GoalFormProps {
     offerReceivedByDateGoalStart: Date;
     offerReceivedByDateGoalEnd: Date;
   };
+  weeklyApplicationTargetData: WeeklyApplicationTargetData | undefined;
 }
 
-const GoalForm = ({ currentGoalData }: GoalFormProps) => {
+const GoalForm = ({
+  currentGoalData,
+  weeklyApplicationTargetData,
+}: GoalFormProps) => {
   const {
     reset,
     handleSubmit,
@@ -366,6 +383,21 @@ const GoalForm = ({ currentGoalData }: GoalFormProps) => {
 
   const today = new Date();
 
+  const weeklyDayTargetMap = new Map([
+    ["Sunday", "S"],
+    ["Monday", "M"],
+    ["Tuesday", "T"],
+    ["Wednesday", "W"],
+    ["Thursday", "T"],
+    ["Friday", "F"],
+    ["Saturday", "S"],
+  ]);
+
+  const appliedDaysCount: number =
+    weeklyApplicationTargetData?.applicationPresence?.filter(
+      ([_, applied]) => applied
+    ).length || 0;
+
   return (
     <div>
       <div className="rounded-lg p-6 shadow-lg relative">
@@ -475,6 +507,45 @@ const GoalForm = ({ currentGoalData }: GoalFormProps) => {
           ))}
         </div>
         <form onSubmit={handleSubmit(handleSave)} className="mt-8">
+          <div>
+            <p className="text-white mb-4">
+              {appliedDaysCount >= currentGoalData.jobsAppliedToDaysPerWeekGoal
+                ? "Great job! You've met your weekly target!"
+                : `${
+                    currentGoalData.jobsAppliedToDaysPerWeekGoal -
+                    appliedDaysCount
+                  } days left to meet your weekly target. Keep up the good work!`}
+            </p>
+            <div className="flex gap-6 justify-start">
+              {[...weeklyDayTargetMap.keys()].map((day, index) => {
+                const dayAbbreviation = weeklyDayTargetMap.get(day);
+
+                const wasApplied =
+                  weeklyApplicationTargetData?.applicationPresence.find(
+                    ([dayKey]: [DayOfWeek, boolean]) => dayKey === day
+                  )?.[1] || false;
+
+                return (
+                  <div
+                    key={index}
+                    className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30 
+            ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
+                    style={{
+                      clipPath:
+                        "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                    }}
+                  >
+                    <span className="text-sm">{dayAbbreviation}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="text-lg sm:text-xl font-semibold my-4 text-white">
+              <span className="text-2xl font-bold">{appliedDaysCount}</span> /{" "}
+              <span>{currentGoalData.jobsAppliedToDaysPerWeekGoal}</span> days
+            </div>
+          </div>
+
           <div className="mt-6 text-white">
             <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many jobs do you plan on applying to each week? (optional)
@@ -547,9 +618,10 @@ const GoalForm = ({ currentGoalData }: GoalFormProps) => {
               </div>
             </div>
           </div>
+
           <div className="mt-6 text-white">
             <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
-              How many interviews are you aiming for each month? (optional)
+              How many interviews are you aiming to have each month? (optional)
             </h4>
             <div className="flex flex-col">
               <input
@@ -565,7 +637,7 @@ const GoalForm = ({ currentGoalData }: GoalFormProps) => {
           {candidateGoal === "ReceiveAnOffer" && (
             <div className="mt-6 text-white z-10">
               <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
-                When do you want to receive an offer by? (optional)
+                When would you like to receive an offer by? (optional)
               </h5>
               <div className="flex flex-col relative z-10">
                 <Calendar
@@ -629,7 +701,6 @@ const GoalForm = ({ currentGoalData }: GoalFormProps) => {
               </div>
             </div>
           )}
-
           <div className="flex justify-start mt-6">
             <button
               type="submit"
