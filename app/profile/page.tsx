@@ -106,8 +106,13 @@ function Profile() {
     fetch(url).then((res) => res.json())
   );
 
-  const { data: currentGoalData, error } = useSWR(
+  const { data: currentGoalData } = useSWR(
     "/api/weekly-application-goal",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
+  const { data: weeklyApplicationTargetData } = useSWR(
+    "/api/weekly-application-day-tracker",
     (url) => fetch(url).then((res) => res.json())
   );
 
@@ -709,7 +714,10 @@ function Profile() {
                 </Suspense>
               )}
               {activeTab === "goal" && (
-                <GoalForm currentGoalData={currentGoalData} />
+                <GoalForm
+                  currentGoalData={currentGoalData}
+                  weeklyApplicationTargetData={weeklyApplicationTargetData}
+                />
               )}
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload />}>
