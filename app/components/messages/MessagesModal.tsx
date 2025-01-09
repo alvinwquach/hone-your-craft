@@ -58,11 +58,9 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
       const lastMention = matches[matches.length - 1];
 
       if (lastMention) {
-        const mentionedText = lastMention[1]; // Text after "@"
+        const mentionedText = lastMention[1];
 
-        // If the next character isn't a space (meaning user is still typing the mention)
         if (message[lastMention.index! + lastMention[0].length] !== " ") {
-          // Filter users based on the mentioned text after "@"
           const matchingUsers = selectedUsers.filter((user) =>
             user.name.toLowerCase().startsWith(mentionedText.toLowerCase())
           );
@@ -74,12 +72,11 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         }
       }
     } else {
-      // If no mention matches but "@" is typed, show all users as suggestions
       if (message.includes("@")) {
-        setMentionSuggestions(selectedUsers); // Show all selected users
+        setMentionSuggestions(selectedUsers);
         setIsMentioning(true);
       } else {
-        setIsMentioning(false); // Hide suggestions if no "@" symbol
+        setIsMentioning(false);
         setMentionSuggestions([]);
       }
     }
@@ -102,78 +99,16 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     setMentionSuggestions([]);
   };
 
-  // Handle form submission
-  // const handleSend: SubmitHandler<FormData> = async (data) => {
-  //   try {
-  //     const receiverEmails = data.selectedUsers
-  //       .map((userId) => users.find((user) => user.id === userId)?.email)
-  //       .filter(Boolean);
-
-  //     const mentionedUserIds = selectedUsers
-  //       .filter((user) => message.includes(`@${user.name}`))
-  //       .map((user) => user.id);
-
-  //     console.log("Sending message with data:", {
-  //       receiverEmails,
-  //       messageContent: data.message,
-  //       subject: data.subject,
-  //       mentionedUserIds,
-  //     });
-
-  //     if (receiverEmails.length === 0) {
-  //       toast.error("Please select valid recipients.", {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //       });
-  //       return;
-  //     }
-
-  //     // Simulate sending the message (no real API call)
-  //     toast.success("Message sent successfully!", {
-  //       position: "top-right",
-  //       autoClose: 3000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-  //     console.log("Message sent successfully");
-
-  //     // Close modal or reset state as needed
-  //     closeModal();
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //     toast.error("An error occurred. Please try again.", {
-  //       position: "top-right",
-  //       autoClose: 3000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-  //   }
-  // };
-
   const handleSend: SubmitHandler<FormData> = async (data) => {
     try {
-      // Get the receiver emails from selected users
       const receiverEmails = data.selectedUsers
         .map((userId) => users.find((user) => user.id === userId)?.email)
         .filter(Boolean);
 
-      // Track mentioned user IDs
       const mentionedUserIds = selectedUsers
         .filter((user) => message.includes(`@${user.name}`))
         .map((user) => user.id);
 
-      // Log the sending message data
       console.log("Sending message with data:", {
         receiverEmails,
         messageContent: data.message,
@@ -181,7 +116,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         mentionedUserIds,
       });
 
-      // Check if valid recipients are selected
       if (receiverEmails.length === 0) {
         toast.error("Please select valid recipients.", {
           position: "top-right",
@@ -195,7 +129,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         return;
       }
 
-      // Make the POST request to send the message
       const response = await fetch("/api/message/send", {
         method: "POST",
         headers: {
@@ -210,7 +143,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         }),
       });
 
-      // Check if the response is successful
       if (response.ok) {
         toast.success("Message sent successfully!", {
           position: "top-right",
@@ -223,7 +155,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         });
         console.log("Message sent successfully");
 
-        // Notify mentioned users with a toast (or you could use email notifications)
         const mentionedUsers = selectedUsers.filter((user) =>
           mentionedUserIds.includes(user.id)
         );
@@ -254,7 +185,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         console.log("Failed to send the message:", response.statusText);
       }
 
-      // Close modal or reset state as needed
       closeModal();
     } catch (error) {
       console.error("Error sending message:", error);
@@ -270,178 +200,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     }
   };
 
-  // const handleSend: SubmitHandler<FormData> = async (data) => {
-  //   try {
-  //     const receiverEmails = data.selectedUsers
-  //       .map((userId) => users.find((user) => user.id === userId)?.email)
-  //       .filter(Boolean);
-
-  //     const mentionedUserIds = selectedUsers
-  //       .filter((user) => message.includes(`@${user.name}`))
-  //       .map((user) => user.id);
-
-  //     console.log("Sending message with data:", {
-  //       receiverEmails,
-  //       messageContent: data.message,
-  //       subject: data.subject,
-  //       mentionedUserIds,
-  //     });
-
-  //     if (receiverEmails.length === 0) {
-  //       toast.error("Please select valid recipients.", {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //       });
-  //       return;
-  //     }
-
-  //     const response = await fetch("/api/message/send", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         receiverEmails: receiverEmails,
-  //         content: data.message,
-  //         messageType: "TEXT",
-  //         mentionedUserIds: mentionedUserIds,
-  //         subject: data.subject,
-  //       }),
-  //     });
-
-  //     console.log("API response:", response);
-
-  //     if (response.ok) {
-  //       toast.success("Message sent successfully!", {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //       });
-  //       console.log("Message sent successfully");
-  //     } else {
-  //       toast.error("Failed to send the message. Please try again.", {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //       });
-  //       console.log("Failed to send the message:", response.statusText);
-  //     }
-
-  //     closeModal();
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //     toast.error("An error occurred. Please try again.", {
-  //       position: "top-right",
-  //       autoClose: 3000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-  //   }
-  // };
-
-  // const handleSend: SubmitHandler<FormData> = async (data) => {
-  //   try {
-  //     // Extract the selected user emails from the form data
-  //     const receiverEmails = data.selectedUsers
-  //       .map((userId) => users.find((user) => user.id === userId)?.email)
-  //       .filter(Boolean);
-
-  //     // Extract the mentioned user IDs from the message
-  //     const mentionedUserIds = selectedUsers
-  //       .filter((user) => message.includes(`@${user.name}`))
-  //       .map((user) => user.id);
-
-  //     // Log the data for debugging purposes
-  //     console.log("Preparing to send message with data:", {
-  //       receiverEmails,
-  //       messageContent: data.message,
-  //       subject: data.subject,
-  //       mentionedUserIds,
-  //     });
-
-  //     // Check if there are valid recipients
-  //     if (receiverEmails.length === 0) {
-  //       toast.error("Please select valid recipients.", {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //       });
-  //       return;
-  //     }
-
-  //     // Log the mentioned users and their IDs
-  //     mentionedUserIds.forEach((userId) => {
-  //       const mentionedUser = selectedUsers.find((user) => user.id === userId);
-  //       if (mentionedUser) {
-  //         console.log(
-  //           `Mentioned @${mentionedUser.name} with user ID: ${mentionedUser.id}`
-  //         );
-  //       }
-  //     });
-
-  //     // Show a toast to simulate the sending process
-  //     toast.info("Message is being processed...", {
-  //       position: "top-right",
-  //       autoClose: 3000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-
-  //     // Simulate a successful "send" process
-  //     setTimeout(() => {
-  //       toast.success("Message prepared successfully!", {
-  //         position: "top-right",
-  //         autoClose: 3000,
-  //         hideProgressBar: false,
-  //         closeOnClick: true,
-  //         pauseOnHover: true,
-  //         draggable: true,
-  //         progress: undefined,
-  //       });
-  //       console.log("Message prepared successfully!");
-  //     }, 1500); // Simulate some processing delay
-
-  //     // You can close the modal or perform other UI updates here
-  //     closeModal();
-  //   } catch (error) {
-  //     // Log any error that occurs in the try block
-  //     console.error("Error preparing message:", error);
-
-  //     // Show an error toast if something goes wrong
-  //     toast.error("An error occurred. Please try again.", {
-  //       position: "top-right",
-  //       autoClose: 3000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-  //   }
-  // };
 
   const handleTrash = () => {
     reset({
