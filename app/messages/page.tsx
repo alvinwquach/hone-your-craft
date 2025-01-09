@@ -37,7 +37,7 @@ function Messages() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen text-white">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mt-4 lg:mt-0">
         <button
           className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg shadow-lg transition-all duration-200 ease-in-out"
           onClick={toggleModal}

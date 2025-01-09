@@ -59,6 +59,7 @@ interface Message {
     image: string;
   }[];
   replies: Reply[];
+  mentionedUserIds: string[];
 }
 
 interface MessagesCardProps {
@@ -386,6 +387,12 @@ const MessagesCard = ({
                   {message.subject}
                 </h3>
                 <p className="text-zinc-400 mt-2">{message.content}</p>
+                {message.mentionedUserIds?.includes(userData?.user?.id) && (
+                  <p className="text-sm text-zinc-400 mt-2">
+                    {message.sender.email} ({message.sender.name}) mentioned you
+                    in this message.
+                  </p>
+                )}
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-zinc-500">Sender:</h4>
                   <div className="flex items-center space-x-2 mt-2">
@@ -438,7 +445,6 @@ const MessagesCard = ({
                       : "Mark as Read"}
                   </span>
                 </button>
-
                 <div className="mt-6 flex space-x-4">
                   <div className="flex-shrink-0">
                     <Image
@@ -570,7 +576,7 @@ const MessagesCard = ({
               </div>
             ))}
           </div>
-        ) : activeTab === "inbox" ? (
+        ) : activeTab === "replies" ? (
           <div className="rounded-lg h-full">
             <p className="text-center text-zinc-500 mt-2">
               No Received Messages Found

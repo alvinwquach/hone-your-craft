@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         isReadByRecipient: true,
         createdAt: true,
         senderId: true,
+        mentionedUserIds: true,
         sender: {
           select: {
             id: true,

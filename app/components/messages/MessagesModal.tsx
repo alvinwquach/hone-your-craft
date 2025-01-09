@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaTrash, FaPaperPlane, FaTimes } from "react-icons/fa";
-import Select, { MultiValue, components, OptionProps } from "react-select";
+import Select, { MultiValue, OptionProps } from "react-select";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,6 +46,58 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
   });
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [message, setMessage] = useState<string>("");
+  const [mentionSuggestions, setMentionSuggestions] = useState<User[]>([]);
+  const [isMentioning, setIsMentioning] = useState<boolean>(false);
+
+  useEffect(() => {
+    const mentionPattern = /@([a-zA-Z0-9_]+)/g;
+    const matches = [...message.matchAll(mentionPattern)];
+
+    if (matches.length > 0) {
+      const lastMention = matches[matches.length - 1];
+
+      if (lastMention) {
+        const mentionedText = lastMention[1];
+
+        if (message[lastMention.index! + lastMention[0].length] !== " ") {
+          const matchingUsers = selectedUsers.filter((user) =>
+            user.name.toLowerCase().startsWith(mentionedText.toLowerCase())
+          );
+          setMentionSuggestions(matchingUsers);
+          setIsMentioning(true);
+        } else {
+          setIsMentioning(false);
+          setMentionSuggestions([]);
+        }
+      }
+    } else {
+      if (message.includes("@")) {
+        setMentionSuggestions(selectedUsers);
+        setIsMentioning(true);
+      } else {
+        setIsMentioning(false);
+        setMentionSuggestions([]);
+      }
+    }
+  }, [message, selectedUsers]);
+
+  const handleMentionSelect = (user: User) => {
+    const mentionPattern = /@([a-zA-Z0-9_]+)/g;
+    const matches = [...message.matchAll(mentionPattern)];
+
+    if (matches.length === 0) return;
+
+    const lastMention = matches[matches.length - 1];
+    if (!lastMention) return;
+
+    const beforeText = message.slice(0, lastMention.index!);
+    const afterText = message.slice(lastMention.index! + lastMention[0].length);
+
+    const updatedMessage = `${beforeText}@${user.name} ${afterText}`;
+    setMessage(updatedMessage);
+    setMentionSuggestions([]);
+  };
 
   const handleSend: SubmitHandler<FormData> = async (data) => {
     try {
@@ -53,10 +105,15 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         .map((userId) => users.find((user) => user.id === userId)?.email)
         .filter(Boolean);
 
+      const mentionedUserIds = selectedUsers
+        .filter((user) => message.includes(`@${user.name}`))
+        .map((user) => user.id);
+
       console.log("Sending message with data:", {
         receiverEmails,
         messageContent: data.message,
         subject: data.subject,
+        mentionedUserIds,
       });
 
       if (receiverEmails.length === 0) {
@@ -81,12 +138,10 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
           receiverEmails: receiverEmails,
           content: data.message,
           messageType: "TEXT",
-          mentionedUserIds: [],
+          mentionedUserIds: mentionedUserIds,
           subject: data.subject,
         }),
       });
-
-      console.log("API response:", response);
 
       if (response.ok) {
         toast.success("Message sent successfully!", {
@@ -99,6 +154,24 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
           progress: undefined,
         });
         console.log("Message sent successfully");
+
+        const mentionedUsers = selectedUsers.filter((user) =>
+          mentionedUserIds.includes(user.id)
+        );
+
+        if (mentionedUsers.length > 0) {
+          mentionedUsers.forEach((user) => {
+            toast.info(`You were mentioned in a message: ${user.name}`, {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+          });
+        }
       } else {
         toast.error("Failed to send the message. Please try again.", {
           position: "top-right",
@@ -126,6 +199,7 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
       });
     }
   };
+
 
   const handleTrash = () => {
     reset({
@@ -234,11 +308,24 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     padding: "0.75rem",
     width: "100%",
     marginTop: "0.5rem",
-    boxSizing: "border-box" as const,
-    transition: "all 0.2s ease-in-out",
-    ":focus": {
-      outlineColor: "#3498db",
-    },
+  };
+
+  const renderMessageWithMentions = (message: string) => {
+    // Define a regular expression to match mentions.
+    const mentionPattern = /(@[a-zA-Z0-9_]+)/g;
+
+    // Replace mentions with highlighted text
+    return message.split(mentionPattern).map((part, index) => {
+      // If part matches the mention pattern, highlight it
+      if (part.match(mentionPattern)) {
+        return (
+          <span key={index} className="bg-yellow-200 font-semibold">
+            {part}
+          </span>
+        );
+      }
+      return part; // For non-mention parts, just return the text
+    });
   };
 
   return (
@@ -310,17 +397,52 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
               Message:
             </label>
             <Controller
-              control={control}
               name="message"
+              control={control}
+              rules={{ required: "Message is required" }}
               render={({ field }) => (
                 <textarea
                   {...field}
+                  value={message}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    field.onChange(e);
+                  }}
                   placeholder="Write your message here"
                   rows={4}
+                  className="p-2 border rounded-md w-full"
                   style={customInputStyles}
                 />
               )}
             />
+            {errors.message && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.message.message}
+              </p>
+            )}
+            {mentionSuggestions.length > 0 && isMentioning && (
+              <div className="text-white rounded-lg">
+                <ul>
+                  {mentionSuggestions.map((user) => (
+                    <li
+                      key={user.id}
+                      className="cursor-pointer flex items-center hover:bg-gray-700 rounded"
+                      style={customInputStyles}
+                      onClick={() => handleMentionSelect(user)}
+                    >
+                      <Image
+                        src={user.image}
+                        alt={user.name}
+                        width={24}
+                        height={24}
+                        className="rounded-full mr-2"
+                      />
+                      {user.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {errors.message && (
               <p className="text-xs text-red-400">{errors.message.message}</p>
             )}
