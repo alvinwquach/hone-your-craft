@@ -15,7 +15,14 @@ export async function POST(request: NextRequest) {
     const { receiverEmails, content, messageType, mentionedUserIds, subject } =
       requestBody;
 
-    if (!receiverEmails || !content) {
+    if (!Array.isArray(receiverEmails)) {
+      return NextResponse.json(
+        { message: "receiverEmails should be an array" },
+        { status: 400 }
+      );
+    }
+
+    if (!receiverEmails.length || !content) {
       console.log("Missing receiverEmails or content");
       return NextResponse.json(
         { message: "Receiver emails and content are required" },
@@ -37,6 +44,7 @@ export async function POST(request: NextRequest) {
         email: true,
       },
     });
+
 
     if (receivers.length !== receiverEmails.length) {
       console.log("Mismatch in number of recipients");
@@ -71,10 +79,9 @@ export async function POST(request: NextRequest) {
       )
     );
 
-
     return NextResponse.json({
       message: "Messages sent successfully",
-      data: messages, 
+      data: messages,
     });
   } catch (error: unknown) {
     console.error("Error sending message:", error);
@@ -92,3 +99,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

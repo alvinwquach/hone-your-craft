@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { RiMailUnreadLine } from "react-icons/ri";
+import { LuMailOpen } from "react-icons/lu";
 import {
   FaInbox,
   FaPaperPlane,
@@ -84,6 +86,10 @@ const MessagesCard = ({
   const [sentReplies, setSentReplies] = useState<Map<string, string[]>>(
     new Map()
   );
+  const [messageReadStatus, setMessageReadStatus] = useState<
+    Map<string, boolean>
+  >(new Map());
+
   const {
     control,
     register,
@@ -251,6 +257,55 @@ const MessagesCard = ({
 
   const hasSentMessages = sentMessages?.data && sentMessages.data.length > 0;
 
+  const toggleMessageReadStatus = async (
+    messageId: string,
+    currentStatus: boolean
+  ) => {
+    const newStatus = !currentStatus;
+
+    setMessageReadStatus((prevStatus) => {
+      const updatedStatus = new Map(prevStatus);
+      updatedStatus.set(messageId, newStatus);
+      return updatedStatus;
+    });
+
+    try {
+      const response = await fetch("/api/message/mark-read", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messageId: messageId,
+          status: newStatus ? "read" : "unread",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(`Message marked as ${newStatus ? "read" : "unread"}`, {
+          autoClose: 3000,
+        });
+
+        mutate("api/replies");
+        mutate("api/messages");
+      } else {
+        throw new Error(result.message || "Failed to update message status.");
+      }
+    } catch (error) {
+      setMessageReadStatus((prevStatus) => {
+        const updatedStatus = new Map(prevStatus);
+        updatedStatus.set(messageId, currentStatus);
+        return updatedStatus;
+      });
+      console.error("Error toggling message status:", error);
+      toast.error("Failed to update message status.", {
+        autoClose: 3000,
+      });
+    }
+  };
+
   return (
     <div className="mt-4 md:flex bg-zinc-900 rounded-lg overflow-hidden">
       <div className="md:w-1/4 w-full border-gray-700">
@@ -362,6 +417,28 @@ const MessagesCard = ({
                 <p className="text-xs text-zinc-500 mt-2">
                   {formatMessageDate(message.createdAt)}
                 </p>
+                <button
+                  onClick={() =>
+                    toggleMessageReadStatus(
+                      message.id,
+                      messageReadStatus.get(message.id) ??
+                        message.isReadByRecipient
+                    )
+                  }
+                  className="flex items-center space-x-2 px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full"
+                >
+                  {messageReadStatus.get(message.id) ? (
+                    <RiMailUnreadLine className="w-5 h-5" />
+                  ) : (
+                    <LuMailOpen className="w-5 h-5" />
+                  )}
+                  <span>
+                    {messageReadStatus.get(message.id)
+                      ? "Mark as Unread"
+                      : "Mark as Read"}
+                  </span>
+                </button>
+
                 <div className="mt-6 flex space-x-4">
                   <div className="flex-shrink-0">
                     <Image
