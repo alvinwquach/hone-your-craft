@@ -305,6 +305,28 @@ const MessagesCard = ({
       return updatedStatus;
     });
 
+    let updatedUnreadCount = replies?.unreadMessageCount ?? 0;
+    if (replies) {
+      if (newStatus) {
+        updatedUnreadCount = Math.max(0, replies.unreadMessageCount - 1);
+      } else {
+        updatedUnreadCount = replies.unreadMessageCount + 1;
+      }
+    }
+
+    if (replies) {
+      replies.unreadMessageCount = updatedUnreadCount;
+    }
+
+    toast.success(
+      `Message marked as ${
+        newStatus ? "read" : "unread"
+      }. You have ${updatedUnreadCount} unread messages.`,
+      {
+        autoClose: 3000,
+      }
+    );
+
     try {
       const response = await fetch("/api/message/mark-read", {
         method: "PATCH",
@@ -323,11 +345,19 @@ const MessagesCard = ({
         toast.success(`Message marked as ${newStatus ? "read" : "unread"}`, {
           autoClose: 3000,
         });
-
         mutate("api/replies");
         mutate("api/messages");
       } else {
+        setMessageReadStatus((prevStatus) => {
+          const updatedStatus = new Map(prevStatus);
+          updatedStatus.set(messageId, currentStatus);
+          return updatedStatus;
+        });
         throw new Error(result.message || "Failed to update message status.");
+
+        toast.error("Failed to update message status.", {
+          autoClose: 3000,
+        });
       }
     } catch (error) {
       setMessageReadStatus((prevStatus) => {
