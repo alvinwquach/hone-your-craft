@@ -132,9 +132,9 @@ const GoalForm = ({
 
   useEffect(() => {
     if (currentGoalData) {
-      if (currentGoalData.jobsAppliedToDaysPerWeekGoal) {
+      if (currentGoalData?.jobsAppliedToDaysPerWeekGoal) {
         const currentGoal = Number(
-          currentGoalData.jobsAppliedToDaysPerWeekGoal
+          currentGoalData?.jobsAppliedToDaysPerWeekGoal
         );
         setSelectedGoal(currentGoal);
         setValue("jobsAppliedToDaysPerWeekGoal", currentGoal);
@@ -453,6 +453,20 @@ const GoalForm = ({
     jobsAppliedToWeeklyGoalMessage = `Great job! You've surpassed your goal by ${exceededApplications} applications. Keep it up!`;
   }
 
+  const remainingApplicationsToMaxGoal =
+    currentGoalData?.jobsAppliedToWeeklyGoalMax - totalApplications;
+  let distanceToMaxGoalMessage = "";
+
+  if (remainingApplicationsToMaxGoal > 0) {
+    distanceToMaxGoalMessage = `You're ${remainingApplicationsToMaxGoal} applications away from hitting your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Keep pushing!`;
+  } else if (remainingApplicationsToMaxGoal === 0) {
+    distanceToMaxGoalMessage = `You've exactly hit your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Awesome!`;
+  } else {
+    const exceededApplicationsToMaxGoal = Math.abs(
+      remainingApplicationsToMaxGoal
+    );
+    distanceToMaxGoalMessage = `You've surpassed your maximum goal by ${exceededApplicationsToMaxGoal} applications. Fantastic!`;
+  }
   return (
     <div>
       <div className="rounded-lg p-6 shadow-lg relative">
@@ -592,7 +606,7 @@ const GoalForm = ({
             </div>
             <div className="text-lg sm:text-xl font-semibold my-4 text-white">
               <span className="text-2xl font-bold">{appliedDaysCount}</span> /{" "}
-              <span>{currentGoalData.jobsAppliedToDaysPerWeekGoal}</span> days
+              <span>{currentGoalData?.jobsAppliedToDaysPerWeekGoal}</span> days
             </div>
           </div>
           <div className="mt-6 text-white">
@@ -670,6 +684,9 @@ const GoalForm = ({
           <div className="">
             <div className="text-white mt-4">
               <p>{jobsAppliedToWeeklyGoalMessage}</p>
+            </div>
+            <div className="mt-4">
+              <span>{distanceToMaxGoalMessage}</span>
             </div>
             <div className="mt-4 flex gap-6 justify-start">
               {[...weeklyDayTargetMap.keys()].map((day, index) => {
