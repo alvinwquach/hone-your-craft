@@ -121,6 +121,11 @@ function Profile() {
     (url) => fetch(url).then((res) => res.json())
   );
 
+  const { data: monthlyInterviewGoalTrackerData } = useSWR(
+    "/api/monthly-interview-goal-tracker",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
   const userRole = data?.user?.userRole;
   const jobOffers = userOffers || [];
   const jobRejections = userRejections || [];
@@ -726,6 +731,9 @@ function Profile() {
                   }
                   weeklyApplicationGoalTrackerData={
                     weeklyApplicationGoalTrackerData
+                  }
+                  monthlyInterviewGoalTrackerData={
+                    monthlyInterviewGoalTrackerData
                   }
                 />
               )}

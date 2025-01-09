@@ -10,6 +10,7 @@ import { FaMinus } from "react-icons/fa";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { isSameDay, isToday } from "date-fns";
 
+
 const schema = z.object({
   jobsAppliedToDaysPerWeekGoal: z
     .number()
@@ -48,7 +49,9 @@ const schema = z.object({
   offerReceivedByDateGoalEnd: z.date().nullable().optional(),
 });
 
+
 type FormData = z.infer<typeof schema>;
+
 
 type DayOfWeek =
   | "Sunday"
@@ -59,14 +62,17 @@ type DayOfWeek =
   | "Friday"
   | "Saturday";
 
+
 interface weeklyApplicationDayTrackerData {
   applicationPresence: [DayOfWeek, boolean][];
 }
+
 
 interface weeklyApplicationGoalTrackerData {
   applicationPresence: [DayOfWeek, { presence: boolean; count: number }][];
   totalApplications: number;
 }
+
 
 interface GoalFormProps {
   currentGoalData: {
@@ -83,12 +89,15 @@ interface GoalFormProps {
   weeklyApplicationGoalTrackerData:
     | weeklyApplicationGoalTrackerData
     | undefined;
+  monthlyInterviewGoalTrackerData: any;
 }
+
 
 const GoalForm = ({
   currentGoalData,
   weeklyApplicationDayTrackerData,
   weeklyApplicationGoalTrackerData,
+  monthlyInterviewGoalTrackerData,
 }: GoalFormProps) => {
   const {
     reset,
@@ -419,373 +428,378 @@ const GoalForm = ({
           currentGoalData?.jobsAppliedToDaysPerWeekGoal - appliedDaysCount
         } days left to meet your weekly target. Keep up the good work!`;
 
-let jobsAppliedToWeeklyGoalMessage = "";
+  let jobsAppliedToWeeklyGoalMessage = "";
 
-if (totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMin) {
-  const remainingApplications =
-    currentGoalData?.jobsAppliedToWeeklyGoalMin - totalApplications;
-  jobsAppliedToWeeklyGoalMessage = `You're almost there! You need to apply to ${remainingApplications} more jobs to meet your minimum goal.`;
-} else if (totalApplications === currentGoalData?.jobsAppliedToWeeklyGoalMin) {
-  jobsAppliedToWeeklyGoalMessage = `Great job! You've met your minimum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMin} applications. Keep going!`;
-} else if (
-  totalApplications > currentGoalData?.jobsAppliedToWeeklyGoalMin &&
-  totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMax
-) {
-  jobsAppliedToWeeklyGoalMessage = `You're on track! You've applied within your weekly goal range.`;
-} else if (totalApplications === currentGoalData?.jobsAppliedToWeeklyGoalMax) {
-  jobsAppliedToWeeklyGoalMessage = `Awesome! You've exactly met your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Well done!`;
-} else {
-  const exceededApplications =
-    totalApplications - currentGoalData?.jobsAppliedToWeeklyGoalMax;
-  jobsAppliedToWeeklyGoalMessage = `Great job! You've surpassed your goal by ${exceededApplications} applications. Keep it up!`;
-}
+  if (totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMin) {
+    const remainingApplications =
+      currentGoalData?.jobsAppliedToWeeklyGoalMin - totalApplications;
+    jobsAppliedToWeeklyGoalMessage = `You're almost there! You need to apply to ${remainingApplications} more jobs to meet your minimum goal.`;
+  } else if (
+    totalApplications === currentGoalData?.jobsAppliedToWeeklyGoalMin
+  ) {
+    jobsAppliedToWeeklyGoalMessage = `Great job! You've met your minimum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMin} applications. Keep going!`;
+  } else if (
+    totalApplications > currentGoalData?.jobsAppliedToWeeklyGoalMin &&
+    totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMax
+  ) {
+    jobsAppliedToWeeklyGoalMessage = `You're on track! You've applied within your weekly goal range.`;
+  } else if (
+    totalApplications === currentGoalData?.jobsAppliedToWeeklyGoalMax
+  ) {
+    jobsAppliedToWeeklyGoalMessage = `Awesome! You've exactly met your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Well done!`;
+  } else {
+    const exceededApplications =
+      totalApplications - currentGoalData?.jobsAppliedToWeeklyGoalMax;
+    jobsAppliedToWeeklyGoalMessage = `Great job! You've surpassed your goal by ${exceededApplications} applications. Keep it up!`;
+  }
 
-return (
-  <div>
-    <div className="rounded-lg p-6 shadow-lg relative">
-      <div className="mt-6 text-white">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
-          What is your goal? (optional)
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="ReceiveAnOffer"
-              checked={candidateGoal === "ReceiveAnOffer"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Receive an Offer
-          </label>
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="ChangeMyCareer"
-              checked={candidateGoal === "ChangeMyCareer"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Change My Career
-          </label>
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="LookingForANewJob"
-              checked={candidateGoal === "LookingForANewJob"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Looking for a New Job
-          </label>
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="ExploreNewOpportunities"
-              checked={candidateGoal === "ExploreNewOpportunities"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Explore New Opportunities
-          </label>
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="ImproveSkillset"
-              checked={candidateGoal === "ImproveSkillset"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Improve Skillset
-          </label>
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="GrowInMyExistingRole"
-              checked={candidateGoal === "GrowInMyExistingRole"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Grow In My Existing Role
-          </label>
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="BuildAPortfolio"
-              checked={candidateGoal === "BuildAPortfolio"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Build A Portfolio
-          </label>
-          <label className="text-sm text-white flex items-center">
-            <input
-              type="radio"
-              value="NotSureYet"
-              checked={candidateGoal === "NotSureYet"}
-              onChange={handleCandidateGoalChange}
-              className="mr-2"
-            />
-            Not Sure Yet
-          </label>
-        </div>
-      </div>
-      <h3 className="text-lg sm:text-xl font-semibold my-4 text-white">
-        How many days a week do you plan on applying? (optional)
-      </h3>
-      <div className="flex gap-6 justify-start">
-        {numberOfDaysInAWeek.map((day) => (
-          <div
-            key={day}
-            onClick={() => handleHexagonClick(day)}
-            className={`w-6 h-6 sm:w-12 sm:h-12 text-white flex items-center justify-center relative transform rotate-30 ${
-              (selectedGoal ?? 0) >= day ? "bg-blue-600" : "bg-blue-200"
-            }`}
-            style={{
-              clipPath:
-                "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-            }}
-          ></div>
-        ))}
-      </div>
-      <form onSubmit={handleSubmit(handleSave)} className="mt-8">
-        <div>
-          <p className="text-white mb-4">
-            {jobsAppliedToDaysPerWeekGoalMessage}
-          </p>
-          <div className="flex gap-6 justify-start">
-            {[...weeklyDayTargetMap.keys()].map((day, index) => {
-              const dayAbbreviation = weeklyDayTargetMap.get(day);
-
-              const wasApplied =
-                weeklyApplicationDayTrackerData?.applicationPresence.find(
-                  ([dayKey]: [DayOfWeek, boolean]) => dayKey === day
-                )?.[1] || false;
-
-              return (
-                <div
-                  key={index}
-                  className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30 
-            ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
-                  style={{
-                    clipPath:
-                      "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                  }}
-                >
-                  <span className="text-sm">{dayAbbreviation}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="text-lg sm:text-xl font-semibold my-4 text-white">
-            <span className="text-2xl font-bold">{appliedDaysCount}</span> /{" "}
-            <span>{currentGoalData.jobsAppliedToDaysPerWeekGoal}</span> days
-          </div>
-        </div>
+  return (
+    <div>
+      <div className="rounded-lg p-6 shadow-lg relative">
         <div className="mt-6 text-white">
-          <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
-            How many jobs do you plan on applying to each week? (optional)
-          </h4>
-          <div className="flex max-w-sm justify-between">
-            <div className="flex flex-col">
-              <label
-                htmlFor="jobsAppliedToWeeklyGoalMin"
-                className="mb-2 sr-only"
-              >
-                Jobs Applied to Weekly Goal (Min)
-              </label>
-              <div className="relative flex items-center max-w-[8rem]">
-                <button
-                  type="button"
-                  onClick={handleMinDecrement}
-                  className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                >
-                  <MdRemove className="w-3 h-3  text-white" />
-                </button>
-                <input
-                  type="number"
-                  id="jobsAppliedToWeeklyGoalMin"
-                  value={goalMin}
-                  onChange={handleMinChange}
-                  className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleMinIncrement}
-                  className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                >
-                  <MdAdd className="w-3 h-3 text-white" />
-                </button>
-              </div>
-            </div>
-            <span className="flex items-center">
-              <FaMinus className="h-6 w-6" />
-            </span>
-            <div className="flex flex-col">
-              <label
-                htmlFor="jobsAppliedToWeeklyGoalMax"
-                className="mb-2 sr-only"
-              >
-                Jobs Applied to Weekly Goal (Max)
-              </label>
-              <div className="relative flex items-center max-w-[8rem]">
-                <button
-                  type="button"
-                  onClick={handleMaxDecrement}
-                  className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                >
-                  <MdRemove className="w-3 h-3 text-gray-900 dark:text-white" />
-                </button>
-                <input
-                  type="number"
-                  id="jobsAppliedToWeeklyGoalMax"
-                  value={goalMax}
-                  onChange={handleMaxChange}
-                  className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleMaxIncrement}
-                  className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
-                >
-                  <MdAdd className="w-3 h-3 text-white" />
-                </button>
-              </div>
-            </div>
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+            What is your goal? (optional)
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ReceiveAnOffer"
+                checked={candidateGoal === "ReceiveAnOffer"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Receive an Offer
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ChangeMyCareer"
+                checked={candidateGoal === "ChangeMyCareer"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Change My Career
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="LookingForANewJob"
+                checked={candidateGoal === "LookingForANewJob"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Looking for a New Job
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ExploreNewOpportunities"
+                checked={candidateGoal === "ExploreNewOpportunities"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Explore New Opportunities
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="ImproveSkillset"
+                checked={candidateGoal === "ImproveSkillset"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Improve Skillset
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="GrowInMyExistingRole"
+                checked={candidateGoal === "GrowInMyExistingRole"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Grow In My Existing Role
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="BuildAPortfolio"
+                checked={candidateGoal === "BuildAPortfolio"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Build A Portfolio
+            </label>
+            <label className="text-sm text-white flex items-center">
+              <input
+                type="radio"
+                value="NotSureYet"
+                checked={candidateGoal === "NotSureYet"}
+                onChange={handleCandidateGoalChange}
+                className="mr-2"
+              />
+              Not Sure Yet
+            </label>
           </div>
         </div>
-        <div className="">
-          <div className="text-white mt-4">
-            <p>{jobsAppliedToWeeklyGoalMessage}</p>
-          </div>
-          <div className="mt-4 flex gap-6 justify-start">
-            {[...weeklyDayTargetMap.keys()].map((day, index) => {
-              const dayAbbreviation = weeklyDayTargetMap.get(day);
+        <h3 className="text-lg sm:text-xl font-semibold my-4 text-white">
+          How many days a week do you plan on applying? (optional)
+        </h3>
+        <div className="flex gap-6 justify-start">
+          {numberOfDaysInAWeek.map((day) => (
+            <div
+              key={day}
+              onClick={() => handleHexagonClick(day)}
+              className={`w-6 h-6 sm:w-12 sm:h-12 text-white flex items-center justify-center relative transform rotate-30 ${
+                (selectedGoal ?? 0) >= day ? "bg-blue-600" : "bg-blue-200"
+              }`}
+              style={{
+                clipPath:
+                  "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+              }}
+            ></div>
+          ))}
+        </div>
+        <form onSubmit={handleSubmit(handleSave)} className="mt-8">
+          <div>
+            <p className="text-white mb-4">
+              {jobsAppliedToDaysPerWeekGoalMessage}
+            </p>
+            <div className="flex gap-6 justify-start">
+              {[...weeklyDayTargetMap.keys()].map((day, index) => {
+                const dayAbbreviation = weeklyDayTargetMap.get(day);
 
-              const dayData =
-                weeklyApplicationGoalTrackerData?.applicationPresence.find(
-                  ([dayKey]) => dayKey === day
-                )?.[1] || { presence: false, count: 0 };
+                const wasApplied =
+                  weeklyApplicationDayTrackerData?.applicationPresence.find(
+                    ([dayKey]: [DayOfWeek, boolean]) => dayKey === day
+                  )?.[1] || false;
 
-              const wasApplied = dayData.presence;
-              const applicationCount = dayData.count;
-
-              return (
-                <div key={index} className="flex flex-col items-center">
+                return (
                   <div
-                    className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30 
-            ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
+                    key={index}
+                    className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30
+           ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
                     style={{
                       clipPath:
                         "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
                     }}
                   >
-                    <span className="text-lg text-white">
-                      {dayAbbreviation}
-                    </span>
+                    <span className="text-sm">{dayAbbreviation}</span>
                   </div>
-                  <div className="text-xs mt-2 text-white">
-                    {applicationCount}
-                  </div>
+                );
+              })}
+            </div>
+            <div className="text-lg sm:text-xl font-semibold my-4 text-white">
+              <span className="text-2xl font-bold">{appliedDaysCount}</span> /{" "}
+              <span>{currentGoalData.jobsAppliedToDaysPerWeekGoal}</span> days
+            </div>
+          </div>
+          <div className="mt-6 text-white">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+              How many jobs do you plan on applying to each week? (optional)
+            </h4>
+            <div className="flex max-w-sm justify-between">
+              <div className="flex flex-col">
+                <label
+                  htmlFor="jobsAppliedToWeeklyGoalMin"
+                  className="mb-2 sr-only"
+                >
+                  Jobs Applied to Weekly Goal (Min)
+                </label>
+                <div className="relative flex items-center max-w-[8rem]">
+                  <button
+                    type="button"
+                    onClick={handleMinDecrement}
+                    className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                  >
+                    <MdRemove className="w-3 h-3  text-white" />
+                  </button>
+                  <input
+                    type="number"
+                    id="jobsAppliedToWeeklyGoalMin"
+                    value={goalMin}
+                    onChange={handleMinChange}
+                    className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleMinIncrement}
+                    className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                  >
+                    <MdAdd className="w-3 h-3 text-white" />
+                  </button>
                 </div>
-              );
-            })}
+              </div>
+              <span className="flex items-center">
+                <FaMinus className="h-6 w-6" />
+              </span>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="jobsAppliedToWeeklyGoalMax"
+                  className="mb-2 sr-only"
+                >
+                  Jobs Applied to Weekly Goal (Max)
+                </label>
+                <div className="relative flex items-center max-w-[8rem]">
+                  <button
+                    type="button"
+                    onClick={handleMaxDecrement}
+                    className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                  >
+                    <MdRemove className="w-3 h-3 text-gray-900 dark:text-white" />
+                  </button>
+                  <input
+                    type="number"
+                    id="jobsAppliedToWeeklyGoalMax"
+                    value={goalMax}
+                    onChange={handleMaxChange}
+                    className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleMaxIncrement}
+                    className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                  >
+                    <MdAdd className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="mt-6 text-white">
-          <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
-            How many interviews are you aiming to have each month? (optional)
-          </h4>
-          <div className="flex flex-col">
-            <input
-              type="number"
-              id="monthlyInterviewGoal"
-              value={monthlyInterviewsGoal}
-              onChange={handleMonthlyInterviewsGoalChange}
-              className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-              min={0}
-            />
+          <div className="">
+            <div className="text-white mt-4">
+              <p>{jobsAppliedToWeeklyGoalMessage}</p>
+            </div>
+            <div className="mt-4 flex gap-6 justify-start">
+              {[...weeklyDayTargetMap.keys()].map((day, index) => {
+                const dayAbbreviation = weeklyDayTargetMap.get(day);
+
+                const dayData =
+                  weeklyApplicationGoalTrackerData?.applicationPresence.find(
+                    ([dayKey]) => dayKey === day
+                  )?.[1] || { presence: false, count: 0 };
+
+                const wasApplied = dayData.presence;
+                const applicationCount = dayData.count;
+
+                return (
+                  <div key={index} className="flex flex-col items-center">
+                    <div
+                      className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30
+           ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
+                      style={{
+                        clipPath:
+                          "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                      }}
+                    >
+                      <span className="text-lg text-white">
+                        {dayAbbreviation}
+                      </span>
+                    </div>
+                    <div className="text-xs mt-2 text-white">
+                      {applicationCount}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-        {candidateGoal === "ReceiveAnOffer" && (
-          <div className="mt-6 text-white z-10">
-            <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
-              When would you like to receive an offer by? (optional)
-            </h5>
-            <div className="flex flex-col relative z-10">
-              <Calendar
-                multiple
-                minDate={today}
-                value={selectedDates}
-                onChange={handleDateChange}
-                headerOrder={["MONTH_YEAR", "LEFT_BUTTON", "RIGHT_BUTTON"]}
-                monthYearSeparator={" "}
-                showOtherDays={true}
-                mapDays={({ date }) => {
-                  const isTodayDate = isToday(date.toDate());
-                  const isSelected = selectedDates.some((d) =>
-                    isSameDay(d.toDate(), date.toDate())
-                  );
-                  const isBeforeToday = date.toDate() < today;
-                  const isInRange =
-                    selectedDates.length > 1 &&
-                    selectedDates[0].toDate() <= date.toDate() &&
-                    selectedDates[selectedDates.length - 1].toDate() >=
-                      date.toDate();
-
-                  let dayClasses = "cursor-pointer";
-
-                  if (isBeforeToday) {
-                    dayClasses = "text-gray-400";
-                  } else if (isSelected) {
-                    dayClasses = "bg-blue-700 text-white";
-                  } else if (isTodayDate) {
-                    dayClasses = "bg-transparent text-blue-700";
-                  } else if (isInRange) {
-                    dayClasses = "bg-blue-300 text-white";
-                  } else {
-                    dayClasses = "bg-blue-100 text-blue-700 font-bold";
-                  }
-
-                  return {
-                    className: dayClasses,
-                    children: isTodayDate ? (
-                      <div>
-                        <div>{date.day}</div>
-                        <div
-                          style={{
-                            position: "absolute",
-                            bottom: 2,
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            width: 4,
-                            height: 4,
-                            backgroundColor: "white",
-                            borderRadius: "50%",
-                          }}
-                        ></div>
-                      </div>
-                    ) : (
-                      date.day
-                    ),
-                  };
-                }}
+          <div className="mt-6 text-white">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+              How many interviews are you aiming to have each month? (optional)
+            </h4>
+            <div className="flex flex-col">
+              <input
+                type="number"
+                id="monthlyInterviewGoal"
+                value={monthlyInterviewsGoal}
+                onChange={handleMonthlyInterviewsGoalChange}
+                className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                min={0}
               />
             </div>
           </div>
-        )}
-        <div className="flex justify-start mt-6">
-          <button
-            type="submit"
-            className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
-          >
-            Save goal settings
-          </button>
-        </div>
-      </form>
+          <div className="mt-5">{monthlyInterviewGoalTrackerData?.message}</div>
+          {candidateGoal === "ReceiveAnOffer" && (
+            <div className="mt-6 text-white z-10">
+              <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+                When would you like to receive an offer by? (optional)
+              </h5>
+              <div className="flex flex-col relative z-10">
+                <Calendar
+                  multiple
+                  minDate={today}
+                  value={selectedDates}
+                  onChange={handleDateChange}
+                  headerOrder={["MONTH_YEAR", "LEFT_BUTTON", "RIGHT_BUTTON"]}
+                  monthYearSeparator={" "}
+                  showOtherDays={true}
+                  mapDays={({ date }) => {
+                    const isTodayDate = isToday(date.toDate());
+                    const isSelected = selectedDates.some((d) =>
+                      isSameDay(d.toDate(), date.toDate())
+                    );
+                    const isBeforeToday = date.toDate() < today;
+                    const isInRange =
+                      selectedDates.length > 1 &&
+                      selectedDates[0].toDate() <= date.toDate() &&
+                      selectedDates[selectedDates.length - 1].toDate() >=
+                        date.toDate();
+
+                    let dayClasses = "cursor-pointer";
+
+                    if (isBeforeToday) {
+                      dayClasses = "text-gray-400";
+                    } else if (isSelected) {
+                      dayClasses = "bg-blue-700 text-white";
+                    } else if (isTodayDate) {
+                      dayClasses = "bg-transparent text-blue-700";
+                    } else if (isInRange) {
+                      dayClasses = "bg-blue-300 text-white";
+                    } else {
+                      dayClasses = "bg-blue-100 text-blue-700 font-bold";
+                    }
+
+                    return {
+                      className: dayClasses,
+                      children: isTodayDate ? (
+                        <div>
+                          <div>{date.day}</div>
+                          <div
+                            style={{
+                              position: "absolute",
+                              bottom: 2,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              width: 4,
+                              height: 4,
+                              backgroundColor: "white",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                        </div>
+                      ) : (
+                        date.day
+                      ),
+                    };
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          <div className="flex justify-start mt-6">
+            <button
+              type="submit"
+              className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+            >
+              Save goal settings
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default GoalForm;
