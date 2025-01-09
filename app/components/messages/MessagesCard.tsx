@@ -19,6 +19,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FiMessageCircle } from "react-icons/fi";
+import ReplyToMessageModal from "./ReplyToMessageModal";
 
 interface Sender {
   id: string;
@@ -108,6 +109,18 @@ const MessagesCard = ({
   const [messageReadStatus, setMessageReadStatus] = useState<
     Map<string, boolean>
   >(new Map());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [messageToReply, setMessageToReply] = useState<Message | null>(null);
+
+  const openReplyModal = (message: Message) => {
+    setMessageToReply(message);
+    setIsModalOpen(true);
+  };
+
+  const closeReplyModal = () => {
+    setIsModalOpen(false);
+    setMessageToReply(null);
+  };
 
   const {
     control,
@@ -130,7 +143,10 @@ const MessagesCard = ({
     setReplyMessage(e.target.value);
   };
 
-  const handleSendReply = async (originalMessage: Message) => {
+  const handleSendReply = async (
+    originalMessage: Message,
+    replyMessage: string
+  ) => {
     if (replyMessage.trim() === "") {
       toast.error("Please type a reply before sending.");
       return;
@@ -163,6 +179,7 @@ const MessagesCard = ({
         mutate("api/message/reply");
         mutate("api/message/sent");
         mutate("api/messages");
+        closeReplyModal();
       } else {
         toast.error(result.message || "Something went wrong.");
       }
@@ -432,11 +449,7 @@ const MessagesCard = ({
                   <div className="flex mt-4">
                     <button
                       className="flex items-center px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
-                      onClick={() =>
-                        setIsReplying((prev) =>
-                          new Map(prev).set(message.id, true)
-                        )
-                      }
+                      onClick={() => openReplyModal(message)}
                     >
                       <FaReply className="w-4 h-4 mr-2" /> Reply
                     </button>
@@ -579,7 +592,7 @@ const MessagesCard = ({
                       <div className="flex justify-between mt-2">
                         <button
                           className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full"
-                          onClick={() => handleSendReply(message)}
+                          onClick={() => handleSendReply(message, replyMessage)}
                         >
                           Send
                         </button>
@@ -776,6 +789,14 @@ const MessagesCard = ({
           </div>
         ) : null}
       </div>
+      {isModalOpen && messageToReply && (
+        <ReplyToMessageModal
+          isOpen={isModalOpen}
+          closeModal={closeReplyModal}
+          originalMessage={messageToReply}
+          onReplySend={handleSendReply}
+        />
+      )}
     </div>
   );
 };
