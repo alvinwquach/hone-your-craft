@@ -310,23 +310,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     marginTop: "0.5rem",
   };
 
-  const renderMessageWithMentions = (message: string) => {
-    // Define a regular expression to match mentions.
-    const mentionPattern = /(@[a-zA-Z0-9_]+)/g;
-
-    // Replace mentions with highlighted text
-    return message.split(mentionPattern).map((part, index) => {
-      // If part matches the mention pattern, highlight it
-      if (part.match(mentionPattern)) {
-        return (
-          <span key={index} className="bg-yellow-200 font-semibold">
-            {part}
-          </span>
-        );
-      }
-      return part; // For non-mention parts, just return the text
-    });
-  };
 
   return (
     <div className="fixed inset-0 flex items-end justify-end z-50">

@@ -10,7 +10,6 @@ import { FaMinus } from "react-icons/fa";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { isSameDay, isToday } from "date-fns";
 
-
 const schema = z.object({
   jobsAppliedToDaysPerWeekGoal: z
     .number()
@@ -49,9 +48,7 @@ const schema = z.object({
   offerReceivedByDateGoalEnd: z.date().nullable().optional(),
 });
 
-
 type FormData = z.infer<typeof schema>;
-
 
 type DayOfWeek =
   | "Sunday"
@@ -62,17 +59,14 @@ type DayOfWeek =
   | "Friday"
   | "Saturday";
 
-
 interface weeklyApplicationDayTrackerData {
   applicationPresence: [DayOfWeek, boolean][];
 }
-
 
 interface weeklyApplicationGoalTrackerData {
   applicationPresence: [DayOfWeek, { presence: boolean; count: number }][];
   totalApplications: number;
 }
-
 
 interface GoalFormProps {
   currentGoalData: {
@@ -91,7 +85,6 @@ interface GoalFormProps {
     | undefined;
   monthlyInterviewGoalTrackerData: any;
 }
-
 
 const GoalForm = ({
   currentGoalData,
@@ -467,6 +460,7 @@ const GoalForm = ({
     );
     distanceToMaxGoalMessage = `You've surpassed your maximum goal by ${exceededApplicationsToMaxGoal} applications. Fantastic!`;
   }
+
   return (
     <div>
       <div className="rounded-lg p-6 shadow-lg relative">
