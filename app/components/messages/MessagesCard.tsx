@@ -38,6 +38,12 @@ interface Reply {
   sender: Sender;
 }
 
+interface MessagesResponse {
+  message: string;
+  data: Message[];
+  unreadMessageCount: number;
+}
+
 interface Message {
   id: string;
   subject: string;
@@ -62,12 +68,24 @@ interface Message {
   mentionedUserIds: string[];
 }
 
+interface User {
+  user: {
+    id: string;
+    name: string;
+    image: string;
+  };
+}
+
 interface MessagesCardProps {
   receivedMessages: { message: string; data: Message[] } | undefined;
   sentMessages: { message: string; data: Message[] } | undefined;
   trashedSentMessages: { message: string; data: Message[] } | undefined;
-  userData: any;
-  replies: any;
+  userData: User;
+  replies?: {
+    message: string;
+    data: Message[];
+    unreadMessageCount: number;
+  };
 }
 
 const schema = z.object({
@@ -348,6 +366,9 @@ const MessagesCard = ({
             >
               <FiMessageCircle className="w-4 h-4 me-2" />
               Replies
+              <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                {replies?.unreadMessageCount ?? 0}
+              </span>
             </button>
           </li>
           <li>

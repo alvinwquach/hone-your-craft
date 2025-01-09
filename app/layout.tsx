@@ -6,6 +6,8 @@ import "react-toastify/dist/ReactToastify.css";
 import SessionProvider from "./SessionProvider";
 import Header from "./components/common/Header";
 import "./globals.css";
+import AuthProvider from "./components/AuthProvider";
+
 import Top10MissingSkillsTicker from "./components/common/Top10MissingSkillsTicker";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,18 +24,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <GoogleTagManager
-        gtmId={`${process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID ?? ""}`}
-      />
-      <body className={inter.className}>
-        <SessionProvider>
-          <Header />
-          <main className="bg-zinc-800">{children}</main>
-          <ToastContainer />
-        </SessionProvider>
-        {/* <Top10MissingSkillsTicker /> */}
-      </body>
-    </html>
+    <AuthProvider>
+      <html lang="en">
+        <GoogleTagManager
+          gtmId={`${process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID ?? ""}`}
+        />
+        <body className={inter.className}>
+          <SessionProvider>
+            <Header />
+            <main className="bg-zinc-800">{children}</main>
+            <ToastContainer />
+          </SessionProvider>
+          {/* <Top10MissingSkillsTicker /> */}
+        </body>
+      </html>
+    </AuthProvider>
   );
 }
