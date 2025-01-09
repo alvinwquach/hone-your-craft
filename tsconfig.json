@@ -33,7 +33,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "context/GlobalContext.js", "context/GlobalContext.js"  ],
   "exclude": [
     "node_modules"
   ]
