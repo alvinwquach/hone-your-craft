@@ -22,6 +22,7 @@ interface User {
   id: string;
   name: string;
   image: string;
+  email: string;
 }
 
 interface MessageModalProps {
@@ -48,15 +49,28 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
 
   const handleSend: SubmitHandler<FormData> = async (data) => {
     try {
-      const receiverEmails = data.selectedUsers.map(
-        (userId) => users.find((user) => user.id === userId)?.id
-      );
+      const receiverEmails = data.selectedUsers
+        .map((userId) => users.find((user) => user.id === userId)?.email)
+        .filter(Boolean);
 
       console.log("Sending message with data:", {
         receiverEmails,
         messageContent: data.message,
         subject: data.subject,
       });
+
+      if (receiverEmails.length === 0) {
+        toast.error("Please select valid recipients.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        return;
+      }
 
       const response = await fetch("/api/message/send", {
         method: "POST",
@@ -127,6 +141,7 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     image: user.image,
     name: user.name,
     id: user.id,
+    email: user.email,
   }));
 
   const handleUserSelectChange = (newValue: MultiValue<any>) => {
