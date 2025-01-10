@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { FaTrash, FaPaperPlane, FaTimes } from "react-icons/fa";
+import { FaPaperPlane, FaTimes, FaTrashAlt } from "react-icons/fa";
 import Select, { MultiValue, OptionProps } from "react-select";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import * as z from "zod";
@@ -200,7 +200,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     }
   };
 
-
   const handleTrash = () => {
     reset({
       subject: "",
@@ -309,7 +308,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     width: "100%",
     marginTop: "0.5rem",
   };
-
 
   return (
     <div className="fixed inset-0 flex items-end justify-end z-50">
@@ -430,7 +428,7 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
               <p className="text-xs text-red-400">{errors.message.message}</p>
             )}
           </div>
-          <div className="flex justify-between gap-x-6 mt-4">
+          <div className="flex justify-between">
             <button
               type="submit"
               className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
@@ -443,7 +441,7 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
               onClick={handleTrash}
               className="flex items-center justify-center px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 rounded-full shadow-md transition-all duration-200 ease-in-out"
             >
-              <FaTrash className="w-5 h-5" />
+              <FaTrashAlt className="w-5 h-5" />
             </button>
           </div>
         </form>

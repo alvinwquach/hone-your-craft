@@ -8,7 +8,7 @@ import {
   FaPaperPlane,
   FaReply,
   FaTimes,
-  FaTrash,
+  FaTrashAlt,
 } from "react-icons/fa";
 import { GrSchedule } from "react-icons/gr";
 import { mutate } from "swr";
@@ -78,15 +78,11 @@ interface User {
 }
 
 interface MessagesCardProps {
-  receivedMessages: { message: string; data: Message[] } | undefined;
+  receivedMessages: MessagesResponse;
   sentMessages: { message: string; data: Message[] } | undefined;
   trashedSentMessages: { message: string; data: Message[] } | undefined;
   userData: User;
-  replies?: {
-    message: string;
-    data: Message[];
-    unreadMessageCount: number;
-  };
+  replies?: MessagesResponse;
 }
 
 const schema = z.object({
@@ -353,11 +349,10 @@ const MessagesCard = ({
           updatedStatus.set(messageId, currentStatus);
           return updatedStatus;
         });
-        throw new Error(result.message || "Failed to update message status.");
-
         toast.error("Failed to update message status.", {
           autoClose: 3000,
         });
+        throw new Error(result.message || "Failed to update message status.");
       }
     } catch (error) {
       setMessageReadStatus((prevStatus) => {
@@ -387,6 +382,9 @@ const MessagesCard = ({
             >
               <FaInbox className="w-4 h-4 me-2" />
               Inbox
+              <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                {receivedMessages?.unreadMessageCount ?? 0}
+              </span>
             </button>
           </li>
           <li>
@@ -440,13 +438,126 @@ const MessagesCard = ({
                   : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
               } transition-colors duration-200 ease-in-out`}
             >
-              <FaTrash className="w-4 h-4 me-2" />
+              <FaTrashAlt className="w-4 h-4 me-2" />
               Trash
             </button>
           </li>
         </ul>
       </div>
       <div className="md:w-3/4 w-full p-4 text-white flex-grow">
+        <div>
+          {activeTab === "inbox" && hasReceivedMessages ? (
+            <div className="rounded-lg h-full space-y-6">
+              {receivedMessages.data.map((message) => (
+                <div
+                  key={message.id}
+                  className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                >
+                  <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
+                    {message.subject}
+                  </h3>
+                  <p className="text-zinc-400 mt-2 line-clamp-3">
+                    {message.content}
+                  </p>
+                  <p className="text-sm text-zinc-400 mt-2">
+                    From:{" "}
+                    <span className="font-medium text-zinc-200">
+                      {message.sender.name}
+                    </span>{" "}
+                    ({message.sender.email})
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {new Date(message.createdAt).toLocaleString()}
+                  </p>
+                  <div className="flex justify-between items-center mt-4">
+                    <span
+                      className={`text-xs mt-1 font-medium ${
+                        messageReadStatus.get(message.id)
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {messageReadStatus.get(message.id) ? "Read" : "Unread"}
+                    </span>
+                    <button
+                      onClick={() =>
+                        toggleMessageReadStatus(
+                          message.id,
+                          messageReadStatus.get(message.id) ??
+                            message.isReadByRecipient
+                        )
+                      }
+                      className="flex items-center space-x-2 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition-all duration-200 ease-in-out"
+                    >
+                      {messageReadStatus.get(message.id) ? (
+                        <RiMailUnreadLine className="w-5 h-5" />
+                      ) : (
+                        <LuMailOpen className="w-5 h-5" />
+                      )}
+                      <span className="text-sm font-semibold">
+                        {messageReadStatus.get(message.id)
+                          ? "Mark as Unread"
+                          : "Mark as Read"}
+                      </span>
+                    </button>
+                  </div>
+                  <div className="mt-4 border-t border-zinc-700 pt-4">
+                    <h4 className="text-sm font-medium text-zinc-500">
+                      Sender:
+                    </h4>
+                    <div className="flex items-center space-x-3 mt-2">
+                      <Image
+                        src={message.sender?.image}
+                        alt={message.sender?.name}
+                        width={32}
+                        height={32}
+                        className="rounded-full border-2 border-zinc-600"
+                      />
+                      <div className="text-sm">
+                        <p className="text-zinc-300">{message.sender?.name}</p>
+                        <p className="text-zinc-400">{message.sender?.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex mt-4 space-x-4">
+                    <button
+                      className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+                      onClick={() => openReplyModal(message)}
+                    >
+                      <FaReply className="w-4 h-4 mr-2" /> Reply
+                    </button>
+                  </div>
+                  <p className="text-xs text-zinc-500 mt-2">
+                    {formatMessageDate(message.createdAt)}
+                  </p>
+                  <div className="mt-6 flex space-x-4">
+                    <div className="flex-shrink-0">
+                      <Image
+                        src={message.sender?.image}
+                        alt={message.sender?.name}
+                        width={40}
+                        height={40}
+                        className="rounded-full border-2 border-zinc-600"
+                      />
+                    </div>
+                    <div className="flex-grow bg-zinc-700 p-4 rounded-xl max-w-xs">
+                      <p className="text-zinc-300">{message?.content}</p>
+                      <p className="text-xs text-zinc-500 mt-2">
+                        {formatMessageDate(message.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : activeTab === "inbox" ? (
+            <div className="rounded-lg h-full">
+              <p className="text-center text-zinc-500 mt-2">
+                No Received Messages Found
+              </p>
+            </div>
+          ) : null}
+        </div>
         {activeTab === "replies" && hasReceivedMessages ? (
           <div className="rounded-lg h-full">
             {replies?.data.map((message: Message) => (
@@ -631,7 +742,7 @@ const MessagesCard = ({
                           type="button"
                           onClick={handleResetMessage}
                         >
-                          <FaTrash />
+                          <FaTrashAlt />
                         </button>
                       </div>
                     </div>
@@ -658,7 +769,7 @@ const MessagesCard = ({
                   className="absolute top-4 right-4 px-3 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-full shadow-md transition-all duration-200 ease-in-out"
                   onClick={() => handleSentMessageToTrash(message.id)}
                 >
-                  <FaTrash className="w-5 h-5" />
+                  <FaTrashAlt className="w-5 h-5" />
                 </button>
                 <h3 className="text-lg font-semibold text-zinc-300">
                   {message.subject}
@@ -713,7 +824,7 @@ const MessagesCard = ({
                   className="absolute top-2 right-2 text-zinc-400 hover:text-white transition-all duration-200"
                   onClick={() => handleSentMessageToTrash(message.id)}
                 >
-                  <FaTrash className="w-5 h-5" />
+                  <FaTrashAlt className="w-5 h-5" />
                 </button>
                 <h3 className="text-lg font-semibold text-zinc-300">
                   {message.subject}
@@ -779,7 +890,7 @@ const MessagesCard = ({
                   type="button"
                   onClick={() => handleDeleteTrashedSentMessage(message.id)}
                 >
-                  <FaTrash />
+                  <FaTrashAlt />
                 </button>
                 <p className="text-zinc-400 mt-2">{message.content}</p>
                 <div className="mt-4">
@@ -824,7 +935,8 @@ const MessagesCard = ({
           isOpen={isModalOpen}
           closeModal={closeReplyModal}
           originalMessage={messageToReply}
-          onReplySend={handleSendReply}
+          handleSendReply={handleSendReply}
+          handleResetMessage={handleResetMessage}
         />
       )}
     </div>
