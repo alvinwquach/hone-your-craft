@@ -39,9 +39,21 @@ export async function GET(request: NextRequest) {
     });
 
     console.log("Received messages with senders:", receivedMessages);
+
+
+    const unreadMessageCount = await prisma.message.count({
+      where: {
+        recipientId: {
+          has: currentUser.id,
+        },
+        isReadByRecipient: false,
+      },
+    });
+
     return NextResponse.json({
       message: "Received messages retrieved successfully",
       data: receivedMessages,
+      unreadMessageCount,
     });
   } catch (error: unknown) {
     console.error("Error retrieving received messages:", error);

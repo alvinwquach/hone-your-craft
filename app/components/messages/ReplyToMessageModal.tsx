@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { FaReply, FaTimes } from "react-icons/fa";
+import { FaPaperPlane, FaReply, FaTimes, FaTrashAlt } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
@@ -57,14 +57,16 @@ interface ReplyToMessageModalProps {
   isOpen: boolean;
   closeModal: () => void;
   originalMessage: Message;
-  onReplySend: (originalMessage: Message, replyMessage: string) => void;
+  handleSendReply: (originalMessage: Message, replyMessage: string) => void;
+  handleResetMessage: () => void;
 }
 
 const ReplyToMessageModal = ({
   isOpen,
   closeModal,
   originalMessage,
-  onReplySend,
+  handleSendReply,
+  handleResetMessage,
 }: ReplyToMessageModalProps) => {
   const {
     control,
@@ -79,7 +81,7 @@ const ReplyToMessageModal = ({
   });
 
   const handleFormSubmit = (data: { replyMessage: string }) => {
-    onReplySend(originalMessage, data.replyMessage);
+    handleSendReply(originalMessage, data.replyMessage);
     reset();
   };
 
@@ -154,12 +156,19 @@ const ReplyToMessageModal = ({
                   </p>
                 )}
               </div>
-              <div className="flex mt-4">
+              <div className="flex justify-between">
                 <button
                   type="submit"
                   className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
                 >
-                  Send
+                  <FaPaperPlane className="w-4 h-4 mr-2" /> Send
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetMessage}
+                  className="flex items-center justify-center px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 rounded-full shadow-md transition-all duration-200 ease-in-out"
+                >
+                  <FaTrashAlt className="w-5 h-5" />
                 </button>
               </div>
             </form>
