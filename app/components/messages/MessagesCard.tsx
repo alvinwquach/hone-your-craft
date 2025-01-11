@@ -165,7 +165,7 @@ const MessagesCard = ({
       if (response.ok) {
         setReplyMessage("");
         toast.success(
-          `Reply sent successfully to ${originalMessage.sender.name} (${originalMessage.sender.email}, ID: ${originalMessage.sender.id}) for the subject: "${originalMessage.subject}". Conversation ID: ${originalMessage.conversationId}`
+          `Reply sent successfully to ${originalMessage.lastMessage.sender.name} (${originalMessage.lastMessage.sender.email}, ID: ${originalMessage.lastMessage.sender.id}) for the subject: "${originalMessage.lastMessage.subject}". Conversation ID: ${conversationId}`
         );
         mutate("api/message/reply");
         mutate("api/message/sent");
