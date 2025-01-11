@@ -7,14 +7,15 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id: conversationId } = params;
+    const requestBody = await request.json();
+
+    const { content, messageType, mentionedUserIds, subject } = requestBody;
+
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
-    const { id: messageId } = params;
-
-    const { content } = await request.json();
 
     if (!content) {
       return NextResponse.json(
@@ -23,44 +24,65 @@ export async function POST(
       );
     }
 
-    const originalMessage = await prisma.message.findUnique({
-      where: { id: messageId },
-      select: {
-        senderId: true,
-        recipientId: true,
-        subject: true,
-        conversationId: true,
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        messages: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          include: {
+            sender: true,
+          },
+        },
       },
     });
 
-    if (!originalMessage) {
+    if (!conversation) {
       return NextResponse.json(
-        { message: "Original message not found" },
+        { message: "Conversation not found" },
         { status: 404 }
       );
     }
 
-    const conversationId = originalMessage.conversationId;
+    const isPartOfConversation =
+      conversation.senderId === currentUser.id ||
+      conversation.receiverIds.includes(currentUser.id);
 
-    const newMessage = await prisma.message.create({
+    if (!isPartOfConversation) {
+      return NextResponse.json(
+        { message: "You are not part of this conversation" },
+        { status: 403 }
+      );
+    }
+
+    const lastMessage = conversation.messages[0];
+
+    const messageTypeEnum = messageType || "TEXT";
+    const mentionedUserIdsArray = mentionedUserIds || [];
+
+    const replyMessage = await prisma.message.create({
       data: {
         senderId: currentUser.id,
-        recipientId: originalMessage.recipientId,
-        conversationId: conversationId || originalMessage.conversationId,
+        recipientId: conversation.receiverIds,
+        subject: subject || lastMessage.subject,
         content,
-        subject: originalMessage.subject,
-        replyToId: messageId,
+        messageType: messageTypeEnum,
+        mentionedUserIds: mentionedUserIdsArray,
         isReadByRecipient: false,
         isDeletedBySender: false,
         isDeletedByRecipient: false,
-        reactionCount: 0,
-        readAt: null,
+        replyToId: lastMessage.id,
+        threadId: lastMessage.threadId || lastMessage.id,
+        conversationId: conversation.id,
       },
     });
 
     return NextResponse.json({
-      message: "Message replied successfully",
-      data: newMessage,
+      message: "Reply sent successfully",
+      data: {
+        replyMessage,
+        conversationId: conversation.id,
+      },
     });
   } catch (error: unknown) {
     console.error("Error replying to message:", error);
@@ -73,10 +95,7 @@ export async function POST(
     }
 
     return NextResponse.json(
-      {
-        message: "Error replying to message",
-        error: "Unknown error occurred",
-      },
+      { message: "Error replying to message", error: "Unknown error occurred" },
       { status: 500 }
     );
   }
