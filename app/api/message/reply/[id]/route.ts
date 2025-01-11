@@ -29,7 +29,7 @@ export async function POST(
         senderId: true,
         recipientId: true,
         subject: true,
-        threadId: true,
+        conversationId: true,
       },
     });
 
@@ -40,17 +40,21 @@ export async function POST(
       );
     }
 
-    const newThreadId = originalMessage.threadId;
+    const conversationId = originalMessage.conversationId;
 
     const newMessage = await prisma.message.create({
       data: {
         senderId: currentUser.id,
-        recipientId: [originalMessage.senderId],
-        content: content,
+        recipientId: originalMessage.recipientId,
+        conversationId: conversationId || originalMessage.conversationId,
+        content,
         subject: originalMessage.subject,
         replyToId: messageId,
-        threadId: newThreadId,
         isReadByRecipient: false,
+        isDeletedBySender: false,
+        isDeletedByRecipient: false,
+        reactionCount: 0,
+        readAt: null,
       },
     });
 
