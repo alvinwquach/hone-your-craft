@@ -34,6 +34,7 @@ import {
   FaBan,
   FaTools,
   FaAward,
+  FaUserTie,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
@@ -510,31 +511,44 @@ function Profile() {
 
   function AchievementCard({ achievement }: AchievementCardProps) {
     const jobsApplied = achievement.description.match(/applying to (\d+) jobs/);
-    const numberJobs = jobsApplied ? parseInt(jobsApplied[1], 10) : 0;
+    const numberJobs = jobsApplied ? parseInt(jobsApplied[1], 10) : null;
 
-    const dateParts = achievement.description.split(" on ");
-    const year =
-      dateParts.length > 1
-        ? dateParts[dateParts.length - 1].split("/")[2]
-        : "Unknown";
+    const interviewsAttended = achievement.description.match(
+      /attending (\d+) interviews/
+    );
+    const numberInterviews = interviewsAttended
+      ? parseInt(interviewsAttended[1], 10)
+      : null;
+
+    const dateParts = achievement.description.split(/ on | by /);
+    const dateStr = dateParts.length > 1 ? dateParts[1] : null;
+
+    const year = dateStr ? dateStr.split("/")[2] : "Unknown";
+
+    const isJobAchievement = numberJobs !== null;
+    const icon = isJobAchievement ? (
+      <BsBriefcase className="w-8 h-8 text-white" />
+    ) : (
+      <FaUserTie className="w-8 h-8 text-white" />
+    );
+
+    const descriptionText = isJobAchievement
+      ? achievement.description.split(" on ")[0]
+      : achievement.description.split(" by ")[0];
 
     return (
       <div className="flex flex-col items-center justify-center p-2">
         <div className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2">
-          <BsBriefcase className="w-8 h-8 text-white" />
+          {icon}
           <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
-            {numberJobs}
+            {isJobAchievement ? numberJobs : numberInterviews}
           </div>
           <div className="absolute bottom-4 left-10 right-0 text-white text-xs font-bold">
             {year}
           </div>
         </div>
-        <h3 className="text-lg font-bold text-center">
-          {achievement.description.split(" on ")[0]} by
-        </h3>
-        <p className="text-xs text-gray-500 text-center">
-          {achievement.description.split(" on ")[1]}
-        </p>
+        <h3 className="text-lg font-bold text-center">{descriptionText} by</h3>
+        <p className="text-xs text-gray-500 text-center">{dateStr}</p>
       </div>
     );
   }

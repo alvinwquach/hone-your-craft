@@ -773,7 +773,7 @@ model Interview {
   userId        String?       @db.ObjectId
   job           Job           @relation(fields: [jobId], references: [id])
   jobId         String        @db.ObjectId
-  acceptedDate  DateTime
+  acceptedDate  DateTime      @default(now())
   startTime     DateTime?
   endTime       DateTime?
   interviewDate DateTime?

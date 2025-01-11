@@ -1,42 +1,62 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
-import { ApplicationStatus } from "@prisma/client";
 
-// Helper function to determine the user's milestones based on applied jobs
-const calculateAchievements = async (userId: string, appliedJobs: any[]) => {
-  // Define the milestones (number of jobs applied to)
-  const milestones = [
+const calculateAchievements = async (
+  userId: string,
+  appliedJobs: any[],
+  interviews: any[]
+) => {
+  const jobMilestones = [
     10, 25, 50, 75, 100, 125, 250, 500, 750, 1000, 2500, 5000, 10000,
   ];
+  const interviewMilestones = [
+    1, 5, 10, 20, 30, 50, 75, 100, 150, 200, 500, 1000, 2000,
+  ];
+
   const awardedAchievements = [];
 
-  // Count the jobs per milestone based on 'createdAt'
   let appliedJobsCount = 0;
-  const milestonesMap = new Map<number, string>(); // Store milestones and their corresponding createdAt
+  const jobMilestonesMap = new Map<number, string>();
 
-  // Sort jobs by 'createdAt' in ascending order
+  let interviewsCount = 0;
+  const interviewMilestonesMap = new Map<number, string>();
+
   const sortedJobs = appliedJobs.sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
-  // Iterate through the sorted jobs and count towards milestones
+  const sortedInterviews = interviews.sort(
+    (a, b) =>
+      new Date(a.acceptedDate).getTime() - new Date(b.acceptedDate).getTime()
+  );
+
   for (const job of sortedJobs) {
     appliedJobsCount++;
 
-    // Check if the applied jobs count has reached any of the milestones
-    for (let milestone of milestones) {
-      if (appliedJobsCount === milestone && !milestonesMap.has(milestone)) {
-        milestonesMap.set(milestone, job.createdAt); // Set the createdAt of the job when milestone is hit
+    for (let milestone of jobMilestones) {
+      if (appliedJobsCount === milestone && !jobMilestonesMap.has(milestone)) {
+        jobMilestonesMap.set(milestone, job.createdAt);
       }
     }
   }
 
-  // Iterate over each milestone and check if the user has reached it
-  for (let milestone of milestones) {
-    if (milestonesMap.has(milestone)) {
-      // Award achievement only if not already awarded
-      const existingAchievement = await prisma.userAchievement.findFirst({
+  for (const interview of sortedInterviews) {
+    interviewsCount++;
+
+    for (let milestone of interviewMilestones) {
+      if (
+        interviewsCount === milestone &&
+        !interviewMilestonesMap.has(milestone)
+      ) {
+        interviewMilestonesMap.set(milestone, interview.acceptedDate);
+      }
+    }
+  }
+
+  for (let milestone of jobMilestones) {
+    if (jobMilestonesMap.has(milestone)) {
+      const existingJobAchievement = await prisma.userAchievement.findFirst({
         where: {
           userId,
           achievement: {
@@ -45,18 +65,15 @@ const calculateAchievements = async (userId: string, appliedJobs: any[]) => {
         },
       });
 
-      // If the user hasn't already earned the achievement
-      if (!existingAchievement) {
-        const achievedDate = milestonesMap.get(milestone);
+      if (!existingJobAchievement) {
+        const achievedDate = jobMilestonesMap.get(milestone);
         if (achievedDate) {
-          // Check if achievedDate is defined
-          const achievement = await prisma.achievement.create({
+          const jobAchievement = await prisma.achievement.create({
             data: {
               name: `Applied to ${milestone} Jobs`,
               description: `Awarded for applying to ${milestone} jobs on ${new Date(
                 achievedDate
               ).toLocaleDateString()}.`,
-              iconUrl: "", // Optional: Add an icon URL if needed
               userAchievements: {
                 create: {
                   userId,
@@ -64,7 +81,41 @@ const calculateAchievements = async (userId: string, appliedJobs: any[]) => {
               },
             },
           });
-          awardedAchievements.push(achievement);
+          awardedAchievements.push(jobAchievement);
+        }
+      }
+    }
+  }
+
+  for (let milestone of interviewMilestones) {
+    if (interviewMilestonesMap.has(milestone)) {
+      const existingInterviewAchievement =
+        await prisma.userAchievement.findFirst({
+          where: {
+            userId,
+            achievement: {
+              name: `Attended ${milestone} Interviews`,
+            },
+          },
+        });
+
+      if (!existingInterviewAchievement) {
+        const achievedDate = interviewMilestonesMap.get(milestone);
+        if (achievedDate) {
+          const interviewAchievement = await prisma.achievement.create({
+            data: {
+              name: `Attended ${milestone} Interviews`,
+              description: `Awarded for attending ${milestone} interviews by ${new Date(
+                achievedDate
+              ).toLocaleDateString()}.`,
+              userAchievements: {
+                create: {
+                  userId,
+                },
+              },
+            },
+          });
+          awardedAchievements.push(interviewAchievement);
         }
       }
     }
@@ -75,15 +126,12 @@ const calculateAchievements = async (userId: string, appliedJobs: any[]) => {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the current user
     const currentUser = await getCurrentUser();
 
-    // If user is not authenticated, return a 401 response
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user jobs from the database, excluding 'SAVED' status
     const userJobs = await prisma.job.findMany({
       where: {
         userId: currentUser.id,
@@ -93,13 +141,21 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Calculate achievements based on applied jobs (award achievements incrementally)
+    const userInterviews = await prisma.interview.findMany({
+      where: {
+        userId: currentUser.id,
+        interviewDate: {
+          not: null,
+        },
+      },
+    });
+
     const newAchievements = await calculateAchievements(
       currentUser.id,
-      userJobs
+      userJobs,
+      userInterviews
     );
 
-    // Fetch all achievements linked to this user
     const allUserAchievements = await prisma.userAchievement.findMany({
       where: { userId: currentUser.id },
       select: {
@@ -112,10 +168,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Map the achievements to include only id and description
     const allAchievements = allUserAchievements.map((ua) => ua.achievement);
 
-    // Return both new and existing achievements
     return NextResponse.json({
       newAchievements: newAchievements.map((a) => ({
         id: a.id,
