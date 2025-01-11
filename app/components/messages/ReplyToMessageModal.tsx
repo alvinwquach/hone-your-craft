@@ -6,6 +6,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
+import Image from "next/image";
+import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 
 const schema = z.object({
   replyMessage: z.string().min(1, "Reply cannot be empty"),
@@ -56,12 +58,7 @@ interface Message {
 interface ReplyToMessageModalProps {
   isOpen: boolean;
   closeModal: () => void;
-  originalMessage: {
-    subject: string;
-    sender: {
-      name: string;
-    };
-  };
+  originalMessage: any;
   handleSendReply: any;
   handleResetMessage: () => void;
 }
@@ -116,22 +113,29 @@ const ReplyToMessageModal = ({
               </button>
             </div>
             <h2 className="text-xl font-semibold mb-4 text-white">
-              Reply to: {originalMessage.subject}
+              Reply to: {originalMessage?.lastMessage?.subject}
             </h2>
             <div className="mb-4 flex items-center">
-              <label
-                className="inline-block text-sm text-gray-400 mr-2"
-                htmlFor="to"
-              >
+              <label className="mr-2">
                 <FaReply className="h-4 w-4" />
               </label>
-              <input
-                id="to"
-                type="text"
-                value={originalMessage.sender?.name}
-                disabled
-                className="mt-1 block w-full px-3 py-2 bg-zinc-700 text-gray-300 border border-zinc-600 rounded-md"
-              />
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  value={originalMessage?.lastMessage?.sender?.name}
+                  disabled
+                  className="pl-12 pr-4 pt-2 pb-2 bg-zinc-700 w-full text-gray-300 border border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <Image
+                    src={originalMessage.lastMessage.sender.image || defaultPfp}
+                    alt={originalMessage.lastMessage.sender.name}
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
+                </div>
+              </div>
             </div>
             <form
               onSubmit={handleSubmit(handleFormSubmit)}
