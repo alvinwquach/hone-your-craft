@@ -146,17 +146,17 @@ const MessagesCard = ({
       toast.error("Please type a reply before sending.");
       return;
     }
+
     const conversationId = originalMessage.conversationId;
 
     try {
-      const response = await fetch(`/api/message/reply/${originalMessage.id}`, {
+      const response = await fetch(`/api/message/reply/${conversationId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           content: replyMessage,
-          conversationId: conversationId,
         }),
       });
 
@@ -165,7 +165,7 @@ const MessagesCard = ({
       if (response.ok) {
         setReplyMessage("");
         toast.success(
-          `Reply sent successfully to ${originalMessage.sender.name} (${originalMessage.lastMessage.sender.email}, ID: ${originalMessage.lastMessage.sender.id}) for the subject: "${originalMessage.lastMessage.subject}". Conversation ID: ${conversationId}`
+          `Reply sent successfully to ${originalMessage.lastMessage.sender.name} (${originalMessage.lastMessage.sender.email}, ID: ${originalMessage.lastMessage.sender.id}) for the subject: "${originalMessage.lastMessage.subject}". Conversation ID: ${conversationId}`
         );
         mutate("api/message/reply");
         mutate("api/message/sent");
@@ -179,6 +179,7 @@ const MessagesCard = ({
       toast.error("An error occurred while sending the reply.");
     }
   };
+
 
   const openReplyModal = (message: Message) => {
     setMessageToReply(message);
@@ -636,7 +637,6 @@ const MessagesCard = ({
         <div>
           <div>
             {status === "authenticated" && activeTab === "sent" ? (
-              // Check if sentMessages is not undefined and contains data
               sentMessages?.data?.length ? (
                 <div className="rounded-lg h-full space-y-6">
                   {sentMessages.data.map((conversation) => {
