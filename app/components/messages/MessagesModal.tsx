@@ -49,6 +49,7 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
   const [message, setMessage] = useState<string>("");
   const [mentionSuggestions, setMentionSuggestions] = useState<User[]>([]);
   const [isMentioning, setIsMentioning] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const mentionPattern = /@([a-zA-Z0-9_]+)/g;
@@ -101,12 +102,14 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
 
   const handleSend: SubmitHandler<FormData> = async (data) => {
     try {
+      setLoading(true);
+
       const receiverEmails = data.selectedUsers
         .map((userId) => users.find((user) => user.id === userId)?.email)
         .filter(Boolean);
 
       const mentionedUserIds = selectedUsers
-        .filter((user) => message.includes(`@${user.name}`))
+        .filter((user) => data.message.includes(`@${user.name}`))
         .map((user) => user.id);
 
       console.log("Sending message with data:", {
@@ -124,8 +127,8 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          progress: undefined,
         });
+        setLoading(false);
         return;
       }
 
@@ -135,25 +138,24 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          receiverEmails: receiverEmails,
+          receiverEmails,
+          mentionedUserIds,
+          subject: data.subject,
           content: data.message,
           messageType: "TEXT",
-          mentionedUserIds: mentionedUserIds,
-          subject: data.subject,
         }),
       });
 
       if (response.ok) {
-        toast.success("Message sent successfully!", {
+        const { data, message } = await response.json();
+        toast.success(message, {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          progress: undefined,
         });
-        console.log("Message sent successfully");
 
         const mentionedUsers = selectedUsers.filter((user) =>
           mentionedUserIds.includes(user.id)
@@ -168,10 +170,30 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
               closeOnClick: true,
               pauseOnHover: true,
               draggable: true,
-              progress: undefined,
             });
           });
         }
+
+        const { conversationId, recipients } = data;
+        if (recipients) {
+          recipients.forEach(
+            (user: { id: string; email: string; name: string }) => {
+              toast.info(
+                `Conversation #${conversationId} created with (ID: ${user.id}, Name, ${user.name} Email: ${user.email})`,
+                {
+                  position: "top-right",
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                }
+              );
+            }
+          );
+        }
+
+        closeModal();
       } else {
         toast.error("Failed to send the message. Please try again.", {
           position: "top-right",
@@ -180,12 +202,11 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
-          progress: undefined,
         });
         console.log("Failed to send the message:", response.statusText);
       }
 
-      closeModal();
+      setLoading(false);
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("An error occurred. Please try again.", {
@@ -195,8 +216,8 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        progress: undefined,
       });
+      setLoading(false);
     }
   };
 
@@ -432,9 +453,10 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
             <button
               type="submit"
               className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+              disabled={loading}
             >
               <FaPaperPlane className="w-4 h-4 mr-2" />
-              Send
+              {loading ? "Sending..." : "Send"}
             </button>
             <button
               type="button"

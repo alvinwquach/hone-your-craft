@@ -56,8 +56,13 @@ interface Message {
 interface ReplyToMessageModalProps {
   isOpen: boolean;
   closeModal: () => void;
-  originalMessage: Message;
-  handleSendReply: (originalMessage: Message, replyMessage: string) => void;
+  originalMessage: {
+    subject: string;
+    sender: {
+      name: string;
+    };
+  };
+  handleSendReply: any;
   handleResetMessage: () => void;
 }
 

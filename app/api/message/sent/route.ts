@@ -10,72 +10,102 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const sentMessages = await prisma.message.findMany({
+    const conversations = await prisma.conversation.findMany({
       where: {
-        senderId: currentUser.id,
-        isDeletedBySender: false,
+        OR: [
+          { senderId: currentUser.id }, 
+          { receiverIds: { has: currentUser.id } }, 
+        ],
       },
-      select: {
-        id: true,
-        subject: true,
-        content: true,
-        messageType: true,
-        isDeletedBySender: true,
-        createdAt: true,
-        mentionedUserIds: true,
-        recipientId: true,
-      },
-      orderBy: {
-        createdAt: "desc",
+      include: {
+        messages: {
+          where: {
+            senderId: currentUser.id,
+          },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            senderId: true,
+            content: true,
+            createdAt: true,
+            subject: true,
+            messageType: true,
+            isReadByRecipient: true,
+            isDeletedBySender: true,
+            isDeletedByRecipient: true,
+          },
+        },
       },
     });
 
-    const recipientIds = [
-      ...new Set(sentMessages.flatMap((message) => message.recipientId)),
-    ];
+    const filteredConversations = conversations.filter(
+      (conversation) => conversation.messages.length > 0
+    );
 
-    const users = await prisma.user.findMany({
+    const conversationsWithMessages = await Promise.all(
+      filteredConversations.map(async (conversation) => {
+        const sentMessages = conversation.messages; 
+        const receiverIds = conversation.receiverIds;
+
+        const receivers = await prisma.user.findMany({
+          where: { id: { in: receiverIds } },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        });
+
+        const filteredReceivers = receivers.filter(
+          (receiver) => receiver.id !== currentUser.id
+        );
+
+        return {
+          conversationId: conversation.id,
+          receiverIds: filteredReceivers.map((receiver) => receiver.id), 
+          sentMessages: sentMessages,
+          receivers: filteredReceivers,
+        };
+      })
+    );
+
+    const unreadMessageCount = await prisma.message.count({
       where: {
-        id: { in: recipientIds },
+        OR: [
+          {
+            recipientId: {
+              has: currentUser.id, 
+            },
+            isReadByRecipient: false,
+          },
+          {
+            senderId: currentUser.id,
+            isReadByRecipient: false,
+          },
+        ],
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-      },
-    });
-
-    const messagesWithRecipients = sentMessages.map((message) => {
-      const recipients = message.recipientId
-        .map((recipientId) => {
-          return users.find((user) => user.id === recipientId);
-        })
-        .filter((user) => user !== undefined);
-
-      return {
-        ...message,
-        recipients,
-      };
     });
 
     return NextResponse.json({
-      message: "Sent messages retrieved successfully",
-      data: messagesWithRecipients,
+      message:
+        "Sent conversations and unread message count retrieved successfully",
+      data: conversationsWithMessages,
+      unreadMessageCount,
     });
   } catch (error: unknown) {
-    console.error("Error retrieving sent messages:", error);
+    console.error("Error retrieving conversations and messages:", error);
 
     if (error instanceof Error) {
       return NextResponse.json(
-        { message: "Error retrieving sent messages", error: error.message },
+        { message: "Error retrieving conversations", error: error.message },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
       {
-        message: "Error retrieving sent messages",
+        message: "Error retrieving conversations",
         error: "Unknown error occurred",
       },
       { status: 500 }

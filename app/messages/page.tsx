@@ -17,13 +17,11 @@ function Messages() {
   const { data: users } = useSWR("/api/users", (url) =>
     fetch(url).then((res) => res.json())
   );
-  const { data: replies } = useSWR("/api/replies", (url) =>
-    fetch(url).then((res) => res.json())
-  );
+;
   const { data: sentMessages } = useSWR("/api/message/sent", (url) =>
     fetch(url).then((res) => res.json())
   );
-  const { data: receivedMessages } = useSWR("/api/message/receive", (url) =>
+  const { data: receivedMessages } = useSWR(`/api/messages/receive/`, (url) =>
     fetch(url).then((res) => res.json())
   );
   const { data: trashedSentMessages } = useSWR(
@@ -50,7 +48,6 @@ function Messages() {
         userData={userData}
         sentMessages={sentMessages}
         receivedMessages={receivedMessages}
-        replies={replies}
         trashedSentMessages={trashedSentMessages}
       />
       {isModalOpen && <MessageModal users={users} closeModal={toggleModal} />}

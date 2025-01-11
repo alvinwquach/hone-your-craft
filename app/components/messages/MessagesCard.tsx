@@ -3,13 +3,7 @@
 import { useState } from "react";
 import { RiMailUnreadLine } from "react-icons/ri";
 import { LuMailOpen } from "react-icons/lu";
-import {
-  FaInbox,
-  FaPaperPlane,
-  FaReply,
-  FaTimes,
-  FaTrashAlt,
-} from "react-icons/fa";
+import { FaInbox, FaPaperPlane, FaReply, FaTrashAlt } from "react-icons/fa";
 import { GrSchedule } from "react-icons/gr";
 import { mutate } from "swr";
 import Image from "next/image";
@@ -18,14 +12,18 @@ import "react-toastify/dist/ReactToastify.css";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { FiMessageCircle } from "react-icons/fi";
 import ReplyToMessageModal from "./ReplyToMessageModal";
+import { useSession } from "next-auth/react";
+import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 
 interface Sender {
   id: string;
   name: string;
   email: string;
   image: string;
+  createdAt: string;
+  subject: string;
+  content: string;
 }
 
 interface Reply {
@@ -53,20 +51,55 @@ interface Message {
   isReadByRecipient: boolean;
   isDeletedFromTrashBySender: boolean;
   createdAt: string;
+  conversationId: string;
   sender: {
     id: string;
     name: string;
     email: string;
     image: string;
+    createdAt: Date;
+    subject: string;
+    content: string;
   };
-  recipients?: {
+  receivers?: {
     id: string;
     name: string;
     email: string;
     image: string;
   }[];
-  replies: Reply[];
+  sentMessages: any;
+  messages: Reply[];
   mentionedUserIds: string[];
+  originalMessage: {
+    id: string;
+    subject: string;
+    content: string;
+    sender: {
+      id: string;
+      name: string;
+      email: string;
+      image: string;
+      createdAt: string;
+    };
+    createdAt: string;
+  };
+  lastMessage: {
+    id: string;
+    subject: string;
+    content: string;
+    sender: {
+      id: string;
+      name: string;
+      email: string;
+      image: string;
+      createdAt: string;
+      subject: string;
+      content: string;
+    };
+
+    createdAt: string;
+    recipients: any;
+  };
 }
 
 interface User {
@@ -74,6 +107,7 @@ interface User {
     id: string;
     name: string;
     image: string;
+    createdAt: Date;
   };
 }
 
@@ -82,7 +116,6 @@ interface MessagesCardProps {
   sentMessages: { message: string; data: Message[] } | undefined;
   trashedSentMessages: { message: string; data: Message[] } | undefined;
   userData: User;
-  replies?: MessagesResponse;
 }
 
 const schema = z.object({
@@ -90,7 +123,6 @@ const schema = z.object({
 });
 
 const MessagesCard = ({
-  replies,
   receivedMessages,
   sentMessages,
   trashedSentMessages,
@@ -98,15 +130,55 @@ const MessagesCard = ({
 }: MessagesCardProps) => {
   const [activeTab, setActiveTab] = useState("inbox");
   const [replyMessage, setReplyMessage] = useState<string>("");
-  const [isReplying, setIsReplying] = useState<Map<string, boolean>>(new Map());
-  const [sentReplies, setSentReplies] = useState<Map<string, string[]>>(
-    new Map()
-  );
   const [messageReadStatus, setMessageReadStatus] = useState<
     Map<string, boolean>
   >(new Map());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [messageToReply, setMessageToReply] = useState<Message | null>(null);
+  const { data: session, status } = useSession();
+  const currentUser = session?.user;
+
+  const handleSendReply = async (
+    originalMessage: Message,
+    replyMessage: string
+  ) => {
+    if (replyMessage.trim() === "") {
+      toast.error("Please type a reply before sending.");
+      return;
+    }
+    const conversationId = originalMessage.conversationId;
+
+    try {
+      const response = await fetch(`/api/message/reply/${originalMessage.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: replyMessage,
+          conversationId: conversationId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setReplyMessage("");
+        toast.success(
+          `Reply sent successfully to ${originalMessage.sender.name} (${originalMessage.lastMessage.sender.email}, ID: ${originalMessage.lastMessage.sender.id}) for the subject: "${originalMessage.lastMessage.subject}". Conversation ID: ${conversationId}`
+        );
+        mutate("api/message/reply");
+        mutate("api/message/sent");
+        mutate("api/messages");
+        closeReplyModal();
+      } else {
+        toast.error(result.message || "Something went wrong.");
+      }
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      toast.error("An error occurred while sending the reply.");
+    }
+  };
 
   const openReplyModal = (message: Message) => {
     setMessageToReply(message);
@@ -137,52 +209,6 @@ const MessagesCard = ({
 
   const handleReplyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setReplyMessage(e.target.value);
-  };
-
-  const handleSendReply = async (
-    originalMessage: Message,
-    replyMessage: string
-  ) => {
-    if (replyMessage.trim() === "") {
-      toast.error("Please type a reply before sending.");
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/message/reply/${originalMessage.id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: replyMessage,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setSentReplies((prevReplies) => {
-          const newReplies = prevReplies.get(originalMessage.id) || [];
-          return new Map(prevReplies).set(originalMessage.id, [
-            ...newReplies,
-            replyMessage,
-          ]);
-        });
-
-        setReplyMessage("");
-        toast.success("Reply sent successfully!");
-        mutate("api/message/reply");
-        mutate("api/message/sent");
-        mutate("api/messages");
-        closeReplyModal();
-      } else {
-        toast.error(result.message || "Something went wrong.");
-      }
-    } catch (error) {
-      console.error("Error sending reply:", error);
-      toast.error("An error occurred while sending the reply.");
-    }
   };
 
   const handleDeleteTrashedSentMessage = async (messageId: string) => {
@@ -265,7 +291,29 @@ const MessagesCard = ({
   };
 
   const formatMessageDate = (date: string) => {
-    const messageDate = new Date(date);
+    if (!date) {
+      console.error("Date is undefined or null");
+      return "Date not available";
+    }
+
+    const timestamp = Date.parse(date);
+    if (isNaN(timestamp)) {
+      console.error("Invalid date format:", date);
+      return "Invalid Date";
+    }
+
+    const isValidDate = (date: string) => {
+      const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+      return regex.test(date);
+    };
+
+    if (!isValidDate(date)) {
+      console.error("Invalid Date format");
+      return "Invalid Date";
+    }
+
+    const messageDate = new Date(timestamp);
+
     return messageDate.toLocaleString("en-US", {
       weekday: "short",
       year: "numeric",
@@ -287,8 +335,6 @@ const MessagesCard = ({
   const hasReceivedMessages =
     receivedMessages?.data && receivedMessages.data.length > 0;
 
-  const hasSentMessages = sentMessages?.data && sentMessages.data.length > 0;
-
   const toggleMessageReadStatus = async (
     messageId: string,
     currentStatus: boolean
@@ -301,17 +347,20 @@ const MessagesCard = ({
       return updatedStatus;
     });
 
-    let updatedUnreadCount = replies?.unreadMessageCount ?? 0;
-    if (replies) {
+    let updatedUnreadCount = receivedMessages?.unreadMessageCount ?? 0;
+    if (receivedMessages) {
       if (newStatus) {
-        updatedUnreadCount = Math.max(0, replies.unreadMessageCount - 1);
+        updatedUnreadCount = Math.max(
+          0,
+          receivedMessages.unreadMessageCount - 1
+        );
       } else {
-        updatedUnreadCount = replies.unreadMessageCount + 1;
+        updatedUnreadCount = receivedMessages.unreadMessageCount + 1;
       }
     }
 
-    if (replies) {
-      replies.unreadMessageCount = updatedUnreadCount;
+    if (receivedMessages) {
+      receivedMessages.unreadMessageCount = updatedUnreadCount;
     }
 
     toast.success(
@@ -402,22 +451,6 @@ const MessagesCard = ({
           </li>
           <li>
             <button
-              onClick={() => handleTabChange("replies")}
-              className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
-                activeTab === "replies"
-                  ? "bg-zinc-700 shadow-lg"
-                  : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
-              } transition-colors duration-200 ease-in-out`}
-            >
-              <FiMessageCircle className="w-4 h-4 me-2" />
-              Replies
-              <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                {replies?.unreadMessageCount ?? 0}
-              </span>
-            </button>
-          </li>
-          <li>
-            <button
               onClick={() => handleTabChange("interviews")}
               className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
                 activeTab === "interviews"
@@ -446,428 +479,254 @@ const MessagesCard = ({
       </div>
       <div className="md:w-3/4 w-full p-4 text-white flex-grow">
         <div>
-          {activeTab === "inbox" && hasReceivedMessages ? (
-            <div className="rounded-lg h-full space-y-6">
-              {receivedMessages.data.map((message) => (
-                <div
-                  key={message.id}
-                  className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-                >
-                  <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
-                    {message.subject}
-                  </h3>
-                  <p className="text-zinc-400 mt-2 line-clamp-3">
-                    {message.content}
-                  </p>
-                  <p className="text-sm text-zinc-400 mt-2">
-                    From:{" "}
-                    <span className="font-medium text-zinc-200">
-                      {message.sender.name}
-                    </span>{" "}
-                    ({message.sender.email})
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    {new Date(message.createdAt).toLocaleString()}
-                  </p>
-                  <div className="flex justify-between items-center mt-4">
-                    <span
-                      className={`text-xs mt-1 font-medium ${
-                        messageReadStatus.get(message.id)
-                          ? "text-green-500"
-                          : "text-red-500"
-                      }`}
+          {status === "authenticated" && activeTab === "inbox" ? (
+            hasReceivedMessages && receivedMessages.data.length > 0 ? (
+              <div className="rounded-lg h-full space-y-6">
+                {receivedMessages.data.map((conversation) => {
+                  if (conversation.messages.length === 0) {
+                    return null;
+                  }
+                  return (
+                    <div
+                      key={conversation.id}
+                      className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
                     >
-                      {messageReadStatus.get(message.id) ? "Read" : "Unread"}
-                    </span>
-                    <button
-                      onClick={() =>
-                        toggleMessageReadStatus(
-                          message.id,
-                          messageReadStatus.get(message.id) ??
-                            message.isReadByRecipient
-                        )
-                      }
-                      className="flex items-center space-x-2 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition-all duration-200 ease-in-out"
-                    >
-                      {messageReadStatus.get(message.id) ? (
-                        <RiMailUnreadLine className="w-5 h-5" />
-                      ) : (
-                        <LuMailOpen className="w-5 h-5" />
-                      )}
-                      <span className="text-sm font-semibold">
-                        {messageReadStatus.get(message.id)
-                          ? "Mark as Unread"
-                          : "Mark as Read"}
-                      </span>
-                    </button>
-                  </div>
-                  <div className="mt-4 border-t border-zinc-700 pt-4">
-                    <h4 className="text-sm font-medium text-zinc-500">
-                      Sender:
-                    </h4>
-                    <div className="flex items-center space-x-3 mt-2">
-                      <Image
-                        src={message.sender?.image}
-                        alt={message.sender?.name}
-                        width={32}
-                        height={32}
-                        className="rounded-full border-2 border-zinc-600"
-                      />
-                      <div className="text-sm">
-                        <p className="text-zinc-300">{message.sender?.name}</p>
-                        <p className="text-zinc-400">{message.sender?.email}</p>
+                      <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
+                        {conversation.messages[0]?.subject?.trim()
+                          ? conversation.messages[0].subject
+                          : "No Subject"}
+                      </h3>
+
+                      <div className="mt-4 border-t border-zinc-700 pt-4">
+                        <h4 className="text-sm font-medium text-zinc-500">
+                          Conversation:
+                        </h4>
+                        <div className="space-y-4 mt-2">
+                          {[...conversation.messages]
+                            .sort(
+                              (a, b) =>
+                                new Date(a.createdAt).getTime() -
+                                new Date(b.createdAt).getTime()
+                            )
+                            .map((message) => (
+                              <div
+                                key={message.id}
+                                className={`flex ${
+                                  message.sender.id === currentUser?.userId
+                                    ? "justify-end"
+                                    : "justify-start"
+                                }`}
+                              >
+                                <div
+                                  className={`${
+                                    message.sender.id === currentUser?.userId
+                                      ? "bg-zinc-700 text-right"
+                                      : "bg-zinc-900 text-left"
+                                  } p-4 rounded-xl max-w-xs`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <Image
+                                      src={
+                                        message.sender.id ===
+                                        currentUser?.userId
+                                          ? currentUser?.image || defaultPfp
+                                          : message.sender?.image || defaultPfp
+                                      }
+                                      alt={
+                                        message.sender.id ===
+                                        currentUser?.userId
+                                          ? "You"
+                                          : message.sender?.name ||
+                                            "Unknown Sender"
+                                      }
+                                      width={32}
+                                      height={32}
+                                      className="rounded-full border-2 border-zinc-600"
+                                    />
+
+                                    <div className="flex flex-col">
+                                      <span className="font-semibold text-white">
+                                        {message.sender.id ===
+                                        currentUser?.userId
+                                          ? "You"
+                                          : message.sender?.name}
+                                      </span>
+                                      <span className="text-sm text-zinc-400">
+                                        {message.sender.id ===
+                                        currentUser?.userId
+                                          ? currentUser?.email
+                                          : message.sender?.email}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-zinc-300 mt-2">
+                                    {message.content}
+                                  </p>
+
+                                  <p className="text-xs text-zinc-500 mt-2">
+                                    {message.sender.id === currentUser?.userId
+                                      ? "You"
+                                      : message.sender.name}{" "}
+                                    - {formatMessageDate(message.createdAt)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
                       </div>
+
+                      <div className="flex justify-between items-center mt-4">
+                        <span
+                          className={`text-xs mt-1 font-medium ${
+                            messageReadStatus.get(conversation.id)
+                              ? "text-green-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {messageReadStatus.get(conversation.id)
+                            ? "Read"
+                            : "Unread"}
+                        </span>
+                        {conversation.messages.length > 0 && (
+                          <button
+                            onClick={() =>
+                              toggleMessageReadStatus(
+                                conversation.id,
+                                messageReadStatus.get(conversation.id) ?? false
+                              )
+                            }
+                            className="flex items-center space-x-2 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition-all duration-200 ease-in-out"
+                          >
+                            {messageReadStatus.get(conversation.id) ? (
+                              <RiMailUnreadLine className="w-5 h-5" />
+                            ) : (
+                              <LuMailOpen className="w-5 h-5" />
+                            )}
+                            <span className="text-sm font-semibold">
+                              {messageReadStatus.get(conversation.id)
+                                ? "Mark as Unread"
+                                : "Mark as Read"}
+                            </span>
+                          </button>
+                        )}
+                      </div>
+
+                      {conversation.messages.length > 0 && (
+                        <button
+                          className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out mt-4"
+                          onClick={() => openReplyModal(conversation)}
+                        >
+                          <FaReply className="w-4 h-4 mr-2" /> Reply
+                        </button>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex mt-4 space-x-4">
-                    <button
-                      className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
-                      onClick={() => openReplyModal(message)}
-                    >
-                      <FaReply className="w-4 h-4 mr-2" /> Reply
-                    </button>
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-2">
-                    {formatMessageDate(message.createdAt)}
-                  </p>
-                  <div className="mt-6 flex space-x-4">
-                    <div className="flex-shrink-0">
-                      <Image
-                        src={message.sender?.image}
-                        alt={message.sender?.name}
-                        width={40}
-                        height={40}
-                        className="rounded-full border-2 border-zinc-600"
-                      />
-                    </div>
-                    <div className="flex-grow bg-zinc-700 p-4 rounded-xl max-w-xs">
-                      <p className="text-zinc-300">{message?.content}</p>
-                      <p className="text-xs text-zinc-500 mt-2">
-                        {formatMessageDate(message.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : activeTab === "inbox" ? (
-            <div className="rounded-lg h-full">
-              <p className="text-center text-zinc-500 mt-2">
-                No Received Messages Found
-              </p>
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-lg h-full">
+                <p className="text-center text-zinc-500 mt-2">
+                  No Conversations Found
+                </p>
+              </div>
+            )
           ) : null}
         </div>
-        {activeTab === "replies" && hasReceivedMessages ? (
-          <div className="rounded-lg h-full">
-            {replies?.data.map((message: Message) => (
-              <div key={message.id} className="mb-6 p-4 bg-zinc-800 rounded-lg">
-                <h3 className="text-lg font-semibold text-zinc-300">
-                  {message.subject}
-                </h3>
-                <p className="text-zinc-400 mt-2">{message.content}</p>
-                {message.mentionedUserIds?.includes(userData?.user?.id) && (
-                  <p className="text-sm text-zinc-400 mt-2">
-                    {message.sender.email} ({message.sender.name}) mentioned you
-                    in this message.
+        <div>
+          <div>
+            {status === "authenticated" && activeTab === "sent" ? (
+              // Check if sentMessages is not undefined and contains data
+              sentMessages?.data?.length ? (
+                <div className="rounded-lg h-full space-y-6">
+                  {sentMessages.data.map((conversation) => {
+                    if (conversation.sentMessages.length === 0) {
+                      return null;
+                    }
+                    return (
+                      <div
+                        key={conversation.conversationId}
+                        className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                      >
+                        <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
+                          {conversation.sentMessages[0]?.subject?.trim()
+                            ? conversation.sentMessages[0].subject
+                            : "No Subject"}
+                        </h3>
+
+                        <div className="mt-4 border-t border-zinc-700 pt-4">
+                          <h4 className="text-sm font-medium text-zinc-500">
+                            Recipients:
+                          </h4>
+                          <div className="space-y-4 mt-2">
+                            {conversation?.receivers?.map((recipient) => (
+                              <div
+                                key={recipient.id}
+                                className="flex items-center space-x-2"
+                              >
+                                <Image
+                                  src={recipient.image || defaultPfp}
+                                  alt={recipient.name}
+                                  width={32}
+                                  height={32}
+                                  className="rounded-full"
+                                />
+                                <div className="text-sm">
+                                  <p className="text-zinc-300">
+                                    {recipient.name}
+                                  </p>
+                                  <p className="text-zinc-400">
+                                    {recipient.email}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-4 space-y-2">
+                          {conversation.sentMessages.map(
+                            (sentMessage: Message) => (
+                              <div
+                                key={sentMessage.id}
+                                className="p-4 bg-zinc-700 text-zinc-300 rounded-lg"
+                              >
+                                <p>{sentMessage.content}</p>
+                                <p className="text-xs text-zinc-500 mt-2">
+                                  Sent on{" "}
+                                  {formatMessageDate(sentMessage.createdAt)}
+                                </p>
+                              </div>
+                            )
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center mt-4">
+                          <span className="text-xs mt-1 font-medium text-green-500">
+                            Sent
+                          </span>
+                          <button
+                            onClick={() => openReplyModal(conversation)}
+                            className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+                          >
+                            <FaReply className="w-4 h-4 mr-2" /> Reply
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-lg h-full">
+                  <p className="text-center text-zinc-500 mt-2">
+                    No Sent Messages Found
                   </p>
-                )}
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-zinc-500">Sender:</h4>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <Image
-                      src={message.sender?.image}
-                      alt={message.sender?.name}
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
-                    <div className="text-sm">
-                      <p className="text-zinc-300">{message.sender?.name}</p>
-                      <p className="text-zinc-400">{message.sender?.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex mt-4">
-                    <button
-                      className="flex items-center px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
-                      onClick={() => openReplyModal(message)}
-                    >
-                      <FaReply className="w-4 h-4 mr-2" /> Reply
-                    </button>
-                  </div>
                 </div>
-                <p className="text-xs text-zinc-500 mt-2">
-                  {formatMessageDate(message.createdAt)}
-                </p>
-                <button
-                  onClick={() =>
-                    toggleMessageReadStatus(
-                      message.id,
-                      messageReadStatus.get(message.id) ??
-                        message.isReadByRecipient
-                    )
-                  }
-                  className="flex items-center space-x-2 px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full"
-                >
-                  {messageReadStatus.get(message.id) ? (
-                    <RiMailUnreadLine className="w-5 h-5" />
-                  ) : (
-                    <LuMailOpen className="w-5 h-5" />
-                  )}
-                  <span>
-                    {messageReadStatus.get(message.id)
-                      ? "Mark as Unread"
-                      : "Mark as Read"}
-                  </span>
-                </button>
-                <div className="mt-6 flex space-x-4">
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={message.sender?.image}
-                      alt={message.sender?.name}
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
-                  </div>
-                  <div className="flex-grow bg-zinc-700 p-4 rounded-xl max-w-xs">
-                    <p className="text-zinc-300">{message?.content}</p>
-                    <p className="text-xs text-zinc-500 mt-2">
-                      {formatMessageDate(message.createdAt)}
-                    </p>
-                  </div>
-                </div>
-                {message.replies?.length > 0 && (
-                  <div className="replies-section">
-                    {message.replies.map((reply: Reply) => (
-                      <div
-                        key={reply.id}
-                        className="mt-4 flex space-x-4 justify-start flex-row-reverse"
-                      >
-                        <div className="flex-shrink-0 ml-4">
-                          <Image
-                            className="rounded-full"
-                            src={userData?.user?.image}
-                            alt={`${userData?.user?.name}'s profile picture`}
-                            height={40}
-                            width={40}
-                          />
-                        </div>
-                        <div className="bg-zinc-600 p-4 rounded-xl max-w-xs">
-                          <p className="text-zinc-300">{reply.content}</p>
-                          <p className="text-xs text-zinc-500 mt-2">
-                            {formatMessageDate(reply.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {sentReplies.has(message.id) &&
-                  sentReplies.get(message.id)?.map((reply, index) => (
-                    <div
-                      key={index}
-                      className="mt-4 flex space-x-4 justify-end"
-                    >
-                      <div className="flex-shrink-0 order-last ml-5">
-                        <Image
-                          className="rounded-full shadow-lg"
-                          src={userData?.user?.image}
-                          alt={`${userData?.user?.name}'s profile picture`}
-                          height={40}
-                          width={40}
-                        />
-                      </div>
-                      <div className="flex-grow bg-zinc-600 p-4 rounded-xl max-w-xs">
-                        <p className="text-zinc-300">{reply}</p>
-                        <p className="text-xs text-zinc-500 mt-2">
-                          {formatMessageDate(new Date().toISOString())}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                {isReplying.get(message.id) && (
-                  <div className="mt-6 flex space-x-4 justify-center">
-                    <div className="flex-shrink-0 order-last ml-4">
-                      <Image
-                        className="rounded-full shadow-lg"
-                        src={userData?.user?.image}
-                        alt={`${userData?.user?.name}'s profile picture`}
-                        height={40}
-                        width={40}
-                      />
-                    </div>
-                    <div className="flex-grow bg-black opacity-50 p-4 rounded-xl relative">
-                      <button
-                        onClick={() => handleCloseReply()}
-                        className="absolute top-2 right-2 text-white hover:text-gray-300"
-                      >
-                        <FaTimes className="w-5 h-5" />
-                      </button>
-                      <div className="mb-4 flex items-center">
-                        <label
-                          className="inline-block text-sm text-gray-400 mr-2"
-                          htmlFor="to"
-                        >
-                          <FaReply className="h-4 w-4" />
-                        </label>
-                        <input
-                          id="to"
-                          type="text"
-                          value={message.sender?.name}
-                          disabled
-                          className="mt-1 block w-full px-3 py-2 bg-zinc-700 text-gray-300 border border-zinc-600 rounded-md"
-                        />
-                      </div>
-                      <label htmlFor="reply" className="sr-only">
-                        Reply
-                      </label>
-                      <textarea
-                        {...register("replyMessage")}
-                        className="w-full bg-zinc-800 text-white p-2 rounded-md"
-                        rows={4}
-                        placeholder="Type your reply..."
-                        value={replyMessage}
-                        onChange={handleReplyChange}
-                      />
-                      <div className="flex justify-between mt-2">
-                        <button
-                          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full"
-                          onClick={() => handleSendReply(message, replyMessage)}
-                        >
-                          Send
-                        </button>
-                        <button
-                          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full"
-                          type="button"
-                          onClick={handleResetMessage}
-                        >
-                          <FaTrashAlt />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              )
+            ) : null}
           </div>
-        ) : activeTab === "replies" ? (
-          <div className="rounded-lg h-full">
-            <p className="text-center text-zinc-500 mt-2">
-              No Received Messages Found
-            </p>
-          </div>
-        ) : null}
-        {activeTab === "sent" && hasSentMessages ? (
-          <div className="rounded-lg h-full">
-            {sentMessages.data?.map((message) => (
-              <div
-                key={message.id}
-                className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
-              >
-                <button
-                  className="absolute top-4 right-4 px-3 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-full shadow-md transition-all duration-200 ease-in-out"
-                  onClick={() => handleSentMessageToTrash(message.id)}
-                >
-                  <FaTrashAlt className="w-5 h-5" />
-                </button>
-                <h3 className="text-lg font-semibold text-zinc-300">
-                  {message.subject}
-                </h3>
-                <p className="text-zinc-400 mt-2">{message.content}</p>
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-zinc-500">
-                    Recipients:
-                  </h4>
-                  <div className="mt-2 space-y-2">
-                    {message.recipients?.map((recipient) => (
-                      <div
-                        key={recipient.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <Image
-                          src={recipient.image}
-                          alt={recipient.name}
-                          width={32}
-                          height={32}
-                          className="rounded-full"
-                        />
-                        <div className="text-sm">
-                          <p className="text-zinc-300">{recipient.name}</p>
-                          <p className="text-zinc-400">{recipient.email}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-500 mt-2">
-                  {formatMessageDate(message.createdAt)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : activeTab === "sent" ? (
-          <div className="rounded-lg h-full">
-            <p className="text-center text-zinc-500 mt-2">
-              No Sent Messages Found
-            </p>
-          </div>
-        ) : null}
-        {activeTab === "sent" && hasSentMessages ? (
-          <div className="rounded-lg h-full">
-            {sentMessages.data?.map((message) => (
-              <div
-                key={message.id}
-                className="relative mb-6 p-4 bg-zinc-800 rounded-lg"
-              >
-                <button
-                  className="absolute top-2 right-2 text-zinc-400 hover:text-white transition-all duration-200"
-                  onClick={() => handleSentMessageToTrash(message.id)}
-                >
-                  <FaTrashAlt className="w-5 h-5" />
-                </button>
-                <h3 className="text-lg font-semibold text-zinc-300">
-                  {message.subject}
-                </h3>
-                <p className="text-zinc-400 mt-2">{message.content}</p>
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-zinc-500">
-                    Recipients:
-                  </h4>
-                  <div className="mt-2 space-y-2">
-                    {message.recipients?.map((recipient) => (
-                      <div
-                        key={recipient.id}
-                        className="flex items-center space-x-2"
-                      >
-                        <Image
-                          src={recipient.image}
-                          alt={recipient.name}
-                          width={32}
-                          height={32}
-                          className="rounded-full"
-                        />
-                        <div className="text-sm">
-                          <p className="text-zinc-300">{recipient.name}</p>
-                          <p className="text-zinc-400">{recipient.email}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-500 mt-2">
-                  {formatMessageDate(message.createdAt)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : activeTab === "sent" ? (
-          <div className="rounded-lg h-full">
-            <p className="text-center text-zinc-500 mt-2">
-              No Sent Messages Found
-            </p>
-          </div>
-        ) : null}
+        </div>
+
         {activeTab === "interviews" && (
           <div className="rounded-lg h-full">
             <p className="text-center text-zinc-500 mt-2">
@@ -875,7 +734,7 @@ const MessagesCard = ({
             </p>
           </div>
         )}
-        {activeTab === "trash" ? (
+        {/* {activeTab === "trash" ? (
           <div className="rounded-lg h-full">
             {trashedSentMessages?.data.map((message) => (
               <div
@@ -928,7 +787,7 @@ const MessagesCard = ({
           <div className="rounded-lg h-full">
             <p className="text-center text-zinc-500 mt-2">No Trash Found</p>
           </div>
-        ) : null}
+        ) : null} */}
       </div>
       {isModalOpen && messageToReply && (
         <ReplyToMessageModal

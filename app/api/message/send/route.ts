@@ -41,10 +41,10 @@ export async function POST(request: NextRequest) {
       },
       select: {
         id: true,
+        name: true,
         email: true,
       },
     });
-
 
     if (receivers.length !== receiverEmails.length) {
       console.log("Mismatch in number of recipients");
@@ -56,32 +56,81 @@ export async function POST(request: NextRequest) {
 
     const recipientIds = receivers.map((receiver) => receiver.id);
 
-    const messages = await Promise.all(
-      recipientIds.map((recipientId) =>
-        prisma.message.create({
-          data: {
-            senderId: currentUser.id,
-            recipientId: [recipientId],
-            subject,
-            content,
-            messageType: messageTypeEnum,
-            mentionedUserIds: mentionedUserIdsArray,
-            isReadByRecipient: false,
-            isDeletedBySender: false,
-            isDeletedByRecipient: false,
-            replyToId: null,
-            threadId: null,
-            deliveryStatus: null,
-            reactionCount: 0,
-            readAt: null,
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        AND: [
+          {
+            receiverIds: {
+              hasSome: recipientIds,
+            },
           },
-        })
-      )
-    );
+          {
+            senderId: currentUser.id,
+          },
+        ],
+      },
+    });
+
+    let conversationId;
+
+    if (existingConversation) {
+      conversationId = existingConversation.id;
+    } else {
+      const newConversation = await prisma.conversation.create({
+        data: {
+          senderId: currentUser.id,
+          receiverIds: recipientIds,
+          messages: {
+            create: [
+              {
+                senderId: currentUser.id,
+                content,
+                messageType: messageTypeEnum,
+                mentionedUserIds: mentionedUserIdsArray,
+                isReadByRecipient: false,
+                isDeletedBySender: false,
+                isDeletedByRecipient: false,
+                replyToId: null,
+                threadId: null,
+                deliveryStatus: null,
+                reactionCount: 0,
+                readAt: null,
+              },
+            ],
+          },
+        },
+      });
+
+      conversationId = newConversation.id;
+    }
+
+    const message = await prisma.message.create({
+      data: {
+        senderId: currentUser.id,
+        recipientId: recipientIds,
+        subject,
+        content,
+        messageType: messageTypeEnum,
+        mentionedUserIds: mentionedUserIdsArray,
+        isReadByRecipient: false,
+        isDeletedBySender: false,
+        isDeletedByRecipient: false,
+        replyToId: null,
+        threadId: null,
+        deliveryStatus: null,
+        reactionCount: 0,
+        readAt: null,
+        conversationId, 
+      },
+    });
 
     return NextResponse.json({
-      message: "Messages sent successfully",
-      data: messages,
+      message: "Message sent successfully",
+      data: {
+        message,
+        conversationId,
+        recipients: receivers, 
+      },
     });
   } catch (error: unknown) {
     console.error("Error sending message:", error);
@@ -99,4 +148,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
