@@ -33,6 +33,7 @@ import {
   FaFileAlt,
   FaBan,
   FaTools,
+  FaAward,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
@@ -40,6 +41,7 @@ import { GiThreeFriends } from "react-icons/gi";
 import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
 import { GoGoal } from "react-icons/go";
 import GoalForm from "../components/profile/goal/GoalForm";
+import { BsBriefcase } from "react-icons/bs";
 
 interface User {
   id: string;
@@ -125,6 +127,12 @@ function Profile() {
     "/api/monthly-interview-goal-tracker",
     (url) => fetch(url).then((res) => res.json())
   );
+
+  const { data: userAchievementData } = useSWR("/api/achievements", (url) =>
+    fetch(url).then((res) => res.json())
+  );
+
+  const achievements = userAchievementData?.allAchievements || [];
 
   const userRole = data?.user?.userRole;
   const jobOffers = userOffers || [];
@@ -491,6 +499,46 @@ function Profile() {
   const loadingUserRejections = !userRejections || userRejectionsLoading;
   const loadingUserSkills = !userSkills || userDataLoading;
 
+  interface Achievement {
+    id: string;
+    description: string;
+  }
+
+  interface AchievementCardProps {
+    achievement: Achievement;
+  }
+
+  function AchievementCard({ achievement }: AchievementCardProps) {
+    const jobsApplied = achievement.description.match(/applying to (\d+) jobs/);
+    const numberJobs = jobsApplied ? parseInt(jobsApplied[1], 10) : 0;
+
+    const dateParts = achievement.description.split(" on ");
+    const year =
+      dateParts.length > 1
+        ? dateParts[dateParts.length - 1].split("/")[2]
+        : "Unknown";
+
+    return (
+      <div className="flex flex-col items-center justify-center p-2">
+        <div className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2">
+          <BsBriefcase className="w-8 h-8 text-white" />
+          <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
+            {numberJobs}
+          </div>
+          <div className="absolute bottom-4 left-10 right-0 text-white text-xs font-bold">
+            {year}
+          </div>
+        </div>
+        <h3 className="text-lg font-bold text-center">
+          {achievement.description.split(" on ")[0]} by
+        </h3>
+        <p className="text-xs text-gray-500 text-center">
+          {achievement.description.split(" on ")[1]}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userRole === "CANDIDATE" ? (
@@ -530,6 +578,23 @@ function Profile() {
                       }`}
                     />
                     Connections
+                  </button>
+                </li>
+                <li className="me-2">
+                  <button
+                    onClick={() => setActiveTab("awards")}
+                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                      activeTab === "awards"
+                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                        : ""
+                    }`}
+                  >
+                    <FaAward
+                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                        activeTab === "awards" ? "text-blue-600" : ""
+                      }`}
+                    />
+                    Awards
                   </button>
                 </li>
                 <li className="me-2">
@@ -722,6 +787,21 @@ function Profile() {
                   <div className="my-4 border-t border-gray-600" />
                   <EducationList />
                 </Suspense>
+              )}
+              {activeTab === "awards" && (
+                <div className="container mx-auto p-4">
+                  <h2 className="text-2xl font-bold mb-4">Achievements</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {achievements.map(
+                      (achievement: Achievement, index: number) => (
+                        <AchievementCard
+                          key={achievement.id}
+                          achievement={achievement}
+                        />
+                      )
+                    )}
+                  </div>
+                </div>
               )}
               {activeTab === "goal" && (
                 <GoalForm
