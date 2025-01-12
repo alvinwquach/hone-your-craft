@@ -43,6 +43,7 @@ import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
 import { GoGoal } from "react-icons/go";
 import GoalForm from "../components/profile/goal/GoalForm";
 import { BsBriefcase } from "react-icons/bs";
+import { MdStairs } from "react-icons/md";
 
 interface User {
   id: string;
@@ -526,8 +527,13 @@ function Profile() {
     const year = dateStr ? dateStr.split("/")[2] : "Unknown";
 
     const isJobAchievement = numberJobs !== null;
+    const isStreakAchievement =
+      achievement.description.includes("week in a row");
+
     const icon = isJobAchievement ? (
       <BsBriefcase className="w-8 h-8 text-white" />
+    ) : isStreakAchievement ? (
+      <MdStairs className="w-8 h-8 text-white" />
     ) : (
       <FaUserTie className="w-8 h-8 text-white" />
     );
@@ -536,6 +542,24 @@ function Profile() {
       ? achievement.description.split(" on ")[0]
       : achievement.description.split(" by ")[0];
 
+    if (isStreakAchievement) {
+      const streakMatch = achievement.description.match(/for (\d+) week/);
+      const streakCount = streakMatch ? parseInt(streakMatch[1], 10) : 1;
+
+      return (
+        <div className="flex flex-col items-center justify-center p-2">
+          <div className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2">
+            {icon}
+            <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
+              {streakCount}
+            </div>
+          </div>
+          <h3 className="text-lg font-bold text-center">{descriptionText}</h3>
+          <p className="text-xs text-gray-500 text-center">{dateStr}</p>
+          <p className="text-xs text-gray-400 mt-1">Great job! Keep it up!</p>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center p-2">
         <div className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2">
