@@ -292,66 +292,67 @@ model UserConversation {
   user           User         @relation("UserToUserConversations", fields: [userId], references: [id], onDelete: Cascade)
   conversation   Conversation @relation("ConversationToUserConversations", fields: [conversationId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, conversationId]) 
+  @@unique([userId, conversationId])
 }
 
 model User {
-  id                    String          @id @default(auto()) @map("_id") @db.ObjectId
-  name                  String?
-  email                 String?         @unique
-  emailVerified         DateTime?
-  image                 String?
-  company               String?
-  headline              String?
-  bio                   String?
-  website               String?
-  socialLinks           SocialLinks?    @relation("UserSocialLinks")
-  title                 String?
-  role                  String?
-  userRole              UserRole?
-  primaryRole           String?
-  openToRoles           String[]
-  yearsOfExperience     YearsOfExperience?
-  skills                String[]
-  status                UserStatus?     @relation("UserStatusRelation")
-  jobAlert              Boolean         @default(true)
-  candidateAlert        Boolean         @default(true)
-  lookingForMentor      Boolean         @default(false)
-  offeringMentorship    Boolean         @default(false)
-  mentorshipsOffered    Mentorship[]    @relation("MentorRelationships")
-  mentorshipsRequested  Mentorship[]    @relation("MenteeRelationships")
-  profileCompletion     Int             @default(0)
-  isProfilePublic       Boolean         @default(true)
-  lastActive            DateTime?
-  connectionsSent       Connection[]    @relation("ConnectionsSent")
-  connectionsReceived   Connection[]    @relation("ConnectionsReceived")
-  documents             Document[]      @relation("UserDocuments")
-  workExperience        WorkExperience[]
-  education             Education[]
-  accounts              Account[]
-  sessions              Session[]
-  jobs                  Job[]
-  offers                Offer[]
-  interviews            Interview[]
-  rejections            Rejection[]
-  notifications         Notification[]
-  applications          Application[]   @relation("JobApplications")
-  jobPostings           JobPosting[]    @relation("JobPostings")
-  messagesSent          Message[]       @relation("SentMessages")
-  messagesReceived      Message[]       @relation("ReceivedMessages")
-  userConversations     UserConversation[] @relation("UserToUserConversations")
-  jobRecommendations    JobRecommendation[] @relation("JobRecommendations")
-  endorsementsGiven     SkillEndorsement[] @relation("Endorser")
-  endorsementsReceived  SkillEndorsement[] @relation("Endorsees")
-  collaborations        Collaboration[] @relation("UserCollaborations")
-    userAchievements      UserAchievement[] @relation("UserAchievements")
-
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
-  interviewInvitesAsClient     InterviewInvite[] @relation("ClientInvites")
-  interviewInvitesAsCandidate  InterviewInvite[] @relation("CandidateInvites")
+  id                           String                        @id @default(auto()) @map("_id") @db.ObjectId
+  name                         String?
+  email                        String?                       @unique
+  emailVerified                DateTime?
+  image                        String?
+  company                      String?
+  headline                     String?
+  bio                          String?
+  website                      String?
+  socialLinks                  SocialLinks?                  @relation("UserSocialLinks")
+  title                        String?
+  role                         String?
+  userRole                     UserRole?
+  primaryRole                  String?
+  openToRoles                  String[]
+  yearsOfExperience            YearsOfExperience?
+  skills                       String[]
+  status                       UserStatus?                   @relation("UserStatusRelation")
+  jobAlert                     Boolean                       @default(true)
+  candidateAlert               Boolean                       @default(true)
+  lookingForMentor             Boolean                       @default(false)
+  offeringMentorship           Boolean                       @default(false)
+  mentorshipsOffered           Mentorship[]                  @relation("MentorRelationships")
+  mentorshipsRequested         Mentorship[]                  @relation("MenteeRelationships")
+  profileCompletion            Int                           @default(0)
+  isProfilePublic              Boolean                       @default(true)
+  lastActive                   DateTime?
+  connectionsSent              Connection[]                  @relation("ConnectionsSent")
+  connectionsReceived          Connection[]                  @relation("ConnectionsReceived")
+  documents                    Document[]                    @relation("UserDocuments")
+  workExperience               WorkExperience[]
+  education                    Education[]
+  accounts                     Account[]
+  sessions                     Session[]
+  jobs                         Job[]
+  offers                       Offer[]
+  interviews                   Interview[]
+  rejections                   Rejection[]
+  notifications                Notification[]
+  applications                 Application[]                 @relation("JobApplications")
+  jobPostings                  JobPosting[]                  @relation("JobPostings")
+  messagesSent                 Message[]                     @relation("SentMessages")
+  messagesReceived             Message[]                     @relation("ReceivedMessages")
+  userConversations            UserConversation[]            @relation("UserToUserConversations")
+  jobRecommendations           JobRecommendation[]           @relation("JobRecommendations")
+  endorsementsGiven            SkillEndorsement[]            @relation("Endorser")
+  endorsementsReceived         SkillEndorsement[]            @relation("Endorsees")
+  collaborations               Collaboration[]               @relation("UserCollaborations")
+  userAchievements             UserAchievement[]             @relation("UserAchievements")
+  createdAt                    DateTime                      @default(now())
+  updatedAt                    DateTime                      @updatedAt
+  interviewInvitesAsClient     InterviewInvite[]             @relation("ClientInvites")
+  interviewInvitesAsCandidate  InterviewInvite[]             @relation("CandidateInvites")
   clientInterviewAvailability  ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
   jobsAppliedToDaysPerWeekGoal Int?
+  weeklyStreak                 Int?                          @default(0)
+  lastStreakUpdate             DateTime?
   jobsAppliedToWeeklyGoalMin   Int?
   jobsAppliedToWeeklyGoalMax   Int?
   monthlyInterviewGoal         Int?
@@ -363,40 +364,37 @@ model User {
   @@map("users")
 }
 
-
-
 model Conversation {
-  id            String      @id @default(auto()) @map("_id") @db.ObjectId
-  senderId      String      @db.ObjectId
-  receiverIds   String[]    @db.ObjectId
-  messages      Message[]   @relation("ConversationMessages")
-  createdAt     DateTime    @default(now())
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  senderId          String             @db.ObjectId
+  receiverIds       String[]           @db.ObjectId
+  messages          Message[]          @relation("ConversationMessages")
+  createdAt         DateTime           @default(now())
   userConversations UserConversation[] @relation("ConversationToUserConversations")
 }
 
-
 model Message {
-  id                         String      @id @default(auto()) @map("_id") @db.ObjectId
-  sender                     User        @relation("SentMessages", fields: [senderId], references: [id])
-  senderId                   String      @db.ObjectId
-  recipients                 User        @relation("ReceivedMessages", fields: [recipientId], references: [id])
-  recipientId                String[]    @db.ObjectId
+  id                         String       @id @default(auto()) @map("_id") @db.ObjectId
+  sender                     User         @relation("SentMessages", fields: [senderId], references: [id])
+  senderId                   String       @db.ObjectId
+  recipients                 User         @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  recipientId                String[]     @db.ObjectId
   subject                    String?
   content                    String
-  messageType                MessageType @default(TEXT)
+  messageType                MessageType  @default(TEXT)
   mentionedUserIds           String[]
-  createdAt                  DateTime    @default(now())
-  updatedAt                  DateTime    @updatedAt
-  isReadByRecipient          Boolean     @default(false)
-  isDeletedBySender          Boolean     @default(false)
-  isDeletedFromTrashBySender Boolean     @default(false)
-  isDeletedByRecipient       Boolean     @default(false)
-  replyToId                  String?     @db.ObjectId
-  threadId                   String?     @db.ObjectId
+  createdAt                  DateTime     @default(now())
+  updatedAt                  DateTime     @updatedAt
+  isReadByRecipient          Boolean      @default(false)
+  isDeletedBySender          Boolean      @default(false)
+  isDeletedFromTrashBySender Boolean      @default(false)
+  isDeletedByRecipient       Boolean      @default(false)
+  replyToId                  String?      @db.ObjectId
+  threadId                   String?      @db.ObjectId
   deliveryStatus             String?
-  reactionCount              Int         @default(0)
+  reactionCount              Int          @default(0)
   readAt                     DateTime?
-  conversationId             String      @db.ObjectId
+  conversationId             String       @db.ObjectId
   conversation               Conversation @relation("ConversationMessages", fields: [conversationId], references: [id])
 
   @@map("messages")
@@ -852,39 +850,36 @@ model SocialLinks {
 }
 
 model Achievement {
-  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
-  name                 String             @unique
-  description          String
-  iconUrl              String?
-  userAchievements     UserAchievement[]  @relation("AchievementUserAchievements")
-  triggers             AchievementTrigger[] @relation("AchievementTriggers")
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  name             String               @unique
+  description      String
+  iconUrl          String?
+  userAchievements UserAchievement[]    @relation("AchievementUserAchievements")
+  triggers         AchievementTrigger[] @relation("AchievementTriggers")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 }
-
 
 model AchievementTrigger {
-  id        String       @id @default(auto()) @map("_id") @db.ObjectId
-  achievementId   String   @db.ObjectId
-  achievement    Achievement @relation("AchievementTriggers", fields: [achievementId], references: [id], onDelete: Cascade)
-  condition     String   
-  action        String   
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  achievementId String      @db.ObjectId
+  achievement   Achievement @relation("AchievementTriggers", fields: [achievementId], references: [id], onDelete: Cascade)
+  condition     String
+  action        String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
-
 
 model UserAchievement {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String        @db.ObjectId
-  user         User          @relation("UserAchievements", fields: [userId], references: [id], onDelete: Cascade)
-  achievementId String       @db.ObjectId
-  achievement  Achievement   @relation("AchievementUserAchievements", fields: [achievementId], references: [id], onDelete: Cascade)
-  awardedAt    DateTime      @default(now())
-  progress     Int           @default(0)   
-  lastActionAt DateTime?
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String      @db.ObjectId
+  user          User        @relation("UserAchievements", fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String      @db.ObjectId
+  achievement   Achievement @relation("AchievementUserAchievements", fields: [achievementId], references: [id], onDelete: Cascade)
+  awardedAt     DateTime    @default(now())
+  progress      Int         @default(0)
+  lastActionAt  DateTime?
 }
-
 
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
@@ -915,74 +910,6 @@ model Session {
 
   @@map("session")
 }
-
-// model User {
-//   id                    String          @id @default(auto()) @map("_id") @db.ObjectId
-//   name                  String?
-//   email                 String?         @unique
-//   emailVerified         DateTime?
-//   image                 String?
-//   company               String?
-//   headline              String?
-//   bio                   String?
-//   website               String?
-//   socialLinks           SocialLinks?    @relation("UserSocialLinks")
-//   title                 String?
-//   role                  String?
-//   userRole              UserRole?
-//   primaryRole           String?
-//   openToRoles           String[]
-//   yearsOfExperience     YearsOfExperience?
-//   skills                String[]
-//   status                UserStatus?     @relation("UserStatusRelation")
-//   jobAlert              Boolean         @default(true)
-//   candidateAlert        Boolean         @default(true)
-//   lookingForMentor      Boolean         @default(false)
-//   offeringMentorship    Boolean         @default(false)
-//   mentorshipsOffered    Mentorship[]    @relation("MentorRelationships")
-//   mentorshipsRequested  Mentorship[]    @relation("MenteeRelationships")
-//   profileCompletion     Int             @default(0)
-//   isProfilePublic       Boolean         @default(true)
-//   lastActive            DateTime?
-//   connectionsSent       Connection[]    @relation("ConnectionsSent")
-//   connectionsReceived   Connection[]    @relation("ConnectionsReceived")
-//   documents             Document[]      @relation("UserDocuments")
-//   workExperience        WorkExperience[]
-//   education             Education[]
-//   accounts              Account[]
-//   sessions              Session[]
-//   jobs                  Job[]
-//   offers                Offer[]
-//   interviews            Interview[]
-//   rejections            Rejection[]
-//   notifications         Notification[]
-//   applications          Application[]   @relation("JobApplications")
-//   jobPostings           JobPosting[]    @relation("JobPostings")
-//   messagesSent          Message[]       @relation("SentMessages")
-//   messagesReceived      Message[]       @relation("ReceivedMessages")
-//   conversations         Conversation[]  @relation("UserConversations") // Fixed relation name
-//   jobRecommendations    JobRecommendation[] @relation("JobRecommendations")
-//   endorsementsGiven     SkillEndorsement[] @relation("Endorser")
-//   endorsementsReceived  SkillEndorsement[] @relation("Endorsees")
-//   collaborations        Collaboration[] @relation("UserCollaborations")
-//   badges                UserBadge[]     @relation("UserBadges")
-//   createdAt             DateTime        @default(now())
-//   updatedAt             DateTime        @updatedAt
-//   interviewInvitesAsClient     InterviewInvite[] @relation("ClientInvites")
-//   interviewInvitesAsCandidate  InterviewInvite[] @relation("CandidateInvites")
-//   clientInterviewAvailability  ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
-//   jobsAppliedToDaysPerWeekGoal Int?
-//   jobsAppliedToWeeklyGoalMin   Int?
-//   jobsAppliedToWeeklyGoalMax   Int?
-//   monthlyInterviewGoal         Int?
-//   candidateGoal                CandidateGoal?
-//   offerReceivedByDateGoal      DateTime?
-//   offerReceivedByDateGoalStart DateTime?
-//   offerReceivedByDateGoalEnd   DateTime?
-
-//   @@map("users")
-// }
-
 
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId

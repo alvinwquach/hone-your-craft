@@ -2,6 +2,145 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 
+
+const fetchWeeklyJobApplications = async (
+  userId: string,
+  startDate: Date,
+  endDate: Date
+) => {
+  return await prisma.job.findMany({
+    where: {
+      userId: userId,
+      status: { not: "SAVED" },
+      createdAt: { gte: startDate, lte: endDate },
+    },
+    select: {
+      createdAt: true,
+    },
+  });
+};
+
+interface Job {
+  createdAt: Date | string;
+}
+
+const trackApplicationDays = (jobs: Job[]): number => {
+  const appliedDays = new Set<string>();
+
+  jobs.forEach((job) => {
+    const applicationDay = new Date(job.createdAt).toISOString().split("T")[0];
+    appliedDays.add(applicationDay);
+  });
+
+  return appliedDays.size;
+};
+
+const calculateWeeklyApplicationStreak = async (userId: string) => {
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { jobsAppliedToDaysPerWeekGoal: true },
+  });
+
+  if (!target) {
+    throw new Error("User not found");
+  }
+
+  const now = new Date();
+
+  const currentWeekStart = new Date(now);
+  currentWeekStart.setDate(now.getDate() - now.getDay());
+  currentWeekStart.setHours(0, 0, 0, 0);
+
+  const currentWeekEnd = new Date(currentWeekStart);
+  currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+  currentWeekEnd.setHours(23, 59, 59, 999);
+
+  const jobsThisWeek = await fetchWeeklyJobApplications(
+    userId,
+    currentWeekStart,
+    currentWeekEnd
+  );
+
+  const distinctDaysApplied = trackApplicationDays(jobsThisWeek);
+
+  const goalMet =
+    distinctDaysApplied >= (target?.jobsAppliedToDaysPerWeekGoal ?? 0);
+
+  let newStreak = 0;
+
+  if (goalMet) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const lastStreakUpdate = user.lastStreakUpdate;
+
+    if (
+      !lastStreakUpdate ||
+      new Date(lastStreakUpdate).getTime() < currentWeekStart.getTime()
+    ) {
+      newStreak = user.weeklyStreak ? user.weeklyStreak + 1 : 1;
+    } else {
+      newStreak = user.weeklyStreak || 0;
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        weeklyStreak: newStreak,
+        lastStreakUpdate: currentWeekStart,
+      },
+    });
+
+    const streakWeeks = Math.floor(newStreak / 1);
+
+    let achievementName = "";
+    let achievementDescription = "";
+
+    if (streakWeeks >= 12) {
+      achievementName = "Persistent";
+      achievementDescription = "Target met for 3 months in a row";
+    } else if (streakWeeks >= 8) {
+      achievementName = "Consistent";
+      achievementDescription = "Target met for 2 months in a row";
+    } else if (streakWeeks >= 4) {
+      achievementName = "Steady";
+      achievementDescription = "Target met for 1 month in a row";
+    } else if (streakWeeks >= 2) {
+      achievementName = "Steady";
+      achievementDescription = "Target met for 2 weeks in a row";
+    } else if (streakWeeks >= 1) {
+      achievementName = "Committed";
+      achievementDescription = "Target met for 1 week in a row";
+    }
+
+    if (achievementName) {
+      await prisma.userAchievement.create({
+        data: {
+          user: { connect: { id: userId } },
+          achievement: {
+            connectOrCreate: {
+              where: { name: achievementName },
+              create: {
+                name: achievementName,
+                description: achievementDescription,
+              },
+            },
+          },
+        },
+      });
+    }
+  }
+
+  return {
+    appliedDaysCount: distinctDaysApplied,
+    streak: newStreak,
+  };
+};
+
+
 const calculateAchievements = async (
   userId: string,
   appliedJobs: any[],
@@ -124,6 +263,7 @@ const calculateAchievements = async (
   return awardedAchievements;
 };
 
+
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
@@ -156,6 +296,8 @@ export async function GET(request: NextRequest) {
       userInterviews
     );
 
+    const weeklyResult = await calculateWeeklyApplicationStreak(currentUser.id);
+
     const allUserAchievements = await prisma.userAchievement.findMany({
       where: { userId: currentUser.id },
       select: {
@@ -168,17 +310,28 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const allAchievements = allUserAchievements.map((ua) => ua.achievement);
+    const allAchievements = [
+      ...new Set(allUserAchievements.map((ua) => ua.achievement.id)),
+    ].map(
+      (id) =>
+        allUserAchievements.find((ua) => ua.achievement.id === id)?.achievement
+    );
 
     return NextResponse.json({
       newAchievements: newAchievements.map((a) => ({
         id: a.id,
         description: a.description,
+        name: a.name,
       })),
       allAchievements: allAchievements,
+      weeklyStreak: weeklyResult.streak,
+      appliedDaysThisWeek: weeklyResult.appliedDaysCount,
     });
   } catch (error) {
     console.error("Error fetching or calculating user achievements:", error);
     return NextResponse.error();
   }
 }
+
+
+
