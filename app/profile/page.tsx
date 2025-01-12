@@ -32,9 +32,10 @@ import {
   FaMoneyCheckAlt,
   FaFileAlt,
   FaBan,
-  FaTools,
   FaAward,
   FaUserTie,
+  FaLock,
+  FaCheck,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
@@ -135,6 +136,10 @@ function Profile() {
   );
 
   const achievements = userAchievementData?.allAchievements || [];
+
+  const awardedAchievements = userAchievementData?.awardedAchievements || [];
+
+  const lockedAchievements = userAchievementData?.lockedAchievements || [];
 
   const userRole = data?.user?.userRole;
   const jobOffers = userOffers || [];
@@ -500,10 +505,10 @@ function Profile() {
   const loadingUserOffers = !userOffers || userOffersLoading;
   const loadingUserRejections = !userRejections || userRejectionsLoading;
   const loadingUserSkills = !userSkills || userDataLoading;
-
   interface Achievement {
     id: string;
     description: string;
+    unlocked: boolean;
   }
 
   interface AchievementCardProps {
@@ -511,24 +516,22 @@ function Profile() {
   }
 
   function AchievementCard({ achievement }: AchievementCardProps) {
-    const jobsApplied = achievement.description.match(/applying to (\d+) jobs/);
+    const { description, unlocked } = achievement;
+
+    const jobsApplied = description.match(/applying to (\d+) jobs/);
     const numberJobs = jobsApplied ? parseInt(jobsApplied[1], 10) : null;
 
-    const interviewsAttended = achievement.description.match(
-      /attending (\d+) interviews/
-    );
+    const interviewsAttended = description.match(/attending (\d+) interviews/);
     const numberInterviews = interviewsAttended
       ? parseInt(interviewsAttended[1], 10)
       : null;
 
-    const dateParts = achievement.description.split(/ on | by /);
+    const dateParts = description.split(/ on | by /);
     const dateStr = dateParts.length > 1 ? dateParts[1] : null;
-
-    const year = dateStr ? dateStr.split("/")[2] : "Unknown";
+    const year = dateStr ? dateStr.split("/")[2] : "";
 
     const isJobAchievement = numberJobs !== null;
-    const isStreakAchievement =
-      achievement.description.includes("week in a row");
+    const isStreakAchievement = description.includes("week in a row");
 
     const icon = isJobAchievement ? (
       <BsBriefcase className="w-8 h-8 text-white" />
@@ -539,20 +542,32 @@ function Profile() {
     );
 
     const descriptionText = isJobAchievement
-      ? achievement.description.split(" on ")[0]
-      : achievement.description.split(" by ")[0];
+      ? description.split(" on ")[0]
+      : description.split(" by ")[0];
+
+    const lockIcon = unlocked ? (
+      <FaCheck className="bg-zinc-700 p-2 rounded-full w-8 h-8 text-green-500 absolute top-1 right-1" />
+    ) : (
+      <FaLock className="bg-zinc-700 p-2 rounded-full w-8 h-8 text-white absolute top-1 right-1" />
+    );
+
+    const cardStyle = unlocked ? {} : { filter: "brightness(0.7)" };
 
     if (isStreakAchievement) {
-      const streakMatch = achievement.description.match(/for (\d+) week/);
+      const streakMatch = description.match(/for (\d+) week/);
       const streakCount = streakMatch ? parseInt(streakMatch[1], 10) : 1;
 
       return (
         <div className="flex flex-col items-center justify-center p-2">
-          <div className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2">
+          <div
+            className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2"
+            style={cardStyle}
+          >
             {icon}
             <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
               {streakCount}
             </div>
+            {lockIcon}
           </div>
           <h3 className="text-lg font-bold text-center">{descriptionText}</h3>
           <p className="text-xs text-gray-500 text-center">{dateStr}</p>
@@ -560,9 +575,13 @@ function Profile() {
         </div>
       );
     }
+
     return (
       <div className="flex flex-col items-center justify-center p-2">
-        <div className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2">
+        <div
+          className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2"
+          style={cardStyle}
+        >
           {icon}
           <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
             {isJobAchievement ? numberJobs : numberInterviews}
@@ -570,6 +589,7 @@ function Profile() {
           <div className="absolute bottom-4 left-10 right-0 text-white text-xs font-bold">
             {year}
           </div>
+          {lockIcon}
         </div>
         <h3 className="text-lg font-bold text-center">{descriptionText} by</h3>
         <p className="text-xs text-gray-500 text-center">{dateStr}</p>
@@ -830,14 +850,18 @@ function Profile() {
                 <div className="container mx-auto p-4">
                   <h2 className="text-2xl font-bold mb-4">Achievements</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {achievements.map(
-                      (achievement: Achievement, index: number) => (
-                        <AchievementCard
-                          key={achievement.id}
-                          achievement={achievement}
-                        />
-                      )
-                    )}
+                    {awardedAchievements.map((achievement: Achievement) => (
+                      <AchievementCard
+                        key={achievement.id}
+                        achievement={achievement}
+                      />
+                    ))}
+                    {lockedAchievements.map((achievement: Achievement) => (
+                      <AchievementCard
+                        key={achievement.id}
+                        achievement={achievement}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
