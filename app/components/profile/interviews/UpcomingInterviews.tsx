@@ -17,9 +17,13 @@ interface JobInterview {
 
 interface UpcomingInterviewsProps {
   jobInterviews: JobInterview[];
+  interviewConversionRate: string;
 }
 
-function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
+function UpcomingInterviews({
+  jobInterviews,
+  interviewConversionRate,
+}: UpcomingInterviewsProps) {
   const upcomingInterviews = jobInterviews.filter((interview) => {
     const interviewDate = new Date(interview.interviewDate);
     const today = new Date();
@@ -36,6 +40,7 @@ function UpcomingInterviews({ jobInterviews }: UpcomingInterviewsProps) {
   if (upcomingInterviews.length === 0) {
     return (
       <div className="relative overflow-x-auto">
+        <div className="p-4 text-center">{interviewConversionRate}</div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-200">
           <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
             <tr>

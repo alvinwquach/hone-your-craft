@@ -135,11 +135,18 @@ function Profile() {
     fetch(url).then((res) => res.json())
   );
 
+  const { data: interviewConversionRateData } = useSWR(
+    "/api/interview-conversion-rate",
+    (url) => fetch(url).then((res) => res.json())
+  );
+
   const achievements = userAchievementData?.allAchievements || [];
 
   const awardedAchievements = userAchievementData?.awardedAchievements || [];
 
   const lockedAchievements = userAchievementData?.lockedAchievements || [];
+
+  const interviewConversionRate = interviewConversionRateData?.message ?? "";
 
   const userRole = data?.user?.userRole;
   const jobOffers = userOffers || [];
@@ -885,9 +892,19 @@ function Profile() {
                 </Suspense>
               )}
               {activeTab === "interviews" && (
-                <Suspense fallback={<UpcomingInterviews jobInterviews={[]} />}>
+                <Suspense
+                  fallback={
+                    <UpcomingInterviews
+                      jobInterviews={[]}
+                      interviewConversionRate={""}
+                    />
+                  }
+                >
                   {!loadingUserInterviews ? (
-                    <UpcomingInterviews jobInterviews={jobInterviews} />
+                    <UpcomingInterviews
+                      jobInterviews={jobInterviews}
+                      interviewConversionRate={interviewConversionRate}
+                    />
                   ) : (
                     <div>Loading Interviews...</div>
                   )}
