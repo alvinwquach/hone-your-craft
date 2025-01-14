@@ -86,6 +86,14 @@ const fetcher = async (url: string, options: RequestInit) => {
   return response.json();
 };
 
+const fetchDocument = async () => {
+  const response = await fetch("/api/documents/current", { method: "GET" });
+  if (!response.ok) {
+    throw new Error("Failed to fetch document.");
+  }
+  return response.json();
+};
+
 function Profile() {
   const { data: session } = useSession();
   const { data, isLoading: userDataLoading } = useSWR(
@@ -93,6 +101,10 @@ function Profile() {
     (url) => fetcher(url, { method: "GET" }),
     { refreshInterval: 1000 }
   );
+  const { data: resumeData } = useSWR("/api/documents/current", fetchDocument, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const { data: userInterviews, isLoading: userInterviewsLoading } = useSWR(
     "/api/interviews",
     (url) => fetch(url).then((res) => res.json())
@@ -1027,8 +1039,8 @@ function Profile() {
                 />
               )}
               {activeTab === "resume" && (
-                <Suspense fallback={<ResumeUpload />}>
-                  <ResumeUpload />
+                <Suspense fallback={<ResumeUpload resumeData={resumeData} />}>
+                  <ResumeUpload resumeData={resumeData} />
                 </Suspense>
               )}
               {activeTab === "interviews" && (
