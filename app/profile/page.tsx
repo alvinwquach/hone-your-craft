@@ -525,6 +525,30 @@ function Profile() {
     achievement: Achievement;
   }
 
+  function abbreviateNumber(num: number | null): string {
+    if (num === null) {
+      return "N";
+    }
+
+    const suffixes = ["", "K", "M", "B"];
+    let i = 0;
+
+    while (num >= 1000 && i < suffixes.length - 1) {
+      num /= 1000;
+      i++;
+    }
+
+    if (num % 1 === 0) {
+      return Math.floor(num) + suffixes[i];
+    } else {
+      return (
+        parseFloat(num.toFixed(2))
+          .toString()
+          .replace(/\.?0+$/, "") + suffixes[i]
+      );
+    }
+  }
+
   function AchievementCard({ achievement }: AchievementCardProps) {
     const { description, unlocked, name } = achievement;
 
@@ -558,14 +582,14 @@ function Profile() {
       borderColor = "border-yellow-500";
     } else if (isHolidayAchievement) {
       if (name.includes("Memorial Day"))
-        icon = <GiTombstone className="w-8 h-8 text-white" />;
+        icon = <FaFlagUsa className="w-8 h-8 text-white" />;
       else if (name.includes("New Year's Day"))
         icon = <GiPartyPopper className="w-8 h-8 text-white" />;
       else if (name.includes("Halloween"))
         icon = <GiPumpkinMask className="w-8 h-8 text-white" />;
       else if (name.includes("Christmas Day"))
         icon = <TbChristmasTree className="w-8 h-8 text-white" />;
-      else icon = <GrTrophy className="w-8 h-8 text-white" />;
+      else icon = <FaFlagUsa className="w-8 h-8 text-white" />;
       borderColor = "border-red-500";
     }
 
@@ -577,11 +601,10 @@ function Profile() {
 
     const cardStyle = unlocked ? {} : { filter: "brightness(0.7)" };
 
-    const achievementNumber = isJobAchievement
-      ? numberJobs
-      : isInterviewAchievement
-      ? numberInterviews
-      : null;
+    const achievementNumber =
+      isJobAchievement || isInterviewAchievement
+        ? abbreviateNumber(numberJobs ?? numberInterviews)
+        : null;
 
     return (
       <div className="flex flex-col items-center justify-center p-4 bg-zinc-800 opacity-80 rounded-lg shadow-md">
