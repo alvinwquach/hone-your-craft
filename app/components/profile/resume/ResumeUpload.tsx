@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaTimes } from "react-icons/fa";
@@ -10,32 +9,25 @@ import { CiFileOn } from "react-icons/ci";
 import { PiFileDoc } from "react-icons/pi";
 import { TbFileCv } from "react-icons/tb";
 
-const fetchDocument = async () => {
-  const response = await fetch("/api/documents/current", { method: "GET" });
-  if (!response.ok) {
-    throw new Error("Failed to fetch document.");
-  }
-  return response.json();
-};
+interface ResumeData {
+  id?: string;
+  name?: string;
+  url?: string;
+}
 
-const ResumeUpload = () => {
+interface ResumeUploadProps {
+  resumeData: ResumeData | null;
+}
+
+const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
-  const {
-    data: currentDocument,
-    isLoading,
-    error,
-  } = useSWR("/api/documents/current", fetchDocument, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
-  const { mutate } = useSWRConfig();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
       console.log("File selected:", selectedFile);
-      if (currentDocument?.id) {
+      if (resumeData?.id) {
         await handleFileUpdate(selectedFile);
       } else {
         await handleFileUpload(selectedFile);
@@ -44,13 +36,13 @@ const ResumeUpload = () => {
   };
 
   const handleRemoveFile = async () => {
-    if (!currentDocument?.id) {
+    if (!resumeData?.id) {
       toast.error("Document ID is missing. Unable to delete the document.");
       return;
     }
 
     try {
-      const response = await fetch(`/api/documents/${currentDocument.id}`, {
+      const response = await fetch(`/api/documents/${resumeData.id}`, {
         method: "DELETE",
       });
       if (!response.ok) {
@@ -58,7 +50,6 @@ const ResumeUpload = () => {
       }
 
       setFile(null);
-      mutate("api/documents");
 
       toast.success("Your resume has been removed successfully.");
     } catch (error) {
@@ -68,8 +59,8 @@ const ResumeUpload = () => {
     }
   };
 
-  const getFileIcon = (file: File | null | undefined) => {
-    if (!file || !file.name) {
+  const getFileIcon = (file: File | { name: string } | null | undefined) => {
+    if (!file || !("name" in file)) {
       return <CiFileOn className="w-12 h-12 mb-4 text-white" />;
     }
 
@@ -126,7 +117,6 @@ const ResumeUpload = () => {
 
       if (uploadResponse.ok) {
         toast.success("Resume uploaded successfully!");
-        mutate("api/documents");
       } else {
         throw new Error("Upload to S3 failed");
       }
@@ -138,7 +128,7 @@ const ResumeUpload = () => {
   };
 
   const handleFileUpdate = async (selectedFile: File) => {
-    if (!currentDocument?.id) {
+    if (!resumeData?.id) {
       toast.error("No resume found to update.");
       return;
     }
@@ -149,7 +139,7 @@ const ResumeUpload = () => {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch(`/api/documents/${currentDocument.id}`, {
+      const response = await fetch(`/api/documents/${resumeData.id}`, {
         method: "PUT",
         body: formData,
       });
@@ -162,7 +152,6 @@ const ResumeUpload = () => {
       console.log("Resume updated successfully:", responseData);
 
       toast.success("Resume updated successfully!");
-      mutate("api/documents");
     } catch (error) {
       toast.error(
         `Error: ${error instanceof Error ? error.message : "Unknown error"}`
@@ -183,7 +172,7 @@ const ResumeUpload = () => {
     if (droppedFile) {
       setFile(droppedFile);
       console.log("File dropped:", droppedFile);
-      if (currentDocument?.id) {
+      if (resumeData?.id) {
         await handleFileUpdate(droppedFile);
       } else {
         await handleFileUpload(droppedFile);
@@ -206,17 +195,17 @@ const ResumeUpload = () => {
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        {currentDocument?.name ? (
+        {resumeData?.name ? (
           <div className="w-full text-left mb-4">
             <p className="text-sm font-medium text-white break-words">
-              {currentDocument?.name}
+              {resumeData?.name}
             </p>
             <div className="flex flex-col items-start space-y-2 mt-2">
               <div className="flex items-center space-x-2">
                 <button
                   aria-label="Open resume preview in a new tab"
                   className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
-                  onClick={() => window.open(currentDocument.url, "_blank")}
+                  onClick={() => window.open(resumeData.url, "_blank")}
                 >
                   View your resume
                 </button>
@@ -229,7 +218,7 @@ const ResumeUpload = () => {
           htmlFor="dropzone-file"
           className="flex flex-col items-center justify-center w-full h-36 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-zinc-800 hover:bg-zinc-700 transition-colors relative"
         >
-          {currentDocument?.name && (
+          {resumeData?.name && (
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-white"
               onClick={handleRemoveFile}
@@ -238,24 +227,28 @@ const ResumeUpload = () => {
               <FaTimes className="w-4 h-4" />
             </button>
           )}
-          {currentDocument?.name ? (
+          {resumeData?.name ? (
             <div className="flex flex-col items-center justify-center">
-              {getFileIcon(currentDocument)}
+              {getFileIcon(file || { name: resumeData.name })}
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2">
-                <p className="text-sm text-white mr-1">
-                  {currentDocument?.name}
-                </p>
+                <p className="text-sm text-white mr-1">{resumeData?.name}</p>
                 <div className="flex items-center space-x-1">
                   <span className="text-sm text-gray-400">(</span>
                   <button
                     aria-label="Open resume preview in a new tab"
                     className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
-                    onClick={() =>
-                      window.open(
-                        URL.createObjectURL(file || currentDocument),
-                        "_blank"
-                      )
-                    }
+                    onClick={() => {
+                      if (resumeData?.name) {
+                        window.open(
+                          URL.createObjectURL(
+                            file || new File([], resumeData.name)
+                          ),
+                          "_blank"
+                        );
+                      } else {
+                        toast.error("No file name available for preview.");
+                      }
+                    }}
                   >
                     preview
                   </button>
@@ -280,7 +273,7 @@ const ResumeUpload = () => {
             onChange={handleFileChange}
           />
         </label>
-        {currentDocument?.name && (
+        {resumeData?.name && (
           <div className="mt-4 flex items-center justify-end w-full">
             <button
               className="text-gray-400 text-sm font-semibold"
