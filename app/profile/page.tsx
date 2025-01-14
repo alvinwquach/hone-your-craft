@@ -34,17 +34,26 @@ import {
   FaBan,
   FaAward,
   FaUserTie,
-  FaLock,
   FaCheck,
+  FaFlagUsa,
+  FaTrophy,
+  FaBriefcase,
+  FaCalendar,
 } from "react-icons/fa";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
-import { GiThreeFriends } from "react-icons/gi";
+import { GiPumpkinMask, GiThreeFriends } from "react-icons/gi";
 import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
 import { GoGoal } from "react-icons/go";
 import GoalForm from "../components/profile/goal/GoalForm";
-import { BsBriefcase } from "react-icons/bs";
+import { BsBriefcase, BsLock } from "react-icons/bs";
 import { MdStairs } from "react-icons/md";
+import { GiTombstone, GiPartyPopper } from "react-icons/gi";
+import { TbChristmasTree } from "react-icons/tb";
+import { gsap } from "gsap";
+import { GrTrophy } from "react-icons/gr";
+import { IoMdMedal } from "react-icons/io";
+import { IoCalendarNumberSharp } from "react-icons/io5";
 
 interface User {
   id: string;
@@ -106,56 +115,36 @@ function Profile() {
     "/api/connections/received",
     (url) => fetch(url).then((res) => res.json())
   );
-
   const { data: connectionsSent } = useSWR("/api/connections/sent", (url) =>
     fetch(url).then((res) => res.json())
   );
-
   const { data: currentGoalData } = useSWR(
     "/api/weekly-application-goal",
     (url) => fetch(url).then((res) => res.json())
   );
-
   const { data: weeklyApplicationDayTrackerData } = useSWR(
     "/api/weekly-application-day-tracker",
     (url) => fetch(url).then((res) => res.json())
   );
-
   const { data: weeklyApplicationGoalTrackerData } = useSWR(
     "/api/weekly-application-goal-tracker",
     (url) => fetch(url).then((res) => res.json())
   );
-
   const { data: monthlyInterviewGoalTrackerData } = useSWR(
     "/api/monthly-interview-goal-tracker",
     (url) => fetch(url).then((res) => res.json())
   );
-
   const { data: userAchievementData } = useSWR("/api/achievements", (url) =>
     fetch(url).then((res) => res.json())
   );
-
   const { data: interviewConversionRateData } = useSWR(
     "/api/interview-conversion-rate",
     (url) => fetch(url).then((res) => res.json())
   );
 
-  const achievements = userAchievementData?.allAchievements || [];
-
-  const awardedAchievements = userAchievementData?.awardedAchievements || [];
-
-  const lockedAchievements = userAchievementData?.lockedAchievements || [];
-
-  const interviewConversionRate = interviewConversionRateData?.message ?? "";
-
-  const userRole = data?.user?.userRole;
-  const jobOffers = userOffers || [];
-  const jobRejections = userRejections || [];
-  const jobInterviews = userInterviews || [];
-  const userSkills = data?.user?.skills || [];
-  const userData = data || [];
-
   const [activeTab, setActiveTab] = useState<string>("profile");
+  const [activeAchievementTab, setActiveAchievementTab] =
+    useState<string>("all");
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [frequencies, setFrequencies] = useState<number[]>([]);
@@ -180,10 +169,22 @@ function Profile() {
   const [jobApplicationStatusCount, setJobApplicationStatusCount] = useState<
     JobApplicationStatus[]
   >([]);
-
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(
     new Set()
   );
+
+  const interviewConversionRate = interviewConversionRateData?.message ?? "";
+  const jobAchievements = userAchievementData?.jobAchievements || [];
+  const interviewAchievements =
+    userAchievementData?.interviewAchievements || [];
+  const holidayAchievements = userAchievementData?.holidayAchievements || [];
+
+  const userRole = data?.user?.userRole;
+  const jobOffers = userOffers || [];
+  const jobRejections = userRejections || [];
+  const jobInterviews = userInterviews || [];
+  const userSkills = data?.user?.skills || [];
+  const userData = data || [];
 
   const sendConnectionRequest = async (receiverId: string) => {
     const connectionStatus = users.find(
@@ -512,9 +513,11 @@ function Profile() {
   const loadingUserOffers = !userOffers || userOffersLoading;
   const loadingUserRejections = !userRejections || userRejectionsLoading;
   const loadingUserSkills = !userSkills || userDataLoading;
+
   interface Achievement {
     id: string;
     description: string;
+    name: string;
     unlocked: boolean;
   }
 
@@ -523,7 +526,7 @@ function Profile() {
   }
 
   function AchievementCard({ achievement }: AchievementCardProps) {
-    const { description, unlocked } = achievement;
+    const { description, unlocked, name } = achievement;
 
     const jobsApplied = description.match(/applying to (\d+) jobs/);
     const numberJobs = jobsApplied ? parseInt(jobsApplied[1], 10) : null;
@@ -538,72 +541,70 @@ function Profile() {
     const year = dateStr ? dateStr.split("/")[2] : "";
 
     const isJobAchievement = numberJobs !== null;
+    const isInterviewAchievement = numberInterviews !== null;
     const isStreakAchievement = description.includes("week in a row");
+    const isHolidayAchievement = name.includes("Applied on");
 
-    const icon = isJobAchievement ? (
-      <BsBriefcase className="w-8 h-8 text-white" />
-    ) : isStreakAchievement ? (
-      <MdStairs className="w-8 h-8 text-white" />
-    ) : (
-      <FaUserTie className="w-8 h-8 text-white" />
-    );
+    let icon = null;
+    let borderColor = "border-blue-500";
 
-    const descriptionText = isJobAchievement
-      ? description.split(" on ")[0]
-      : description.split(" by ")[0];
+    if (isJobAchievement) {
+      icon = <BsBriefcase className="w-8 h-8 text-white" />;
+    } else if (isInterviewAchievement) {
+      icon = <FaUserTie className="w-8 h-8 text-white" />;
+      borderColor = "border-green-500";
+    } else if (isStreakAchievement) {
+      icon = <MdStairs className="w-8 h-8 text-white" />;
+      borderColor = "border-yellow-500";
+    } else if (isHolidayAchievement) {
+      if (name.includes("Memorial Day"))
+        icon = <GiTombstone className="w-8 h-8 text-white" />;
+      else if (name.includes("New Year's Day"))
+        icon = <GiPartyPopper className="w-8 h-8 text-white" />;
+      else if (name.includes("Halloween"))
+        icon = <GiPumpkinMask className="w-8 h-8 text-white" />;
+      else if (name.includes("Christmas Day"))
+        icon = <TbChristmasTree className="w-8 h-8 text-white" />;
+      else icon = <GrTrophy className="w-8 h-8 text-white" />;
+      borderColor = "border-red-500";
+    }
 
     const lockIcon = unlocked ? (
-      <FaCheck className="bg-zinc-700 p-2 rounded-full w-8 h-8 text-green-500 absolute top-1 right-1" />
+      <FaCheck className="bg-zinc-900 p-2 rounded-full w-8 h-8 text-green-500 absolute top-1 right-1" />
     ) : (
-      <FaLock className="bg-zinc-700 p-2 rounded-full w-8 h-8 text-white absolute top-1 right-1" />
+      <BsLock className="bg-zinc-900 p-2 rounded-full w-8 h-8 text-white absolute top-1 right-1" />
     );
 
     const cardStyle = unlocked ? {} : { filter: "brightness(0.7)" };
 
-    if (isStreakAchievement) {
-      const streakMatch = description.match(/for (\d+) week/);
-      const streakCount = streakMatch ? parseInt(streakMatch[1], 10) : 1;
-
-      return (
-        <div className="flex flex-col items-center justify-center p-2">
-          <div
-            className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2"
-            style={cardStyle}
-          >
-            {icon}
-            <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
-              {streakCount}
-            </div>
-            {lockIcon}
-          </div>
-          <h3 className="text-lg font-bold text-center">{descriptionText}</h3>
-          <p className="text-xs text-gray-500 text-center">{dateStr}</p>
-          <p className="text-xs text-gray-400 mt-1">Great job! Keep it up!</p>
-        </div>
-      );
-    }
+    const achievementNumber = isJobAchievement
+      ? numberJobs
+      : isInterviewAchievement
+      ? numberInterviews
+      : null;
 
     return (
-      <div className="flex flex-col items-center justify-center p-2">
+      <div className="flex flex-col items-center justify-center p-4 bg-zinc-800 opacity-80 rounded-lg shadow-md">
         <div
-          className="relative bg-zinc-800 border border-blue-500 rounded-full h-28 w-28 flex items-center justify-center mb-2"
+          className={`relative bg-zinc-700 ${borderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
           style={cardStyle}
         >
           {icon}
-          <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
-            {isJobAchievement ? numberJobs : numberInterviews}
-          </div>
+          {achievementNumber && (
+            <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
+              {achievementNumber}
+            </div>
+          )}
           <div className="absolute bottom-4 left-10 right-0 text-white text-xs font-bold">
             {year}
           </div>
           {lockIcon}
         </div>
-        <h3 className="text-lg font-bold text-center">{descriptionText} by</h3>
-        <p className="text-xs text-gray-500 text-center">{dateStr}</p>
+        <h3 className="text-lg font-bold text-center">{name}</h3>
+        {dateStr && <p className="text-xs text-center">{dateStr}</p>}
       </div>
     );
   }
-
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userRole === "CANDIDATE" ? (
@@ -855,20 +856,136 @@ function Profile() {
               )}
               {activeTab === "awards" && (
                 <div className="container mx-auto p-4">
-                  <h2 className="text-2xl font-bold mb-4">Achievements</h2>
+                  <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+                    <div className="flex flex-wrap -mb-px justify-start">
+                      <button
+                        onClick={() => setActiveAchievementTab("all")}
+                        className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                          activeAchievementTab === "all"
+                            ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                            : ""
+                        }`}
+                      >
+                        <IoMdMedal
+                          className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                            activeAchievementTab === "all"
+                              ? "text-blue-600"
+                              : ""
+                          }`}
+                        />
+                        All
+                      </button>
+                      <button
+                        onClick={() => setActiveAchievementTab("jobs")}
+                        className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                          activeAchievementTab === "jobs"
+                            ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                            : ""
+                        }`}
+                      >
+                        <FaBriefcase
+                          className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                            activeAchievementTab === "jobs"
+                              ? "text-blue-600"
+                              : ""
+                          }`}
+                        />
+                        Jobs
+                      </button>
+                      <button
+                        onClick={() => setActiveAchievementTab("interviews")}
+                        className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                          activeAchievementTab === "interviews"
+                            ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                            : ""
+                        }`}
+                      >
+                        <IoCalendarNumberSharp
+                          className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                            activeAchievementTab === "interviews"
+                              ? "text-blue-600"
+                              : ""
+                          }`}
+                        />
+                        Interviews
+                      </button>
+                      <button
+                        onClick={() => setActiveAchievementTab("holidays")}
+                        className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                          activeAchievementTab === "holidays"
+                            ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                            : ""
+                        }`}
+                      >
+                        <FaFlagUsa
+                          className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                            activeAchievementTab === "holidays"
+                              ? "text-blue-600"
+                              : ""
+                          }`}
+                        />
+                        Holidays
+                      </button>
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold my-4">Achievements</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {awardedAchievements.map((achievement: Achievement) => (
-                      <AchievementCard
-                        key={achievement.id}
-                        achievement={achievement}
-                      />
-                    ))}
-                    {lockedAchievements.map((achievement: Achievement) => (
-                      <AchievementCard
-                        key={achievement.id}
-                        achievement={achievement}
-                      />
-                    ))}
+                    {activeAchievementTab === "all" && (
+                      <>
+                        {jobAchievements.map((achievement: Achievement) => (
+                          <AchievementCard
+                            key={achievement.id}
+                            achievement={achievement}
+                          />
+                        ))}
+                        {interviewAchievements.map(
+                          (achievement: Achievement) => (
+                            <AchievementCard
+                              key={achievement.id}
+                              achievement={achievement}
+                            />
+                          )
+                        )}
+                        {holidayAchievements.map((achievement: Achievement) => (
+                          <AchievementCard
+                            key={achievement.id}
+                            achievement={achievement}
+                          />
+                        ))}
+                      </>
+                    )}
+                    {activeAchievementTab === "jobs" && (
+                      <>
+                        {jobAchievements.map((achievement: Achievement) => (
+                          <AchievementCard
+                            key={achievement.id}
+                            achievement={achievement}
+                          />
+                        ))}
+                      </>
+                    )}
+                    {activeAchievementTab === "interviews" && (
+                      <>
+                        {interviewAchievements.map(
+                          (achievement: Achievement) => (
+                            <AchievementCard
+                              key={achievement.id}
+                              achievement={achievement}
+                            />
+                          )
+                        )}
+                      </>
+                    )}
+                    {activeAchievementTab === "holidays" && (
+                      <>
+                        {holidayAchievements.map((achievement: Achievement) => (
+                          <AchievementCard
+                            key={achievement.id}
+                            achievement={achievement}
+                          />
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
               )}
