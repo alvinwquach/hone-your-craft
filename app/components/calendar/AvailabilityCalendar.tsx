@@ -6,7 +6,7 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { BsCalendarEventFill } from "react-icons/bs";
 import AddAvailabilityModal from "./AddAvailabilityModal";
-import { startOfDay } from "date-fns";
+import { format, getDay, startOfDay, addDays } from "date-fns";
 
 interface HeaderToolbar {
   left: string;
@@ -24,17 +24,35 @@ interface Event {
 function AvailabilityCalendar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [isRecurring, setIsRecurring] = useState(false);
   const [availability, setAvailability] = useState<Event[]>([]);
-  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(true);
-  const calendarRef = useRef<FullCalendar | null>(null);
   const [headerToolbar, setHeaderToolbar] = useState<HeaderToolbar>({
     left: "prev,next today",
     center: "title",
     right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
   });
+  const calendarRef = useRef<FullCalendar | null>(null);
+  const optionsMenuRef = useRef<HTMLDivElement>(null);
   const today = new Date();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        optionsMenuRef.current &&
+        !optionsMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowOptionsMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleDateClick = (arg: any) => {
     const clickedDate = startOfDay(arg.date);
@@ -45,7 +63,39 @@ function AvailabilityCalendar() {
     }
 
     setSelectedDate(arg.date);
-    setSelectedDates([]);
+    setSelectedDates([arg.date]);
+    setShowOptionsMenu(true);
+  };
+
+  const handleOptionSelect = (option: "single" | "recurring") => {
+    if (option === "single") {
+      setIsRecurring(false);
+      setSelectedDates(selectedDate ? [startOfDay(selectedDate)] : []);
+    } else {
+      setIsRecurring(true);
+      if (selectedDate) {
+        const normalizedDate = startOfDay(selectedDate);
+        const dayOfWeek = getDay(normalizedDate);
+        const rangeEnd = new Date(today);
+        rangeEnd.setFullYear(today.getFullYear() + 1);
+
+        let dates: Date[] = [];
+        let d = new Date(normalizedDate);
+        while (d.getDay() !== dayOfWeek) {
+          d.setDate(d.getDate() + 1);
+        }
+
+        while (d <= rangeEnd) {
+          dates.push(startOfDay(new Date(d)));
+          d.setDate(d.getDate() + 7);
+        }
+
+        setSelectedDates(dates);
+      } else {
+        setSelectedDates([]);
+      }
+    }
+    setShowOptionsMenu(false);
     setIsModalOpen(true);
   };
 
@@ -118,11 +168,11 @@ function AvailabilityCalendar() {
           )
       );
 
-    setAvailability((prevEvents) => {
-      const updatedEvents = [...prevEvents, ...newEvents];
-      return updatedEvents;
-    });
+    setAvailability((prevEvents) => [...prevEvents, ...newEvents]);
     setIsModalOpen(false);
+    setSelectedDates([]);
+    setSelectedDate(null);
+    setIsRecurring(false);
   };
 
   const updateHeaderToolbar = (date: Date) => {
@@ -142,10 +192,8 @@ function AvailabilityCalendar() {
 
   const handleSelect = (selectionInfo: any) => {
     const { start, end } = selectionInfo;
-
     const normalizedStart = startOfDay(start);
     const normalizedEnd = startOfDay(end);
-
     const today = startOfDay(new Date());
 
     if (normalizedStart < today || normalizedEnd < today) {
@@ -163,9 +211,13 @@ function AvailabilityCalendar() {
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    setSelectedDates(dateRange);
-    setSelectedDate(null);
-    setIsModalOpen(true);
+    if (dateRange.length > 1) {
+      setSelectedDates(dateRange);
+      setSelectedDate(null);
+      setShowOptionsMenu(false);
+      setIsModalOpen(true);
+      setIsRecurring(false);
+    }
   };
 
   const handleUnselect = () => {
@@ -178,28 +230,28 @@ function AvailabilityCalendar() {
 
       if (calendarApi) {
         if (window.innerWidth >= 1280) {
-          calendarApi.changeView("dayGridMonth"); // Desktop: Month view
+          calendarApi.changeView("dayGridMonth");
           setHeaderToolbar({
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
           });
         } else if (window.innerWidth >= 1024) {
-          calendarApi.changeView("dayGridMonth"); // Laptop: Month view
+          calendarApi.changeView("dayGridMonth");
           setHeaderToolbar({
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
           });
         } else if (window.innerWidth >= 640) {
-          calendarApi.changeView("timeGridWeek"); // Tablet: Week view
+          calendarApi.changeView("timeGridWeek");
           setHeaderToolbar({
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
             right: "timeGridWeek,timeGridDay,listWeek",
           });
         } else {
-          calendarApi.changeView("timeGridDay"); // Mobile: Day view
+          calendarApi.changeView("timeGridDay");
           setHeaderToolbar({
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
@@ -208,8 +260,8 @@ function AvailabilityCalendar() {
         }
       }
     };
-    window.addEventListener("resize", updateViewBasedOnScreenSize);
 
+    window.addEventListener("resize", updateViewBasedOnScreenSize);
     updateViewBasedOnScreenSize();
 
     return () => {
@@ -218,55 +270,83 @@ function AvailabilityCalendar() {
   }, [currentMonth]);
 
   return (
-    <div>
-      <FullCalendar
-        ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        headerToolbar={headerToolbar}
-        events={availability}
-        selectable={true}
-        dateClick={handleDateClick}
-        select={handleSelect}
-        unselect={handleUnselect}
-        selectAllow={(selectInfo) => {
-          const today = startOfDay(new Date());
-          const selectedStartDate = startOfDay(selectInfo.start);
-          if (selectedStartDate < today) {
-            return false;
+    <>
+      <div className="relative">
+        <FullCalendar
+          ref={calendarRef}
+          plugins={[
+            dayGridPlugin,
+            timeGridPlugin,
+            listPlugin,
+            interactionPlugin,
+          ]}
+          initialView="dayGridMonth"
+          headerToolbar={headerToolbar}
+          events={availability}
+          selectable={true}
+          dateClick={handleDateClick}
+          select={handleSelect}
+          unselect={handleUnselect}
+          selectAllow={(selectInfo) => {
+            const today = startOfDay(new Date());
+            const selectedStartDate = startOfDay(selectInfo.start);
+            if (selectedStartDate < today) {
+              return false;
+            }
+            return true;
+          }}
+          nowIndicator={true}
+          dayCellClassNames={(date) => {
+            const todayMidnight = new Date(today.setHours(0, 0, 0, 0));
+            if (date.date < todayMidnight) {
+              return "fc-past-day";
+            }
+            return "";
+          }}
+          datesSet={(dateInfo) =>
+            updateHeaderToolbar(dateInfo.view.currentStart)
           }
-          return true;
-        }}
-        nowIndicator={true}
-        dayCellClassNames={(date) => {
-          const todayMidnight = new Date(today.setHours(0, 0, 0, 0));
-          if (date.date < todayMidnight) {
-            return "fc-past-day";
-          }
-          return "";
-        }}
-        datesSet={(dateInfo) => updateHeaderToolbar(dateInfo.view.currentStart)}
-        dayCellContent={(info) => {
-          const dayHasAvailability = hasAvailability(info.date);
-          return (
-            <div className="relative flex justify-between">
-              <span>{info.dayNumberText}</span>
-              {dayHasAvailability && (
-                <BsCalendarEventFill className="w-4 h-4 absolute top-1 left-4 text-blue-600" />
-              )}
-            </div>
-          );
-        }}
-      />
-      <AddAvailabilityModal
-        isOpen={isModalOpen}
-        closeModal={() => setIsModalOpen(false)}
-        selectedDate={selectedDate!}
-        selectedDates={selectedDates}
-        isRecurring={isRecurring}
-        onSubmit={handleAddAvailability}
-      />
-    </div>
+          dayCellContent={(info) => {
+            const dayHasAvailability = hasAvailability(info.date);
+            return (
+              <div className="relative flex justify-between">
+                <span>{info.dayNumberText}</span>
+                {dayHasAvailability && (
+                  <BsCalendarEventFill className="w-4 h-4 absolute top-1 left-4 text-blue-600" />
+                )}
+              </div>
+            );
+          }}
+        />
+        {showOptionsMenu && (
+          <div className="z-10 absolute top-12 right-0 bg-white border border-gray-300 shadow-lg rounded p-4 ">
+            <button
+              onClick={() => handleOptionSelect("single")}
+              className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+            >
+              Edit this date
+            </button>
+            <button
+              onClick={() => handleOptionSelect("recurring")}
+              className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+            >
+              Edit{" "}
+              {isRecurring
+                ? "(Currently set)"
+                : `all ${format(selectedDate || today, "EEEE")}s`}
+            </button>
+          </div>
+        )}
+        <AddAvailabilityModal
+          isOpen={isModalOpen}
+          closeModal={() => setIsModalOpen(false)}
+          selectedDate={selectedDate!}
+          selectedDates={selectedDates}
+          isRecurring={isRecurring}
+          onSubmit={handleAddAvailability}
+        />
+      </div>
+    </>
   );
 }
 

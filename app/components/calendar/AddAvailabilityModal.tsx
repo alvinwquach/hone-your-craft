@@ -9,6 +9,7 @@ import {
   parse,
   isToday,
   isSameDay,
+  addMonths,
 } from "date-fns";
 import { HiPlus, HiX } from "react-icons/hi";
 import { Calendar, DateObject } from "react-multi-date-picker";
@@ -108,12 +109,13 @@ function AddAvailabilityModal({
 
     if (isRecurring && selectedDate) {
       const dayOfWeek = getDay(selectedDate);
-      const recurringDates = [];
-      const startOfMonthDate = startOfMonth(selectedDate);
-      const endOfMonthDate = endOfMonth(selectedDate);
+      const recurringDates: Date[] = [];
 
-      let currentDay = startOfMonthDate;
-      while (currentDay <= endOfMonthDate) {
+      const startDate = startOfMonth(selectedDate);
+      const endDate = addMonths(startDate, 12);
+
+      let currentDay = startDate;
+      while (currentDay <= endDate) {
         if (getDay(currentDay) === dayOfWeek) {
           recurringDates.push(currentDay);
         }
