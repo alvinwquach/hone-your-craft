@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { Menu, Transition } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 
 const workLocationLabels = {
   REMOTE: "Remote",
@@ -188,14 +189,12 @@ function JobFilterAndList({
                     {job.status === JobPostingStatus.OPEN && (
                       <div className="py-1">
                         <Menu.Item>
-                          <button
+                          <Link
+                            href={`/post-job/${job.id}/edit`}
                             className="block w-full px-4 py-2 text-sm text-white hover:bg-blue-500 text-left"
-                            onClick={() =>
-                              alert(`Editing posted job ${job.id}`)
-                            }
                           >
                             Edit Job
-                          </button>
+                          </Link>
                         </Menu.Item>
                         <Menu.Item>
                           <button
@@ -211,8 +210,6 @@ function JobFilterAndList({
                 </Transition>
               </Menu>
             </div>
-
-            {/* Job Details */}
             <div className="flex justify-start items-center mt-2">
               <div className="flex flex-col">
                 {job.status === JobPostingStatus.DRAFT ? (
