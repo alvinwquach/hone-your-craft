@@ -403,12 +403,36 @@ const PostJobForm = () => {
       borderRadius: "0.375rem",
       padding: "0.5rem",
     }),
+    input: (styles: any) => ({
+      ...styles,
+      color: "#fff",
+    }),
+    placeholder: (styles: any) => ({
+      ...styles,
+      color: "#bbb",
+    }),
     option: (styles: any) => ({
       ...styles,
       backgroundColor: "#2c2c2c",
       color: "#eee",
       ":hover": {
         backgroundColor: "#444",
+      },
+    }),
+    multiValue: (styles: any) => ({
+      ...styles,
+      backgroundColor: "#444",
+      color: "#fff",
+    }),
+    multiValueLabel: (styles: any) => ({
+      ...styles,
+      color: "#fff",
+    }),
+    multiValueRemove: (styles: any) => ({
+      ...styles,
+      color: "#fff",
+      ":hover": {
+        backgroundColor: "#e11d48",
       },
     }),
   };
