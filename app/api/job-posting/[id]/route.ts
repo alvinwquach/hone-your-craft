@@ -239,3 +239,42 @@ export async function PUT(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
+
+  try {
+    const existingJobPosting = await prisma.jobPosting.findUnique({
+      where: { id },
+    });
+
+    if (!existingJobPosting) {
+      return NextResponse.json(
+        { message: "Job posting not found" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.application.deleteMany({
+      where: { jobPostingId: id },
+    });
+
+    await prisma.jobPosting.delete({
+      where: { id },
+    });
+
+    return NextResponse.json(
+      { message: "Job posting deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting job posting:", error);
+    return NextResponse.json(
+      { message: "Error deleting job posting" },
+      { status: 500 }
+    );
+  }
+}

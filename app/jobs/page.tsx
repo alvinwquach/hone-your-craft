@@ -52,7 +52,9 @@ function Jobs() {
   if (loadingUserData || loadingJobPostings || loadingUserSkills) {
     return <div>Loading...</div>;
   }
-  const jobs = jobPostings?.jobPostings || jobPostings;
+  const jobs = Array.isArray(jobPostings)
+    ? jobPostings
+    : jobPostings?.jobPostings || [];
 
   const getSalaryDisplay = (salary: Salary) => {
     if (!salary) return null;
@@ -222,11 +224,11 @@ function Jobs() {
       if (!response.ok) {
         throw new Error("Failed to delete job posting");
       }
+      await mutate(jobPostingsUrl);
 
       toast.success("Job posting deleted successfully!");
     } catch (error) {
       console.error("Error deleting job:", error);
-      mutate(jobPostingsUrl);
 
       toast.error("An error occurred while deleting the job posting.");
     }
