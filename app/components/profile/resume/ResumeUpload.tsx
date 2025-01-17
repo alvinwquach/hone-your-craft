@@ -26,7 +26,6 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
-      console.log("File selected:", selectedFile);
       if (resumeData?.id) {
         await handleFileUpdate(selectedFile);
       } else {
@@ -82,7 +81,6 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
 
   const handleFileUpload = async (selectedFile: File) => {
     try {
-      console.log("Requesting presigned URL for file:", selectedFile.name);
       const response = await fetch("/api/upload", {
         method: "POST",
         body: JSON.stringify({
@@ -99,8 +97,6 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
       }
 
       const { url, fields } = await response.json();
-      console.log("Received presigned URL:", url);
-      console.log("Received fields:", fields);
 
       const formData = new FormData();
       Object.keys(fields).forEach((key) => {
@@ -108,7 +104,6 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
       });
 
       formData.append("file", selectedFile);
-      console.log("FormData prepared for upload:", formData);
 
       const uploadResponse = await fetch(url, {
         method: "POST",
@@ -134,8 +129,6 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
     }
 
     try {
-      console.log("Requesting resume update with new file:", selectedFile.name);
-
       const formData = new FormData();
       formData.append("file", selectedFile);
 
@@ -149,7 +142,6 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
       }
 
       const responseData = await response.json();
-      console.log("Resume updated successfully:", responseData);
 
       toast.success("Resume updated successfully!");
     } catch (error) {
@@ -171,7 +163,6 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
       setFile(droppedFile);
-      console.log("File dropped:", droppedFile);
       if (resumeData?.id) {
         await handleFileUpdate(droppedFile);
       } else {

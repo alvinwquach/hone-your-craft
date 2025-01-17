@@ -4,7 +4,6 @@ import {
   getDay,
   addDays,
   startOfMonth,
-  endOfMonth,
   addHours,
   parse,
   isToday,
@@ -13,6 +12,8 @@ import {
 } from "date-fns";
 import { HiPlus, HiX } from "react-icons/hi";
 import { Calendar, DateObject } from "react-multi-date-picker";
+import { toast } from "react-toastify";
+import { mutate } from "swr";
 
 interface TimeRange {
   startTime: string;
@@ -98,10 +99,14 @@ function AddAvailabilityModal({
     setTimeRanges(updatedTimeRanges);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let datesToSubmit = selectedDates;
+    let datesToSubmit = dates;
+
+    if (selectedDates.length > 0) {
+      setDates(selectedDates);
+    }
 
     if (selectedDate && selectedDates.length === 0) {
       datesToSubmit = [selectedDate];
@@ -122,12 +127,38 @@ function AddAvailabilityModal({
         currentDay = addDays(currentDay, 1);
       }
 
-      onSubmit(recurringDates, timeRanges);
-    } else {
-      onSubmit(dates, timeRanges);
+      datesToSubmit = recurringDates;
     }
 
-    closeModal();
+    const body = {
+      dates: datesToSubmit.map((date) => date.toISOString()),
+      timeRanges: timeRanges.map((range) => ({
+        startTime: range.startTime,
+        endTime: range.endTime,
+      })),
+    };
+
+    try {
+      const response = await fetch("/api/client-availability", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add availability");
+      }
+
+      onSubmit(datesToSubmit, timeRanges);
+      toast.success("Availability added successfully");
+      closeModal();
+      mutate("/api/client-availability");
+    } catch (error) {
+      toast.error("Your availability cannot overlap with other time slots");
+      console.error("Error submitting availability:", error);
+    }
   };
 
   const handleRemoveTimeRange = (index: number) => {

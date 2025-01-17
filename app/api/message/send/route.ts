@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!receiverEmails.length || !content) {
-      console.log("Missing receiverEmails or content");
       return NextResponse.json(
         { message: "Receiver emails and content are required" },
         { status: 400 }
@@ -47,7 +46,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (receivers.length !== receiverEmails.length) {
-      console.log("Mismatch in number of recipients");
       return NextResponse.json(
         { message: "One or more recipients were not found" },
         { status: 400 }

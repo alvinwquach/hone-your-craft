@@ -7,6 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
 enum CompanySize {
   Tiny_1_10
   Small_11_50
@@ -471,8 +481,7 @@ model ClientInterviewAvailability {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   clientId      String   @db.ObjectId
   client        User     @relation("UserClientInterviewAvailability", fields: [clientId], references: [id])
-  weekStartDate DateTime
-  dayOfWeek     Int
+  dayOfWeek DayOfWeek
   startTime     DateTime
   endTime       DateTime
   createdAt     DateTime @default(now())

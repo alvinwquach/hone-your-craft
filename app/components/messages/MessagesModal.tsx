@@ -112,13 +112,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         .filter((user) => data.message.includes(`@${user.name}`))
         .map((user) => user.id);
 
-      console.log("Sending message with data:", {
-        receiverEmails,
-        messageContent: data.message,
-        subject: data.subject,
-        mentionedUserIds,
-      });
-
       if (receiverEmails.length === 0) {
         toast.error("Please select valid recipients.", {
           position: "top-right",
@@ -203,7 +196,6 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
           pauseOnHover: true,
           draggable: true,
         });
-        console.log("Failed to send the message:", response.statusText);
       }
 
       setLoading(false);
