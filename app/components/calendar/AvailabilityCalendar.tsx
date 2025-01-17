@@ -6,6 +6,9 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import AddAvailabilityModal from "./AddAvailabilityModal";
 import { format, getDay, startOfDay } from "date-fns";
+import { toast } from "react-toastify";
+import { mutate } from "swr";
+import { GrPowerReset } from "react-icons/gr";
 
 interface HeaderToolbar {
   left: string;
@@ -13,20 +16,24 @@ interface HeaderToolbar {
   right: string;
 }
 
+
 interface Event {
   title: string;
   start: Date;
   end: Date;
 }
 
+
 interface AvailabilityItem {
   startTime: string;
   endTime: string;
 }
 
+
 interface AvailabilityCalendarProps {
   clientAvailability: AvailabilityItem[];
 }
+
 
 function AvailabilityCalendar({
   clientAvailability,
@@ -278,6 +285,28 @@ function AvailabilityCalendar({
     };
   }, [currentMonth]);
 
+  const handleResetAvailability = async (date: Date | null) => {
+    try {
+      const response = await fetch("/api/client-availability", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ date }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reset availability");
+      }
+
+      toast.success("Availability removed successfully");
+      mutate("/api/client-availability");
+      setShowOptionsMenu(false);
+    } catch (error) {
+      console.error("Error resetting availability:", error);
+    }
+  };
+
   return (
     <>
       <div className="relative">
@@ -340,6 +369,15 @@ function AvailabilityCalendar({
                 ? "(Currently set)"
                 : `all ${format(selectedDate || today, "EEEE")}s`}
             </button>
+            <button
+              onClick={() => handleResetAvailability(selectedDate)}
+              className="relative block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+            >
+              <div className="flex">
+                <GrPowerReset className="h-4 w-4" />
+                <span className="ml-2">Reset</span>
+              </div>
+            </button>
           </div>
         )}
         <AddAvailabilityModal
@@ -356,3 +394,8 @@ function AvailabilityCalendar({
 }
 
 export default AvailabilityCalendar;
+
+
+
+
+
