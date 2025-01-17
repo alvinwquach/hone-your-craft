@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import { getDay } from "date-fns";
+import { format, getDay } from "date-fns";
 import { DayOfWeek } from "@prisma/client";
 
 function convertToDayOfWeek(dayNumber: number): DayOfWeek {
@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
         const startMinute = parseInt(startParts[2]);
         const endMinute = parseInt(endParts[2]);
 
-        // Create new Date objects with the correct date and time
         const start = new Date(selectedDate);
         start.setHours(startHour, startMinute, 0, 0);
 
@@ -135,3 +134,66 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { date } = body;
+
+    if (!date) {
+      return NextResponse.json(
+        { error: "Missing required date parameter" },
+        { status: 400 }
+      );
+    }
+
+    const selectedDate = new Date(date);
+    if (isNaN(selectedDate.getTime())) {
+      throw new Error("Invalid date: " + date);
+    }
+
+    const startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const dayOfWeek = convertToDayOfWeek(selectedDate.getDay());
+
+    await prisma.clientInterviewAvailability.deleteMany({
+      where: {
+        clientId: currentUser.id,
+        dayOfWeek: dayOfWeek,
+        startTime: {
+          gte: startOfDay,
+        },
+        endTime: {
+          lte: endOfDay,
+        },
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message: `Availability cleared for ${format(
+          selectedDate,
+          "EEEE, LLLL d, yyyy"
+        )}`,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error clearing availability:", error);
+    return NextResponse.json(
+      { error: "An error occurred while clearing availability" },
+      { status: 500 }
+    );
+  }
+}
+
+
+
