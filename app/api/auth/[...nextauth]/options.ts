@@ -39,7 +39,6 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     // Callback triggered when a user signs in
     async signIn({ user }) {
-      console.log("User data:", user);
       // Check if the user has an email
       if (user && user.email) {
         const existingUser = await prisma.user.findUnique({

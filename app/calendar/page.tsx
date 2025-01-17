@@ -40,6 +40,9 @@ function Calendar() {
     refreshInterval: 1000,
   });
 
+  const { data: clientAvailability, isLoading: clientAvailabilityLoading } =
+    useSWR("/api/client-availability", fetcher);
+
   const loadingInterviews = !interviews || interviewsLoading;
   if (error) return <div>Error fetching interviews</div>;
 
@@ -55,7 +58,6 @@ function Calendar() {
 
       mutate("/api/interviews");
       toast.success("Interview Deleted");
-      console.log("Interview deleted successfully");
     } catch (error) {
       console.error("Error deleting interview:", error);
       toast.error("Failed To Delete Interview");
@@ -137,7 +139,9 @@ function Calendar() {
                 )}
                 {activeTab === "availability" && (
                   <div>
-                    <AvailabilityCalendar />
+                    <AvailabilityCalendar
+                      clientAvailability={clientAvailability}
+                    />
                   </div>
                 )}
               </div>

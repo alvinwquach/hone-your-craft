@@ -156,12 +156,6 @@ export async function PUT(request: NextRequest) {
       data: updateData,
     });
 
-    console.log(
-      `Successfully updated user goals with values: ${JSON.stringify(
-        updateData
-      )}`
-    );
-
     return NextResponse.json(updatedUser);
   } catch (error) {
     console.error("Error updating job application goals:", error);
@@ -198,28 +192,6 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
-
-    console.log(
-      `Successfully retrieved user data for user ${currentUser.email}:`
-    );
-    console.log(
-      `- jobsAppliedToDaysPerWeekGoal: ${user.jobsAppliedToDaysPerWeekGoal}`
-    );
-    console.log(
-      `- jobsAppliedToWeeklyGoalMin: ${user.jobsAppliedToWeeklyGoalMin}`
-    );
-    console.log(
-      `- jobsAppliedToWeeklyGoalMax: ${user.jobsAppliedToWeeklyGoalMax}`
-    );
-    console.log(`- monthlyInterviewGoal: ${user.monthlyInterviewGoal}`);
-    console.log(`- candidateGoal: ${user.candidateGoal}`);
-    console.log(`- offerReceivedByDateGoal: ${user.offerReceivedByDateGoal}`);
-    console.log(
-      `- offerReceivedByDateGoalStart: ${user.offerReceivedByDateGoalStart}`
-    );
-    console.log(
-      `- offerReceivedByDateGoalEnd: ${user.offerReceivedByDateGoalEnd}`
-    );
 
     return NextResponse.json(user);
   } catch (error) {

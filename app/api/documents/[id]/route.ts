@@ -53,7 +53,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    console.log("PUT request received for documentId:", params.id);
 
     const documentId = params.id;
 
@@ -65,7 +64,6 @@ export async function PUT(
         { status: 401 }
       );
     }
-    console.log("Authenticated user:", currentUser.id);
 
     const document = await prisma.document.findUnique({
       where: {
@@ -81,30 +79,24 @@ export async function PUT(
         { status: 404 }
       );
     }
-    console.log("Document found:", document);
 
     const formData = await req.formData();
     const file = formData.get("file");
     const newName = (file as File)?.name ?? document.name;
-    console.log("Received new name from formData:", newName);
 
     if (!file || !(file instanceof Blob)) {
       console.error("No file provided or the file is not a valid Blob.");
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
-    console.log("File received:", file);
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    console.log("File converted to buffer, length:", buffer.length);
 
     const s3Client = new S3Client({ region: process.env.AWS_REGION });
-    console.log("S3 Client initialized with region:", process.env.AWS_REGION);
 
     const fileKey = document.url.replace(
       `https://hone-your-craft.s3.${process.env.AWS_REGION}.amazonaws.com/`,
       ""
     );
-    console.log("Calculated S3 file key:", fileKey);
 
     const putParams = {
       Bucket: process.env.AWS_BUCKET_NAME ?? "",
@@ -112,11 +104,9 @@ export async function PUT(
       Body: buffer,
       ContentType: file.type,
     };
-    console.log("S3 upload parameters:", putParams);
 
     const putCommand = new PutObjectCommand(putParams);
     const putResult = await s3Client.send(putCommand);
-    console.log("S3 Upload Result:", putResult);
 
     const updatedDocument = await prisma.document.update({
       where: { id: documentId },
@@ -125,7 +115,6 @@ export async function PUT(
         name: newName,
       },
     });
-    console.log("Document updated in database:", updatedDocument);
 
     return NextResponse.json({ updatedDocument });
   } catch (error: unknown) {
@@ -152,7 +141,6 @@ export async function DELETE(
 ) {
   try {
     const documentId = params.id;
-    console.log(`Received DELETE request for documentId: ${documentId}`);
 
     const currentUser = await getCurrentUser();
     if (!currentUser || !currentUser.id) {
@@ -162,8 +150,6 @@ export async function DELETE(
         { status: 401 }
       );
     }
-
-    console.log("Current user fetched:", currentUser);
 
     const document = await prisma.document.findUnique({
       where: {
@@ -180,10 +166,7 @@ export async function DELETE(
       );
     }
 
-    console.log(`Document details - ID: ${document.id}, URL: ${document.url}`);
-
     const s3Client = new S3Client({ region: process.env.AWS_REGION });
-    console.log("S3 Client initialized.");
 
     const deleteParams = {
       Bucket: process.env.AWS_BUCKET_NAME ?? "",
@@ -193,19 +176,14 @@ export async function DELETE(
       ),
     };
 
-    console.log("Attempting to delete object from S3:", deleteParams.Key);
-
     const deleteCommand = new DeleteObjectCommand(deleteParams);
     const deleteResult = await s3Client.send(deleteCommand);
-    console.log("S3 delete result:", deleteResult);
 
     await prisma.document.delete({
       where: {
         id: documentId,
       },
     });
-
-    console.log(`Document with ID ${documentId} deleted from database.`);
 
     return NextResponse.json({ message: "Document deleted successfully" });
   } catch (error: unknown) {

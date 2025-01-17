@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     }
 
     const { jobPostingId } = await request.json();
-    console.log("Job Posting ID:", jobPostingId);
 
     if (!jobPostingId) {
       return NextResponse.json(
@@ -59,7 +58,6 @@ export async function POST(request: Request) {
     });
 
     if (existingApplication) {
-      console.log("Existing Application:", existingApplication);
       return NextResponse.json(
         { error: "You have already applied to this job posting." },
         { status: 400 }
@@ -78,8 +76,6 @@ export async function POST(request: Request) {
         documentType: true,
       },
     });
-
-    console.log("Document:", document);
 
     if (!document) {
       return NextResponse.json({ error: "No resume found" }, { status: 404 });
@@ -102,7 +98,6 @@ export async function POST(request: Request) {
         },
       },
     });
-    console.log("Application Created:", application);
     return NextResponse.json(application);
   } catch (error: unknown) {
     console.error("Error applying to job:", error);

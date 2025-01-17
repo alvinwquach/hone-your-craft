@@ -4,9 +4,8 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
-import { BsCalendarEventFill } from "react-icons/bs";
 import AddAvailabilityModal from "./AddAvailabilityModal";
-import { format, getDay, startOfDay, addDays } from "date-fns";
+import { format, getDay, startOfDay } from "date-fns";
 
 interface HeaderToolbar {
   left: string;
@@ -18,10 +17,20 @@ interface Event {
   title: string;
   start: Date;
   end: Date;
-  allDay: boolean;
 }
 
-function AvailabilityCalendar() {
+interface AvailabilityItem {
+  startTime: string;
+  endTime: string;
+}
+
+interface AvailabilityCalendarProps {
+  clientAvailability: AvailabilityItem[];
+}
+
+function AvailabilityCalendar({
+  clientAvailability,
+}: AvailabilityCalendarProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
@@ -37,6 +46,34 @@ function AvailabilityCalendar() {
   const calendarRef = useRef<FullCalendar | null>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
   const today = new Date();
+
+  const formatTime = (date: Date) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+    let period = "AM";
+    let formattedHours = hours;
+    if (hours >= 12) {
+      period = "PM";
+      if (hours > 12) formattedHours = hours - 12;
+    }
+    if (formattedHours === 0) formattedHours = 12;
+
+    return `${formattedHours}:${paddedMinutes} ${period}`;
+  };
+
+  const clientEvents = clientAvailability.map((item: AvailabilityItem) => {
+    const start = new Date(item.startTime);
+    const end = new Date(item.endTime);
+
+    return {
+      start,
+      end,
+      title: `${formatTime(start)} - ${formatTime(end)}`,
+    };
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -99,97 +136,6 @@ function AvailabilityCalendar() {
     setIsModalOpen(true);
   };
 
-  const handleAddAvailability = (
-    dates: Date[],
-    timeRanges: { startTime: string; endTime: string }[]
-  ) => {
-    const newEvents = dates
-      .flatMap((date) => {
-        return timeRanges.map((timeRange) => {
-          const eventStart = new Date(date);
-          const eventEnd = new Date(date);
-
-          const parseTime = (time: string) => {
-            const [timeStr, modifier] = time.split(" ");
-            const [hour, minute] = timeStr.split(":").map(Number);
-
-            let adjustedHour = hour;
-            if (modifier === "PM" && hour !== 12) {
-              adjustedHour += 12;
-            } else if (modifier === "AM" && hour === 12) {
-              adjustedHour = 0;
-            }
-
-            return { hour: adjustedHour, minute };
-          };
-
-          const { hour: startHour, minute: startMinute } = parseTime(
-            timeRange.startTime
-          );
-          eventStart.setHours(startHour, startMinute, 0, 0);
-
-          const { hour: endHour, minute: endMinute } = parseTime(
-            timeRange.endTime
-          );
-          eventEnd.setHours(endHour, endMinute, 0, 0);
-
-          const formatTime = (date: Date) => {
-            const options: Intl.DateTimeFormatOptions = {
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            };
-            let formattedTime = new Intl.DateTimeFormat(
-              "en-US",
-              options
-            ).format(date);
-
-            formattedTime = formattedTime.replace(/(AM|PM)/, (match) =>
-              match.toLowerCase()
-            );
-            formattedTime = formattedTime.replace(" ", "");
-            return formattedTime;
-          };
-
-          return {
-            title: `${formatTime(eventStart)} - ${formatTime(eventEnd)}`,
-            start: eventStart,
-            end: eventEnd,
-            allDay: false,
-          };
-        });
-      })
-      .filter(
-        (newEvent) =>
-          !availability.some(
-            (existingEvent) =>
-              existingEvent.start.getTime() === newEvent.start.getTime() &&
-              existingEvent.end.getTime() === newEvent.end.getTime()
-          )
-      );
-
-    setAvailability((prevEvents) => [...prevEvents, ...newEvents]);
-    setIsModalOpen(false);
-    setSelectedDates([]);
-    setSelectedDate(null);
-    setIsRecurring(false);
-  };
-
-  const updateHeaderToolbar = (date: Date) => {
-    const currentMonth = today.getMonth();
-    const selectedMonth = date.getMonth();
-    setCurrentMonth(currentMonth === selectedMonth);
-  };
-
-  const hasAvailability = (date: Date) => {
-    return availability.some((event) => {
-      return (
-        event.start.toDateString() === date.toDateString() ||
-        event.end.toDateString() === date.toDateString()
-      );
-    });
-  };
-
   const handleSelect = (selectionInfo: any) => {
     const { start, end } = selectionInfo;
     const normalizedStart = startOfDay(start);
@@ -222,6 +168,69 @@ function AvailabilityCalendar() {
 
   const handleUnselect = () => {
     setSelectedDates([]);
+  };
+
+  const handleAddAvailability = (
+    dates: Date[],
+    timeRanges: { startTime: string; endTime: string }[]
+  ) => {
+    const newEvents = dates.flatMap((date) => {
+      return timeRanges.map((timeRange) => {
+        const eventStart = new Date(date);
+        const eventEnd = new Date(date);
+
+        const parseTime = (time: string) => {
+          const [timeStr, modifier] = time.split(" ");
+          const [hour, minute] = timeStr.split(":").map(Number);
+
+          let adjustedHour = hour;
+          if (modifier === "PM" && hour !== 12) adjustedHour += 12;
+          if (modifier === "AM" && hour === 12) adjustedHour = 0;
+
+          return { hour: adjustedHour, minute };
+        };
+
+        const { hour: startHour, minute: startMinute } = parseTime(
+          timeRange.startTime
+        );
+        eventStart.setHours(startHour, startMinute, 0, 0);
+
+        const { hour: endHour, minute: endMinute } = parseTime(
+          timeRange.endTime
+        );
+        eventEnd.setHours(endHour, endMinute, 0, 0);
+
+        return {
+          title: `${eventStart.toLocaleTimeString()} - ${eventEnd.toLocaleTimeString()}`,
+          start: eventStart,
+          end: eventEnd,
+        };
+      });
+    });
+    const uniqueEvents = newEvents.filter(
+      (newEvent) =>
+        !availability.some(
+          (existingEvent) =>
+            existingEvent.start.getTime() === newEvent.start.getTime() &&
+            existingEvent.end.getTime() === newEvent.end.getTime()
+        )
+    );
+
+    setAvailability((prev) => {
+      const updatedAvailability = [...prev, ...uniqueEvents];
+      return updatedAvailability;
+    });
+
+    setIsModalOpen(false);
+    setSelectedDates([]);
+    setSelectedDate(null);
+    setIsRecurring(false);
+  };
+
+  const updateHeaderToolbar = (date: Date) => {
+    const currentMonth = today.getMonth();
+    const selectedMonth = date.getMonth();
+    setCurrentMonth(currentMonth === selectedMonth);
   };
 
   useEffect(() => {
@@ -282,7 +291,7 @@ function AvailabilityCalendar() {
           ]}
           initialView="dayGridMonth"
           headerToolbar={headerToolbar}
-          events={availability}
+          events={clientEvents}
           selectable={true}
           dateClick={handleDateClick}
           select={handleSelect}
@@ -307,13 +316,9 @@ function AvailabilityCalendar() {
             updateHeaderToolbar(dateInfo.view.currentStart)
           }
           dayCellContent={(info) => {
-            const dayHasAvailability = hasAvailability(info.date);
             return (
               <div className="relative flex justify-between">
                 <span>{info.dayNumberText}</span>
-                {dayHasAvailability && (
-                  <BsCalendarEventFill className="w-4 h-4 absolute top-1 left-4 text-blue-600" />
-                )}
               </div>
             );
           }}
