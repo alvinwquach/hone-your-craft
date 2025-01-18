@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaPaperPlane, FaTimes, FaTrashAlt } from "react-icons/fa";
 import Select, { MultiValue, OptionProps } from "react-select";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
@@ -52,52 +52,62 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const mentionPattern = /@([a-zA-Z0-9_]+)/g;
-    const matches = [...message.matchAll(mentionPattern)];
+    const textArea = document.querySelector("textarea");
+    if (textArea) {
+      textArea.innerHTML = message.replace(
+        /@(\w+)/g,
+        '<span class="mention">$&</span>'
+      );
+    }
+  }, [message]);
 
-    if (matches.length > 0) {
-      const lastMention = matches[matches.length - 1];
+  const debouncedHandleMentions = useCallback(
+    debounce((newMessage: string) => {
+      const mentionPattern = /@([a-zA-Z0-9_]+)$/;
+      const match = newMessage.match(mentionPattern);
 
-      if (lastMention) {
-        const mentionedText = lastMention[1];
-
-        if (message[lastMention.index! + lastMention[0].length] !== " ") {
-          const matchingUsers = selectedUsers.filter((user) =>
-            user.name.toLowerCase().startsWith(mentionedText.toLowerCase())
-          );
-          setMentionSuggestions(matchingUsers);
-          setIsMentioning(true);
-        } else {
-          setIsMentioning(false);
-          setMentionSuggestions([]);
-        }
-      }
-    } else {
-      if (message.includes("@")) {
-        setMentionSuggestions(selectedUsers);
+      if (match) {
+        const mentionedText = match[1];
+        const matchingUsers = selectedUsers.filter((user) =>
+          user.name.toLowerCase().startsWith(mentionedText.toLowerCase())
+        );
+        setMentionSuggestions(matchingUsers);
         setIsMentioning(true);
       } else {
         setIsMentioning(false);
         setMentionSuggestions([]);
       }
-    }
-  }, [message, selectedUsers]);
+    }, 300), // 300ms delay
+    [selectedUsers]
+  );
+
+  useEffect(() => {
+    debouncedHandleMentions(message);
+  }, [message, debouncedHandleMentions]);
+
+  function debounce(func: Function, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        timeout = null;
+        func(...args);
+      };
+      if (timeout !== null) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(later, wait);
+    };
+  }
 
   const handleMentionSelect = (user: User) => {
-    const mentionPattern = /@([a-zA-Z0-9_]+)/g;
-    const matches = [...message.matchAll(mentionPattern)];
-
-    if (matches.length === 0) return;
-
-    const lastMention = matches[matches.length - 1];
-    if (!lastMention) return;
-
-    const beforeText = message.slice(0, lastMention.index!);
-    const afterText = message.slice(lastMention.index! + lastMention[0].length);
-
-    const updatedMessage = `${beforeText}@${user.name} ${afterText}`;
-    setMessage(updatedMessage);
+    const mentionPattern = /@([a-zA-Z0-9_]+)$/;
+    const match = message.match(mentionPattern);
+    if (match) {
+      const newMessage = message.replace(mentionPattern, `@${user.name} `);
+      setMessage(newMessage);
+    }
     setMentionSuggestions([]);
+    setIsMentioning(false);
   };
 
   const handleSend: SubmitHandler<FormData> = async (data) => {
