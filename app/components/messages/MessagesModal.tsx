@@ -77,7 +77,7 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         setIsMentioning(false);
         setMentionSuggestions([]);
       }
-    }, 300), // 300ms delay
+    }, 300),
     [selectedUsers]
   );
 
