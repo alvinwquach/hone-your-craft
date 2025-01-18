@@ -18,41 +18,43 @@ function Messages() {
     fetch(url).then((res) => res.json())
   );
 ;
-  const { data: sentMessages } = useSWR("/api/message/sent", (url) =>
-    fetch(url).then((res) => res.json())
-  );
-  const { data: receivedMessages } = useSWR(`/api/messages/receive/`, (url) =>
-    fetch(url).then((res) => res.json())
-  );
-  const { data: trashedSentMessages } = useSWR(
-    "/api/message/sent/trash",
-    (url) => fetch(url).then((res) => res.json())
-  );
+const { data: receivedMessages } = useSWR(`/api/messages/receive/`, (url) =>
+  fetch(url).then((res) => res.json())
+);
+const { data: sentMessages } = useSWR("/api/message/sent", (url) =>
+  fetch(url).then((res) => res.json())
+);
+const { data: trashedSentMessages } = useSWR("/api/message/sent/trash", (url) =>
+  fetch(url).then((res) => res.json())
+);
+const { data: mentionedInMessages } = useSWR("/api/mentions", (url) =>
+  fetch(url).then((res) => res.json())
+);
+const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const toggleModal = () => setIsModalOpen(!isModalOpen);
 
-  const toggleModal = () => setIsModalOpen(!isModalOpen);
-
-  return (
-    <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen text-white">
-      <div className="flex justify-end mt-4 lg:mt-0">
-        <button
-          className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg shadow-lg transition-all duration-200 ease-in-out"
-          onClick={toggleModal}
-        >
-          <MdOutlineForwardToInbox className="w-5 h-5 mr-2" />
-          Send Message
-        </button>
-      </div>
-      <MessagesCard
-        userData={userData}
-        sentMessages={sentMessages}
-        receivedMessages={receivedMessages}
-        trashedSentMessages={trashedSentMessages}
-      />
-      {isModalOpen && <MessageModal users={users} closeModal={toggleModal} />}
-    </section>
-  );
+return (
+  <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen text-white">
+    <div className="flex justify-end mt-4 lg:mt-0">
+      <button
+        className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg shadow-lg transition-all duration-200 ease-in-out"
+        onClick={toggleModal}
+      >
+        <MdOutlineForwardToInbox className="w-5 h-5 mr-2" />
+        Send Message
+      </button>
+    </div>
+    <MessagesCard
+      userData={userData}
+      sentMessages={sentMessages}
+      receivedMessages={receivedMessages}
+      trashedSentMessages={trashedSentMessages}
+      mentionedInMessages={mentionedInMessages}
+    />
+    {isModalOpen && <MessageModal users={users} closeModal={toggleModal} />}
+  </section>
+);
 }
 
 export default Messages;

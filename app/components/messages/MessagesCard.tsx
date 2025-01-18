@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RiMailUnreadLine } from "react-icons/ri";
 import { LuMailOpen } from "react-icons/lu";
 import { FaInbox, FaPaperPlane, FaReply, FaTrashAlt } from "react-icons/fa";
+import { GoMention } from "react-icons/go";
 import { GrSchedule } from "react-icons/gr";
 import { mutate } from "swr";
 import Image from "next/image";
@@ -15,6 +16,20 @@ import { z } from "zod";
 import ReplyToMessageModal from "./ReplyToMessageModal";
 import { useSession } from "next-auth/react";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
+
+interface Mention {
+  id: string;
+  subject: string;
+  content: string;
+  createdAt: string;
+  conversationId: string;
+  sender: {
+    id: string;
+    image: string | null;
+    name: string;
+    email: string;
+  };
+}
 
 interface Sender {
   id: string;
@@ -116,6 +131,7 @@ interface MessagesCardProps {
   sentMessages: { message: string; data: Message[] } | undefined;
   trashedSentMessages: { message: string; data: Message[] } | undefined;
   userData: User;
+  mentionedInMessages: any;
 }
 
 const schema = z.object({
@@ -127,6 +143,7 @@ const MessagesCard = ({
   sentMessages,
   trashedSentMessages,
   userData,
+  mentionedInMessages,
 }: MessagesCardProps) => {
   const [activeTab, setActiveTab] = useState("inbox");
   const [replyMessage, setReplyMessage] = useState<string>("");
@@ -179,7 +196,6 @@ const MessagesCard = ({
       toast.error("An error occurred while sending the reply.");
     }
   };
-
 
   const openReplyModal = (message: Message) => {
     setMessageToReply(message);
@@ -439,6 +455,19 @@ const MessagesCard = ({
           </li>
           <li>
             <button
+              onClick={() => handleTabChange("mentions")}
+              className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
+                activeTab === "mentions"
+                  ? "bg-zinc-700 shadow-lg"
+                  : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
+              } transition-colors duration-200 ease-in-out`}
+            >
+              <GoMention className="w-4 h-4 me-2" />
+              Mentions
+            </button>
+          </li>
+          <li>
+            <button
               onClick={() => handleTabChange("sent")}
               className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
                 activeTab === "sent"
@@ -544,7 +573,6 @@ const MessagesCard = ({
                                       height={32}
                                       className="rounded-full border-2 border-zinc-600"
                                     />
-
                                     <div className="flex flex-col">
                                       <span className="font-semibold text-white">
                                         {message.sender.id ===
@@ -576,7 +604,6 @@ const MessagesCard = ({
                             ))}
                         </div>
                       </div>
-
                       <div className="flex justify-between items-center mt-4">
                         <span
                           className={`text-xs mt-1 font-medium ${
@@ -612,7 +639,6 @@ const MessagesCard = ({
                           </button>
                         )}
                       </div>
-
                       {conversation.messages.length > 0 && (
                         <button
                           className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out mt-4"
@@ -634,6 +660,64 @@ const MessagesCard = ({
             )
           ) : null}
         </div>
+        <div>
+          {activeTab === "mentions" ? (
+            mentionedInMessages?.data?.length ? (
+              <div className="rounded-lg h-full space-y-6">
+                {mentionedInMessages.data.map((mention: Mention) => {
+                  return (
+                    <div
+                      key={mention.id}
+                      className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                    >
+                      <div className="text-sm font-medium text-zinc-500">
+                        <p className="text-zinc-300">
+                          Mentioned in Subject:{" "}
+                          <span className="text-zinc-400">
+                            {mention.subject}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        <div className="p-4 bg-zinc-700 text-zinc-300 rounded-lg">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Image
+                              src={mention.sender.image || defaultPfp}
+                              alt={mention.sender.name || "Unknown Sender"}
+                              width={32}
+                              height={32}
+                              className="rounded-full border-2 border-zinc-600"
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-white">
+                                {mention.sender.name}
+                              </span>
+                              <span className="text-sm text-zinc-400">
+                                {mention.sender.email}
+                              </span>
+                            </div>
+                          </div>
+                          <p>{mention.content}</p>
+                          <p className="text-xs text-zinc-500 mt-2">
+                            Mentioned on {formatMessageDate(mention.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-lg h-full">
+                <p className="text-center text-zinc-500 mt-2">
+                  No Mentions Found
+                </p>
+              </div>
+            )
+          ) : null}
+        </div>
+
         <div>
           <div>
             {status === "authenticated" && activeTab === "sent" ? (
@@ -683,7 +767,6 @@ const MessagesCard = ({
                             ))}
                           </div>
                         </div>
-
                         <div className="mt-4 space-y-2">
                           {conversation.sentMessages.map(
                             (sentMessage: Message) => (
@@ -726,7 +809,6 @@ const MessagesCard = ({
             ) : null}
           </div>
         </div>
-
         {activeTab === "interviews" && (
           <div className="rounded-lg h-full">
             <p className="text-center text-zinc-500 mt-2">
