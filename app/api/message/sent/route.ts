@@ -13,14 +13,15 @@ export async function GET(request: NextRequest) {
     const conversations = await prisma.conversation.findMany({
       where: {
         OR: [
-          { senderId: currentUser.id }, 
-          { receiverIds: { has: currentUser.id } }, 
+          { senderId: currentUser.id },
+          { receiverIds: { has: currentUser.id } },
         ],
       },
       include: {
         messages: {
           where: {
             senderId: currentUser.id,
+            isDeletedBySender: false,
           },
           orderBy: { createdAt: "desc" },
           select: {

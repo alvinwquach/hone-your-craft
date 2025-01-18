@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { RiMailUnreadLine } from "react-icons/ri";
 import { LuMailOpen } from "react-icons/lu";
-import { FaInbox, FaPaperPlane, FaReply, FaTrashAlt } from "react-icons/fa";
+import {
+  FaInbox,
+  FaPaperPlane,
+  FaReply,
+  FaTrash,
+  FaTrashAlt,
+} from "react-icons/fa";
 import { GoMention } from "react-icons/go";
 import { GrSchedule } from "react-icons/gr";
 import { mutate } from "swr";
@@ -65,8 +71,16 @@ interface Message {
   messageType: string;
   isReadByRecipient: boolean;
   isDeletedFromTrashBySender: boolean;
+  isDeletedBySender: boolean;
+  recipientId: string[];
   createdAt: string;
   conversationId: string;
+  recipients: {
+    id: string;
+    name: string;
+    email: string;
+    image: string;
+  }[];
   sender: {
     id: string;
     name: string;
@@ -779,6 +793,16 @@ const MessagesCard = ({
                                   Sent on{" "}
                                   {formatMessageDate(sentMessage.createdAt)}
                                 </p>
+                                <div className="flex justify-end">
+                                  <button
+                                    onClick={() =>
+                                      handleSentMessageToTrash(sentMessage.id)
+                                    }
+                                    className=" px-3 py-2 bg-zinc-600 hover:bg-zinc-500 rounded-full shadow-md transition-all duration-200 ease-in-out"
+                                  >
+                                    <FaTrash className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
                             )
                           )}
@@ -816,7 +840,7 @@ const MessagesCard = ({
             </p>
           </div>
         )}
-        {/* {activeTab === "trash" ? (
+        {activeTab === "trash" ? (
           <div className="rounded-lg h-full">
             {trashedSentMessages?.data.map((message) => (
               <div
@@ -869,7 +893,7 @@ const MessagesCard = ({
           <div className="rounded-lg h-full">
             <p className="text-center text-zinc-500 mt-2">No Trash Found</p>
           </div>
-        ) : null} */}
+        ) : null}
       </div>
       {isModalOpen && messageToReply && (
         <ReplyToMessageModal
