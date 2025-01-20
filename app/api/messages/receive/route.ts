@@ -32,7 +32,6 @@ export async function GET() {
         id: true,
         messages: {
           orderBy: { createdAt: "desc" },
-          take: 1,
           select: {
             id: true,
             subject: true,
@@ -57,69 +56,47 @@ export async function GET() {
 
     const usersConversations = await Promise.all(
       conversations.map(async (conversation) => {
-        const allMessages = await prisma.message.findMany({
-          where: {
-            conversationId: conversation.id,
-            isDeletedBySender: false,
-            isDeletedByRecipient: { not: true },
-            isReadByRecipient: false,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          select: {
-            id: true,
-            subject: true,
-            content: true,
-            createdAt: true,
-            isReadByRecipient: false,
-            sender: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
-        });
+        if (!conversation.messages.length) return null;
 
-        if (allMessages.length === 0) {
-          return null;
-        }
-
-        const filteredMessages = allMessages.filter(
+        const filteredMessages = conversation.messages.filter(
           (message) =>
             message?.subject?.trim() !== "" || message.content.trim() !== ""
         );
 
-        const lastMessage =
-          conversation.messages.length > 0 ? conversation.messages[0] : null;
+        const groupedBySubject = filteredMessages.reduce((acc, message) => {
+          const subject = message.subject
+            ? message.subject.trim()
+            : "No Subject";
+          if (!acc[subject]) {
+            acc[subject] = [];
+          }
+          acc[subject].push(message);
+          return acc;
+        }, {} as Record<string, typeof conversation.messages>);
 
-        if (
-          lastMessage &&
-          (lastMessage?.subject?.trim() === "" ||
-            lastMessage.content.trim() === "")
-        ) {
-          return null;
-        }
+        const groupedConversations = Object.keys(groupedBySubject).map(
+          (subject) => {
+            return {
+              subject,
+              messages: groupedBySubject[subject],
+              lastMessage:
+                groupedBySubject[subject][groupedBySubject[subject].length - 1],
+            };
+          }
+        );
 
-        return {
-          ...conversation,
-          messages: filteredMessages,
-          lastMessage,
-        };
+        return groupedConversations;
       })
     );
 
-    const filteredConversations = usersConversations.filter(
-      (conversation) => conversation !== null
-    );
+    const flattenedConversations = usersConversations
+      .flat()
+      .filter((conversation) => conversation !== null);
 
     return NextResponse.json(
       {
         message: "Conversations retrieved successfully",
-        data: filteredConversations,
+        data: flattenedConversations,
         unreadMessageCount,
       },
       { status: 200 }
