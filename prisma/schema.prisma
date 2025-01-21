@@ -7,6 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum MeetingDuration {
+  FIFTEEN_MINUTES
+  THIRTY_MINUTES
+  FORTY_FIVE_MINUTES
+  SIXTY_MINUTES
+  CUSTOM
+}
+
+model EventType {
+  id                          String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId                      String           @db.ObjectId
+  user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
+  title                       String
+  description                 String
+  length                      MeetingDuration  // Use the enum for predefined lengths
+  customLength       Int?             // Store custom length in minutes, this is nullable
+  uri                         String
+  bookingTimes                Json
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime         @updatedAt
+}
+
+
 enum DayOfWeek {
   SUNDAY
   MONDAY
@@ -370,6 +393,8 @@ model User {
   offerReceivedByDateGoal      DateTime?
   offerReceivedByDateGoalStart DateTime?
   offerReceivedByDateGoalEnd   DateTime?
+  eventTypes                   EventType[]    @relation("UserEventTypes")
+
 
   @@map("users")
 }
