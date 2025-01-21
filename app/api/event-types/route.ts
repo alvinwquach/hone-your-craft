@@ -3,7 +3,6 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { MeetingDuration } from "@prisma/client";
 
-// Helper function to map MeetingDuration enum to human-readable format
 const formatMeetingDuration = (duration: MeetingDuration | null): string => {
   switch (duration) {
     case MeetingDuration.FIFTEEN_MINUTES:
@@ -32,9 +31,6 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log("Current User ID:", currentUser.id);
-
-    // Get the enum values and apply the format function
     const formattedDurations = Object.values(MeetingDuration).map(
       formatMeetingDuration
     );
