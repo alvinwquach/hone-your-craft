@@ -96,7 +96,7 @@ function Calendar() {
             <div className="w-full md:w-4/5">
               <div className="flex justify-start mb-4">
                 <div className="flex p-2 bg-zinc-900 rounded-lg shadow-lg">
-                  <button
+                  {/* <button
                     onClick={() => toggleTab("eventTypes")}
                     className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
                       activeTab === "eventTypes"
@@ -106,7 +106,7 @@ function Calendar() {
                   >
                     <FaLink />
                     <span className="text-sm">Event Types</span>
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => toggleTab("interviews")}
                     className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
@@ -132,12 +132,12 @@ function Calendar() {
                 </div>
               </div>
               <div className="relative">
-                {activeTab === "eventTypes" && (
+                {/* {activeTab === "eventTypes" && (
                   <div>
                     <EventTypeCards />
                     <div />
                   </div>
-                )}
+                )} */}
                 {activeTab === "interviews" && (
                   <div>
                     {loadingInterviews ? (
