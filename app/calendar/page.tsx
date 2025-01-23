@@ -10,9 +10,15 @@ import useSWR, { mutate } from "swr";
 import { Suspense, useState } from "react";
 import { toast } from "react-toastify";
 import { useSession } from "next-auth/react";
-import { FaCalendarCheck, FaCalendarPlus, FaLink } from "react-icons/fa";
+import {
+  FaCalendarCheck,
+  FaCalendarPlus,
+  FaLink,
+  FaPlus,
+} from "react-icons/fa";
 import AvailabilityCalendar from "../components/calendar/AvailabilityCalendar";
-import EventTypeCards from "../components/calendar/EventTypeCards";
+import { IoCalendarSharp } from "react-icons/io5";
+import Sidesheet from "../components/calendar/Sidesheet";
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
@@ -31,6 +37,12 @@ function Calendar() {
 
   const toggleTab = (tab: "interviews" | "availability" | "eventTypes") => {
     setActiveTab(tab);
+  };
+
+  const [isSidesheetOpen, setSidesheetOpen] = useState(false);
+
+  const toggleSidesheet = () => {
+    setSidesheetOpen((prev) => !prev);
   };
 
   const {
@@ -94,9 +106,9 @@ function Calendar() {
               <Legend interviewTypes={clientInterviewTypes} />
             </div>
             <div className="w-full md:w-4/5">
-              <div className="flex justify-start mb-4">
+              <div className="flex justify-center lg:justify-start mb-4">
                 <div className="flex p-2 bg-zinc-900 rounded-lg shadow-lg">
-                  {/* <button
+                  <button
                     onClick={() => toggleTab("eventTypes")}
                     className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
                       activeTab === "eventTypes"
@@ -105,8 +117,8 @@ function Calendar() {
                     }`}
                   >
                     <FaLink />
-                    <span className="text-sm">Event Types</span>
-                  </button> */}
+                    <span className="text-xs lg:text-sm">Event Types</span>
+                  </button>
                   <button
                     onClick={() => toggleTab("interviews")}
                     className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
@@ -116,7 +128,7 @@ function Calendar() {
                     }`}
                   >
                     <FaCalendarCheck />
-                    <span className="text-sm">Meetings</span>
+                    <span className="text-xs lg:text-sm">Meetings</span>
                   </button>
                   <button
                     onClick={() => toggleTab("availability")}
@@ -127,17 +139,28 @@ function Calendar() {
                     }`}
                   >
                     <FaCalendarPlus />
-                    <span className="text-sm">Availability</span>
+                    <span className="text-xs lg:text-sm">Availability</span>
                   </button>
                 </div>
               </div>
               <div className="relative">
-                {/* {activeTab === "eventTypes" && (
-                  <div>
-                    <EventTypeCards />
-                    <div />
+                {activeTab === "eventTypes" && (
+                  <div className="flex flex-col items-center p-4 space-y-4 ">
+                    <IoCalendarSharp className="h-24 w-24 rounded-full p-2 bg-zinc-700 text-white" />
+                    <p className="text-gray-400 font-semibold text-xl">
+                      Create scheduling links with event types
+                    </p>
+                    <button
+                      className="bg-blue-700 px-4 py-2 rounded-full"
+                      onClick={toggleSidesheet}
+                    >
+                      <FaPlus className="h-4 w-4 inline mr-2 mb-1" />
+                      <span className="text-white">New event type</span>
+                    </button>
                   </div>
-                )} */}
+                )}
+                {isSidesheetOpen && <Sidesheet onClose={toggleSidesheet} />}
+
                 {activeTab === "interviews" && (
                   <div>
                     {loadingInterviews ? (

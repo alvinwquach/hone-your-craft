@@ -1,0 +1,299 @@
+"use client";
+
+import { useState } from "react";
+import { FaCalendarAlt, FaTimes } from "react-icons/fa";
+import { AiOutlinePlus } from "react-icons/ai";
+import { HiClock } from "react-icons/hi";
+import { ImLoop } from "react-icons/im";
+import { useSession } from "next-auth/react";
+import useSWR from "swr";
+import Image from "next/image";
+
+interface Availability {
+  weekly: {
+    [key: string]: { start: string; end: string }[];
+  };
+  dateSpecific: { date: string; hours: string }[];
+}
+
+interface SidesheetProps {
+  onClose: () => void;
+}
+
+const fetcher = async (url: string, options: RequestInit) => {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  return response.json();
+};
+
+function Sidesheet({ onClose }: SidesheetProps) {
+  const [duration, setDuration] = useState("15min");
+  const [customDuration, setCustomDuration] = useState({
+    value: "",
+    unit: "min",
+  });
+  const [availability, setAvailability] = useState<Availability>({
+    weekly: {
+      mon: [],
+      tue: [],
+      wed: [],
+      thu: [],
+      fri: [],
+      sat: [],
+      sun: [],
+    },
+    dateSpecific: [],
+  });
+
+  const { data: session } = useSession();
+
+  const { data, isLoading: userDataLoading } = useSWR(
+    session ? `/api/user/${session?.user?.email}` : null,
+    (url) => fetcher(url, { method: "GET" }),
+    { refreshInterval: 1000 }
+  );
+
+  const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setDuration(e.target.value);
+  };
+
+  const handleCustomDurationChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    field: "value" | "unit"
+  ) => {
+    setCustomDuration((prev) => ({
+      ...prev,
+      [field]: e.target.value,
+    }));
+  };
+
+  const handleAddTimeSlot = (day: string) => {
+    setAvailability((prev) => ({
+      ...prev,
+      weekly: {
+        ...prev.weekly,
+        [day]: [...prev.weekly[day], { start: "", end: "" }],
+      },
+    }));
+  };
+
+  const handleRemoveTimeSlot = (day: string, index: number) => {
+    const updatedSlots = [...availability.weekly[day]];
+    updatedSlots.splice(index, 1);
+    setAvailability((prev) => ({
+      ...prev,
+      weekly: { ...prev.weekly, [day]: updatedSlots },
+    }));
+  };
+
+  const renderTimeSlotInputs = (day: string) => {
+    return availability.weekly[day].map((slot, index) => (
+      <div
+        key={index}
+        className={`flex items-center space-x-2 ${index > 0 ? "mt-4" : ""}`}
+      >
+        <input
+          type="time"
+          value={slot.start}
+          onChange={(e) => {
+            const updatedSlots = [...availability.weekly[day]];
+            updatedSlots[index].start = e.target.value;
+            setAvailability((prev) => ({
+              ...prev,
+              weekly: { ...prev.weekly, [day]: updatedSlots },
+            }));
+          }}
+          className="px-4 py-1 border border-gray-300 rounded-md text-black"
+        />
+        <span className="text-black">-</span>
+        <input
+          type="time"
+          value={slot.end}
+          onChange={(e) => {
+            const updatedSlots = [...availability.weekly[day]];
+            updatedSlots[index].end = e.target.value;
+            setAvailability((prev) => ({
+              ...prev,
+              weekly: { ...prev.weekly, [day]: updatedSlots },
+            }));
+          }}
+          className="px-4 py-1 border border-gray-300 rounded-md text-black"
+        />
+        <button
+          type="button"
+          onClick={() => handleRemoveTimeSlot(day, index)}
+          className="text-red-500 hover:text-red-700 ml-2"
+        >
+          <FaTimes />
+        </button>
+        {index === 0 && (
+          <button
+            type="button"
+            onClick={() => handleAddTimeSlot(day)}
+            className="ml-4 text-blue-500 hover:text-blue-700"
+          >
+            <AiOutlinePlus />
+          </button>
+        )}
+      </div>
+    ));
+  };
+
+  const userData = data || [];
+
+  const loadingUserData = !userData || userDataLoading;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+      <div className="absolute right-0 top-0 w-full lg:w-1/3 bg-white h-full shadow-lg overflow-y-auto rounded-l-lg transition-transform transform ease-in-out duration-300">
+        <div className="flex justify-end items-center p-4 border-gray-200">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <FaTimes className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="p-4 sm:p-6 space-y-6">
+          <form className="space-y-6">
+            <div>
+              <label
+                htmlFor="eventTypeName"
+                className="block text-sm font-medium text-gray-600 uppercase"
+              >
+                Event Type
+              </label>
+              <input
+                type="text"
+                id="eventTypeName"
+                name="eventTypeName"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                placeholder="Name your event"
+              />
+              <div className="text-gray-400 mt-2">One-on-One</div>
+            </div>
+            <div>
+              <label
+                htmlFor="duration"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Duration
+              </label>
+              <div className="mt-2 relative flex items-center space-x-2 text-gray-400">
+                <select
+                  value={duration}
+                  onChange={handleDurationChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md text-black appearance-none pl-8"
+                >
+                  <option value="15min">15 min</option>
+                  <option value="30min">30 min</option>
+                  <option value="45min">45 min</option>
+                  <option value="60min">60 min</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <HiClock className="absolute left-2 text-gray-400" />
+              </div>
+              {duration === "custom" && (
+                <div className="flex space-x-2 mt-4">
+                  <input
+                    type="number"
+                    value={customDuration.value}
+                    onChange={(e) => handleCustomDurationChange(e, "value")}
+                    className="w-2/5 px-4 py-2 border border-gray-300 rounded-md text-black"
+                  />
+                  <select
+                    value={customDuration.unit}
+                    onChange={(e) => handleCustomDurationChange(e, "unit")}
+                    className="w-3/5 px-4 py-2 border border-gray-300 rounded-md text-black"
+                  >
+                    <option value="min">min</option>
+                    <option value="hrs">hrs</option>
+                  </select>
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm text-gray-700 flex items-center space-x-2">
+                <ImLoop className="text-blue-500" />
+                <span>Weekly hours</span>
+              </h3>
+              <p className="text-xs text-gray-500">
+                Set when you are available for meetings
+              </p>
+              <div className="mt-4">
+                {["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map(
+                  (day) => (
+                    <div
+                      key={day}
+                      className="flex items-start space-x-4 mb-4 min-h-[20px]"
+                    >
+                      <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center">
+                        {day.charAt(0).toUpperCase()}
+                      </div>
+                      {availability.weekly[day].length === 0 ? (
+                        <div className="flex items-center space-x-2">
+                          <p className="text-sm text-gray-500 mt-1">
+                            Unavailable
+                          </p>
+                          <button
+                            onClick={() => handleAddTimeSlot(day)}
+                            className="text-blue-500 hover:text-blue-700 mt-1"
+                          >
+                            <AiOutlinePlus />
+                          </button>
+                        </div>
+                      ) : (
+                        <div>{renderTimeSlotInputs(day)}</div>
+                      )}
+                    </div>
+                  )
+                )}
+              </div>
+              <div className="flex justify-between items-center relative">
+                <h3 className="text-sm text-gray-700 flex items-center space-x-2">
+                  <FaCalendarAlt className="text-blue-500" />
+                  <span>Date-specific hours</span>
+                </h3>
+                <button className="absolute right-0 -top-1 mt-2 mr-4 px-3 py-1 border border-gray-300 rounded-full text-blue-500 hover:text-blue-700 flex items-center">
+                  <span>+ Hours</span>
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                Adjust hours for specific days
+              </p>
+            </div>
+            <div className="mt-6 flex items-center space-x-4">
+              {userData?.user?.image && (
+                <Image
+                  src={userData?.user?.image ?? ""}
+                  alt="User Image"
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+              )}
+              <div>
+                <p className="text-sm font-semibold text-gray-700">
+                  {userData?.user?.name || "Host Name"}
+                </p>
+                <p className="text-xs text-gray-500">Host</p>
+              </div>
+            </div>
+            <div className="mt-6 border-t border-gray-200 pt-4 flex justify-end">
+              <button
+                type="submit"
+                className="bg-blue-600 text-white py-2 px-6 rounded-full"
+              >
+                Create
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Sidesheet;
