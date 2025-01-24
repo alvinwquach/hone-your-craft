@@ -55,6 +55,11 @@ function Sidesheet({ onClose }: SidesheetProps) {
     { refreshInterval: 1000 }
   );
 
+  const { data: clientAvailability, isLoading: clientAvailabilityLoading } =
+    useSWR(session ? `/api/client-availability` : null, fetcher, {
+      refreshInterval: 1000,
+    });
+
   const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDuration(e.target.value);
   };
@@ -142,8 +147,100 @@ function Sidesheet({ onClose }: SidesheetProps) {
   };
 
   const userData = data || [];
-
   const loadingUserData = !userData || userDataLoading;
+
+  const groupByDateRange = (availability: any) => {
+    const sortedAvailability = [...availability].sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    );
+
+    const grouped: any[] = [];
+    let currentRange = {
+      startTime: sortedAvailability[0]?.startTime,
+      endTime: sortedAvailability[0]?.endTime,
+      slots: [
+        {
+          start: sortedAvailability[0]?.startTime,
+          end: sortedAvailability[0]?.endTime,
+        },
+      ],
+    };
+
+    for (let i = 1; i < sortedAvailability.length; i++) {
+      const current = new Date(sortedAvailability[i].startTime);
+      const previous = new Date(sortedAvailability[i - 1].endTime);
+
+      if (current.getTime() - previous.getTime() <= 86400000) {
+        currentRange.slots.push({
+          start: sortedAvailability[i].startTime,
+          end: sortedAvailability[i].endTime,
+        });
+        currentRange.endTime = sortedAvailability[i].endTime;
+      } else {
+        grouped.push(currentRange);
+        currentRange = {
+          startTime: sortedAvailability[i].startTime,
+          endTime: sortedAvailability[i].endTime,
+          slots: [
+            {
+              start: sortedAvailability[i].startTime,
+              end: sortedAvailability[i].endTime,
+            },
+          ],
+        };
+      }
+    }
+    grouped.push(currentRange);
+    return grouped;
+  };
+
+  const formatDateRange = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return start;
+    }
+
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+    };
+
+    const formattedStart = startDate.toLocaleDateString("en-US", options);
+    const formattedEnd = endDate.toLocaleDateString("en-US", options);
+
+    if (startDate.getDate() === endDate.getDate()) {
+      return `${formattedStart}`;
+    }
+
+    if (
+      startDate.getMonth() === endDate.getMonth() &&
+      startDate.getFullYear() === endDate.getFullYear()
+    ) {
+      return `${formattedStart} - ${endDate.getDate()}`;
+    }
+
+    if (startDate.getFullYear() === endDate.getFullYear()) {
+      return `${formattedStart} - ${formattedEnd}`;
+    }
+
+    return `${formattedStart} - ${formattedEnd} ${endDate.getFullYear()}`;
+  };
+
+  const formatTime = (time: string) => {
+    const date = new Date(time);
+    const options: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
+
+    const formattedTime = date.toLocaleTimeString("en-US", options);
+
+    return formattedTime.replace(/(AM|PM)/, (match) => match.toLowerCase());
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
@@ -160,16 +257,15 @@ function Sidesheet({ onClose }: SidesheetProps) {
           <form className="space-y-6">
             <div>
               <label
-                htmlFor="eventTypeName"
-                className="block text-sm font-medium text-gray-600 uppercase"
+                htmlFor="event-name"
+                className="block text-sm font-medium text-gray-700"
               >
                 Event Type
               </label>
               <input
                 type="text"
-                id="eventTypeName"
-                name="eventTypeName"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                id="event-name"
+                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                 placeholder="Name your event"
               />
               <div className="text-gray-400 mt-2">One-on-One</div>
@@ -263,8 +359,44 @@ function Sidesheet({ onClose }: SidesheetProps) {
               <p className="text-xs text-gray-500">
                 Adjust hours for specific days
               </p>
+              <p className="text-sm text-gray-500 mt-2">
+                {new Date().getFullYear()}
+              </p>
+              {clientAvailabilityLoading ? (
+                <p className="text-sm text-gray-500">
+                  Loading client availability...
+                </p>
+              ) : (
+                groupByDateRange(clientAvailability)?.map((group, index) => {
+                  return (
+                    <div key={index} className="mt-4 rounded-lg shadow-sm">
+                      <div className="flex flex-col space-y-2">
+                        <div className="flex items-center bg-gray-200 p-3 rounded-md w-full">
+                          <div className="text-sm text-gray-700 font-semibold w-32">
+                            {formatDateRange(group.startTime, group.endTime)}
+                          </div>
+
+                          <div className="flex-1 text-center text-sm text-gray-500">
+                            <span>
+                              {formatTime(group.slots[0].start)} -{" "}
+                              {formatTime(
+                                group.slots[group.slots.length - 1].end
+                              )}
+                            </span>
+                          </div>
+
+                          <button className="text-gray-500 hover:text-gray-700">
+                            <FaTimes />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
-            <div className="mt-6 flex items-center space-x-4">
+            <p className="text-sm font-semibold text-gray-500">Host</p>
+            <div className="border-gray-200 pt-4 flex items-center space-x-4">
               {userData?.user?.image && (
                 <Image
                   src={userData?.user?.image ?? ""}
@@ -274,14 +406,14 @@ function Sidesheet({ onClose }: SidesheetProps) {
                   className="rounded-full"
                 />
               )}
-              <div>
+              <div className="flex items-center space-x-2">
                 <p className="text-sm font-semibold text-gray-700">
                   {userData?.user?.name || "Host Name"}
                 </p>
-                <p className="text-xs text-gray-500">Host</p>
+                <p className="text-sm text-gray-500">(you)</p>
               </div>
             </div>
-            <div className="mt-6 border-t border-gray-200 pt-4 flex justify-end">
+            <div className="border-t border-gray-200 pt-4 flex justify-end">
               <button
                 type="submit"
                 className="bg-blue-600 text-white py-2 px-6 rounded-full"
