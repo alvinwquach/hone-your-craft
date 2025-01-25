@@ -272,22 +272,37 @@ function Sidesheet({ onClose }: SidesheetProps) {
     });
 
     return Object.keys(weeklyAvailability).map((day) => {
-      const slots = weeklyAvailability[day];
+      const slotCounts = weeklyAvailability[day].reduce((acc, slot) => {
+        const key = `${slot.start}-${slot.end}`;
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {} as { [key: string]: number });
+
+      const hasRecurringSlot = Object.values(slotCounts).some(
+        (count) => count > 2
+      );
+
       return (
         <div key={day} className="flex items-start space-x-4 mb-4 min-h-[20px]">
           <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center text-sm font-semibold">
             {day.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col space-y-2">
-            {slots.length > 0 ? (
-              slots.map((slot, index) => (
-                <div key={index} className="text-black flex items-center">
-                  <HiClock className="text-gray-500 mr-2" />
-                  <span>
-                    {slot.start} - {slot.end}
-                  </span>
-                </div>
-              ))
+            {hasRecurringSlot ? (
+              Object.keys(slotCounts).map((slotKey, index) => {
+                if (slotCounts[slotKey] > 2) {
+                  const [start, end] = slotKey.split("-");
+                  return (
+                    <div key={index} className="text-black flex items-center">
+                      <HiClock className="text-gray-500 mr-2" />
+                      <span>
+                        {start} - {end}
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })
             ) : (
               <div className="text-gray-500 italic">Unavailable</div>
             )}
