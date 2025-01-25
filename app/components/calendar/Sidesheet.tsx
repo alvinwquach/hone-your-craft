@@ -242,6 +242,61 @@ function Sidesheet({ onClose }: SidesheetProps) {
     return formattedTime.replace(/(AM|PM)/, (match) => match.toLowerCase());
   };
 
+  const renderWeeklyAvailability = () => {
+    const weeklyAvailability: {
+      [key: string]: { start: string; end: string }[];
+    } = {
+      sun: [],
+      mon: [],
+      tue: [],
+      wed: [],
+      thu: [],
+      fri: [],
+      sat: [],
+    };
+
+    clientAvailability?.forEach((availability: any) => {
+      const day = new Date(availability.startTime)
+        .toLocaleString("en-US", {
+          weekday: "short",
+        })
+        .toLowerCase();
+
+      const slot = {
+        start: formatTime(availability.startTime),
+        end: formatTime(availability.endTime),
+      };
+      if (weeklyAvailability[day]) {
+        weeklyAvailability[day].push(slot);
+      }
+    });
+
+    return Object.keys(weeklyAvailability).map((day) => {
+      const slots = weeklyAvailability[day];
+      return (
+        <div key={day} className="flex items-start space-x-4 mb-4 min-h-[20px]">
+          <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center text-sm font-semibold">
+            {day.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex flex-col space-y-2">
+            {slots.length > 0 ? (
+              slots.map((slot, index) => (
+                <div key={index} className="text-black flex items-center">
+                  <HiClock className="text-gray-500 mr-2" />
+                  <span>
+                    {slot.start} - {slot.end}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="text-gray-500 italic">Unavailable</div>
+            )}
+          </div>
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
       <div className="absolute right-0 top-0 w-full lg:w-1/3 bg-white h-full shadow-lg overflow-y-auto rounded-l-lg transition-transform transform ease-in-out duration-300">
@@ -318,35 +373,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
               <p className="text-xs text-gray-500">
                 Set when you are available for meetings
               </p>
-              <div className="mt-4">
-                {["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map(
-                  (day) => (
-                    <div
-                      key={day}
-                      className="flex items-start space-x-4 mb-4 min-h-[20px]"
-                    >
-                      <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center">
-                        {day.charAt(0).toUpperCase()}
-                      </div>
-                      {availability.weekly[day].length === 0 ? (
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm text-gray-500 mt-1">
-                            Unavailable
-                          </p>
-                          <button
-                            onClick={() => handleAddTimeSlot(day)}
-                            className="text-blue-500 hover:text-blue-700 mt-1"
-                          >
-                            <AiOutlinePlus />
-                          </button>
-                        </div>
-                      ) : (
-                        <div>{renderTimeSlotInputs(day)}</div>
-                      )}
-                    </div>
-                  )
-                )}
-              </div>
+              <div className="mt-4">{renderWeeklyAvailability()}</div>
               <div className="flex justify-between items-center relative">
                 <h3 className="text-sm text-gray-700 flex items-center space-x-2">
                   <FaCalendarAlt className="text-blue-500" />
