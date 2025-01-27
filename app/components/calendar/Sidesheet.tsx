@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FaCalendarAlt, FaTimes } from "react-icons/fa";
 import { AiOutlinePlus } from "react-icons/ai";
 import { HiClock } from "react-icons/hi";
@@ -74,12 +74,35 @@ function Sidesheet({ onClose }: SidesheetProps) {
     }));
   };
 
+  const format = (time: Date, formatString: string) => {
+    return new Date(time)
+      .toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+      .replace(/(AM|PM)/, (match) => match.toLowerCase());
+  };
+
+  const timeOptions = useMemo(() => {
+    const times: string[] = [];
+    let currentTime = new Date();
+    currentTime.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 96; i++) {
+      const time = format(currentTime, "hh:mm a");
+      times.push(time);
+      currentTime.setMinutes(currentTime.getMinutes() + 15);
+    }
+    return times;
+  }, []);
+
   const handleAddTimeSlot = (day: string) => {
     setAvailability((prev) => ({
       ...prev,
       weekly: {
         ...prev.weekly,
-        [day]: [...prev.weekly[day], { start: "", end: "" }],
+        [day]: [...prev.weekly[day], { start: "09:00 AM", end: "10:00 AM" }],
       },
     }));
   };
@@ -93,39 +116,71 @@ function Sidesheet({ onClose }: SidesheetProps) {
     }));
   };
 
+  const handleTimeChange = (
+    day: string,
+    index: number,
+    field: "start" | "end",
+    value: string
+  ) => {
+    const updatedSlots = [...availability.weekly[day]];
+    updatedSlots[index][field] = value;
+    setAvailability((prev) => ({
+      ...prev,
+      weekly: { ...prev.weekly, [day]: updatedSlots },
+    }));
+  };
+
+  useEffect(() => {
+    if (clientAvailability && !clientAvailabilityLoading) {
+      const newAvailability = { ...availability };
+      Object.keys(newAvailability.weekly).forEach((day) => {
+        newAvailability.weekly[day] = clientAvailability
+          .filter((avail: any) => {
+            const dayOfWeek = new Date(avail.startTime)
+              .toLocaleString("en-US", { weekday: "short" })
+              .toLowerCase();
+            return dayOfWeek === day;
+          })
+          .map((avail: any) => ({
+            start: format(new Date(avail.startTime), "hh:mm a"),
+            end: format(new Date(avail.endTime), "hh:mm a"),
+          }));
+      });
+      setAvailability(newAvailability);
+    }
+  }, [clientAvailability, clientAvailabilityLoading]);
+
   const renderTimeSlotInputs = (day: string) => {
     return availability.weekly[day].map((slot, index) => (
       <div
         key={index}
         className={`flex items-center space-x-2 ${index > 0 ? "mt-4" : ""}`}
       >
-        <input
-          type="time"
+        <select
           value={slot.start}
-          onChange={(e) => {
-            const updatedSlots = [...availability.weekly[day]];
-            updatedSlots[index].start = e.target.value;
-            setAvailability((prev) => ({
-              ...prev,
-              weekly: { ...prev.weekly, [day]: updatedSlots },
-            }));
-          }}
+          onChange={(e) =>
+            handleTimeChange(day, index, "start", e.target.value)
+          }
           className="px-4 py-1 border border-gray-300 rounded-md text-black"
-        />
+        >
+          {timeOptions.map((time) => (
+            <option key={time} value={time}>
+              {time}
+            </option>
+          ))}
+        </select>
         <span className="text-black">-</span>
-        <input
-          type="time"
+        <select
           value={slot.end}
-          onChange={(e) => {
-            const updatedSlots = [...availability.weekly[day]];
-            updatedSlots[index].end = e.target.value;
-            setAvailability((prev) => ({
-              ...prev,
-              weekly: { ...prev.weekly, [day]: updatedSlots },
-            }));
-          }}
+          onChange={(e) => handleTimeChange(day, index, "end", e.target.value)}
           className="px-4 py-1 border border-gray-300 rounded-md text-black"
-        />
+        >
+          {timeOptions.map((time) => (
+            <option key={time} value={time}>
+              {time}
+            </option>
+          ))}
+        </select>
         <button
           type="button"
           onClick={() => handleRemoveTimeSlot(day, index)}
@@ -146,8 +201,32 @@ function Sidesheet({ onClose }: SidesheetProps) {
     ));
   };
 
-  const userData = data || [];
-  const loadingUserData = !userData || userDataLoading;
+  const renderWeeklyAvailability = () => {
+    const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    return days.map((day) => (
+      <div key={day} className="flex items-start space-x-4 mb-4 min-h-[20px]">
+        <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center text-sm font-semibold">
+          {day.charAt(0).toUpperCase()}
+        </div>
+        <div className="flex flex-col space-y-2">
+          {availability.weekly[day].length > 0 ? (
+            renderTimeSlotInputs(day)
+          ) : (
+            <div className="text-gray-500 italic">
+              Unavailable
+              <button
+                type="button"
+                onClick={() => handleAddTimeSlot(day)}
+                className="ml-2 text-blue-500 hover:text-blue-700 inline-flex items-center"
+              >
+                <AiOutlinePlus /> Add Time
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    ));
+  };
 
   const groupByDateRange = (availability: any) => {
     const sortedAvailability = [...availability].sort(
@@ -242,75 +321,8 @@ function Sidesheet({ onClose }: SidesheetProps) {
     return formattedTime.replace(/(AM|PM)/, (match) => match.toLowerCase());
   };
 
-  const renderWeeklyAvailability = () => {
-    const weeklyAvailability: {
-      [key: string]: { start: string; end: string }[];
-    } = {
-      sun: [],
-      mon: [],
-      tue: [],
-      wed: [],
-      thu: [],
-      fri: [],
-      sat: [],
-    };
-
-    clientAvailability?.forEach((availability: any) => {
-      const day = new Date(availability.startTime)
-        .toLocaleString("en-US", {
-          weekday: "short",
-        })
-        .toLowerCase();
-
-      const slot = {
-        start: formatTime(availability.startTime),
-        end: formatTime(availability.endTime),
-      };
-      if (weeklyAvailability[day]) {
-        weeklyAvailability[day].push(slot);
-      }
-    });
-
-    return Object.keys(weeklyAvailability).map((day) => {
-      const slotCounts = weeklyAvailability[day].reduce((acc, slot) => {
-        const key = `${slot.start}-${slot.end}`;
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {} as { [key: string]: number });
-
-      const hasRecurringSlot = Object.values(slotCounts).some(
-        (count) => count > 2
-      );
-
-      return (
-        <div key={day} className="flex items-start space-x-4 mb-4 min-h-[20px]">
-          <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex justify-center items-center text-sm font-semibold">
-            {day.charAt(0).toUpperCase()}
-          </div>
-          <div className="flex flex-col space-y-2">
-            {hasRecurringSlot ? (
-              Object.keys(slotCounts).map((slotKey, index) => {
-                if (slotCounts[slotKey] > 2) {
-                  const [start, end] = slotKey.split("-");
-                  return (
-                    <div key={index} className="text-black flex items-center">
-                      <HiClock className="text-gray-500 mr-2" />
-                      <span>
-                        {start} - {end}
-                      </span>
-                    </div>
-                  );
-                }
-                return null;
-              })
-            ) : (
-              <div className="text-gray-500 italic">Unavailable</div>
-            )}
-          </div>
-        </div>
-      );
-    });
-  };
+  const userData = data || [];
+  const loadingUserData = !userData || userDataLoading;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
