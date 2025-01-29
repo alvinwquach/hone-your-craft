@@ -373,6 +373,7 @@ model User {
   interviewInvitesAsClient     InterviewInvite[]             @relation("ClientInvites")
   interviewInvitesAsCandidate  InterviewInvite[]             @relation("CandidateInvites")
   clientInterviewAvailability  ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
+  recurringAvailability        RecurringAvailability[]      @relation("UserRecurringAvailability")
   jobsAppliedToDaysPerWeekGoal Int?
   weeklyStreak                 Int?                          @default(0)
   lastStreakUpdate             DateTime?
@@ -503,6 +504,21 @@ model ClientInterviewAvailability {
   updatedAt     DateTime @updatedAt
 
   @@map("availabilities")
+}
+
+model RecurringAvailability {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  clientId      String   @db.ObjectId
+  client        User     @relation("UserRecurringAvailability", fields: [clientId], references: [id])
+  dayOfWeek     DayOfWeek
+  startTime     DateTime
+  endTime       DateTime
+  validFrom     DateTime? 
+  validUntil    DateTime? 
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("recurring_availabilities")
 }
 
 model TimeSlot {
