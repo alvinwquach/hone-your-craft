@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { dates, timeRanges } = body;
+    const { dates, timeRanges, eventTypeId } = body;
 
     for (const date of dates) {
       const selectedDate = new Date(date);
@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
         await prisma.clientInterviewAvailability.create({
           data: {
             clientId: currentUser.id,
+            eventTypeId,
             dayOfWeek: dayOfWeek,
             startTime: start,
             endTime: end,

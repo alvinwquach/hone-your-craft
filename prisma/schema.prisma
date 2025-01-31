@@ -16,6 +16,8 @@ model EventType {
   length                      Int?  
   uri                         String
   bookingTimes                Json
+  clientAvailabilities        ClientInterviewAvailability[] @relation("EventClientAvailabilities")
+  recurringAvailabilities     RecurringAvailability[] @relation("EventRecurringAvailabilities")
   createdAt                   DateTime         @default(now())
   updatedAt                   DateTime         @updatedAt
 }
@@ -497,7 +499,9 @@ model ClientInterviewAvailability {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   clientId      String   @db.ObjectId
   client        User     @relation("UserClientInterviewAvailability", fields: [clientId], references: [id])
-  dayOfWeek DayOfWeek
+  eventType     EventType @relation("EventClientAvailabilities", fields: [eventTypeId], references: [id])
+  eventTypeId   String   @db.ObjectId
+  dayOfWeek     DayOfWeek
   startTime     DateTime
   endTime       DateTime
   createdAt     DateTime @default(now())
@@ -510,6 +514,8 @@ model RecurringAvailability {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   clientId      String   @db.ObjectId
   client        User     @relation("UserRecurringAvailability", fields: [clientId], references: [id])
+  eventType     EventType @relation("EventRecurringAvailabilities", fields: [eventTypeId], references: [id])
+  eventTypeId   String   @db.ObjectId
   dayOfWeek     DayOfWeek
   startTime     DateTime
   endTime       DateTime
