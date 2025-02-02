@@ -219,7 +219,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
                 onClick={() => handleAddTimeSlot(day)}
                 className="ml-2 text-blue-500 hover:text-blue-700 inline-flex items-center"
               >
-                <AiOutlinePlus /> Add Time
+                <AiOutlinePlus />
               </button>
             </div>
           )}

@@ -16,8 +16,7 @@ model EventType {
   length                      Int?  
   uri                         String
   bookingTimes                Json
-  clientAvailabilities        ClientInterviewAvailability[] @relation("EventClientAvailabilities")
-  recurringAvailabilities     RecurringAvailability[] @relation("EventRecurringAvailabilities")
+  // clientAvailabilities        ClientInterviewAvailability[] @relation("EventClientAvailabilities")
   createdAt                   DateTime         @default(now())
   updatedAt                   DateTime         @updatedAt
 }
@@ -375,7 +374,6 @@ model User {
   interviewInvitesAsClient     InterviewInvite[]             @relation("ClientInvites")
   interviewInvitesAsCandidate  InterviewInvite[]             @relation("CandidateInvites")
   clientInterviewAvailability  ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
-  recurringAvailability        RecurringAvailability[]      @relation("UserRecurringAvailability")
   jobsAppliedToDaysPerWeekGoal Int?
   weeklyStreak                 Int?                          @default(0)
   lastStreakUpdate             DateTime?
@@ -499,33 +497,18 @@ model ClientInterviewAvailability {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   clientId      String   @db.ObjectId
   client        User     @relation("UserClientInterviewAvailability", fields: [clientId], references: [id])
-  eventType     EventType @relation("EventClientAvailabilities", fields: [eventTypeId], references: [id])
-  eventTypeId   String   @db.ObjectId
+  // eventType     EventType @relation("EventClientAvailabilities", fields: [eventTypeId], references: [id])
+  // eventTypeId   String   @db.ObjectId
   dayOfWeek     DayOfWeek
+  isRecurring   Boolean  @default(false)
   startTime     DateTime
   endTime       DateTime
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  @@map("availabilities")
+  @@map("client_interview_availabilities")
 }
 
-model RecurringAvailability {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  clientId      String   @db.ObjectId
-  client        User     @relation("UserRecurringAvailability", fields: [clientId], references: [id])
-  eventType     EventType @relation("EventRecurringAvailabilities", fields: [eventTypeId], references: [id])
-  eventTypeId   String   @db.ObjectId
-  dayOfWeek     DayOfWeek
-  startTime     DateTime
-  endTime       DateTime
-  validFrom     DateTime? 
-  validUntil    DateTime? 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@map("recurring_availabilities")
-}
 
 model TimeSlot {
   id                String          @id @default(auto()) @map("_id") @db.ObjectId
