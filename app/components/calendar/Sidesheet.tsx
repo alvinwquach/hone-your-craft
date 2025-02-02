@@ -133,19 +133,27 @@ function Sidesheet({ onClose }: SidesheetProps) {
   useEffect(() => {
     if (clientAvailability && !clientAvailabilityLoading) {
       const newAvailability = { ...availability };
+
       Object.keys(newAvailability.weekly).forEach((day) => {
-        newAvailability.weekly[day] = clientAvailability
-          .filter((avail: any) => {
-            const dayOfWeek = new Date(avail.startTime)
+        const recurringEvents = clientAvailability
+          .filter((availability: any) => {
+            const dayOfWeek = new Date(availability.startTime)
               .toLocaleString("en-US", { weekday: "short" })
               .toLowerCase();
-            return dayOfWeek === day;
+            return availability.isRecurring && dayOfWeek === day;
           })
-          .map((avail: any) => ({
-            start: format(new Date(avail.startTime), "hh:mm a"),
-            end: format(new Date(avail.endTime), "hh:mm a"),
+          .map((availability: any) => ({
+            start: format(new Date(availability.startTime), "hh:mm a"),
+            end: format(new Date(availability.endTime), "hh:mm a"),
           }));
+
+        if (recurringEvents.length > 0) {
+          newAvailability.weekly[day] = [recurringEvents[0]];
+        } else {
+          newAvailability.weekly[day] = [];
+        }
       });
+
       setAvailability(newAvailability);
     }
   }, [clientAvailability, clientAvailabilityLoading]);
