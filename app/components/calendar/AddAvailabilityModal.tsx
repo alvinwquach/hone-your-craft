@@ -136,6 +136,7 @@ function AddAvailabilityModal({
         startTime: range.startTime,
         endTime: range.endTime,
       })),
+      isRecurring: isRecurring,
     };
 
     try {
