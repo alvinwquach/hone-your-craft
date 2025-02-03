@@ -12,9 +12,7 @@ model EventType {
   userId                      String           @db.ObjectId
   user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
   title                       String
-  description                 String
   length                      Int?  
-  uri                         String
   bookingTimes                Json
   // clientAvailabilities        ClientInterviewAvailability[] @relation("EventClientAvailabilities")
   createdAt                   DateTime         @default(now())
