@@ -8,6 +8,7 @@ import { ImLoop } from "react-icons/im";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 interface Availability {
   weekly: {
@@ -15,6 +16,12 @@ interface Availability {
   };
   dateSpecific: { date: string; hours: string }[];
 }
+
+type ClientAvailabilityItem = {
+  startTime: string; 
+  endTime: string; 
+  isRecurring: boolean;
+};
 
 interface SidesheetProps {
   onClose: () => void;
@@ -29,6 +36,7 @@ const fetcher = async (url: string, options: RequestInit) => {
 };
 
 function Sidesheet({ onClose }: SidesheetProps) {
+  const [eventName, setEventName] = useState("");
   const [duration, setDuration] = useState("15min");
   const [customDuration, setCustomDuration] = useState({
     value: "",
@@ -59,6 +67,10 @@ function Sidesheet({ onClose }: SidesheetProps) {
     useSWR(session ? `/api/client-availability` : null, fetcher, {
       refreshInterval: 1000,
     });
+
+  const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEventName(e.target.value);
+  };
 
   const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDuration(e.target.value);
@@ -332,6 +344,97 @@ function Sidesheet({ onClose }: SidesheetProps) {
   const userData = data || [];
   const loadingUserData = !userData || userDataLoading;
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!clientAvailabilityLoading && clientAvailability) {
+      console.log("Event Name:", eventName);
+      console.log(
+        "Duration:",
+        duration === "custom"
+          ? `${customDuration.value} ${customDuration.unit}`
+          : duration
+      );
+      console.log("Weekly Availability:", availability.weekly);
+      console.log("Date-Specific Availability:", clientAvailability);
+
+      let durationInMinutes: number | undefined;
+
+      if (duration === "custom") {
+        if (customDuration.value) {
+          durationInMinutes =
+            parseInt(customDuration.value) *
+            (customDuration.unit === "hrs" ? 60 : 1);
+          if (isNaN(durationInMinutes)) {
+            toast.error("Invalid custom duration format.");
+            durationInMinutes = 15;
+          }
+        } else {
+          toast.error("Custom duration not specified.");
+          durationInMinutes = 15; 
+        }
+      } else {
+        durationInMinutes = parseInt(duration);
+      }
+
+      if (durationInMinutes === undefined) {
+        toast.error("Failed to determine event duration.");
+        durationInMinutes = 15; 
+      }
+
+      const typedClientAvailability =
+        clientAvailability as ClientAvailabilityItem[];
+
+      const dataToSend = {
+        title: eventName,
+        length: durationInMinutes, 
+        bookingTimes: {
+          weekly: availability.weekly,
+          dateSpecific: typedClientAvailability.map(
+            (item: ClientAvailabilityItem) => ({
+              dayOfWeek: new Date(item.startTime)
+                .toLocaleString("en-us", { weekday: "short" })
+                .toLowerCase(),
+              isRecurring: item.isRecurring,
+              startTime: item.startTime,
+              endTime: item.endTime,
+            })
+          ),
+        },
+      };
+
+      try {
+  
+        const response = await fetch("/api/event-type", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dataToSend),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        console.log("Success:", data);
+        toast.success("Event type created successfully!");
+        onClose();
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error(
+          "There was an error creating the event type. Please try again."
+        );
+      }
+    } else {
+      console.log("Client availability is still loading or not available.");
+      toast.error(
+        "Client availability is not available. Please try again later."
+      );
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
       <div className="absolute right-0 top-0 w-full lg:w-1/3 bg-white h-full shadow-lg overflow-y-auto rounded-l-lg transition-transform transform ease-in-out duration-300">
@@ -344,19 +447,21 @@ function Sidesheet({ onClose }: SidesheetProps) {
           </button>
         </div>
         <div className="p-4 sm:p-6 space-y-6">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
-                htmlFor="event-name"
+                htmlFor="eventName"
                 className="block text-sm font-medium text-gray-700"
               >
                 Event Type
               </label>
               <input
                 type="text"
-                id="event-name"
-                className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                id="eventName"
+                className="w-full p-3 border text-black border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                 placeholder="Name your event"
+                value={eventName}
+                onChange={handleEventNameChange}
               />
               <div className="text-gray-400 mt-2">One-on-One</div>
             </div>
