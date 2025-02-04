@@ -6,7 +6,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import { HiClock } from "react-icons/hi";
 import { ImLoop } from "react-icons/im";
 import { useSession } from "next-auth/react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import Image from "next/image";
 import { toast } from "react-toastify";
 
@@ -18,8 +18,8 @@ interface Availability {
 }
 
 type ClientAvailabilityItem = {
-  startTime: string; 
-  endTime: string; 
+  startTime: string;
+  endTime: string;
   isRecurring: boolean;
 };
 
@@ -371,7 +371,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
           }
         } else {
           toast.error("Custom duration not specified.");
-          durationInMinutes = 15; 
+          durationInMinutes = 15;
         }
       } else {
         durationInMinutes = parseInt(duration);
@@ -379,7 +379,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
 
       if (durationInMinutes === undefined) {
         toast.error("Failed to determine event duration.");
-        durationInMinutes = 15; 
+        durationInMinutes = 15;
       }
 
       const typedClientAvailability =
@@ -387,7 +387,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
 
       const dataToSend = {
         title: eventName,
-        length: durationInMinutes, 
+        length: durationInMinutes,
         bookingTimes: {
           weekly: availability.weekly,
           dateSpecific: typedClientAvailability.map(
@@ -404,7 +404,6 @@ function Sidesheet({ onClose }: SidesheetProps) {
       };
 
       try {
-  
         const response = await fetch("/api/event-type", {
           method: "POST",
           headers: {
@@ -419,6 +418,8 @@ function Sidesheet({ onClose }: SidesheetProps) {
 
         const data = await response.json();
         console.log("Success:", data);
+        mutate("/api/event-types");
+
         toast.success("Event type created successfully!");
         onClose();
       } catch (error) {
