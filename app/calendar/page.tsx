@@ -13,12 +13,14 @@ import { useSession } from "next-auth/react";
 import {
   FaCalendarCheck,
   FaCalendarPlus,
+  FaClipboard,
   FaLink,
   FaPlus,
 } from "react-icons/fa";
 import AvailabilityCalendar from "../components/calendar/AvailabilityCalendar";
 import { IoCalendarSharp } from "react-icons/io5";
 import Sidesheet from "../components/calendar/Sidesheet";
+import Link from "next/link";
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
@@ -26,6 +28,37 @@ const fetcher = async (url: string) => {
     throw new Error("Failed to fetch data");
   }
   return response.json();
+};
+
+type BookingTime = {
+  start: string;
+  end: string;
+};
+
+type Event = {
+  id: string;
+  userId: string;
+  title: string;
+  length: number;
+  bookingTimes: {
+    weekly: {
+      mon: BookingTime[];
+      tue: BookingTime[];
+      wed: BookingTime[];
+      thu: BookingTime[];
+      fri: BookingTime[];
+      sat: BookingTime[];
+      sun: BookingTime[];
+    };
+    dateSpecific: {
+      dayOfWeek: string;
+      isRecurring: boolean;
+      startTime: string;
+      endTime: string;
+    }[];
+  };
+  createdAt: string;
+  updatedAt: string;
 };
 
 function Calendar() {
@@ -56,6 +89,12 @@ function Calendar() {
   const { data: clientAvailability, isLoading: clientAvailabilityLoading } =
     useSWR("/api/client-availability", fetcher);
 
+  const { data: eventTypes, isLoading: eventTypesLoading } = useSWR(
+    "/api/event-types",
+    fetcher,
+    { refreshInterval: 1000 }
+  );
+
   const loadingInterviews = !interviews || interviewsLoading;
   if (error) return <div>Error fetching interviews</div>;
 
@@ -74,6 +113,18 @@ function Calendar() {
     } catch (error) {
       console.error("Error deleting interview:", error);
       toast.error("Failed To Delete Interview");
+    }
+  };
+
+  const formatEventLength = (length: number) => {
+    if (length < 60) {
+      return `${length} min`;
+    } else {
+      const hours = Math.floor(length / 60);
+      const minutes = length % 60;
+      return `${hours} hr${hours > 1 ? "s" : ""} ${
+        minutes !== 0 ? minutes + " min" : ""
+      }`;
     }
   };
 
@@ -145,22 +196,79 @@ function Calendar() {
               </div>
               <div className="relative">
                 {activeTab === "eventTypes" && (
-                  <div className="flex flex-col items-center p-4 space-y-4 ">
-                    <IoCalendarSharp className="h-24 w-24 rounded-full p-2 bg-zinc-700 text-white" />
-                    <p className="text-gray-400 font-semibold text-xl">
-                      Create scheduling links with event types
-                    </p>
-                    <button
-                      className="bg-blue-700 px-4 py-2 rounded-full"
-                      onClick={toggleSidesheet}
-                    >
-                      <FaPlus className="h-4 w-4 inline mr-2 mb-1" />
-                      <span className="text-white">New event type</span>
-                    </button>
+                  <div className="p-4">
+                    <div className="flex flex-col items-center p-4 space-y-4">
+                      <IoCalendarSharp className="h-24 w-24 rounded-full p-2 bg-zinc-700 text-white" />
+                      <p className="text-gray-400 font-semibold text-xl">
+                        Create scheduling links with event types
+                      </p>
+                      <button
+                        className="bg-blue-700 px-4 py-2 rounded-full"
+                        onClick={toggleSidesheet}
+                      >
+                        <FaPlus className="h-4 w-4 inline mr-2 mb-1" />
+                        <span className="text-white">New event type</span>
+                      </button>
+                    </div>
+                    {eventTypesLoading ? (
+                      <p>Loading event types...</p>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {eventTypes?.eventTypes.map(
+                          (event: Event, index: number) => (
+                            <div
+                              key={index}
+                              className="p-4 border rounded-lg bg-white shadow-lg hover:shadow-xl transition-all duration-300"
+                            >
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {event.title}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {formatEventLength(event.length)}, One-on-One
+                              </p>
+
+                              <div className="mt-4">
+                                <div className="flex justify-between mb-2">
+                                  <Link
+                                    href={`/${event.id}`}
+                                    className="flex items-center text-blue-600 hover:text-blue-800"
+                                  >
+                                    <FaLink className="mr-2" /> View booking
+                                    page
+                                  </Link>
+                                </div>
+                                <hr className="my-4 border-t border-gray-300 w-full mx-auto" />
+                                <div className="flex justify-between mt-2">
+                                  <button
+                                    className="flex items-center text-blue-600 hover:text-blue-800"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        `/${event.id}`
+                                      );
+                                      toast.info("Link copied to clipboard!");
+                                    }}
+                                  >
+                                    <FaClipboard className="mr-2" /> Copy link
+                                  </button>
+
+                                  <button
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                                    onClick={() => {
+                                      toast.info("Shared!");
+                                    }}
+                                  >
+                                    Share
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 {isSidesheetOpen && <Sidesheet onClose={toggleSidesheet} />}
-
                 {activeTab === "interviews" && (
                   <div>
                     {loadingInterviews ? (
