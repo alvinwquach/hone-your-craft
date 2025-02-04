@@ -16,6 +16,9 @@ import {
   FaClipboard,
   FaLink,
   FaPlus,
+  FaCog,
+  FaTrash,
+  FaEdit,
 } from "react-icons/fa";
 import AvailabilityCalendar from "../components/calendar/AvailabilityCalendar";
 import { IoCalendarSharp } from "react-icons/io5";
@@ -73,6 +76,7 @@ function Calendar() {
   };
 
   const [isSidesheetOpen, setSidesheetOpen] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState<string | null>(null);
 
   const toggleSidesheet = () => {
     setSidesheetOpen((prev) => !prev);
@@ -113,6 +117,24 @@ function Calendar() {
     } catch (error) {
       console.error("Error deleting interview:", error);
       toast.error("Failed To Delete Interview");
+    }
+  };
+
+  const handleDeleteEventType = async (eventId: string) => {
+    try {
+      const response = await fetch(`/api/event-type/${eventId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete event type");
+      }
+
+      mutate("/api/event-types");
+      toast.success("Event Type Deleted");
+    } catch (error) {
+      console.error("Error deleting event type:", error);
+      toast.error("Failed To Delete Event Type");
     }
   };
 
@@ -218,11 +240,49 @@ function Calendar() {
                           (event: Event, index: number) => (
                             <div
                               key={index}
-                              className="p-4 border rounded-lg bg-white shadow-lg hover:shadow-xl transition-all duration-300"
+                              className="p-6 border rounded-lg bg-white shadow-lg hover:shadow-xl transition-all duration-300"
                             >
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {event.title}
-                              </h3>
+                              <div className="flex justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  {event.title}
+                                </h3>
+                                <div className="relative">
+                                  <button
+                                    className="text-gray-600 hover:text-gray-800"
+                                    onClick={() =>
+                                      setShowOptionsMenu(
+                                        showOptionsMenu === event.id
+                                          ? null
+                                          : event.id
+                                      )
+                                    }
+                                  >
+                                    <FaCog className="w-5 h-5 inline mr-2" />
+                                  </button>
+                                  {showOptionsMenu === event.id && (
+                                    <div className="absolute right-0 w-40 bg-white shadow-md rounded-lg mt-2 py-1">
+                                      <button
+                                        className="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 w-full text-left"
+                                        onClick={() =>
+                                          toast.info("Edit clicked")
+                                        }
+                                      >
+                                        <FaEdit className="mr-2" />
+                                        Edit
+                                      </button>
+                                      <button
+                                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                                        onClick={() =>
+                                          handleDeleteEventType(event.id)
+                                        }
+                                      >
+                                        <FaTrash className="mr-2" />
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                               <p className="text-sm text-gray-600">
                                 {formatEventLength(event.length)}, One-on-One
                               </p>
