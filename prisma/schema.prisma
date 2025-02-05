@@ -804,6 +804,9 @@ model Interview {
   endTime       DateTime?
   interviewDate DateTime?
   interviewType InterviewType
+  videoUrl     String?
+  meetingId     String?
+  passcode      String?
 
   @@map("interview")
 }

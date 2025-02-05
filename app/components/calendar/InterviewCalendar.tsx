@@ -13,6 +13,7 @@ import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import { MonthlyNav } from "./MonthlyNav";
 import EditInterviewModal from "./EditInterviewModal";
 import { IoEllipsisHorizontalSharp } from "react-icons/io5";
+import InterviewDetailsModal from "./InterviewDetailsModal";
 
 interface InterviewCalendarProps {
   interviews: Interview[];
@@ -32,15 +33,25 @@ const mapInterviewsToEvents = (interviews: any[]) =>
     title: interview.job.title,
     interviewType: interview.interviewType,
     job: interview.job,
+    videoUrl: interview.videoUrl,
+    meetingId: interview.meetingId,
+    passcode: interview.passcode,
   }));
 
 const InterviewDay = ({ interview }: { interview: any }) => {
-  const { job, title, interviewType, date, id } = interview;
+  const { job, title, interviewType, date, id, videoUrl } = interview;
   const { company } = job;
   const deleteInterview = useContext(DeleteInterviewContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleShowDetails = () => {
+    if (interviewType === "VIDEO_INTERVIEW") {
+      setDetailsModalOpen(true);
+    }
+  };
 
   const truncateTitle = (title: string, maxLength: number) => {
     let truncatedTitle = title;
@@ -163,7 +174,8 @@ const InterviewDay = ({ interview }: { interview: any }) => {
     <div
       className={`flex flex-col ${getColorForInterviewType(
         interviewType
-      )} bg-opacity-80 rounded-md p-2 gap-1 text-sm relative`}
+      )} bg-opacity-80 rounded-md p-2 gap-1 text-sm relative cursor-pointer`}
+      onClick={handleShowDetails}
     >
       <div className="text-xs font-semibold whitespace-nowrap">
         {truncateTitle(title, 40)}
@@ -204,6 +216,13 @@ const InterviewDay = ({ interview }: { interview: any }) => {
         <EditInterviewModal
           isOpen={isModalOpen}
           closeModal={closeModal}
+          interview={interview}
+        />
+      )}
+      {detailsModalOpen && (
+        <InterviewDetailsModal
+          isOpen={detailsModalOpen}
+          closeModal={() => setDetailsModalOpen(false)}
           interview={interview}
         />
       )}
