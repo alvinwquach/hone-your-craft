@@ -52,6 +52,12 @@ const schema = z.object({
         .refine((val) => Object.values(InterviewType).includes(val), {
           message: "Interview type is required",
         }),
+      videoUrl: z
+        .string()
+        .url({ message: "Please enter a valid URL" })
+        .optional(),
+      meetingId: z.string().optional(),
+      passcode: z.string().optional(),
     })
   ),
 });
@@ -77,6 +83,7 @@ function LogInterviewModal({
     resolver: zodResolver(schema),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedType, setSelectedType] = useState<InterviewType | "">("");
 
   const onSubmit = async (data: any) => {
     try {
@@ -91,6 +98,9 @@ function LogInterviewModal({
           interviewDate: isoDate,
           interviewType: data.interviews[0].type,
           acceptedDate: new Date().toISOString(),
+          videoUrl: data.interviews[0].videoUrl || undefined,
+          meetingId: data.interviews[0].meetingId || undefined,
+          passcode: data.interviews[0].passcode || undefined,
         };
 
         if (data.interviews[0].id) {
@@ -116,14 +126,13 @@ function LogInterviewModal({
             },
             body: JSON.stringify(interviewData),
           });
-
           if (!response.ok) {
             throw new Error("Failed to create interview.");
           }
         }
+        closeModal();
+        toast.success("Interview Added To Calendar");
       }
-      closeModal();
-      toast.success("Interview Added To Calendar");
     } catch (error) {
       console.error("Error updating and creating interview:", error);
       toast.error("Failed To Add Interview");
@@ -201,6 +210,9 @@ function LogInterviewModal({
                     <select
                       id="interviewType"
                       {...register("interviews.0.type")}
+                      onChange={(e) =>
+                        setSelectedType(e.target.value as InterviewType)
+                      }
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
                       defaultValue=""
                     >
@@ -213,12 +225,58 @@ function LogInterviewModal({
                         </option>
                       ))}
                     </select>
-                    {errors.interviews && (
+                    {errors.interviews?.[0]?.type && (
                       <p className="text-red-500 text-sm">
-                        Please provide an interview type.
+                        {errors.interviews[0].message}
                       </p>
                     )}
                   </div>
+                  {selectedType === InterviewType.VIDEO_INTERVIEW && (
+                    <>
+                      <label
+                        htmlFor="videoUrl"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Video URL
+                      </label>
+                      <input
+                        type="url"
+                        id="videoUrl"
+                        {...register("interviews.0.videoUrl")}
+                        placeholder="Enter video meeting url"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
+                      />
+                      {errors.interviews?.[0]?.videoUrl && (
+                        <p className="text-red-500 text-sm">
+                          {errors.interviews?.[0]?.videoUrl.message}
+                        </p>
+                      )}
+                      <label
+                        htmlFor="meetingId"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Meeting ID (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        id="meetingId"
+                        {...register("interviews.0.meetingId")}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
+                      />
+                      <label
+                        htmlFor="passcode"
+                        className="block mb-2 text-sm font-medium text-gray-900"
+                      >
+                        Passcode (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        id="passcode"
+                        {...register("interviews.0.passcode")}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full py-2.5 pl-2 outline-none"
+                      />
+                    </>
+                  )}
                 </div>
                 <div className="flex justify-end mt-4">
                   <button

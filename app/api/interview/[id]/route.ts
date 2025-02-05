@@ -99,7 +99,6 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
-
     // Create the interview (for both candidates and clients)
     const interview = await prisma.interview.create({
       data: {
@@ -110,6 +109,9 @@ export async function POST(request: NextRequest) {
         interviewType: interviewData.interviewType,
         startTime: interviewData.startTime,
         endTime: interviewData.endTime,
+        videoUrl: interviewData.videoUrl,
+        meetingId: interviewData.meetingId,
+        passcode: interviewData.passcode,
       },
     });
 
@@ -164,6 +166,9 @@ export async function PUT(
       data: {
         interviewDate: interviewData.interviewDate,
         interviewType: interviewData.interviewType,
+        videoUrl: interviewData.videoUrl,
+        meetingId: interviewData.meetingId,
+        passcode: interviewData.passcode,
       },
     });
 
@@ -208,7 +213,7 @@ export async function DELETE(
         { status: 404 }
       );
     }
-    //  Delete the interview
+    // Delete the interview
     await prisma.interview.delete({
       where: { id: interviewId },
     });
@@ -222,3 +227,4 @@ export async function DELETE(
     );
   }
 }
+
