@@ -11,9 +11,10 @@ import { candidateInterviewTypes } from "@/app/lib/candidateInterviewTypes";
 import { Interview } from "@prisma/client";
 import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import { MonthlyNav } from "./MonthlyNav";
-import EditInterviewModal from "./EditInterviewModal";
 import { IoEllipsisHorizontalSharp } from "react-icons/io5";
-import InterviewDetailsModal from "./InterviewDetailsModal";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import EditInterviewModal from "./EditInterviewModal";
 
 interface InterviewCalendarProps {
   interviews: Interview[];
@@ -39,19 +40,13 @@ const mapInterviewsToEvents = (interviews: any[]) =>
   }));
 
 const InterviewDay = ({ interview }: { interview: any }) => {
-  const { job, title, interviewType, date, id, videoUrl } = interview;
+  const { job, title, interviewType, date, id } = interview;
   const { company } = job;
   const deleteInterview = useContext(DeleteInterviewContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
-
-  const handleShowDetails = () => {
-    if (interviewType === "VIDEO_INTERVIEW") {
-      setDetailsModalOpen(true);
-    }
-  };
 
   const truncateTitle = (title: string, maxLength: number) => {
     let truncatedTitle = title;
@@ -138,6 +133,14 @@ const InterviewDay = ({ interview }: { interview: any }) => {
     setIsModalOpen(false);
   };
 
+  const openInterviewDetailsModal = () => {
+    setIsDetailsModalOpen(true);
+  };
+
+  const closeInterviewDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+  };
+
   const toggleOptionsMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowOptionsMenu(!showOptionsMenu);
@@ -175,7 +178,7 @@ const InterviewDay = ({ interview }: { interview: any }) => {
       className={`flex flex-col ${getColorForInterviewType(
         interviewType
       )} bg-opacity-80 rounded-md p-2 gap-1 text-sm relative cursor-pointer`}
-      onClick={handleShowDetails}
+      onClick={openInterviewDetailsModal}
     >
       <div className="text-xs font-semibold whitespace-nowrap">
         {truncateTitle(title, 40)}
@@ -212,6 +215,7 @@ const InterviewDay = ({ interview }: { interview: any }) => {
           </div>
         )}
       </div>
+
       {isModalOpen && (
         <EditInterviewModal
           isOpen={isModalOpen}
@@ -219,17 +223,109 @@ const InterviewDay = ({ interview }: { interview: any }) => {
           interview={interview}
         />
       )}
-      {detailsModalOpen && (
-        <InterviewDetailsModal
-          isOpen={detailsModalOpen}
-          closeModal={() => setDetailsModalOpen(false)}
-          interview={interview}
-        />
+
+      {isDetailsModalOpen && (
+        <Transition appear show={isDetailsModalOpen} as={Fragment}>
+          <Dialog
+            as="div"
+            className="fixed inset-0 z-10 overflow-y-auto"
+            onClose={closeInterviewDetailsModal}
+          >
+            <div className="min-h-screen px-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+              </Transition.Child>
+
+              <span
+                className="inline-block h-screen align-middle"
+                aria-hidden="true"
+              >
+                ​
+              </span>
+
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                  <div className="border-b border-gray-200 pb-3 mb-4">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-lg font-semibold leading-6 text-gray-900"
+                    >
+                      Interview Details
+                    </Dialog.Title>
+                  </div>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-sm text-gray-700">
+                      <strong className="text-gray-900">Job Title:</strong>{" "}
+                      {interview.job.title}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <strong className="text-gray-900">Company:</strong>{" "}
+                      {interview.job.company}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <strong className="text-gray-900">Interview Type:</strong>{" "}
+                      {interview.interviewType}
+                    </p>
+                    {interview.videoUrl && (
+                      <>
+                        <p className="text-sm text-gray-700">
+                          <strong className="text-gray-900">Video URL:</strong>{" "}
+                          <a
+                            href={interview.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline"
+                          >
+                            Join Meeting
+                          </a>
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          <strong className="text-gray-900">Meeting ID:</strong>{" "}
+                          {interview.meetingId}
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          <strong className="text-gray-900">Passcode:</strong>{" "}
+                          {interview.passcode}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-6">
+                    <button
+                      type="button"
+                      className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                      onClick={closeInterviewDetailsModal}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </Transition.Child>
+            </div>
+          </Dialog>
+        </Transition>
       )}
     </div>
   );
 };
-
+    
+  
 function InterviewCalendar({ interviews }: InterviewCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState<Date>(
     startOfMonth(new Date())
