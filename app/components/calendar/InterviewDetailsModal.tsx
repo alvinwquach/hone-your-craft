@@ -91,16 +91,6 @@ function InterviewDetailsModal({
                   </>
                 )}
               </div>
-
-              <div className="mt-4">
-                <button
-                  type="button"
-                  className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                  onClick={closeModal}
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </Transition.Child>
         </div>
