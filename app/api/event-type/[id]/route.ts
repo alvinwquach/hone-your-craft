@@ -2,6 +2,34 @@ import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const eventId = params.id;
+
+  try {
+    const event = await prisma.eventType.findUnique({
+      where: { id: eventId },
+    });
+
+    if (!event) {
+      return NextResponse.json(
+        { error: "Event type not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(event);
+  } catch (error) {
+    console.error("Error fetching event type:", error);
+    return NextResponse.json(
+      { error: "An error occurred while fetching the event type" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }

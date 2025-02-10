@@ -290,7 +290,7 @@ function Calendar() {
                               <div className="mt-4">
                                 <div className="flex justify-between mb-2">
                                   <Link
-                                    href={`/${event.id}`}
+                                    href={`/schedule/${event.id}`}
                                     className="flex items-center text-blue-600 hover:text-blue-800"
                                   >
                                     <FaLink className="mr-2" /> View booking
