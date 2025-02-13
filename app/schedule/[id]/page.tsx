@@ -371,7 +371,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                         type="text"
                         id="name"
                         {...register("name")}
-                        className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        className="text-black w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                       />
                       {errors.name && (
                         <p className="text-sm text-red-500 mt-1">
@@ -390,7 +390,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                         type="email"
                         id="email"
                         {...register("email")}
-                        className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        className="text-black w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                       />
                       {errors.email && (
                         <p className="text-sm text-red-500 mt-1">
@@ -410,7 +410,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                         id="message"
                         {...register("message")}
                         rows={4}
-                        className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical transition-colors duration-200"
+                        className="text-black w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical transition-colors duration-200"
                       />
                     </div>
                     <button
