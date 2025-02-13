@@ -1,6 +1,5 @@
 "use client";
-export const dynamic = "force-dynamic";
-
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import ReactConfetti from "../../../app/components/common/ReactConfetti";
@@ -11,6 +10,14 @@ import {
   FaExternalLinkAlt,
   FaUser,
 } from "react-icons/fa";
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
+      <div className="text-white">Loading confirmation...</div>
+    </div>
+  );
+}
 
 function ConfirmationPage() {
   const searchParams = useSearchParams();
@@ -38,7 +45,6 @@ function ConfirmationPage() {
     <div className="min-h-screen bg-zinc-900">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)] flex items-center">
         <ReactConfetti />
-
         <div className="flex justify-center w-full">
           <div className="w-full max-w-md bg-zinc-800 shadow-xl rounded-lg overflow-hidden transition-all duration-300 hover:shadow-2xl">
             <div className="p-6 text-center border-b border-zinc-700">
@@ -77,4 +83,10 @@ function ConfirmationPage() {
   );
 }
 
-export default ConfirmationPage;
+export default function Page() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ConfirmationPage />
+    </Suspense>
+  );
+}
