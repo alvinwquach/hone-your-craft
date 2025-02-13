@@ -1,7 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import ReactConfetti from "../../../app/components/common/ReactConfetti";
 import {
   FaCheckCircle,
   FaClock,
@@ -35,7 +34,6 @@ function ConfirmationPage() {
   return (
     <div className="min-h-screen bg-zinc-900">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)] flex items-center">
-        <ReactConfetti />
         <div className="flex justify-center w-full">
           <div className="w-full max-w-md bg-zinc-800 shadow-xl rounded-lg overflow-hidden transition-all duration-300 hover:shadow-2xl">
             <div className="p-6 text-center border-b border-zinc-700">
