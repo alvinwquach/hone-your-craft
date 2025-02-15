@@ -371,7 +371,7 @@ model User {
   updatedAt                    DateTime                      @updatedAt
   interviewInvitesAsClient     InterviewInvite[]             @relation("ClientInvites")
   interviewInvitesAsCandidate  InterviewInvite[]             @relation("CandidateInvites")
-  clientInterviewAvailability  ClientInterviewAvailability[] @relation("UserClientInterviewAvailability")
+  interviewAvailability  InterviewAvailability[] @relation("InterviewAvailability")
   jobsAppliedToDaysPerWeekGoal Int?
   weeklyStreak                 Int?                          @default(0)
   lastStreakUpdate             DateTime?
@@ -491,10 +491,10 @@ model JobPosting {
   @@map("job_postings")
 }
 
-model ClientInterviewAvailability {
+model InterviewAvailability {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  clientId      String   @db.ObjectId
-  client        User     @relation("UserClientInterviewAvailability", fields: [clientId], references: [id])
+  userId      String   @db.ObjectId
+  user        User     @relation("InterviewAvailability", fields: [userId], references: [id])
   // eventType     EventType @relation("EventClientAvailabilities", fields: [eventTypeId], references: [id])
   // eventTypeId   String   @db.ObjectId
   dayOfWeek     DayOfWeek
@@ -504,9 +504,8 @@ model ClientInterviewAvailability {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  @@map("client_interview_availabilities")
+  @@map("interview_availabilities")
 }
-
 
 model TimeSlot {
   id                String          @id @default(auto()) @map("_id") @db.ObjectId
