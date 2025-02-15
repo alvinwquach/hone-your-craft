@@ -4,7 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "react-toastify";
 import { Calendar, DateObject } from "react-multi-date-picker";
-import { format, isSameDay, parseISO } from "date-fns";
+import { format, isSameDay, parseISO, isToday } from "date-fns";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
@@ -121,7 +121,7 @@ function SchedulePage({ params }: SchedulePageProps) {
       const nextSlot = new Date(current);
       nextSlot.setMinutes(nextSlot.getMinutes() + meetingLength);
       if (nextSlot <= end) {
-        const formattedStart = format(current, "hh:mm a").toLowerCase();
+        const formattedStart = format(current, "h:mma").toLowerCase();
         slots.push(formattedStart);
       }
       current = new Date(nextSlot);
@@ -227,7 +227,7 @@ function SchedulePage({ params }: SchedulePageProps) {
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="flex justify-center">
         <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
-          <div className="flex flex-col md:flex-row items-start justify-between p-6 border-b">
+          <div className="flex flex-col md:flex-row items-start justify-between p-6">
             <div className="flex items-center mb-4 md:mb-0">
               <Image
                 src={session?.user?.image as string}
@@ -245,10 +245,24 @@ function SchedulePage({ params }: SchedulePageProps) {
             </div>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col md:flex-row items-start justify-between p-6">
+                <div className="w-full ">
+                  <h3 className="text-lg text-gray-900 font-bold mb-3">
+                    {event.title}
+                  </h3>
+                  <div className="flex items-center space-x-3 rounded-lg">
+                    <FaClock className="w-5 h-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                      {formatEventLength(event.length)}
+                    </span>
+                  </div>
+                </div>
+              </div>
               <div className="w-full">
+                <p className="text-gray-800 mb-4">Select a Date & Time</p>
                 <Calendar
-                  className="w-full max-w-lg"
+                  className="w-full"
                   value={selectedDate ? new DateObject(selectedDate) : null}
                   onChange={(newDate) =>
                     setSelectedDate(newDate ? newDate.toDate() : null)
@@ -262,47 +276,86 @@ function SchedulePage({ params }: SchedulePageProps) {
                       event.bookingTimes.weekly[
                         format(date.toDate(), "EEE").toLowerCase() as Day
                       ].length > 0;
+                    const isTodayDate = isToday(date.toDate());
+                    const isSelected =
+                      selectedDate && isSameDay(selectedDate, date.toDate());
+                    const isBeforeToday = date.toDate() < new Date();
+                    let dayClasses = "cursor-pointer";
+                    if (!isAvailable) {
+                      dayClasses = "bg-white cursor-not-allowed";
+                    } else if (isBeforeToday) {
+                      dayClasses = "text-gray-400";
+                    } else if (isSelected) {
+                      dayClasses = "bg-blue-700 text-white";
+                    } else if (isTodayDate) {
+                      dayClasses = "bg-transparent text-blue-700";
+                    } else {
+                      dayClasses = "bg-blue-100 text-blue-700 font-bold";
+                    }
+
                     return {
-                      className: isAvailable
-                        ? "bg-blue-200 cursor-pointer"
-                        : "bg-white cursor-not-allowed",
-                      children: date.day,
+                      className: dayClasses,
+                      children: isTodayDate ? (
+                        <div>
+                          <div>{date.day}</div>
+                          <div
+                            style={{
+                              position: "absolute",
+                              bottom: 2,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              width: 4,
+                              height: 4,
+                              backgroundColor: "white",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                        </div>
+                      ) : (
+                        date.day
+                      ),
                       disabled: !isAvailable,
                     };
                   }}
                 />
               </div>
               <div className="w-full">
-                <h3 className="text-center text-gray-900 text-lg mb-3">
-                  {selectedDate
-                    ? format(selectedDate, "EEEE, MMMM d, yyyy")
-                    : "Select a Date"}
-                </h3>
-                <ul className="flex flex-col space-y-3">
-                  {timeSlots.map((time, index) => (
-                    <li
-                      key={index}
-                      className="flex justify-between items-center"
-                    >
-                      <button
-                        onClick={() => setSelectedTime(time)}
-                        className={`w-full py-2 px-4 text-sm text-blue-600 font-medium border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-all duration-300 ${
-                          selectedTime === time ? "bg-gray-600 text-white" : ""
-                        }`}
+                {selectedDate && (
+                  <p className="text-lg font-medium text-gray-900 mb-4">
+                    {format(selectedDate, "EEEE, MMMM d")}
+                  </p>
+                )}
+                <div className="max-h-72 overflow-y-auto mb-4">
+                  <ul className="flex flex-col space-y-3">
+                    {timeSlots.map((time, index) => (
+                      <li
+                        key={index}
+                        className="flex justify-between items-center"
                       >
-                        {time}
-                      </button>
-                      {selectedTime === time && (
                         <button
-                          onClick={handleNextButtonClick}
-                          className="w-1/2 py-2 px-4 text-sm text-white bg-blue-600 rounded-md ml-2 transition-all duration-300"
+                          onClick={() => setSelectedTime(time)}
+                          className={`w-full py-2 px-4 text-sm text-blue-600 font-medium border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-all duration-300 ${
+                            selectedTime === time
+                              ? "bg-gray-500 text-white"
+                              : ""
+                          }`}
                         >
-                          Next
+                          {time}
                         </button>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+
+                        {selectedTime === time && (
+                          <button
+                            onClick={handleNextButtonClick}
+                            className="next-button w-full py-2 px-4 text-sm text-white bg-blue-600 rounded-md ml-2 transition-all duration-300"
+                          >
+                            Next
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
                 {timeSlots.length === 0 && (
                   <p className="text-center text-gray-500">
                     No availability on this date
@@ -331,14 +384,13 @@ function SchedulePage({ params }: SchedulePageProps) {
                     </div>
                   </div>
                   <div className="grid gap-4">
-                    <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg">
                       <FaClock className="w-5 h-5 text-gray-600" />
                       <span className="text-sm font-medium text-gray-900">
                         {formatEventLength(event.length)}
                       </span>
                     </div>
-
-                    <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg">
                       <FaCalendarAlt className="w-5 h-5 text-gray-600" />
                       <span className="text-sm font-medium text-gray-900">
                         {meetingTime
@@ -354,73 +406,72 @@ function SchedulePage({ params }: SchedulePageProps) {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">
-                    Enter Details
-                  </h3>
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  className="flex flex-col justify-start space-y-4"
+                >
+                  <div className="w-full space-y-2">
+                    <label
+                      htmlFor="name"
+                      className="text-sm text-gray-700 font-medium"
+                    >
+                      Name
+                    </label>
+                    <input
+                      {...register("name")}
+                      type="text"
+                      id="name"
+                      className="w-full text-black px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                    />
+                    {errors.name && (
+                      <p className="text-sm text-red-500">
+                        {errors.name.message}
+                      </p>
+                    )}
+                  </div>
 
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        {...register("name")}
-                        className="text-black w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                      />
-                      {errors.name && (
-                        <p className="text-sm text-red-500 mt-1">
-                          {errors.name.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        {...register("email")}
-                        className="text-black w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                      />
-                      {errors.email && (
-                        <p className="text-sm text-red-500 mt-1">
-                          {errors.email.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="message"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Please share anything that will help prepare for your
-                        meeting
-                      </label>
-                      <textarea
-                        id="message"
-                        {...register("message")}
-                        rows={4}
-                        className="text-black w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical transition-colors duration-200"
-                      />
-                    </div>
+                  <div className="w-full space-y-2">
+                    <label
+                      htmlFor="email"
+                      className="text-sm text-gray-700 font-medium"
+                    >
+                      Email
+                    </label>
+                    <input
+                      {...register("email")}
+                      type="email"
+                      id="email"
+                      className="w-full text-black px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-red-500">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className=" space-y-2">
+                    <label
+                      htmlFor="message"
+                      className="text-sm text-gray-700 font-medium"
+                    >
+                      Please share anything that will help prepare for our
+                      meeting.
+                    </label>
+                    <textarea
+                      {...register("message")}
+                      id="message"
+                      rows={4}
+                      className="w-full text-black px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                    />
                     <button
                       type="submit"
-                      className="w-full py-3 px-6 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      className="py-2 px-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300"
                     >
                       Schedule Event
                     </button>
-                  </form>
-                </div>
+                  </div>
+                </form>
               </div>
             </div>
           )}
