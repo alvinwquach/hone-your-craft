@@ -140,7 +140,7 @@ function AddAvailabilityModal({
     };
 
     try {
-      const response = await fetch("/api/client-availability", {
+      const response = await fetch("/api/interview-availability", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +155,7 @@ function AddAvailabilityModal({
       onSubmit(datesToSubmit, timeRanges);
       toast.success("Availability added successfully");
       closeModal();
-      mutate("/api/client-availability");
+      mutate("/api/interview-availability");
     } catch (error) {
       toast.error("Your availability cannot overlap with other time slots");
       console.error("Error submitting availability:", error);

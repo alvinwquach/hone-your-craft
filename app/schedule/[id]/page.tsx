@@ -34,19 +34,19 @@ type Event = {
   userId: string;
   title: string;
   length: number;
-  bookingTimes: {
-    weekly: Record<Day, BookingTime[]>;
-    dateSpecific: {
-      dayOfWeek: string;
-      isRecurring: boolean;
-      startTime: string;
-      endTime: string;
-    }[];
-  };
+  bookingTimes: Array<{
+    id: string;
+    userId: string;
+    dayOfWeek: string;
+    isRecurring: boolean;
+    startTime: string;
+    endTime: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 };
-
 interface SchedulePageProps {
   params: {
     id: string;
@@ -101,12 +101,10 @@ function SchedulePage({ params }: SchedulePageProps) {
 
   const findAvailabilityForDate = (date: Date): BookingTime[] => {
     if (!event) return [];
-    const dayOfWeek = format(date, "EEE").toLowerCase() as Day;
-    const specific = event.bookingTimes.dateSpecific.find((item) =>
-      isSameDay(parseISO(item.startTime), date)
-    );
-    if (specific) return [{ start: specific.startTime, end: specific.endTime }];
-    return event.bookingTimes.weekly[dayOfWeek] || [];
+
+    return event.bookingTimes
+      .filter((item) => isSameDay(parseISO(item.startTime), date))
+      .map((item) => ({ start: item.startTime, end: item.endTime }));
   };
 
   const generateTimeSlots = (
@@ -184,6 +182,7 @@ function SchedulePage({ params }: SchedulePageProps) {
   const availableTimes = selectedDate
     ? findAvailabilityForDate(selectedDate)
     : [];
+
   const timeSlots = availableTimes.flatMap((timeRange) =>
     generateTimeSlots(
       { start: timeRange.start, end: timeRange.end },
@@ -199,16 +198,28 @@ function SchedulePage({ params }: SchedulePageProps) {
     selectedTime: string,
     meetingLength: number
   ): { start: string; end: string }[] => {
-    const [hour, minute, ampm] = selectedTime.split(/[: ]/);
+    const match = selectedTime.match(/(\d+):(\d+)([ap]m)/i);
+    if (!match) {
+      console.error("Invalid time format:", selectedTime);
+      throw new Error("Invalid time format");
+    }
+    const [, hour, minute, ampm] = match;
+
     let hours = parseInt(hour, 10);
-    if (ampm === "pm" && hours !== 12) hours += 12;
-    if (ampm === "am" && hours === 12) hours = 0;
+    if (ampm.toLowerCase() === "pm") {
+      hours = hours === 12 ? hours : hours + 12;
+    } else if (ampm.toLowerCase() === "am" && hours === 12) {
+      hours = 0;
+    }
 
     const meetingStart = new Date(selectedDate);
     meetingStart.setHours(hours, parseInt(minute, 10), 0, 0);
 
     const meetingEnd = new Date(meetingStart);
     meetingEnd.setMinutes(meetingEnd.getMinutes() + meetingLength);
+
+    console.log("Generated meeting start:", meetingStart);
+    console.log("Generated meeting end:", meetingEnd);
 
     return [
       {
@@ -269,18 +280,16 @@ function SchedulePage({ params }: SchedulePageProps) {
                   }
                   minDate={new Date()}
                   mapDays={({ date }) => {
-                    const isAvailable =
-                      event.bookingTimes.dateSpecific.some((item) =>
-                        isSameDay(parseISO(item.startTime), date.toDate())
-                      ) ||
-                      event.bookingTimes.weekly[
-                        format(date.toDate(), "EEE").toLowerCase() as Day
-                      ].length > 0;
+                    const isAvailable = event?.bookingTimes.some((item) =>
+                      isSameDay(parseISO(item.startTime), date.toDate())
+                    );
+
                     const isTodayDate = isToday(date.toDate());
                     const isSelected =
                       selectedDate && isSameDay(selectedDate, date.toDate());
                     const isBeforeToday = date.toDate() < new Date();
                     let dayClasses = "cursor-pointer";
+
                     if (!isAvailable) {
                       dayClasses = "bg-white cursor-not-allowed";
                     } else if (isBeforeToday) {
@@ -355,7 +364,6 @@ function SchedulePage({ params }: SchedulePageProps) {
                     ))}
                   </ul>
                 </div>
-
                 {timeSlots.length === 0 && (
                   <p className="text-center text-gray-500">
                     No availability on this date
@@ -421,15 +429,14 @@ function SchedulePage({ params }: SchedulePageProps) {
                       {...register("name")}
                       type="text"
                       id="name"
-                      className="w-full text-black px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                      className="w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.name && (
-                      <p className="text-sm text-red-500">
+                      <span className="text-red-500 text-sm">
                         {errors.name.message}
-                      </p>
+                      </span>
                     )}
                   </div>
-
                   <div className="w-full space-y-2">
                     <label
                       htmlFor="email"
@@ -441,36 +448,34 @@ function SchedulePage({ params }: SchedulePageProps) {
                       {...register("email")}
                       type="email"
                       id="email"
-                      className="w-full text-black px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                      className="w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.email && (
-                      <p className="text-sm text-red-500">
+                      <span className="text-red-500 text-sm">
                         {errors.email.message}
-                      </p>
+                      </span>
                     )}
                   </div>
-
-                  <div className=" space-y-2">
+                  <div className="w-full space-y-2">
                     <label
                       htmlFor="message"
                       className="text-sm text-gray-700 font-medium"
                     >
-                      Please share anything that will help prepare for our
-                      meeting.
+                      Message (optional)
                     </label>
                     <textarea
                       {...register("message")}
                       id="message"
                       rows={4}
-                      className="w-full text-black px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-600"
+                      className="w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button
-                      type="submit"
-                      className="py-2 px-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300"
-                    >
-                      Schedule Event
-                    </button>
                   </div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-all duration-300"
+                  >
+                    Confirm Booking
+                  </button>
                 </form>
               </div>
             </div>
