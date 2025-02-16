@@ -59,19 +59,18 @@ export async function POST(req: NextRequest) {
         const end = new Date(selectedDate);
         end.setHours(endHour, endMinute, 0, 0);
 
-        const existingEntries =
-          await prisma.clientInterviewAvailability.findMany({
-            where: {
-              clientId: currentUser.id,
-              startTime: {
-                lte: end,
-              },
-              endTime: {
-                gte: start,
-              },
-              dayOfWeek: dayOfWeek,
+        const existingEntries = await prisma.interviewAvailability.findMany({
+          where: {
+            userId: currentUser.id,
+            startTime: {
+              lte: end,
             },
-          });
+            endTime: {
+              gte: start,
+            },
+            dayOfWeek: dayOfWeek,
+          },
+        });
 
         if (existingEntries.length > 0) {
           return NextResponse.json(
@@ -80,9 +79,9 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        await prisma.clientInterviewAvailability.create({
+        await prisma.interviewAvailability.create({
           data: {
-            clientId: currentUser.id,
+            userId: currentUser.id,
             dayOfWeek: dayOfWeek,
             startTime: start,
             endTime: end,
@@ -112,9 +111,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const availabilities = await prisma.clientInterviewAvailability.findMany({
+    const availabilities = await prisma.interviewAvailability.findMany({
       where: {
-        clientId: currentUser.id,
+        userId: currentUser.id,
       },
       orderBy: {
         dayOfWeek: "asc",
@@ -165,9 +164,9 @@ export async function DELETE(req: NextRequest) {
 
     const dayOfWeek = convertToDayOfWeek(selectedDate.getDay());
 
-    await prisma.clientInterviewAvailability.deleteMany({
+    await prisma.interviewAvailability.deleteMany({
       where: {
-        clientId: currentUser.id,
+        userId: currentUser.id,
         dayOfWeek: dayOfWeek,
         startTime: {
           gte: startOfDay,
@@ -195,6 +194,3 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
-
-
-

@@ -63,10 +63,12 @@ function Sidesheet({ onClose }: SidesheetProps) {
     { refreshInterval: 1000 }
   );
 
-  const { data: clientAvailability, isLoading: clientAvailabilityLoading } =
-    useSWR(session ? `/api/client-availability` : null, fetcher, {
-      refreshInterval: 1000,
-    });
+  const {
+    data: interviewAvailability,
+    isLoading: interviewAvailabilityLoading,
+  } = useSWR(session ? `/api/interview-availability` : null, fetcher, {
+    refreshInterval: 1000,
+  });
 
   const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEventName(e.target.value);
@@ -143,11 +145,11 @@ function Sidesheet({ onClose }: SidesheetProps) {
   };
 
   useEffect(() => {
-    if (clientAvailability && !clientAvailabilityLoading) {
+    if (interviewAvailability && !interviewAvailabilityLoading) {
       const newAvailability = { ...availability };
 
       Object.keys(newAvailability.weekly).forEach((day) => {
-        const recurringEvents = clientAvailability
+        const recurringEvents = interviewAvailability
           .filter((availability: any) => {
             const dayOfWeek = new Date(availability.startTime)
               .toLocaleString("en-US", { weekday: "short" })
@@ -168,7 +170,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
 
       setAvailability(newAvailability);
     }
-  }, [clientAvailability, clientAvailabilityLoading]);
+  }, [interviewAvailability, interviewAvailabilityLoading]);
 
   const renderTimeSlotInputs = (day: string) => {
     return availability.weekly[day].map((slot, index) => (
@@ -249,6 +251,8 @@ function Sidesheet({ onClose }: SidesheetProps) {
   };
 
   const groupByDateRange = (availability: any) => {
+    if (!availability || availability.length === 0) return [];
+
     const sortedAvailability = [...availability].sort(
       (a, b) =>
         new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
@@ -347,7 +351,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!clientAvailabilityLoading && clientAvailability) {
+    if (!interviewAvailabilityLoading && interviewAvailability) {
       console.log("Event Name:", eventName);
       console.log(
         "Duration:",
@@ -356,7 +360,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
           : duration
       );
       console.log("Weekly Availability:", availability.weekly);
-      console.log("Date-Specific Availability:", clientAvailability);
+      console.log("Date-Specific Availability:", interviewAvailability);
 
       let durationInMinutes: number | undefined;
 
@@ -383,7 +387,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
       }
 
       const typedClientAvailability =
-        clientAvailability as ClientAvailabilityItem[];
+        interviewAvailability as ClientAvailabilityItem[];
 
       const dataToSend = {
         title: eventName,
@@ -530,12 +534,12 @@ function Sidesheet({ onClose }: SidesheetProps) {
               <p className="text-sm text-gray-500 mt-2">
                 {new Date().getFullYear()}
               </p>
-              {clientAvailabilityLoading ? (
+              {interviewAvailabilityLoading ? (
                 <p className="text-sm text-gray-500">
                   Loading client availability...
                 </p>
               ) : (
-                groupByDateRange(clientAvailability)?.map((group, index) => {
+                groupByDateRange(interviewAvailability)?.map((group, index) => {
                   return (
                     <div key={index} className="mt-4 rounded-lg shadow-sm">
                       <div className="flex flex-col space-y-2">
