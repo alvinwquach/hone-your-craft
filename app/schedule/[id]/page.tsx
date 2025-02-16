@@ -124,7 +124,6 @@ function SchedulePage({ params }: SchedulePageProps) {
       }
       current = new Date(nextSlot);
     }
-    console.log("Generated time slots:", slots); // Log the generated time slots
     return slots;
   };
 
