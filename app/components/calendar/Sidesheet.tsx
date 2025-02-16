@@ -144,33 +144,40 @@ function Sidesheet({ onClose }: SidesheetProps) {
     }));
   };
 
-  useEffect(() => {
-    if (interviewAvailability && !interviewAvailabilityLoading) {
-      const newAvailability = { ...availability };
+ useEffect(() => {
+   if (interviewAvailability && !interviewAvailabilityLoading) {
+     const newAvailability = { ...availability };
 
-      Object.keys(newAvailability.weekly).forEach((day) => {
-        const recurringEvents = interviewAvailability
-          .filter((availability: any) => {
-            const dayOfWeek = new Date(availability.startTime)
-              .toLocaleString("en-US", { weekday: "short" })
-              .toLowerCase();
-            return availability.isRecurring && dayOfWeek === day;
-          })
-          .map((availability: any) => ({
-            start: format(new Date(availability.startTime), "hh:mm a"),
-            end: format(new Date(availability.endTime), "hh:mm a"),
-          }));
+     Object.keys(newAvailability.weekly).forEach((day) => {
+       const recurringEvents = interviewAvailability
+         .filter((availability: any) => {
+           const dayOfWeek = new Date(availability.startTime)
+             .toLocaleString("en-US", { weekday: "short" })
+             .toLowerCase();
+           return availability.isRecurring && dayOfWeek === day;
+         })
+         .map((availability: any) => ({
+           start: format(new Date(availability.startTime), "hh:mm a"),
+           end: format(new Date(availability.endTime), "hh:mm a"),
+         }));
 
-        if (recurringEvents.length > 0) {
-          newAvailability.weekly[day] = [recurringEvents[0]];
-        } else {
-          newAvailability.weekly[day] = [];
-        }
-      });
+       newAvailability.weekly[day] =
+         recurringEvents.length > 0 ? [recurringEvents[0]] : [];
+     });
 
-      setAvailability(newAvailability);
-    }
-  }, [interviewAvailability, interviewAvailabilityLoading]);
+     newAvailability.dateSpecific = interviewAvailability.map(
+       (availability: any) => ({
+         date: new Date(availability.startTime).toISOString().split("T")[0],
+         hours: `${format(
+           new Date(availability.startTime),
+           "hh:mm a"
+         )} - ${format(new Date(availability.endTime), "hh:mm a")}`,
+       })
+     );
+
+     setAvailability(newAvailability);
+   }
+ }, [interviewAvailability, interviewAvailabilityLoading]);
 
   const renderTimeSlotInputs = (day: string) => {
     return availability.weekly[day].map((slot, index) => (

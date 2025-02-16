@@ -323,7 +323,7 @@ function Calendar() {
               {activeTab === "availability" && (
                 <div>
                   <AvailabilityCalendar
-                    clientAvailability={interviewAvailability}
+                    interviewAvailability={interviewAvailability}
                   />
                 </div>
               )}

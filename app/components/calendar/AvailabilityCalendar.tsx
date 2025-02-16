@@ -31,12 +31,11 @@ interface AvailabilityItem {
 
 
 interface AvailabilityCalendarProps {
-  clientAvailability: AvailabilityItem[];
+  interviewAvailability: AvailabilityItem[];
 }
 
-
 function AvailabilityCalendar({
-  clientAvailability,
+  interviewAvailability,
 }: AvailabilityCalendarProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -71,16 +70,18 @@ function AvailabilityCalendar({
     return `${formattedHours}:${paddedMinutes} ${period}`;
   };
 
-  const clientEvents = clientAvailability.map((item: AvailabilityItem) => {
-    const start = new Date(item.startTime);
-    const end = new Date(item.endTime);
+  const interviewEvents = interviewAvailability?.map(
+    (item: AvailabilityItem) => {
+      const start = new Date(item.startTime);
+      const end = new Date(item.endTime);
 
-    return {
-      start,
-      end,
-      title: `${formatTime(start)} - ${formatTime(end)}`,
-    };
-  });
+      return {
+        start,
+        end,
+        title: `${formatTime(start)} - ${formatTime(end)}`,
+      };
+    }
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -287,7 +288,7 @@ function AvailabilityCalendar({
 
   const handleResetAvailability = async (date: Date | null) => {
     try {
-      const response = await fetch("/api/client-availability", {
+      const response = await fetch("/api/interview-availability", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -300,7 +301,7 @@ function AvailabilityCalendar({
       }
 
       toast.success("Availability removed successfully");
-      mutate("/api/client-availability");
+      mutate("/api/interview-availability");
       setShowOptionsMenu(false);
     } catch (error) {
       console.error("Error resetting availability:", error);
@@ -320,7 +321,7 @@ function AvailabilityCalendar({
           ]}
           initialView="dayGridMonth"
           headerToolbar={headerToolbar}
-          events={clientEvents}
+          events={interviewEvents}
           selectable={true}
           dateClick={handleDateClick}
           select={handleSelect}
