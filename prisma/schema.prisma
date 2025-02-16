@@ -13,6 +13,8 @@ model EventType {
   user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
   title                       String
   length                      Int?  
+  bookingTimes                Json
+  // clientAvailabilities        ClientInterviewAvailability[] @relation("EventClientAvailabilities")
   createdAt                   DateTime         @default(now())
   updatedAt                   DateTime         @updatedAt
 }
@@ -493,6 +495,8 @@ model InterviewAvailability {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String   @db.ObjectId
   user        User     @relation("InterviewAvailability", fields: [userId], references: [id])
+  // eventType     EventType @relation("EventClientAvailabilities", fields: [eventTypeId], references: [id])
+  // eventTypeId   String   @db.ObjectId
   dayOfWeek     DayOfWeek
   isRecurring   Boolean  @default(false)
   startTime     DateTime
