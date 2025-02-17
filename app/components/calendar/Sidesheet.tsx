@@ -9,12 +9,18 @@ import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { DayOfWeek } from "@prisma/client";
 
 interface Availability {
   weekly: {
     [key: string]: { start: string; end: string }[];
   };
-  dateSpecific: { date: string; hours: string }[];
+  dateSpecific: {
+    startTime: string;
+    endTime: string;
+    isRecurring: boolean;
+    dayOfWeek: DayOfWeek;
+  }[];
 }
 
 type ClientAvailabilityItem = {
@@ -144,40 +150,37 @@ function Sidesheet({ onClose }: SidesheetProps) {
     }));
   };
 
- useEffect(() => {
-   if (interviewAvailability && !interviewAvailabilityLoading) {
-     const newAvailability = { ...availability };
+  useEffect(() => {
+    if (interviewAvailability && !interviewAvailabilityLoading) {
+      const newAvailability = { ...availability };
 
-     Object.keys(newAvailability.weekly).forEach((day) => {
-       const recurringEvents = interviewAvailability
-         .filter((availability: any) => {
-           const dayOfWeek = new Date(availability.startTime)
-             .toLocaleString("en-US", { weekday: "short" })
-             .toLowerCase();
-           return availability.isRecurring && dayOfWeek === day;
-         })
-         .map((availability: any) => ({
-           start: format(new Date(availability.startTime), "hh:mm a"),
-           end: format(new Date(availability.endTime), "hh:mm a"),
-         }));
+      Object.keys(newAvailability.weekly).forEach((day) => {
+        newAvailability.weekly[day] = interviewAvailability
+          .filter(
+            (avail: any) =>
+              new Date(avail.startTime)
+                .toLocaleString("en-US", { weekday: "short" })
+                .toLowerCase() === day && avail.isRecurring
+          )
+          .map((avail: any) => ({
+            start: format(new Date(avail.startTime), "hh:mm a"),
+            end: format(new Date(avail.endTime), "hh:mm a"),
+          }));
+      });
 
-       newAvailability.weekly[day] =
-         recurringEvents.length > 0 ? [recurringEvents[0]] : [];
-     });
-
-     newAvailability.dateSpecific = interviewAvailability.map(
-       (availability: any) => ({
-         date: new Date(availability.startTime).toISOString().split("T")[0],
-         hours: `${format(
-           new Date(availability.startTime),
-           "hh:mm a"
-         )} - ${format(new Date(availability.endTime), "hh:mm a")}`,
-       })
-     );
-
-     setAvailability(newAvailability);
-   }
- }, [interviewAvailability, interviewAvailabilityLoading]);
+      setAvailability({
+        ...newAvailability,
+        dateSpecific: interviewAvailability.map((avail: any) => ({
+          startTime: avail.startTime,
+          endTime: avail.endTime,
+          isRecurring: avail.isRecurring,
+          dayOfWeek: new Date(avail.startTime)
+            .toLocaleString("en-US", { weekday: "long" })
+            .toUpperCase() as DayOfWeek,
+        })),
+      });
+    }
+  }, [interviewAvailability, interviewAvailabilityLoading]);
 
   const renderTimeSlotInputs = (day: string) => {
     return availability.weekly[day].map((slot, index) => (
@@ -359,16 +362,6 @@ function Sidesheet({ onClose }: SidesheetProps) {
     e.preventDefault();
 
     if (!interviewAvailabilityLoading && interviewAvailability) {
-      console.log("Event Name:", eventName);
-      console.log(
-        "Duration:",
-        duration === "custom"
-          ? `${customDuration.value} ${customDuration.unit}`
-          : duration
-      );
-      console.log("Weekly Availability:", availability.weekly);
-      console.log("Date-Specific Availability:", interviewAvailability);
-
       let durationInMinutes: number | undefined;
 
       if (duration === "custom") {
@@ -378,11 +371,11 @@ function Sidesheet({ onClose }: SidesheetProps) {
             (customDuration.unit === "hrs" ? 60 : 1);
           if (isNaN(durationInMinutes)) {
             toast.error("Invalid custom duration format.");
-            durationInMinutes = 15;
+            return;
           }
         } else {
           toast.error("Custom duration not specified.");
-          durationInMinutes = 15;
+          return;
         }
       } else {
         durationInMinutes = parseInt(duration);
@@ -390,28 +383,32 @@ function Sidesheet({ onClose }: SidesheetProps) {
 
       if (durationInMinutes === undefined) {
         toast.error("Failed to determine event duration.");
-        durationInMinutes = 15;
+        return;
       }
 
-      const typedClientAvailability =
-        interviewAvailability as ClientAvailabilityItem[];
+      const availabilityData = [
+        ...Object.entries(availability.weekly).flatMap(([day, slots]) =>
+          slots.map((slot) => ({
+            dayOfWeek: day.toUpperCase() as DayOfWeek,
+            isRecurring: true,
+            startTime: new Date(`2000-01-01T${slot.start}`).toISOString(),
+            endTime: new Date(`2000-01-01T${slot.end}`).toISOString(),
+          }))
+        ),
+        ...interviewAvailability.map((avail: any) => ({
+          dayOfWeek: new Date(avail.startTime)
+            .toLocaleString("en-US", { weekday: "long" })
+            .toUpperCase() as DayOfWeek,
+          isRecurring: false,
+          startTime: new Date(avail.startTime).toISOString(),
+          endTime: new Date(avail.endTime).toISOString(),
+        })),
+      ];
 
       const dataToSend = {
         title: eventName,
         length: durationInMinutes,
-        bookingTimes: {
-          weekly: availability.weekly,
-          dateSpecific: typedClientAvailability.map(
-            (item: ClientAvailabilityItem) => ({
-              dayOfWeek: new Date(item.startTime)
-                .toLocaleString("en-us", { weekday: "short" })
-                .toLowerCase(),
-              isRecurring: item.isRecurring,
-              startTime: item.startTime,
-              endTime: item.endTime,
-            })
-          ),
-        },
+        availabilityData: availabilityData,
       };
 
       try {
@@ -429,6 +426,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
 
         const data = await response.json();
         console.log("Success:", data);
+        mutate(`/api/event-type/${data.event.id}`);
         mutate("/api/event-types");
 
         toast.success("Event type created successfully!");

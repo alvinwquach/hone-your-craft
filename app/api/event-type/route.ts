@@ -14,23 +14,40 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, length, bookingTimes } = body;
+    const { title, length } = body;
 
-    if (!title || !length || !bookingTimes) {
+    if (!title || !length) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing or incorrect required fields" },
         { status: 400 }
       );
     }
 
+    // Create the EventType
     const event = await prisma.eventType.create({
       data: {
         userId: currentUser.id,
         title,
         length,
-        bookingTimes,
       },
     });
+
+    // Fetch existing InterviewAvailability for the user
+    const availabilities = await prisma.interviewAvailability.findMany({
+      where: {
+        userId: currentUser.id,
+      },
+    });
+
+    // Link all existing availability to the new event type
+    for (const availability of availabilities) {
+      await prisma.eventTypeAvailability.create({
+        data: {
+          eventTypeId: event.id,
+          availabilityId: availability.id,
+        },
+      });
+    }
 
     return NextResponse.json(
       { message: "Event type created successfully", event },

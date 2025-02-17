@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        await prisma.interviewAvailability.create({
+        const newAvailability = await prisma.interviewAvailability.create({
           data: {
             userId: currentUser.id,
             dayOfWeek: dayOfWeek,
@@ -88,6 +88,21 @@ export async function POST(req: NextRequest) {
             isRecurring: Boolean(isRecurring),
           },
         });
+
+        const eventTypes = await prisma.eventType.findMany({
+          where: {
+            userId: currentUser.id,
+          },
+        });
+
+        for (const eventType of eventTypes) {
+          await prisma.eventTypeAvailability.create({
+            data: {
+              eventTypeId: eventType.id,
+              availabilityId: newAvailability.id,
+            },
+          });
+        }
       }
     }
 
@@ -164,6 +179,23 @@ export async function DELETE(req: NextRequest) {
 
     const dayOfWeek = convertToDayOfWeek(selectedDate.getDay());
 
+    // First, delete associated EventTypeAvailability records
+    await prisma.eventTypeAvailability.deleteMany({
+      where: {
+        availability: {
+          userId: currentUser.id,
+          dayOfWeek: dayOfWeek,
+          startTime: {
+            gte: startOfDay,
+          },
+          endTime: {
+            lte: endOfDay,
+          },
+        },
+      },
+    });
+
+    // Then, delete the InterviewAvailability records
     await prisma.interviewAvailability.deleteMany({
       where: {
         userId: currentUser.id,
