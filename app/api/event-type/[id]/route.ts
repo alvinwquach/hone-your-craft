@@ -11,6 +11,13 @@ export async function GET(
   try {
     const event = await prisma.eventType.findUnique({
       where: { id: eventId },
+      include: {
+        availabilities: {
+          include: {
+            availability: true,
+          },
+        },
+      },
     });
 
     if (!event) {
@@ -20,7 +27,12 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(event);
+    const formattedEvent = {
+      ...event,
+      availabilities: event.availabilities.map((ea) => ea.availability),
+    };
+
+    return NextResponse.json(formattedEvent);
   } catch (error) {
     console.error("Error fetching event type:", error);
     return NextResponse.json(
@@ -64,6 +76,12 @@ export async function DELETE(
       );
     }
 
+    await prisma.eventTypeAvailability.deleteMany({
+      where: {
+        eventTypeId: eventId,
+      },
+    });
+
     await prisma.eventType.delete({
       where: { id: eventId },
     });
@@ -77,3 +95,4 @@ export async function DELETE(
     );
   }
 }
+

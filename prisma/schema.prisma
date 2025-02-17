@@ -7,18 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model EventType {
-  id                          String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId                      String           @db.ObjectId
-  user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
-  title                       String
-  length                      Int?  
-  bookingTimes                Json
-  // clientAvailabilities        ClientInterviewAvailability[] @relation("EventClientAvailabilities")
-  createdAt                   DateTime         @default(now())
-  updatedAt                   DateTime         @updatedAt
-}
-
 enum DayOfWeek {
   SUNDAY
   MONDAY
@@ -282,6 +270,79 @@ enum InviteStatus {
   CANCELLED
 }
 
+model EventType {
+  id                          String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId                      String           @db.ObjectId
+  user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
+  title                       String
+  length                      Int?  
+  // Remove bookingTimes since we're not using it anymore
+  // bookingTimes                Json
+  createdAt                   DateTime         @default(now())
+  updatedAt                   DateTime         @updatedAt
+  availabilities              EventTypeAvailability[] @relation("EventTypeToAvailability")
+}
+
+model InterviewAvailability {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  user          User     @relation("InterviewAvailability", fields: [userId], references: [id])
+  dayOfWeek     DayOfWeek
+  isRecurring   Boolean  @default(false)
+  startTime     DateTime
+  endTime       DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  availabilities EventTypeAvailability[] @relation("AvailabilityToEventType")
+  @@map("interview_availabilities")
+}
+
+model EventTypeAvailability {
+  id                  String               @id @default(auto()) @map("_id") @db.ObjectId
+  eventTypeId         String               @db.ObjectId
+  eventType           EventType            @relation("EventTypeToAvailability", fields: [eventTypeId], references: [id])
+  availabilityId      String               @db.ObjectId
+  availability        InterviewAvailability @relation("AvailabilityToEventType", fields: [availabilityId], references: [id])
+  
+  @@unique([eventTypeId, availabilityId])
+  @@map("event_type_availability")
+}
+
+model TimeSlot {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  interviewInviteId String          @unique @db.ObjectId
+  interviewInvite   InterviewInvite @relation("InterviewInviteToTimeSlot", fields: [interviewInviteId], references: [id])
+  startTime         DateTime
+  endTime           DateTime
+  isBooked          Boolean         @default(false)
+  bookedBy          String?         @db.ObjectId
+  duration          Int?           
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("timeslots")
+}
+
+model InterviewInvite {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  client        User         @relation("ClientInvites", fields: [clientId], references: [id])
+  clientId      String       @db.ObjectId
+  candidate     User         @relation("CandidateInvites", fields: [candidateId], references: [id])
+  candidateId   String       @db.ObjectId
+  jobPosting    JobPosting   @relation("JobPostingInvites", fields: [jobPostingId], references: [id])
+  jobPostingId  String       @db.ObjectId
+  inviteDate    DateTime     @default(now())
+  interviewDate DateTime?
+  timeSlotId    String?      @db.ObjectId
+  timeSlot      TimeSlot?    @relation("InterviewInviteToTimeSlot")
+  duration      Int?
+  startTime     DateTime?
+  endTime       DateTime?
+  status        InviteStatus @default(PENDING)
+
+  @@map("interview_invites")
+}
+
 model Connection {
   id          String           @id @default(auto()) @map("_id") @db.ObjectId
   requesterId String           @db.ObjectId
@@ -489,57 +550,6 @@ model JobPosting {
   directApplications   Int                       @default(0)
 
   @@map("job_postings")
-}
-
-model InterviewAvailability {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  user        User     @relation("InterviewAvailability", fields: [userId], references: [id])
-  // eventType     EventType @relation("EventClientAvailabilities", fields: [eventTypeId], references: [id])
-  // eventTypeId   String   @db.ObjectId
-  dayOfWeek     DayOfWeek
-  isRecurring   Boolean  @default(false)
-  startTime     DateTime
-  endTime       DateTime
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@map("interview_availabilities")
-}
-
-model TimeSlot {
-  id                String          @id @default(auto()) @map("_id") @db.ObjectId
-  interviewInviteId String          @unique @db.ObjectId
-  interviewInvite   InterviewInvite @relation("InterviewInviteToTimeSlot", fields: [interviewInviteId], references: [id])
-  startTime         DateTime
-  endTime           DateTime
-  isBooked          Boolean         @default(false)
-  bookedBy          String?         @db.ObjectId
-  duration          Int?           
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-
-  @@map("timeslots")
-}
-
-model InterviewInvite {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  client        User         @relation("ClientInvites", fields: [clientId], references: [id])
-  clientId      String       @db.ObjectId
-  candidate     User         @relation("CandidateInvites", fields: [candidateId], references: [id])
-  candidateId   String       @db.ObjectId
-  jobPosting    JobPosting   @relation("JobPostingInvites", fields: [jobPostingId], references: [id])
-  jobPostingId  String       @db.ObjectId
-  inviteDate    DateTime     @default(now())
-  interviewDate DateTime?
-  timeSlotId    String?      @db.ObjectId
-  timeSlot      TimeSlot?    @relation("InterviewInviteToTimeSlot")
-  duration      Int?
-  startTime     DateTime?
-  endTime       DateTime?
-  status        InviteStatus @default(PENDING)
-
-  @@map("interview_invites")
 }
 
 model Salary {

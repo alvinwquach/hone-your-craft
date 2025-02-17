@@ -34,7 +34,9 @@ type Event = {
   userId: string;
   title: string;
   length: number;
-  bookingTimes: Array<{
+  createdAt: string;
+  updatedAt: string;
+  availabilities: Array<{
     id: string;
     userId: string;
     dayOfWeek: string;
@@ -44,8 +46,6 @@ type Event = {
     createdAt: string;
     updatedAt: string;
   }>;
-  createdAt: string;
-  updatedAt: string;
 };
 
 interface SchedulePageProps {
@@ -104,7 +104,7 @@ function SchedulePage({ params }: SchedulePageProps) {
   const findAvailabilityForDate = (date: Date): BookingTime[] => {
     if (!event) return [];
 
-    return event.bookingTimes
+    return event.availabilities
       .filter((item) => isSameDay(parseISO(item.startTime), date))
       .map((item) => ({ start: item.startTime, end: item.endTime }));
   };
@@ -140,8 +140,7 @@ function SchedulePage({ params }: SchedulePageProps) {
       );
       setTimeSlots(newTimeSlots);
     }
-  }, [selectedDate, event]);
-
+  }, [selectedDate, event, event?.availabilities]);
   const handleNextButtonClick = () => {
     if (selectedTime) {
       setIsFormVisible(true);
@@ -295,9 +294,10 @@ function SchedulePage({ params }: SchedulePageProps) {
                   }
                   minDate={new Date()}
                   mapDays={({ date }) => {
-                    const isAvailable = event?.bookingTimes.some((item) =>
-                      isSameDay(parseISO(item.startTime), date.toDate())
-                    );
+                    const isAvailable = event?.availabilities?.some((avail) => {
+                      const availDate = new Date(avail.startTime);
+                      return isSameDay(availDate, date.toDate());
+                    });
 
                     const isTodayDate = isToday(date.toDate());
                     const isSelected =

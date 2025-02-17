@@ -14,11 +14,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, length, bookingTimes } = body;
+    const { title, length } = body;
 
-    if (!title || !length || !bookingTimes) {
+    if (!title || !length) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing or incorrect required fields" },
         { status: 400 }
       );
     }
@@ -28,9 +28,23 @@ export async function POST(request: Request) {
         userId: currentUser.id,
         title,
         length,
-        bookingTimes,
       },
     });
+
+    const availabilities = await prisma.interviewAvailability.findMany({
+      where: {
+        userId: currentUser.id,
+      },
+    });
+
+    for (const availability of availabilities) {
+      await prisma.eventTypeAvailability.create({
+        data: {
+          eventTypeId: event.id,
+          availabilityId: availability.id,
+        },
+      });
+    }
 
     return NextResponse.json(
       { message: "Event type created successfully", event },
