@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { toast } from "react-toastify";
 import { Calendar, DateObject } from "react-multi-date-picker";
@@ -47,6 +47,7 @@ type Event = {
   createdAt: string;
   updatedAt: string;
 };
+
 interface SchedulePageProps {
   params: {
     id: string;
@@ -76,6 +77,7 @@ function SchedulePage({ params }: SchedulePageProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const { data: session, status } = useSession();
 
   const {
@@ -127,6 +129,19 @@ function SchedulePage({ params }: SchedulePageProps) {
     return slots;
   };
 
+  useEffect(() => {
+    if (selectedDate && event) {
+      const newTimeSlots = findAvailabilityForDate(selectedDate).flatMap(
+        (timeRange) =>
+          generateTimeSlots(
+            { start: timeRange.start, end: timeRange.end },
+            event.length
+          )
+      );
+      setTimeSlots(newTimeSlots);
+    }
+  }, [selectedDate, event]);
+
   const handleNextButtonClick = () => {
     if (selectedTime) {
       setIsFormVisible(true);
@@ -134,64 +149,43 @@ function SchedulePage({ params }: SchedulePageProps) {
   };
 
   const onSubmit = (data: FormData) => {
-    const meetingTime =
-      selectedDate && selectedTime
-        ? generateMeetingTime(selectedDate, selectedTime, event?.length || 30)
-        : null;
+    if (selectedDate && selectedTime && event) {
+      const meetingTime = generateMeetingTime(
+        selectedDate,
+        selectedTime,
+        event.length
+      );
 
-    const formattedMeetingTime = meetingTime
-      ? `${format(new Date(meetingTime[0].start), "hh:mm a")} - ${format(
-          new Date(meetingTime[0].end),
-          "hh:mm a"
-        )}, ${format(selectedDate!, "EEEE, MMMM d, yyyy")}`
-      : "Select a time slot";
+      const startTime = format(new Date(meetingTime[0].start), "hh:mm a");
+      const endTime = format(new Date(meetingTime[0].end), "hh:mm a");
+      const dateStr = format(selectedDate, "EEEE, MMMM d");
 
-    const queryParams = new URLSearchParams({
-      name: data.name,
-      email: data.email,
-      meetingTime: formattedMeetingTime,
-    });
+      const formattedMeetingTime = meetingTime
+        ? `${format(new Date(meetingTime[0].start), "hh:mm a")} - ${format(
+            new Date(meetingTime[0].end),
+            "hh:mm a"
+          )}, ${format(selectedDate!, "EEEE, MMMM d, yyyy")}`
+        : "Select a time slot";
 
-    router.push(`/schedule/confirmation?${queryParams.toString()}`);
+      const queryParams = new URLSearchParams({
+        name: data.name,
+        email: data.email,
+        meetingTime: formattedMeetingTime,
+      });
 
-    toast.success("Event scheduled successfully!");
-    reset();
+      router.push(`/schedule/confirmation?${queryParams.toString()}`);
+
+      toast.success(
+        `Event scheduled successfully! Your ${event.title} is booked for ${startTime} - ${endTime} on ${dateStr}`
+      );
+
+      setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
+      setSelectedTime(null);
+      setSelectedDate(null);
+      reset();
+      setIsFormVisible(false);
+    }
   };
-
-  if (isLoading) {
-    return <div>Loading event details...</div>;
-  }
-
-  if (error) {
-    toast.error("Failed to fetch event details");
-    return <div>Error loading event details</div>;
-  }
-
-  if (!event) {
-    return <div>Event not found!</div>;
-  }
-
-  if (status === "loading") {
-    return <div>Loading user session...</div>;
-  }
-
-  if (!session) {
-    return <div>Please sign in to access this page.</div>;
-  }
-
-  const availableTimes = selectedDate
-    ? findAvailabilityForDate(selectedDate)
-    : [];
-
-  const timeSlots = availableTimes.flatMap((timeRange) =>
-    generateTimeSlots(
-      { start: timeRange.start, end: timeRange.end },
-      event.length
-    )
-  );
-
-  const selectedTimeSlot =
-    selectedTime && timeSlots.find((time) => time === selectedTime);
 
   const generateMeetingTime = (
     selectedDate: Date,
@@ -233,6 +227,27 @@ function SchedulePage({ params }: SchedulePageProps) {
     selectedDate && selectedTime
       ? generateMeetingTime(selectedDate, selectedTime, event?.length || 30)
       : null;
+
+  if (isLoading) {
+    return <div>Loading event details...</div>;
+  }
+
+  if (error) {
+    toast.error("Failed to fetch event details");
+    return <div>Error loading event details</div>;
+  }
+
+  if (!event) {
+    return <div>Event not found!</div>;
+  }
+
+  if (status === "loading") {
+    return <div>Loading user session...</div>;
+  }
+
+  if (!session) {
+    return <div>Please sign in to access this page.</div>;
+  }
 
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
@@ -429,7 +444,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                       {...register("name")}
                       type="text"
                       id="name"
-                      className="w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-black py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.name && (
                       <span className="text-red-500 text-sm">
@@ -448,7 +463,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                       {...register("email")}
                       type="email"
                       id="email"
-                      className="w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-black py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.email && (
                       <span className="text-red-500 text-sm">
@@ -467,7 +482,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                       {...register("message")}
                       id="message"
                       rows={4}
-                      className="w-full py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-black py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <button
