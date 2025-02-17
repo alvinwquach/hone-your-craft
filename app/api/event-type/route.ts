@@ -23,7 +23,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create the EventType
     const event = await prisma.eventType.create({
       data: {
         userId: currentUser.id,
@@ -32,14 +31,12 @@ export async function POST(request: Request) {
       },
     });
 
-    // Fetch existing InterviewAvailability for the user
     const availabilities = await prisma.interviewAvailability.findMany({
       where: {
         userId: currentUser.id,
       },
     });
 
-    // Link all existing availability to the new event type
     for (const availability of availabilities) {
       await prisma.eventTypeAvailability.create({
         data: {
