@@ -172,7 +172,8 @@ function SchedulePage({ params }: SchedulePageProps) {
           description: `Meeting scheduled with ${data.name}`,
           startTime: meetingTime[0].start,
           endTime: meetingTime[0].end,
-          participantId: session.user.userId,
+          creatorId: session.user.userId,
+          participantId: event.userId,
         }),
       });
 
