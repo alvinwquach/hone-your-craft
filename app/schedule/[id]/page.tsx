@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { toast } from "react-toastify";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { format, isSameDay, parseISO, isToday } from "date-fns";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaClock, FaCalendarAlt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
@@ -46,6 +46,11 @@ type Event = {
     createdAt: string;
     updatedAt: string;
   }>;
+  user: {
+    name: string;
+    image: string;
+    email: string;
+  };
 };
 
 interface SchedulePageProps {
@@ -68,17 +73,18 @@ type FormData = z.infer<typeof formSchema>;
 function SchedulePage({ params }: SchedulePageProps) {
   const { id } = params;
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const {
     data: event,
     error,
     isLoading,
   } = useSWR<Event | null>(id ? `/api/event-type/${id}` : null, fetcher);
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
-  const { data: session, status } = useSession();
 
   const {
     register,
@@ -141,48 +147,72 @@ function SchedulePage({ params }: SchedulePageProps) {
       setTimeSlots(newTimeSlots);
     }
   }, [selectedDate, event, event?.availabilities]);
+
   const handleNextButtonClick = () => {
     if (selectedTime) {
       setIsFormVisible(true);
     }
   };
 
-  const onSubmit = (data: FormData) => {
-    if (selectedDate && selectedTime && event) {
+  const onSubmit = async (data: FormData) => {
+    if (selectedDate && selectedTime && event && session?.user?.userId) {
       const meetingTime = generateMeetingTime(
         selectedDate,
         selectedTime,
         event.length
       );
 
-      const startTime = format(new Date(meetingTime[0].start), "hh:mm a");
-      const endTime = format(new Date(meetingTime[0].end), "hh:mm a");
-      const dateStr = format(selectedDate, "EEEE, MMMM d");
-
-      const formattedMeetingTime = meetingTime
-        ? `${format(new Date(meetingTime[0].start), "hh:mm a")} - ${format(
-            new Date(meetingTime[0].end),
-            "hh:mm a"
-          )}, ${format(selectedDate!, "EEEE, MMMM d, yyyy")}`
-        : "Select a time slot";
-
-      const queryParams = new URLSearchParams({
-        name: data.name,
-        email: data.email,
-        meetingTime: formattedMeetingTime,
+      const response = await fetch("/api/schedule-event", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: event.title,
+          description: `Meeting scheduled with ${data.name}`,
+          startTime: meetingTime[0].start,
+          endTime: meetingTime[0].end,
+          participantId: session.user.userId,
+        }),
       });
 
-      router.push(`/schedule/confirmation?${queryParams.toString()}`);
+      const result = await response.json();
 
-      toast.success(
-        `Event scheduled successfully! Your ${event.title} is booked for ${startTime} - ${endTime} on ${dateStr}`
-      );
+      if (response.ok) {
+        const startTime = format(new Date(meetingTime[0].start), "hh:mm a");
+        const endTime = format(new Date(meetingTime[0].end), "hh:mm a");
+        const dateStr = format(selectedDate, "EEEE, MMMM d");
 
-      setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
-      setSelectedTime(null);
-      setSelectedDate(null);
-      reset();
-      setIsFormVisible(false);
+        const formattedMeetingTime = meetingTime
+          ? `${format(new Date(meetingTime[0].start), "hh:mm a")} - ${format(
+              new Date(meetingTime[0].end),
+              "hh:mm a"
+            )}, ${format(selectedDate!, "EEEE, MMMM d, yyyy")}`
+          : "Select a time slot";
+
+        const queryParams = new URLSearchParams({
+          name: data.name,
+          email: data.email,
+          meetingTime: formattedMeetingTime,
+        });
+
+        router.push(`/schedule/confirmation?${queryParams.toString()}`);
+        toast.success(
+          `Event scheduled successfully! Your ${event.title} with ${data.name}is booked for ${startTime} - ${endTime} on ${dateStr}`
+        );
+
+        setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
+        setSelectedTime(null);
+        setSelectedDate(null);
+        reset();
+        setIsFormVisible(false);
+
+        mutate(`/api/event-type/${id}`);
+      } else {
+        toast.error(
+          result.error || "An error occurred while scheduling the event"
+        );
+      }
     }
   };
 
@@ -231,6 +261,14 @@ function SchedulePage({ params }: SchedulePageProps) {
     return <div>Loading event details...</div>;
   }
 
+  if (status === "loading") {
+    return <div>Loading user session...</div>;
+  }
+
+  if (!session) {
+    return <div>Please sign in to schedule an event.</div>;
+  }
+
   if (error) {
     toast.error("Failed to fetch event details");
     return <div>Error loading event details</div>;
@@ -240,14 +278,6 @@ function SchedulePage({ params }: SchedulePageProps) {
     return <div>Event not found!</div>;
   }
 
-  if (status === "loading") {
-    return <div>Loading user session...</div>;
-  }
-
-  if (!session) {
-    return <div>Please sign in to access this page.</div>;
-  }
-
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="flex justify-center">
@@ -255,16 +285,17 @@ function SchedulePage({ params }: SchedulePageProps) {
           <div className="flex flex-col md:flex-row items-start justify-between p-6">
             <div className="flex items-center mb-4 md:mb-0">
               <Image
-                src={session?.user?.image as string}
-                alt={session?.user?.name as string}
+                src={event.user.image}
+                alt={event.user.name}
                 width={48}
                 height={48}
                 className="rounded-full mr-4"
               />
               <div>
                 <h2 className="text-xl text-gray-900 font-bold">
-                  {session?.user?.name}
+                  {event.user.name}
                 </h2>
+                <p className="text-sm text-gray-600">{event.user.email}</p>
                 <p className="text-sm text-gray-600">{event.title}</p>
               </div>
             </div>
@@ -393,15 +424,15 @@ function SchedulePage({ params }: SchedulePageProps) {
                 <div className="flex flex-col justify-center items-start space-y-6">
                   <div className="flex items-center space-x-4">
                     <Image
-                      src={session?.user?.image as string}
-                      alt={session?.user?.name as string}
+                      src={event?.user?.image as string}
+                      alt={event?.user?.name as string}
                       width={56}
                       height={56}
                       className="rounded-full w-14 h-14 object-cover shadow-md"
                     />
                     <div className="space-y-1">
                       <h2 className="text-2xl font-semibold text-gray-900">
-                        {session?.user?.name}
+                        {event.user.name}
                       </h2>
                       <p className="text-sm text-gray-600">{event.title}</p>
                     </div>
@@ -484,13 +515,13 @@ function SchedulePage({ params }: SchedulePageProps) {
                       rows={4}
                       className="w-full text-black py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <button
+                      type="submit"
+                      className="px-4 py-3 text-sm text-white bg-blue-600 rounded-full hover:bg-blue-700 transition-all duration-300"
+                    >
+                      Schedule Event
+                    </button>
                   </div>
-                  <button
-                    type="submit"
-                    className="w-full py-3 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-all duration-300"
-                  >
-                    Confirm Booking
-                  </button>
                 </form>
               </div>
             </div>
