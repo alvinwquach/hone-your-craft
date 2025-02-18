@@ -17,6 +17,9 @@ export async function GET(
             availability: true,
           },
         },
+        user: {
+          select: { name: true, email: true, image: true },
+        },
       },
     });
 

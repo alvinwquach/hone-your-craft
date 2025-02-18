@@ -293,6 +293,7 @@ model EventType {
   user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
   title                       String
   length                      Int?  
+ 
   createdAt                   DateTime         @default(now())
   updatedAt                   DateTime         @updatedAt
   availabilities              EventTypeAvailability[] @relation("EventTypeToAvailability")
