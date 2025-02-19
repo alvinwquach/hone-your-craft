@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const newEvent = await prisma.userEvent.create({
+    const event = await prisma.userEvent.create({
       data: {
         title,
         description,
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.timeSlot.create({
       data: {
-        eventId: newEvent.id,
+        eventId: event.id,
         startTime: startDateTime,
         endTime: endDateTime,
         isBooked: true,
@@ -122,9 +122,7 @@ export async function POST(req: NextRequest) {
 
     if (!creator || !participant) {
       return NextResponse.json(
-        {
-          error: "User details not found for notification",
-        },
+        { error: "User details not found for notification" },
         { status: 500 }
       );
     }
@@ -136,15 +134,13 @@ export async function POST(req: NextRequest) {
     const formattedEndTime = format(endDateTime, "h:mm a");
     const subject = `Event Scheduled: ${title} between ${creator.name} and ${participant.name}`;
 
-    const content = `An event has been scheduled between you and ${
-      participant.name === creator.name ? "yourself" : participant.name
-    } from ${formattedStartTime} to ${formattedEndTime}.`;
-
     let conversationId;
     const existingConversation = await prisma.conversation.findFirst({
       where: {
-        senderId: currentUser.id,
-        receiverIds: { has: participantId },
+        OR: [
+          { senderId: currentUser.id, receiverIds: { has: participantId } },
+          { senderId: participantId, receiverIds: { has: currentUser.id } },
+        ],
       },
     });
 
@@ -163,9 +159,21 @@ export async function POST(req: NextRequest) {
     await prisma.message.create({
       data: {
         senderId: currentUser.id,
+        recipientId: [currentUser.id],
+        subject,
+        content: `You scheduled an event with ${participant.name} from ${formattedStartTime} to ${formattedEndTime}`,
+        messageType: "TEXT",
+        isReadByRecipient: true,
+        conversationId,
+      },
+    });
+
+    await prisma.message.create({
+      data: {
+        senderId: currentUser.id,
         recipientId: [participantId],
         subject,
-        content,
+        content: `New event scheduled by ${creator.name} from ${formattedStartTime} to ${formattedEndTime}`,
         messageType: "TEXT",
         isReadByRecipient: false,
         conversationId,
@@ -173,7 +181,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { message: "Event scheduled successfully", event: newEvent },
+      {
+        message: "Event scheduled successfully",
+        event,
+      },
       { status: 201 }
     );
   } catch (error) {
