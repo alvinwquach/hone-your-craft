@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
     const startDateTime = new Date(startTime);
     const endDateTime = new Date(endTime);
 
-    // Check for existing events
     const existingUserEvents = await prisma.userEvent.findMany({
       where: {
         OR: [
@@ -60,7 +59,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check for existing interviews
     const existingInterviews = await prisma.interview.findMany({
       where: {
         OR: [{ userId: { in: [currentUser.id, participantId] } }],
@@ -91,8 +89,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create the event
-    const newEvent = await prisma.userEvent.create({
+    const event = await prisma.userEvent.create({
       data: {
         title,
         description,
@@ -103,10 +100,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create time slot
     await prisma.timeSlot.create({
       data: {
-        eventId: newEvent.id,
+        eventId: event.id,
         startTime: startDateTime,
         endTime: endDateTime,
         isBooked: true,
@@ -114,7 +110,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Get user details
     const creator = await prisma.user.findUnique({
       where: { id: currentUser.id },
       select: { name: true, email: true },
@@ -138,10 +133,6 @@ export async function POST(req: NextRequest) {
     );
     const formattedEndTime = format(endDateTime, "h:mm a");
     const subject = `Event Scheduled: ${title} between ${creator.name} and ${participant.name}`;
-
-    // const content = `An event has been scheduled between you and ${
-    //   participant.name === creator.name ? "yourself" : participant.name
-    // } from ${formattedStartTime} to ${formattedEndTime}.`;
 
     let conversationId;
     const existingConversation = await prisma.conversation.findFirst({
@@ -192,7 +183,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         message: "Event scheduled successfully",
-        event: newEvent,
+        event,
       },
       { status: 201 }
     );
