@@ -101,6 +101,12 @@ function Calendar() {
     { refreshInterval: 1000 }
   );
 
+  const { data: events, isLoading: eventsLoading } = useSWR(
+    "/api/events",
+    fetcher,
+    { refreshInterval: 1000 }
+  );
+
   const loadingInterviews = !interviews || interviewsLoading;
   if (error) return <div>Error fetching interviews</div>;
 
@@ -310,12 +316,23 @@ function Calendar() {
               {activeTab === "interviews" && (
                 <div>
                   {loadingInterviews ? (
-                    <Suspense fallback={<InterviewCalendar interviews={[]} />}>
-                      <InterviewCalendar interviews={[]} />
+                    <Suspense
+                      fallback={
+                        <InterviewCalendar interviews={[]} events={[]} />
+                      }
+                    >
+                      <InterviewCalendar interviews={[]} events={[]} />
                     </Suspense>
                   ) : (
-                    <Suspense fallback={<InterviewCalendar interviews={[]} />}>
-                      <InterviewCalendar interviews={interviews} />
+                    <Suspense
+                      fallback={
+                        <InterviewCalendar interviews={[]} events={events} />
+                      }
+                    >
+                      <InterviewCalendar
+                        interviews={interviews}
+                        events={events}
+                      />
                     </Suspense>
                   )}
                 </div>
