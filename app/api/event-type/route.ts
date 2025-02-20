@@ -32,9 +32,7 @@ export async function POST(request: Request) {
     });
 
     const availabilities = await prisma.interviewAvailability.findMany({
-      where: {
-        userId: currentUser.id,
-      },
+      where: { userId: currentUser.id },
     });
 
     for (const availability of availabilities) {

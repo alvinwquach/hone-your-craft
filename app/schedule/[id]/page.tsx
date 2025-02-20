@@ -15,19 +15,11 @@ import { useSession } from "next-auth/react";
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error("Failed to fetch data");
-  }
+  if (!response.ok) throw new Error("Failed to fetch data");
   return response.json();
 };
 
-const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-type Day = (typeof DAYS)[number];
-
-type BookingTime = {
-  start: string;
-  end: string;
-};
+type BookingTime = { start: string; end: string };
 
 type Event = {
   id: string;
@@ -46,17 +38,29 @@ type Event = {
     createdAt: string;
     updatedAt: string;
   }>;
-  user: {
-    name: string;
-    image: string;
-    email: string;
+  user: { name: string; image: string; email: string };
+};
+
+type BookedSlot = {
+  id: string;
+  eventId: string;
+  startTime: string;
+  endTime: string;
+  isBooked: boolean;
+  bookedBy: string;
+  event: {
+    id: string;
+    title: string;
+    description: string;
+    startTime: string;
+    endTime: string;
+    creator: { id: string; name: string; email: string };
+    participant: { id: string; name: string; email: string };
   };
 };
 
 interface SchedulePageProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
 }
 
 const formSchema = z.object({
@@ -75,11 +79,10 @@ function SchedulePage({ params }: SchedulePageProps) {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  const {
-    data: event,
-    error,
-    isLoading,
-  } = useSWR<Event | null>(id ? `/api/event-type/${id}` : null, fetcher);
+  const { data, error, isLoading } = useSWR<{
+    event: Event;
+    bookedSlots: BookedSlot[];
+  }>(id ? `/api/event-type/${id}` : null, fetcher);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -91,26 +94,21 @@ function SchedulePage({ params }: SchedulePageProps) {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-  });
+  } = useForm<FormData>({ resolver: zodResolver(formSchema) });
 
   const formatEventLength = (length: number) => {
-    if (length < 60) {
-      return `${length} min`;
-    } else {
-      const hours = Math.floor(length / 60);
-      const minutes = length % 60;
-      return `${hours} hr${hours > 1 ? "s" : ""} ${
-        minutes !== 0 ? minutes + " min" : ""
-      }`;
-    }
+    if (length < 60) return `${length} min`;
+    const hours = Math.floor(length / 60);
+    const minutes = length % 60;
+    return `${hours} hr${hours > 1 ? "s" : ""} ${
+      minutes !== 0 ? minutes + " min" : ""
+    }`;
   };
 
   const findAvailabilityForDate = (date: Date): BookingTime[] => {
-    if (!event) return [];
+    if (!data?.event) return [];
 
-    return event.availabilities
+    return data.event.availabilities
       .filter((item) => isSameDay(parseISO(item.startTime), date))
       .map((item) => ({ start: item.startTime, end: item.endTime }));
   };
@@ -121,59 +119,74 @@ function SchedulePage({ params }: SchedulePageProps) {
   ): string[] => {
     const start = parseISO(timeRange.start);
     const end = parseISO(timeRange.end);
-    const slots = [];
+    const slots: string[] = [];
     let current = start;
+
+    const bookedSlotsOnDate =
+      data?.bookedSlots
+        .filter((slot) => isSameDay(parseISO(slot.startTime), selectedDate!))
+        .map((slot) => ({
+          start: parseISO(slot.startTime),
+          end: parseISO(slot.endTime),
+        })) || [];
+
     while (current < end) {
       const nextSlot = new Date(current);
       nextSlot.setMinutes(nextSlot.getMinutes() + meetingLength);
+
       if (nextSlot <= end) {
-        const formattedStart = format(current, "h:mma").toLowerCase();
-        slots.push(formattedStart);
+        const slotStart = current;
+        const slotEnd = nextSlot;
+
+        const isBooked = bookedSlotsOnDate.some((booked) => {
+          return slotStart < booked.end && slotEnd > booked.start;
+        });
+
+        if (!isBooked) {
+          const formattedStart = format(slotStart, "h:mma").toLowerCase();
+          slots.push(formattedStart);
+        }
       }
-      current = new Date(nextSlot);
+      current = nextSlot;
     }
     return slots;
   };
 
   useEffect(() => {
-    if (selectedDate && event) {
+    if (selectedDate && data?.event) {
       const newTimeSlots = findAvailabilityForDate(selectedDate).flatMap(
         (timeRange) =>
           generateTimeSlots(
             { start: timeRange.start, end: timeRange.end },
-            event.length
+            data.event.length
           )
       );
       setTimeSlots(newTimeSlots);
     }
-  }, [selectedDate, event, event?.availabilities]);
+  }, [selectedDate, data]);
 
   const handleNextButtonClick = () => {
-    if (selectedTime) {
-      setIsFormVisible(true);
-    }
+    if (selectedTime) setIsFormVisible(true);
   };
 
-  const onSubmit = async (data: FormData) => {
-    if (selectedDate && selectedTime && event && session?.user?.userId) {
+  const onSubmit = async (formData: FormData) => {
+    if (selectedDate && selectedTime && data?.event && session?.user?.userId) {
       const meetingTime = generateMeetingTime(
         selectedDate,
         selectedTime,
-        event.length
+        data.event.length
       );
 
       const response = await fetch("/api/schedule-event", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: event.title,
-          description: `Meeting scheduled with ${data.name}`,
+          title: data.event.title,
+          description: `Meeting scheduled with ${formData.name}`,
           startTime: meetingTime[0].start,
           endTime: meetingTime[0].end,
           creatorId: session.user.userId,
-          participantId: event.userId,
+          participantId: data.event.userId,
         }),
       });
 
@@ -184,22 +197,19 @@ function SchedulePage({ params }: SchedulePageProps) {
         const endTime = format(new Date(meetingTime[0].end), "hh:mm a");
         const dateStr = format(selectedDate, "EEEE, MMMM d");
 
-        const formattedMeetingTime = meetingTime
-          ? `${format(new Date(meetingTime[0].start), "hh:mm a")} - ${format(
-              new Date(meetingTime[0].end),
-              "hh:mm a"
-            )}, ${format(selectedDate!, "EEEE, MMMM d, yyyy")}`
-          : "Select a time slot";
-
+        const formattedMeetingTime = `${startTime} - ${endTime}, ${format(
+          selectedDate!,
+          "EEEE, MMMM d, yyyy"
+        )}`;
         const queryParams = new URLSearchParams({
-          name: data.name,
-          email: data.email,
+          name: formData.name,
+          email: formData.email,
           meetingTime: formattedMeetingTime,
         });
 
         router.push(`/schedule/confirmation?${queryParams.toString()}`);
         toast.success(
-          `Event scheduled successfully! Your ${event.title} with ${data.name}is booked for ${startTime} - ${endTime} on ${dateStr}`
+          `Event scheduled successfully! Your ${data.event.title} with ${formData.name} is booked for ${startTime} - ${endTime} on ${dateStr}`
         );
 
         setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
@@ -223,18 +233,12 @@ function SchedulePage({ params }: SchedulePageProps) {
     meetingLength: number
   ): { start: string; end: string }[] => {
     const match = selectedTime.match(/(\d+):(\d+)([ap]m)/i);
-    if (!match) {
-      console.error("Invalid time format:", selectedTime);
-      throw new Error("Invalid time format");
-    }
+    if (!match) throw new Error("Invalid time format");
     const [, hour, minute, ampm] = match;
 
     let hours = parseInt(hour, 10);
-    if (ampm.toLowerCase() === "pm") {
-      hours = hours === 12 ? hours : hours + 12;
-    } else if (ampm.toLowerCase() === "am" && hours === 12) {
-      hours = 0;
-    }
+    if (ampm.toLowerCase() === "pm") hours = hours === 12 ? hours : hours + 12;
+    else if (ampm.toLowerCase() === "am" && hours === 12) hours = 0;
 
     const meetingStart = new Date(selectedDate);
     meetingStart.setHours(hours, parseInt(minute, 10), 0, 0);
@@ -242,43 +246,28 @@ function SchedulePage({ params }: SchedulePageProps) {
     const meetingEnd = new Date(meetingStart);
     meetingEnd.setMinutes(meetingEnd.getMinutes() + meetingLength);
 
-    console.log("Generated meeting start:", meetingStart);
-    console.log("Generated meeting end:", meetingEnd);
-
     return [
-      {
-        start: meetingStart.toISOString(),
-        end: meetingEnd.toISOString(),
-      },
+      { start: meetingStart.toISOString(), end: meetingEnd.toISOString() },
     ];
   };
 
   const meetingTime =
     selectedDate && selectedTime
-      ? generateMeetingTime(selectedDate, selectedTime, event?.length || 30)
+      ? generateMeetingTime(
+          selectedDate,
+          selectedTime,
+          data?.event.length || 30
+        )
       : null;
 
-  if (isLoading) {
-    return <div>Loading event details...</div>;
-  }
-
-  if (status === "loading") {
-    return <div>Loading user session...</div>;
-  }
-
-  if (!session) {
-    return <div>Please sign in to schedule an event.</div>;
-  }
-
+  if (isLoading) return <div>Loading event details...</div>;
+  if (status === "loading") return <div>Loading user session...</div>;
+  if (!session) return <div>Please sign in to schedule an event.</div>;
   if (error) {
-    toast.error("Failed to fetch event details");
-    return <div>Error loading event details</div>;
+    toast.error("Failed to fetch event details and booked slots");
+    return <div>Error loading data</div>;
   }
-
-  if (!event) {
-    return <div>Event not found!</div>;
-  }
-
+  if (!data?.event) return <div>Event not found!</div>;
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="flex justify-center">
@@ -286,32 +275,32 @@ function SchedulePage({ params }: SchedulePageProps) {
           <div className="flex flex-col md:flex-row items-start justify-between p-6">
             <div className="flex items-center mb-4 md:mb-0">
               <Image
-                src={event.user.image}
-                alt={event.user.name}
+                src={data.event.user.image}
+                alt={data.event.user.name}
                 width={48}
                 height={48}
                 className="rounded-full mr-4"
               />
               <div>
                 <h2 className="text-xl text-gray-900 font-bold">
-                  {event.user.name}
+                  {data.event.user.name}
                 </h2>
-                <p className="text-sm text-gray-600">{event.user.email}</p>
-                <p className="text-sm text-gray-600">{event.title}</p>
+                <p className="text-sm text-gray-600">{data.event.user.email}</p>
+                <p className="text-sm text-gray-600">{data.event.title}</p>
               </div>
             </div>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col md:flex-row items-start justify-between p-6">
-                <div className="w-full ">
+                <div className="w-full">
                   <h3 className="text-lg text-gray-900 font-bold mb-3">
-                    {event.title}
+                    {data.event.title}
                   </h3>
                   <div className="flex items-center space-x-3 rounded-lg">
                     <FaClock className="w-5 h-5 text-gray-600" />
                     <span className="text-sm font-medium text-gray-900">
-                      {formatEventLength(event.length)}
+                      {formatEventLength(data.event.length)}
                     </span>
                   </div>
                 </div>
@@ -326,10 +315,12 @@ function SchedulePage({ params }: SchedulePageProps) {
                   }
                   minDate={new Date()}
                   mapDays={({ date }) => {
-                    const isAvailable = event?.availabilities?.some((avail) => {
-                      const availDate = new Date(avail.startTime);
-                      return isSameDay(availDate, date.toDate());
-                    });
+                    const isAvailable = data?.event.availabilities.some(
+                      (avail) => {
+                        const availDate = new Date(avail.startTime);
+                        return isSameDay(availDate, date.toDate());
+                      }
+                    );
 
                     const isTodayDate = isToday(date.toDate());
                     const isSelected =
@@ -398,7 +389,6 @@ function SchedulePage({ params }: SchedulePageProps) {
                         >
                           {time}
                         </button>
-
                         {selectedTime === time && (
                           <button
                             onClick={handleNextButtonClick}
@@ -425,24 +415,26 @@ function SchedulePage({ params }: SchedulePageProps) {
                 <div className="flex flex-col justify-center items-start space-y-6">
                   <div className="flex items-center space-x-4">
                     <Image
-                      src={event?.user?.image as string}
-                      alt={event?.user?.name as string}
+                      src={data.event.user.image as string}
+                      alt={data.event.user.name as string}
                       width={56}
                       height={56}
                       className="rounded-full w-14 h-14 object-cover shadow-md"
                     />
                     <div className="space-y-1">
                       <h2 className="text-2xl font-semibold text-gray-900">
-                        {event.user.name}
+                        {data.event.user.name}
                       </h2>
-                      <p className="text-sm text-gray-600">{event.title}</p>
+                      <p className="text-sm text-gray-600">
+                        {data.event.title}
+                      </p>
                     </div>
                   </div>
                   <div className="grid gap-4">
                     <div className="flex items-center space-x-3 p-3 rounded-lg">
                       <FaClock className="w-5 h-5 text-gray-600" />
                       <span className="text-sm font-medium text-gray-900">
-                        {formatEventLength(event.length)}
+                        {formatEventLength(data.event.length)}
                       </span>
                     </div>
                     <div className="flex items-center space-x-3 p-3 rounded-lg">
