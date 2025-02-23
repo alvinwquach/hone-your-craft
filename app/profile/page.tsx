@@ -396,6 +396,27 @@ function Profile() {
     )
   );
 
+  const cancelEvent = async (eventId: string) => {
+    try {
+      const response = await fetch("/api/cancel-event", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId }),
+      });
+
+      if (response.ok) {
+        mutate("/api/events");
+        toast.success("You have cancelled the event.");
+      } else {
+        throw new Error("Failed to cancel the event.");
+      }
+    } catch (error) {
+      console.error("Error cancelling the event:", error);
+      toast.error("Failed To Cancel Event");
+      throw error;
+    }
+  };
+
   const handleEditOffer = async (id: string, updatedSalary: string) => {
     try {
       const currentOffer = jobOffers.find((offer: any) => offer.id === id);
@@ -1143,62 +1164,86 @@ function Profile() {
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="w-full max-w-3xl mx-auto">
                     {activeMeetingTab === "upcoming" &&
                       Object.entries(groupedUpcomingEvents).map(
                         ([date, events]: any) => (
-                          <div key={date} className="w-full col-span-full">
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                              {date}
+                          <div key={date} className="w-full">
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                              {new Date(date).toLocaleDateString("en-US", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
                             </h2>
                             {events.map((event: any) => (
                               <div
                                 key={event.id}
-                                className="p-4 rounded-lg border bg-zinc-700 shadow-sm"
+                                className="p-4 mb-4 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700"
                               >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="text-lg font-semibold text-gray-100">
-                                      {event.title}
-                                    </h3>
-                                    <p className="text-sm text-gray-400">
-                                      {new Date(
-                                        event.startTime
-                                      ).toLocaleTimeString([], {
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      })}{" "}
-                                      -{" "}
-                                      {new Date(
-                                        event.endTime
-                                      ).toLocaleTimeString([], {
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      })}
+                                <div className="flex justify-between items-start gap-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                        {new Date(
+                                          event.startTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}{" "}
+                                        -{" "}
+                                        {new Date(
+                                          event.endTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}
+                                      </span>
+                                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        {event.title}
+                                      </h3>
+                                    </div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                      {event.description ||
+                                        "No description provided"}
                                     </p>
+                                    <div className="mt-2">
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <span>Host:</span>
+                                        <span className="font-medium">
+                                          {event.creator.name}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <span>Invitee:</span>
+                                        <span className="font-medium">
+                                          {event.participant.name}
+                                        </span>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="text-right">
-                                    <p className="text-sm text-gray-400">
-                                      {event.description}
-                                    </p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                      <span className="text-xs text-gray-400">
-                                        Creator:
-                                      </span>
-                                      <span className="text-sm text-gray-300">
-                                        {event.creator.name}
-                                      </span>
-                                    </div>
-                                    <div className="mt-1 flex items-center gap-2">
-                                      <span className="text-xs text-gray-400">
-                                        Participant:
-                                      </span>
-                                      <span className="text-sm text-gray-300">
-                                        {event.participant.name}
-                                      </span>
-                                    </div>
+                                  <div className="flex flex-col gap-2">
+                                    <button
+                                      onClick={() => cancelEvent(event.id)}
+                                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600"
+                                    >
+                                      <svg
+                                        className="w-4 h-4 mr-1"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M6 18L18 6M6 6l12 12"
+                                        />
+                                      </svg>
+                                      Cancel
+                                    </button>
                                   </div>
                                 </div>
                               </div>
@@ -1209,57 +1254,59 @@ function Profile() {
                     {activeMeetingTab === "past" &&
                       Object.entries(groupedPastEvents).map(
                         ([date, events]: any) => (
-                          <div key={date} className="w-full col-span-full">
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                              {date}
+                          <div key={date} className="w-full">
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                              {new Date(date).toLocaleDateString("en-US", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
                             </h2>
                             {events.map((event: any) => (
                               <div
                                 key={event.id}
-                                className="p-4 rounded-lg border bg-zinc-700 shadow-sm"
+                                className="p-4 mb-4 rounded-lg border  bg-zinc-700 shadow-sm hover:shadow-md transition-shadow border-gray-700"
                               >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="text-lg font-semibold text-gray-100">
-                                      {event.title}
-                                    </h3>
-                                    <p className="text-sm text-gray-400">
-                                      {new Date(
-                                        event.startTime
-                                      ).toLocaleTimeString([], {
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      })}{" "}
-                                      -{" "}
-                                      {new Date(
-                                        event.endTime
-                                      ).toLocaleTimeString([], {
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      })}
-                                    </p>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-sm text-gray-400">
-                                      {event.description}
-                                    </p>
-                                    <div className="mt-2 flex items-center gap-2">
-                                      <span className="text-xs text-gray-400">
-                                        Creator:
+                                <div className="flex justify-between items-start gap-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium  bg-zinc-700 text-gray-200">
+                                        {new Date(
+                                          event.startTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}{" "}
+                                        -{" "}
+                                        {new Date(
+                                          event.endTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}
                                       </span>
-                                      <span className="text-sm text-gray-300">
-                                        {event.creator.name}
-                                      </span>
+                                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        {event.title}
+                                      </h3>
                                     </div>
-                                    <div className="mt-1 flex items-center gap-2">
-                                      <span className="text-xs text-gray-400">
-                                        Participant:
-                                      </span>
-                                      <span className="text-sm text-gray-300">
-                                        {event.participant.name}
-                                      </span>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                      {event.description ||
+                                        "No description provided"}
+                                    </p>
+                                    <div className="mt-2">
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <span>Host:</span>
+                                        <span className="font-medium">
+                                          {event.creator.name}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                        <span>Invitee:</span>
+                                        <span className="font-medium">
+                                          {event.participant.name}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
