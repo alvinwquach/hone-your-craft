@@ -281,6 +281,9 @@ model UserEvent {
   participantId String    @db.ObjectId
   participant   User      @relation("EventParticipant", fields: [participantId], references: [id])
   timeSlot      TimeSlot[] @relation(name: "TimeSlotToUserEvent") 
+  eventTypeId   String?   @db.ObjectId
+  eventType     EventType? @relation("EventTypeToUserEvent", fields: [eventTypeId], references: [id])  // Relation to EventType
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -293,11 +296,14 @@ model EventType {
   user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
   title                       String
   length                      Int?  
- 
   createdAt                   DateTime         @default(now())
   updatedAt                   DateTime         @updatedAt
   availabilities              EventTypeAvailability[] @relation("EventTypeToAvailability")
+  userEvents                  UserEvent[]      @relation("EventTypeToUserEvent") 
+
+  @@map("event_Types")
 }
+
 
 model InterviewAvailability {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -338,6 +344,8 @@ model TimeSlot {
 
   @@map("timeslots")
 }
+
+
 model Connection {
   id          String           @id @default(auto()) @map("_id") @db.ObjectId
   requesterId String           @db.ObjectId
