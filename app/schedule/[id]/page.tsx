@@ -328,10 +328,8 @@ function SchedulePage({ params }: SchedulePageProps) {
                     const isBeforeToday = date.toDate() < new Date();
                     let dayClasses = "cursor-pointer";
 
-                    if (!isAvailable) {
+                    if (!isAvailable || isBeforeToday) {
                       dayClasses = "bg-white cursor-not-allowed";
-                    } else if (isBeforeToday) {
-                      dayClasses = "text-gray-400";
                     } else if (isSelected) {
                       dayClasses = "bg-blue-700 text-white";
                     } else if (isTodayDate) {
@@ -361,7 +359,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                       ) : (
                         date.day
                       ),
-                      disabled: !isAvailable,
+                      disabled: !isAvailable || isBeforeToday, // disable past dates completely
                     };
                   }}
                 />

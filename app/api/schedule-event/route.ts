@@ -13,10 +13,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { title, description, startTime, endTime, participantId } =
-      await req.json();
+    const {
+      title,
+      description,
+      startTime,
+      endTime,
+      participantId,
+      eventTypeId,
+    } = await req.json();
 
-    if (!title || !startTime || !endTime || !participantId) {
+    if (!title || !startTime || !endTime || !participantId || !eventTypeId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -91,6 +97,7 @@ export async function POST(req: NextRequest) {
 
     const event = await prisma.userEvent.create({
       data: {
+        eventTypeId,
         title,
         description,
         startTime: startDateTime,
