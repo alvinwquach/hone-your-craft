@@ -47,6 +47,12 @@ export async function GET(req: NextRequest) {
             email: true,
           },
         },
+        eventType: {
+          select: {
+            id: true, 
+            title: true, 
+          },
+        },
       },
       orderBy: {
         startTime: "asc",

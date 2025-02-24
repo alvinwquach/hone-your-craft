@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaClock, FaCalendarAlt } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 const fetcher = async (url: string) => {
@@ -39,6 +39,9 @@ type Event = {
     updatedAt: string;
   }>;
   user: { name: string; image: string; email: string };
+  eventTypeId: string;
+  creatorId: string;
+  participantId: string;
 };
 
 type BookedSlot = {
@@ -59,7 +62,7 @@ type BookedSlot = {
   };
 };
 
-interface SchedulePageProps {
+interface ReschedulePageProps {
   params: { id: string };
 }
 
@@ -74,10 +77,15 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-function SchedulePage({ params }: SchedulePageProps) {
+function ReschedulePage({ params }: ReschedulePageProps) {
   const { id } = params;
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
+
+  const eventId = searchParams?.get("eventId");
+  const originalStart = searchParams?.get("start");
+  const originalEnd = searchParams?.get("end");
 
   const { data, error, isLoading } = useSWR<{
     event: Event;
@@ -107,7 +115,6 @@ function SchedulePage({ params }: SchedulePageProps) {
 
   const findAvailabilityForDate = (date: Date): BookingTime[] => {
     if (!data?.event) return [];
-
     return data.event.availabilities
       .filter((item) => isSameDay(parseISO(item.startTime), date))
       .map((item) => ({ start: item.startTime, end: item.endTime }));
@@ -122,13 +129,14 @@ function SchedulePage({ params }: SchedulePageProps) {
     const slots: string[] = [];
     let current = start;
 
-    const bookedSlotsOnDate =
-      data?.bookedSlots
-        .filter((slot) => isSameDay(parseISO(slot.startTime), selectedDate!))
-        .map((slot) => ({
-          start: parseISO(slot.startTime),
-          end: parseISO(slot.endTime),
-        })) || [];
+    const bookedSlotsOnDate = selectedDate
+      ? (data?.bookedSlots || [])
+          .filter((slot) => isSameDay(parseISO(slot.startTime), selectedDate))
+          .map((slot) => ({
+            start: parseISO(slot.startTime),
+            end: parseISO(slot.endTime),
+          }))
+      : [];
 
     while (current < end) {
       const nextSlot = new Date(current);
@@ -138,17 +146,26 @@ function SchedulePage({ params }: SchedulePageProps) {
         const slotStart = current;
         const slotEnd = nextSlot;
 
-        const isBooked = bookedSlotsOnDate.some((booked) => {
-          return slotStart < booked.end && slotEnd > booked.start;
-        });
-
-        if (!isBooked) {
-          const formattedStart = format(slotStart, "h:mma").toLowerCase();
-          slots.push(formattedStart);
-        }
+        const formattedStart = format(slotStart, "h:mma").toLowerCase();
+        slots.push(formattedStart);
       }
       current = nextSlot;
     }
+
+    if (
+      originalStart &&
+      selectedDate &&
+      isSameDay(parseISO(originalStart), selectedDate)
+    ) {
+      const originalTime = format(
+        parseISO(originalStart),
+        "h:mma"
+      ).toLowerCase();
+      if (!slots.includes(originalTime)) {
+        slots.unshift(originalTime);
+      }
+    }
+
     return slots;
   };
 
@@ -163,31 +180,38 @@ function SchedulePage({ params }: SchedulePageProps) {
       );
       setTimeSlots(newTimeSlots);
     }
-  }, [selectedDate, data]);
+  }, [selectedDate, data, originalStart]);
 
   const handleNextButtonClick = () => {
     if (selectedTime) setIsFormVisible(true);
   };
 
   const onSubmit = async (formData: FormData) => {
-    if (selectedDate && selectedTime && data?.event && session?.user?.userId) {
+    if (
+      selectedDate &&
+      selectedTime &&
+      data?.event &&
+      session?.user?.userId &&
+      eventId
+    ) {
       const meetingTime = generateMeetingTime(
         selectedDate,
         selectedTime,
         data.event.length
       );
 
-      const response = await fetch("/api/schedule-event", {
+      const response = await fetch("/api/reschedule-event", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          eventId,
+          newStartTime: meetingTime[0].start,
+          newEndTime: meetingTime[0].end,
+          eventTypeId: data.event.eventTypeId,
+          creatorId: data.event.creatorId,
+          participantId: data.event.participantId,
           title: data.event.title,
-          description: `Meeting scheduled with ${formData.name}`,
-          startTime: meetingTime[0].start,
-          endTime: meetingTime[0].end,
-          creatorId: session.user.userId,
-          participantId: data.event.userId,
-          eventTypeId: id,
+          description: `Rescheduled meeting with ${formData.name}`,
         }),
       });
 
@@ -210,7 +234,7 @@ function SchedulePage({ params }: SchedulePageProps) {
 
         router.push(`/schedule/confirmation?${queryParams.toString()}`);
         toast.success(
-          `Event scheduled successfully! Your ${data.event.title} with ${formData.name} is booked for ${startTime} - ${endTime} on ${dateStr}`
+          `Event rescheduled successfully! Your ${data.event.title} with ${formData.name} is now booked for ${startTime} - ${endTime} on ${dateStr}`
         );
 
         setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
@@ -222,7 +246,7 @@ function SchedulePage({ params }: SchedulePageProps) {
         mutate(`/api/event-type/${id}`);
       } else {
         toast.error(
-          result.error || "An error occurred while scheduling the event"
+          result.error || "An error occurred while rescheduling the event"
         );
       }
     }
@@ -263,12 +287,17 @@ function SchedulePage({ params }: SchedulePageProps) {
 
   if (isLoading) return <div>Loading event details...</div>;
   if (status === "loading") return <div>Loading user session...</div>;
-  if (!session) return <div>Please sign in to schedule an event.</div>;
+  if (!session) return <div>Please sign in to reschedule an event.</div>;
   if (error) {
     toast.error("Failed to fetch event details and booked slots");
     return <div>Error loading data</div>;
   }
   if (!data?.event) return <div>Event not found!</div>;
+
+  const originalTimeSlot = originalStart
+    ? format(parseISO(originalStart), "h:mma").toLowerCase()
+    : null;
+
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="flex justify-center">
@@ -307,7 +336,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                 </div>
               </div>
               <div className="w-full">
-                <p className="text-gray-800 mb-4">Select a Date & Time</p>
+                <p className="text-gray-800 mb-4">Select a New Date & Time</p>
                 <Calendar
                   className="w-full"
                   value={selectedDate ? new DateObject(selectedDate) : null}
@@ -360,7 +389,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                       ) : (
                         date.day
                       ),
-                      disabled: !isAvailable || isBeforeToday, // disable past dates completely
+                      disabled: !isAvailable || isBeforeToday,
                     };
                   }}
                 />
@@ -380,18 +409,21 @@ function SchedulePage({ params }: SchedulePageProps) {
                       >
                         <button
                           onClick={() => setSelectedTime(time)}
-                          className={`w-full py-2 px-4 text-sm text-blue-600 font-medium border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-all duration-300 ${
+                          className={`w-full h-12 px-4 text-sm font-medium border border-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-all duration-300 flex flex-col justify-center items-center ${
                             selectedTime === time
                               ? "bg-gray-500 text-white"
-                              : ""
+                              : "text-blue-600"
                           }`}
                         >
-                          {time}
+                          <span>{time}</span>
+                          {time === originalTimeSlot && (
+                            <span className="text-xs">Former Time</span>
+                          )}
                         </button>
                         {selectedTime === time && (
                           <button
                             onClick={handleNextButtonClick}
-                            className="next-button w-full py-2 px-4 text-sm text-white bg-blue-600 rounded-md ml-2 transition-all duration-300"
+                            className="next-button w-full h-12 px-4 text-sm text-white bg-blue-600 rounded-md ml-2 transition-all duration-300 flex items-center justify-center"
                           >
                             Next
                           </button>
@@ -511,7 +543,7 @@ function SchedulePage({ params }: SchedulePageProps) {
                       type="submit"
                       className="px-4 py-3 text-sm text-white bg-blue-600 rounded-full hover:bg-blue-700 transition-all duration-300"
                     >
-                      Schedule Event
+                      Confirm Reschedule
                     </button>
                   </div>
                 </form>
@@ -524,4 +556,4 @@ function SchedulePage({ params }: SchedulePageProps) {
   );
 }
 
-export default SchedulePage;
+export default ReschedulePage;

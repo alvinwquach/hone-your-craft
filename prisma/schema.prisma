@@ -344,8 +344,6 @@ model TimeSlot {
 
   @@map("timeslots")
 }
-
-
 model Connection {
   id          String           @id @default(auto()) @map("_id") @db.ObjectId
   requesterId String           @db.ObjectId
