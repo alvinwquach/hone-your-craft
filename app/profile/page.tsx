@@ -61,6 +61,7 @@ import {
   IoCalendarSharp,
 } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import MeetingCalendarDownloadButton from "../components/profile/meetings/MeetingCalendarDownloadButton";
 
 interface User {
   id: string;
@@ -1134,220 +1135,221 @@ function Profile() {
                 </Suspense>
               )}
               {activeTab === "meetings" && (
-                <div className="container mx-auto p-4">
-                  <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
-                    <div className="flex flex-wrap -mb-px justify-start">
-                      <button
-                        onClick={() => setActiveMeetingTab("upcoming")}
-                        className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                          activeMeetingTab === "upcoming"
-                            ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                            : ""
-                        }`}
-                      >
-                        <IoCalendarSharp
-                          className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                <>
+                  <div className="container mx-auto p-4">
+                    <MeetingCalendarDownloadButton />
+                    <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+                      <div className="flex flex-wrap -mb-px justify-start">
+                        <button
+                          onClick={() => setActiveMeetingTab("upcoming")}
+                          className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
                             activeMeetingTab === "upcoming"
-                              ? "text-blue-600"
+                              ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
                               : ""
                           }`}
-                        />
-                        Upcoming
-                      </button>
-                      <button
-                        onClick={() => setActiveMeetingTab("past")}
-                        className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                          activeMeetingTab === "past"
-                            ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                            : ""
-                        }`}
-                      >
-                        <IoCalendarClearSharp
-                          className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                            activeMeetingTab === "past" ? "text-blue-600" : ""
+                        >
+                          <IoCalendarSharp
+                            className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                              activeMeetingTab === "upcoming"
+                                ? "text-blue-600"
+                                : ""
+                            }`}
+                          />
+                          Upcoming
+                        </button>
+                        <button
+                          onClick={() => setActiveMeetingTab("past")}
+                          className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                            activeMeetingTab === "past"
+                              ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                              : ""
                           }`}
-                        />
-                        Past
-                      </button>
-                      <button
-                        onClick={() => setActiveMeetingTab("cancelled")}
-                        className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                          activeMeetingTab === "cancelled"
-                            ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                            : ""
-                        }`}
-                      >
-                        <IoCalendarClearSharp
-                          className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                        >
+                          <IoCalendarClearSharp
+                            className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                              activeMeetingTab === "past" ? "text-blue-600" : ""
+                            }`}
+                          />
+                          Past
+                        </button>
+                        <button
+                          onClick={() => setActiveMeetingTab("cancelled")}
+                          className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
                             activeMeetingTab === "cancelled"
-                              ? "text-blue-600"
+                              ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
                               : ""
                           }`}
-                        />
-                        Cancelled
-                      </button>
+                        >
+                          <IoCalendarClearSharp
+                            className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                              activeMeetingTab === "cancelled"
+                                ? "text-blue-600"
+                                : ""
+                            }`}
+                          />
+                          Cancelled
+                        </button>
+                      </div>
+                    </div>
+                    <div className="w-full max-w-3xl mx-auto">
+                      {activeMeetingTab === "upcoming" &&
+                        Object.entries(groupedUpcomingEvents).map(
+                          ([date, events]: any) => (
+                            <div key={date} className="w-full">
+                              <h2 className="text-lg font-semibold text-gray-100 mb-4">
+                                {new Date(date).toLocaleDateString("en-US", {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </h2>
+                              {events.map((event: any) => (
+                                <div
+                                  key={event.id}
+                                  className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
+                                >
+                                  <div className="absolute top-2 right-2 flex flex-col gap-2 md:absolute md:top-2 md:right-2 lg:static lg:self-start lg:mb-4">
+                                    <button
+                                      onClick={() => rescheduleEvent(event.id)}
+                                      className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <MdRefresh className="w-5 h-5 text-white" />
+                                        <span className="text-xs text-white whitespace-nowrap">
+                                          Reschedule
+                                        </span>
+                                      </div>
+                                    </button>
+                                    <button
+                                      onClick={() => cancelEvent(event.id)}
+                                      className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <FaTrash className="w-5 h-5 text-white" />
+                                        <span className="text-xs text-white whitespace-nowrap">
+                                          Cancel
+                                        </span>
+                                      </div>
+                                    </button>
+                                  </div>
+
+                                  <div className="flex justify-between items-start gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                          {new Date(
+                                            event.startTime
+                                          ).toLocaleTimeString([], {
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                          })}{" "}
+                                          -{" "}
+                                          {new Date(
+                                            event.endTime
+                                          ).toLocaleTimeString([], {
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                        <h3 className="text-lg font-semibold text-gray-200 dark:text-gray-100">
+                                          {event.title}
+                                        </h3>
+                                      </div>
+                                      <p className="text-sm text-gray-400 dark:text-gray-300 mb-2">
+                                        {event.description ||
+                                          "No description provided"}
+                                      </p>
+                                      <div className="mt-2">
+                                        <div className="flex items-center gap-2 text-sm text-gray-300 dark:text-gray-400">
+                                          <span>Host:</span>
+                                          <span className="font-medium">
+                                            {event.creator.name}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-300 dark:text-gray-400">
+                                          <span>Invitee:</span>
+                                          <span className="font-medium">
+                                            {event.participant.name}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        )}
+                      {activeMeetingTab === "past" &&
+                        Object.entries(groupedPastEvents).map(
+                          ([date, events]: any) => (
+                            <div key={date} className="w-full">
+                              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                                {new Date(date).toLocaleDateString("en-US", {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </h2>
+                              {events.map((event: any) => (
+                                <div
+                                  key={event.id}
+                                  className="p-4 mb-4 rounded-lg border  bg-zinc-700 shadow-sm hover:shadow-md transition-shadow border-gray-700"
+                                >
+                                  <div className="flex justify-between items-start gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium  bg-zinc-700 text-gray-200">
+                                          {new Date(
+                                            event.startTime
+                                          ).toLocaleTimeString([], {
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                          })}{" "}
+                                          -{" "}
+                                          {new Date(
+                                            event.endTime
+                                          ).toLocaleTimeString([], {
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                          {event.title}
+                                        </h3>
+                                      </div>
+                                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                        {event.description ||
+                                          "No description provided"}
+                                      </p>
+                                      <div className="mt-2">
+                                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                          <span>Host:</span>
+                                          <span className="font-medium">
+                                            {event.creator.name}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                          <span>Invitee:</span>
+                                          <span className="font-medium">
+                                            {event.participant.name}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        )}
+                      {activeMeetingTab === "cancelled" && <></>}
                     </div>
                   </div>
-                  <div className="w-full max-w-3xl mx-auto">
-                    {activeMeetingTab === "upcoming" &&
-                      Object.entries(groupedUpcomingEvents).map(
-                        ([date, events]: any) => (
-                          <div key={date} className="w-full">
-                            <h2 className="text-lg font-semibold text-gray-100 mb-4">
-                              {new Date(date).toLocaleDateString("en-US", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </h2>
-                            {events.map((event: any) => (
-                              <div
-                                key={event.id}
-                                className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
-                              >
-                                <div className="absolute top-2 right-2 flex flex-col gap-2 md:absolute md:top-2 md:right-2 lg:static lg:self-start lg:mb-4">
-                                  <button
-                                    onClick={() => rescheduleEvent(event.id)}
-                                    className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <MdRefresh className="w-5 h-5 text-white" />
-                                      <span className="text-xs text-white whitespace-nowrap">
-                                        Reschedule
-                                      </span>
-                                    </div>
-                                  </button>
-
-                                  {/* Cancel Button */}
-                                  <button
-                                    onClick={() => cancelEvent(event.id)}
-                                    className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <FaTrash className="w-5 h-5 text-white" />
-                                      <span className="text-xs text-white whitespace-nowrap">
-                                        Cancel
-                                      </span>
-                                    </div>
-                                  </button>
-                                </div>
-
-                                <div className="flex justify-between items-start gap-4">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                                        {new Date(
-                                          event.startTime
-                                        ).toLocaleTimeString([], {
-                                          hour: "numeric",
-                                          minute: "2-digit",
-                                        })}{" "}
-                                        -{" "}
-                                        {new Date(
-                                          event.endTime
-                                        ).toLocaleTimeString([], {
-                                          hour: "numeric",
-                                          minute: "2-digit",
-                                        })}
-                                      </span>
-                                      <h3 className="text-lg font-semibold text-gray-200 dark:text-gray-100">
-                                        {event.title}
-                                      </h3>
-                                    </div>
-                                    <p className="text-sm text-gray-400 dark:text-gray-300 mb-2">
-                                      {event.description ||
-                                        "No description provided"}
-                                    </p>
-                                    <div className="mt-2">
-                                      <div className="flex items-center gap-2 text-sm text-gray-300 dark:text-gray-400">
-                                        <span>Host:</span>
-                                        <span className="font-medium">
-                                          {event.creator.name}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2 text-sm text-gray-300 dark:text-gray-400">
-                                        <span>Invitee:</span>
-                                        <span className="font-medium">
-                                          {event.participant.name}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )
-                      )}
-                    {activeMeetingTab === "past" &&
-                      Object.entries(groupedPastEvents).map(
-                        ([date, events]: any) => (
-                          <div key={date} className="w-full">
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
-                              {new Date(date).toLocaleDateString("en-US", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </h2>
-                            {events.map((event: any) => (
-                              <div
-                                key={event.id}
-                                className="p-4 mb-4 rounded-lg border  bg-zinc-700 shadow-sm hover:shadow-md transition-shadow border-gray-700"
-                              >
-                                <div className="flex justify-between items-start gap-4">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium  bg-zinc-700 text-gray-200">
-                                        {new Date(
-                                          event.startTime
-                                        ).toLocaleTimeString([], {
-                                          hour: "numeric",
-                                          minute: "2-digit",
-                                        })}{" "}
-                                        -{" "}
-                                        {new Date(
-                                          event.endTime
-                                        ).toLocaleTimeString([], {
-                                          hour: "numeric",
-                                          minute: "2-digit",
-                                        })}
-                                      </span>
-                                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        {event.title}
-                                      </h3>
-                                    </div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                      {event.description ||
-                                        "No description provided"}
-                                    </p>
-                                    <div className="mt-2">
-                                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                        <span>Host:</span>
-                                        <span className="font-medium">
-                                          {event.creator.name}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                        <span>Invitee:</span>
-                                        <span className="font-medium">
-                                          {event.participant.name}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )
-                      )}
-                    {activeMeetingTab === "cancelled" && <></>}
-                  </div>
-                </div>
-              )}{" "}
+                </>
+              )}
               {activeTab === "interviews" && (
                 <Suspense
                   fallback={
