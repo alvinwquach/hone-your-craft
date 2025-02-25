@@ -1,7 +1,6 @@
 "use client";
 
 import { Interview } from "@prisma/client";
-import { candidateInterviewTypes } from "@/app/lib/candidateInterviewTypes";
 import { clientInterviewTypes } from "@/app/lib/clientInterviewTypes";
 import DeleteInterviewContext from "../../context/DeleteInterviewContext";
 import InterviewCalendar from "../components/calendar/InterviewCalendar";
@@ -287,14 +286,13 @@ function Calendar() {
                                   className="flex items-center text-blue-600 hover:text-blue-800"
                                   onClick={() => {
                                     navigator.clipboard.writeText(
-                                      `/${event.id}`
+                                      `/schedule/${event.id}`
                                     );
                                     toast.info("Link copied to clipboard!");
                                   }}
                                 >
                                   <FaClipboard className="mr-2" /> Copy link
                                 </button>
-
                                 <button
                                   className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
                                   onClick={() => {
