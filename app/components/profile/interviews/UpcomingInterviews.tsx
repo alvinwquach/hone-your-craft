@@ -1,6 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+import InterviewCalendarDownloadButton from "./InterviewCalendarDownloadButton";
 
 interface JobInterview {
   id: string;
@@ -40,6 +41,9 @@ function UpcomingInterviews({
   if (upcomingInterviews.length === 0) {
     return (
       <div className="relative overflow-x-auto">
+        <div className="mt-4">
+          <InterviewCalendarDownloadButton />
+        </div>
         <div className="p-4 text-center">{interviewConversionRate}</div>
         <table className="w-full text-sm text-left rtl:text-right text-gray-200">
           <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
