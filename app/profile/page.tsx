@@ -1206,9 +1206,7 @@ function Profile() {
                                 key={event.id}
                                 className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
                               >
-                                {/* Buttons Container */}
                                 <div className="absolute top-2 right-2 flex flex-col gap-2 md:absolute md:top-2 md:right-2 lg:static lg:self-start lg:mb-4">
-                                  {/* Reschedule Button */}
                                   <button
                                     onClick={() => rescheduleEvent(event.id)}
                                     className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"

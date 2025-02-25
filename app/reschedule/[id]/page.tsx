@@ -85,8 +85,6 @@ function ReschedulePage({ params }: ReschedulePageProps) {
 
   const eventId = searchParams?.get("eventId");
   const originalStart = searchParams?.get("start");
-  const originalEnd = searchParams?.get("end");
-
   const { data, error, isLoading } = useSWR<{
     event: Event;
     bookedSlots: BookedSlot[];
@@ -294,9 +292,21 @@ function ReschedulePage({ params }: ReschedulePageProps) {
   }
   if (!data?.event) return <div>Event not found!</div>;
 
-  const originalTimeSlot = originalStart
-    ? format(parseISO(originalStart), "h:mma").toLowerCase()
-    : null;
+  const isFormerTime = (time: string): boolean => {
+    if (!selectedDate || !originalStart) return false;
+
+    const isSameDayAsOriginal = isSameDay(
+      parseISO(originalStart),
+      selectedDate
+    );
+
+    const formattedOriginalStart = format(
+      parseISO(originalStart),
+      "h:mma"
+    ).toLowerCase();
+
+    return isSameDayAsOriginal && time === formattedOriginalStart;
+  };
 
   return (
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
@@ -416,7 +426,7 @@ function ReschedulePage({ params }: ReschedulePageProps) {
                           }`}
                         >
                           <span>{time}</span>
-                          {time === originalTimeSlot && (
+                          {selectedDate && time && isFormerTime(time) && (
                             <span className="text-xs">Former Time</span>
                           )}
                         </button>
