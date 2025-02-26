@@ -150,6 +150,94 @@ export async function GET(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, startTime, endTime } = body;
+
+    if (!id || !startTime || !endTime) {
+      return NextResponse.json(
+        { error: "Missing required fields: id, startTime, or endTime" },
+        { status: 400 }
+      );
+    }
+
+    const availability = await prisma.interviewAvailability.findUnique({
+      where: { id },
+    });
+
+    if (!availability || availability.userId !== currentUser.id) {
+      return NextResponse.json(
+        { error: "Availability not found or not owned by user" },
+        { status: 404 }
+      );
+    }
+
+    const updatedStart = new Date(startTime);
+    const updatedEnd = new Date(endTime);
+
+    if (isNaN(updatedStart.getTime()) || isNaN(updatedEnd.getTime())) {
+      return NextResponse.json(
+        { error: "Invalid startTime or endTime" },
+        { status: 400 }
+      );
+    }
+
+    if (updatedEnd <= updatedStart) {
+      return NextResponse.json(
+        { error: "End time must be after start time" },
+        { status: 400 }
+      );
+    }
+
+    const overlapping = await prisma.interviewAvailability.findMany({
+      where: {
+        userId: currentUser.id,
+        id: { not: id },
+        dayOfWeek: availability.dayOfWeek,
+        OR: [
+          {
+            startTime: { lte: updatedEnd },
+            endTime: { gte: updatedStart },
+          },
+        ],
+      },
+    });
+
+    if (overlapping.length > 0) {
+      return NextResponse.json(
+        { error: "Updated time range overlaps with existing availability" },
+        { status: 400 }
+      );
+    }
+
+    const updatedAvailability = await prisma.interviewAvailability.update({
+      where: { id },
+      data: {
+        startTime: updatedStart,
+        endTime: updatedEnd,
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json(
+      { message: "Availability updated successfully", updatedAvailability },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating availability:", error);
+    return NextResponse.json(
+      { error: "An error occurred while updating availability" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser();

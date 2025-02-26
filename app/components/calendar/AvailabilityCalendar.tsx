@@ -5,6 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import AddAvailabilityModal from "./AddAvailabilityModal";
+import EditAvailabilityModal from "./EditAvailabilityModal";
 import { format, getDay, startOfDay } from "date-fns";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
@@ -16,19 +17,18 @@ interface HeaderToolbar {
   right: string;
 }
 
-
 interface Event {
+  id?: string;
   title: string;
   start: Date;
   end: Date;
 }
 
-
 interface AvailabilityItem {
+  id: string;
   startTime: string;
   endTime: string;
 }
-
 
 interface AvailabilityCalendarProps {
   interviewAvailability: AvailabilityItem[];
@@ -37,13 +37,19 @@ interface AvailabilityCalendarProps {
 function AvailabilityCalendar({
   interviewAvailability,
 }: AvailabilityCalendarProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [isRecurring, setIsRecurring] = useState(false);
   const [availability, setAvailability] = useState<Event[]>([]);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(true);
+  const [editAvailability, setEditAvailability] = useState<{
+    id: string;
+    startTime: string;
+    endTime: string;
+  } | null>(null);
   const [headerToolbar, setHeaderToolbar] = useState<HeaderToolbar>({
     left: "prev,next today",
     center: "title",
@@ -56,9 +62,7 @@ function AvailabilityCalendar({
   const formatTime = (date: Date) => {
     const hours = date.getHours();
     const minutes = date.getMinutes();
-
     const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-
     let period = "AM";
     let formattedHours = hours;
     if (hours >= 12) {
@@ -66,7 +70,6 @@ function AvailabilityCalendar({
       if (hours > 12) formattedHours = hours - 12;
     }
     if (formattedHours === 0) formattedHours = 12;
-
     return `${formattedHours}:${paddedMinutes} ${period}`;
   };
 
@@ -74,8 +77,8 @@ function AvailabilityCalendar({
     (item: AvailabilityItem) => {
       const start = new Date(item.startTime);
       const end = new Date(item.endTime);
-
       return {
+        id: item.id, // Include ID for event clicking
         start,
         end,
         title: `${formatTime(start)} - ${formatTime(end)}`,
@@ -92,24 +95,32 @@ function AvailabilityCalendar({
         setShowOptionsMenu(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleDateClick = (arg: any) => {
     const clickedDate = startOfDay(arg.date);
     const today = startOfDay(new Date());
-
-    if (clickedDate < today) {
-      return;
-    }
-
+    if (clickedDate < today) return;
     setSelectedDate(arg.date);
     setSelectedDates([arg.date]);
     setShowOptionsMenu(true);
+  };
+
+  const handleEventClick = (arg: any) => {
+    const eventId = arg.event.id;
+    const availabilityItem = interviewAvailability.find(
+      (item) => item.id === eventId
+    );
+    if (availabilityItem) {
+      setEditAvailability({
+        id: availabilityItem.id,
+        startTime: availabilityItem.startTime,
+        endTime: availabilityItem.endTime,
+      });
+      setIsEditModalOpen(true);
+    }
   };
 
   const handleOptionSelect = (option: "single" | "recurring") => {
@@ -123,25 +134,20 @@ function AvailabilityCalendar({
         const dayOfWeek = getDay(normalizedDate);
         const rangeEnd = new Date(today);
         rangeEnd.setFullYear(today.getFullYear() + 1);
-
         let dates: Date[] = [];
         let d = new Date(normalizedDate);
-        while (d.getDay() !== dayOfWeek) {
-          d.setDate(d.getDate() + 1);
-        }
-
+        while (d.getDay() !== dayOfWeek) d.setDate(d.getDate() + 1);
         while (d <= rangeEnd) {
           dates.push(startOfDay(new Date(d)));
           d.setDate(d.getDate() + 7);
         }
-
         setSelectedDates(dates);
       } else {
         setSelectedDates([]);
       }
     }
     setShowOptionsMenu(false);
-    setIsModalOpen(true);
+    setIsAddModalOpen(true);
   };
 
   const handleSelect = (selectionInfo: any) => {
@@ -149,27 +155,20 @@ function AvailabilityCalendar({
     const normalizedStart = startOfDay(start);
     const normalizedEnd = startOfDay(end);
     const today = startOfDay(new Date());
-
-    if (normalizedStart < today || normalizedEnd < today) {
-      return;
-    }
-
+    if (normalizedStart < today || normalizedEnd < today) return;
     const adjustedEndDate = new Date(end);
     adjustedEndDate.setDate(end.getDate() - 1);
-
     const dateRange: Date[] = [];
     let currentDate = new Date(start);
-
     while (currentDate <= adjustedEndDate) {
       dateRange.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
-
     if (dateRange.length > 1) {
       setSelectedDates(dateRange);
       setSelectedDate(null);
       setShowOptionsMenu(false);
-      setIsModalOpen(true);
+      setIsAddModalOpen(true);
       setIsRecurring(false);
     }
   };
@@ -182,39 +181,33 @@ function AvailabilityCalendar({
     dates: Date[],
     timeRanges: { startTime: string; endTime: string }[]
   ) => {
-    const newEvents = dates.flatMap((date) => {
-      return timeRanges.map((timeRange) => {
+    const newEvents = dates.flatMap((date) =>
+      timeRanges.map((timeRange) => {
         const eventStart = new Date(date);
         const eventEnd = new Date(date);
-
         const parseTime = (time: string) => {
           const [timeStr, modifier] = time.split(" ");
           const [hour, minute] = timeStr.split(":").map(Number);
-
           let adjustedHour = hour;
           if (modifier === "PM" && hour !== 12) adjustedHour += 12;
           if (modifier === "AM" && hour === 12) adjustedHour = 0;
-
           return { hour: adjustedHour, minute };
         };
-
         const { hour: startHour, minute: startMinute } = parseTime(
           timeRange.startTime
         );
         eventStart.setHours(startHour, startMinute, 0, 0);
-
         const { hour: endHour, minute: endMinute } = parseTime(
           timeRange.endTime
         );
         eventEnd.setHours(endHour, endMinute, 0, 0);
-
         return {
           title: `${eventStart.toLocaleTimeString()} - ${eventEnd.toLocaleTimeString()}`,
           start: eventStart,
           end: eventEnd,
         };
-      });
-    });
+      })
+    );
     const uniqueEvents = newEvents.filter(
       (newEvent) =>
         !availability.some(
@@ -223,16 +216,34 @@ function AvailabilityCalendar({
             existingEvent.end.getTime() === newEvent.end.getTime()
         )
     );
-
-    setAvailability((prev) => {
-      const updatedAvailability = [...prev, ...uniqueEvents];
-      return updatedAvailability;
-    });
-
-    setIsModalOpen(false);
+    setAvailability((prev) => [...prev, ...uniqueEvents]);
+    setIsAddModalOpen(false);
     setSelectedDates([]);
     setSelectedDate(null);
     setIsRecurring(false);
+  };
+
+  const handleEditAvailability = (
+    id: string,
+    startTime: string,
+    endTime: string
+  ) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    setAvailability((prev) =>
+      prev.map((event) =>
+        event.id === id
+          ? {
+              ...event,
+              start,
+              end,
+              title: `${formatTime(start)} - ${formatTime(end)}`,
+            }
+          : event
+      )
+    );
+    setIsEditModalOpen(false);
+    setEditAvailability(null);
   };
 
   const updateHeaderToolbar = (date: Date) => {
@@ -244,7 +255,6 @@ function AvailabilityCalendar({
   useEffect(() => {
     const updateViewBasedOnScreenSize = () => {
       const calendarApi = calendarRef.current?.getApi();
-
       if (calendarApi) {
         if (window.innerWidth >= 1280) {
           calendarApi.changeView("dayGridMonth");
@@ -277,29 +287,20 @@ function AvailabilityCalendar({
         }
       }
     };
-
     window.addEventListener("resize", updateViewBasedOnScreenSize);
     updateViewBasedOnScreenSize();
-
-    return () => {
+    return () =>
       window.removeEventListener("resize", updateViewBasedOnScreenSize);
-    };
   }, [currentMonth]);
 
   const handleResetAvailability = async (date: Date | null) => {
     try {
       const response = await fetch("/api/interview-availability", {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to reset availability");
-      }
-
+      if (!response.ok) throw new Error("Failed to reset availability");
       toast.success("Availability removed successfully");
       mutate("/api/interview-availability");
       setShowOptionsMenu(false);
@@ -324,37 +325,30 @@ function AvailabilityCalendar({
           events={interviewEvents}
           selectable={true}
           dateClick={handleDateClick}
+          eventClick={handleEventClick}
           select={handleSelect}
           unselect={handleUnselect}
           selectAllow={(selectInfo) => {
             const today = startOfDay(new Date());
             const selectedStartDate = startOfDay(selectInfo.start);
-            if (selectedStartDate < today) {
-              return false;
-            }
-            return true;
+            return selectedStartDate >= today;
           }}
           nowIndicator={true}
           dayCellClassNames={(date) => {
             const todayMidnight = new Date(today.setHours(0, 0, 0, 0));
-            if (date.date < todayMidnight) {
-              return "fc-past-day";
-            }
-            return "";
+            return date.date < todayMidnight ? "fc-past-day" : "";
           }}
           datesSet={(dateInfo) =>
             updateHeaderToolbar(dateInfo.view.currentStart)
           }
-          dayCellContent={(info) => {
-            return (
-              <div className="relative flex justify-between">
-                <span>{info.dayNumberText}</span>
-              </div>
-            );
-          }}
+          dayCellContent={(info) => (
+            <div className="relative flex justify-between">
+              <span>{info.dayNumberText}</span>
+            </div>
+          )}
         />
         {showOptionsMenu && (
-          <div className="z-10 absolute top-12 right-0 bg-white border border-gray-300 shadow-lg rounded p-4 ">
+          <div className="z-10 absolute top-12 right-0 bg-white border border-gray-300 shadow-lg rounded p-4">
             <button
               onClick={() => handleOptionSelect("single")}
               className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
@@ -382,21 +376,26 @@ function AvailabilityCalendar({
           </div>
         )}
         <AddAvailabilityModal
-          isOpen={isModalOpen}
-          closeModal={() => setIsModalOpen(false)}
+          isOpen={isAddModalOpen}
+          closeModal={() => setIsAddModalOpen(false)}
           selectedDate={selectedDate!}
           selectedDates={selectedDates}
           isRecurring={isRecurring}
           onSubmit={handleAddAvailability}
         />
+        {editAvailability && (
+          <EditAvailabilityModal
+            isOpen={isEditModalOpen}
+            closeModal={() => setIsEditModalOpen(false)}
+            availabilityId={editAvailability.id}
+            initialStartTime={editAvailability.startTime}
+            initialEndTime={editAvailability.endTime}
+            onSubmit={handleEditAvailability}
+          />
+        )}
       </div>
     </>
   );
 }
 
 export default AvailabilityCalendar;
-
-
-
-
-
