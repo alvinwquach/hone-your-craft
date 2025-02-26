@@ -216,6 +216,11 @@ function ReschedulePage({ params }: ReschedulePageProps) {
       const result = await response.json();
 
       if (response.ok) {
+        setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
+        setSelectedTime(null);
+        setSelectedDate(null);
+        reset();
+        setIsFormVisible(false);
         const startTime = format(new Date(meetingTime[0].start), "hh:mm a");
         const endTime = format(new Date(meetingTime[0].end), "hh:mm a");
         const dateStr = format(selectedDate, "EEEE, MMMM d");
@@ -235,11 +240,6 @@ function ReschedulePage({ params }: ReschedulePageProps) {
           `Event rescheduled successfully! Your ${data.event.title} with ${formData.name} is now booked for ${startTime} - ${endTime} on ${dateStr}`
         );
 
-        setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
-        setSelectedTime(null);
-        setSelectedDate(null);
-        reset();
-        setIsFormVisible(false);
 
         mutate(`/api/event-type/${id}`);
       } else {
