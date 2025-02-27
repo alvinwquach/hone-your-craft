@@ -18,6 +18,7 @@ import {
   FaCog,
   FaTrash,
   FaEdit,
+  FaShare,
 } from "react-icons/fa";
 import AvailabilityCalendar from "../components/calendar/AvailabilityCalendar";
 import { IoCalendarSharp } from "react-icons/io5";
@@ -157,6 +158,8 @@ function Calendar() {
     }
   };
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
   return (
     <DeleteInterviewContext.Provider value={handleDeleteInterview}>
       <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
@@ -270,7 +273,6 @@ function Calendar() {
                             <p className="text-sm text-gray-600">
                               {formatEventLength(event.length)}, One-on-One
                             </p>
-
                             <div className="mt-4">
                               <div className="flex justify-between mb-2">
                                 <Link
@@ -286,7 +288,7 @@ function Calendar() {
                                   className="flex items-center text-blue-600 hover:text-blue-800"
                                   onClick={() => {
                                     navigator.clipboard.writeText(
-                                      `/schedule/${event.id}`
+                                      `${baseUrl}/schedule/${event.id}`
                                     );
                                     toast.info("Link copied to clipboard!");
                                   }}
@@ -294,11 +296,24 @@ function Calendar() {
                                   <FaClipboard className="mr-2" /> Copy link
                                 </button>
                                 <button
-                                  className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
                                   onClick={() => {
+                                    const shareUrl = `${baseUrl}/schedule/${event.id}`;
+                                    if (navigator.share) {
+                                      navigator
+                                        .share({
+                                          title: event.title,
+                                          text: `Book a ${event.title} meeting`,
+                                          url: shareUrl,
+                                        })
+                                        .catch(console.error);
+                                    } else {
+                                      window.open(shareUrl, "_blank");
+                                    }
                                     toast.info("Shared!");
                                   }}
                                 >
+                                  <FaShare className="mr-2 h-4 w-4 text-white" />
                                   Share
                                 </button>
                               </div>
