@@ -3,6 +3,37 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 
+const interviewTypeMapping = {
+  FINAL_ROUND: "Final Round",
+  ON_SITE: "On-site Interview",
+  TECHNICAL: "Technical Interview",
+  PANEL: "Panel Interview",
+  PHONE_SCREEN: "Phone Screen",
+  ASSESSMENT: "Assessment",
+  INTERVIEW: "Interview",
+  VIDEO_INTERVIEW: "Video Interview",
+  FOLLOW_UP: "Follow-up Interview",
+  OFFER_EXTENDED: "Offer Extended",
+  OFFER_ACCEPTED: "Offer Accepted",
+  OFFER_REJECTED: "Offer Rejected",
+  REJECTION: "Rejection",
+  CONTRACT_SIGNED: "Contract Signed",
+  SALARY_NEGOTIATION: "Salary Negotiation",
+  FINAL_DECISION: "Final Decision",
+  PRE_SCREENING: "Pre-Screening",
+  GROUP_INTERVIEW: "Group Interview",
+  REFERENCE_CHECK: "Reference Check",
+  TRIAL_PERIOD: "Trial Period",
+  FINAL_OFFER: "Final Offer",
+  OFFER_WITHDRAWN: "Offer Withdrawn",
+  NEGOTIATION_PHASE: "Negotiation Phase",
+  ADDITIONAL_DOCS_REQUIRED: "Additional Docs Required",
+  NO_SHOW: "No Show",
+  CANDIDATE_WITHDREW: "Candidate Withdrew",
+  HIRING_FREEZE: "Hiring Freeze",
+  TAKE_HOME_ASSESSMENT: "Take Home Assessment",
+};
+
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
@@ -44,9 +75,13 @@ export async function GET(request: NextRequest) {
       const end = new Date(start);
       end.setHours(end.getHours() + 1);
 
+      const humanReadableType =
+        interviewTypeMapping[interview.interviewType] ||
+        interview.interviewType;
+
       calendar.createEvent({
-        summary: `${interview.job.title} - ${interview.interviewType}`,
-        description: `Interview at ${interview.job.company}`,
+        summary: `${interview.job.title} - ${humanReadableType}`,
+        description: `Interview with ${interview.job.company}`,
         start,
         end,
         timezone: "America/Los_Angeles",
