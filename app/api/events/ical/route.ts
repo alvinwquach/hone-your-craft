@@ -54,8 +54,10 @@ export async function GET(request: NextRequest) {
       const start = new Date(event.startTime);
       const end = new Date(event.endTime);
 
+      const summary = `${event.title} Scheduled with ${event.participant.name}`;
+
       calendar.createEvent({
-        summary: event.title,
+        summary: summary,
         description: event.description || "",
         start,
         end,
