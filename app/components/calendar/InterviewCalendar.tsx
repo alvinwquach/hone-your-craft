@@ -11,6 +11,7 @@ import { Interview } from "@prisma/client";
 import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import EditInterviewModal from "./EditInterviewModal";
 import InterviewDetailsModal from "./InterviewDetailsModal";
+import { clientInterviewTypes } from "@/app/lib/clientInterviewTypes"; 
 
 interface Event {
   id: string;
@@ -44,23 +45,32 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
   const optionsMenuRef = useRef<HTMLDivElement>(null);
 
   const mapInterviewsToEvents = (interviews: any[]) =>
-    interviews.map((interview) => ({
-      id: interview.id,
-      start: interview.interviewDate
-        ? new Date(interview.interviewDate)
-        : undefined,
-      title: interview.job.title,
-      backgroundColor: interview.interviewType,
-      borderColor: interview.interviewType,
-      textColor: "white",
-      extendedProps: {
-        interviewData: interview,
-        company: interview.job.company,
-        time: interview.interviewDate
-          ? format(new Date(interview.interviewDate), "h:mm a")
-          : "",
-      },
-    }));
+    interviews.map((interview) => {
+      const interviewType = clientInterviewTypes.find(
+        (type) => type.type === interview.interviewType
+      );
+      const color = interviewType
+        ? interviewType.color.replace("bg-", "")
+        : "gray-400";
+
+      return {
+        id: interview.id,
+        start: interview.interviewDate
+          ? new Date(interview.interviewDate)
+          : undefined,
+        title: interview.job.title,
+        backgroundColor: color,
+        borderColor: color,
+        textColor: "white",
+        extendedProps: {
+          interviewData: interview,
+          company: interview.job.company,
+          time: interview.interviewDate
+            ? format(new Date(interview.interviewDate), "h:mm a")
+            : "",
+        },
+      };
+    });
 
   const mapApiEventsToEvents = (events: Event[] = []) => {
     if (!Array.isArray(events)) return [];
@@ -143,7 +153,7 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
     if (isInterview) {
       const interview = event.extendedProps.interviewData;
       return (
-        <div className="mt-2 relative text-black">
+        <div className="mt-2 relative text-white">
           <div className="text-xs font-semibold whitespace-normal">
             {truncateText(interview.job.title, 40)}
           </div>
@@ -157,7 +167,7 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
       const apiEvent: Event = event.extendedProps.eventData;
       return (
         <div className="p-1 relative">
-          <div className="text-xs font-semibold ">
+          <div className="text-xs font-semibold">
             {truncateText(apiEvent.title, 40)}
           </div>
           <div className="text-xs">
