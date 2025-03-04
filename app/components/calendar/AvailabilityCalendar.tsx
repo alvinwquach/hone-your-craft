@@ -6,7 +6,7 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import AddAvailabilityModal from "./AddAvailabilityModal";
 import EditAvailabilityModal from "./EditAvailabilityModal";
-import { format, getDay, startOfDay } from "date-fns";
+import { format, getDay, startOfDay, isSameDay } from "date-fns";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
 import { GrPowerReset } from "react-icons/gr";
@@ -45,11 +45,6 @@ function AvailabilityCalendar({
   const [availability, setAvailability] = useState<Event[]>([]);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(true);
-  const [editAvailability, setEditAvailability] = useState<{
-    id: string;
-    startTime: string;
-    endTime: string;
-  } | null>(null);
   const [headerToolbar, setHeaderToolbar] = useState<HeaderToolbar>({
     left: "prev,next today",
     center: "title",
@@ -78,7 +73,7 @@ function AvailabilityCalendar({
       const start = new Date(item.startTime);
       const end = new Date(item.endTime);
       return {
-        id: item.id, // Include ID for event clicking
+        id: item.id,
         start,
         end,
         title: `${formatTime(start)} - ${formatTime(end)}`,
@@ -114,11 +109,7 @@ function AvailabilityCalendar({
       (item) => item.id === eventId
     );
     if (availabilityItem) {
-      setEditAvailability({
-        id: availabilityItem.id,
-        startTime: availabilityItem.startTime,
-        endTime: availabilityItem.endTime,
-      });
+      setSelectedDates([startOfDay(new Date(availabilityItem.startTime))]);
       setIsEditModalOpen(true);
     }
   };
@@ -127,6 +118,7 @@ function AvailabilityCalendar({
     if (option === "single") {
       setIsRecurring(false);
       setSelectedDates(selectedDate ? [startOfDay(selectedDate)] : []);
+      setIsAddModalOpen(true);
     } else {
       setIsRecurring(true);
       if (selectedDate) {
@@ -145,9 +137,9 @@ function AvailabilityCalendar({
       } else {
         setSelectedDates([]);
       }
+      setIsAddModalOpen(true);
     }
     setShowOptionsMenu(false);
-    setIsAddModalOpen(true);
   };
 
   const handleSelect = (selectionInfo: any) => {
@@ -164,12 +156,17 @@ function AvailabilityCalendar({
       dateRange.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    if (dateRange.length > 1) {
-      setSelectedDates(dateRange);
-      setSelectedDate(null);
-      setShowOptionsMenu(false);
+    setSelectedDates(dateRange);
+    setSelectedDate(null);
+    setShowOptionsMenu(false);
+    setIsRecurring(false);
+    const hasEvents = interviewAvailability.some((item) =>
+      dateRange.some((d) => isSameDay(d, new Date(item.startTime)))
+    );
+    if (hasEvents) {
+      setIsEditModalOpen(true);
+    } else {
       setIsAddModalOpen(true);
-      setIsRecurring(false);
     }
   };
 
@@ -224,26 +221,26 @@ function AvailabilityCalendar({
   };
 
   const handleEditAvailability = (
-    id: string,
-    startTime: string,
-    endTime: string
+    updatedEvents: { id: string; startTime: string; endTime: string }[]
   ) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
     setAvailability((prev) =>
-      prev.map((event) =>
-        event.id === id
-          ? {
-              ...event,
-              start,
-              end,
-              title: `${formatTime(start)} - ${formatTime(end)}`,
-            }
-          : event
-      )
+      prev.map((event) => {
+        const updatedEvent = updatedEvents.find((e) => e.id === event.id);
+        if (updatedEvent) {
+          const start = new Date(updatedEvent.startTime);
+          const end = new Date(updatedEvent.endTime);
+          return {
+            ...event,
+            start,
+            end,
+            title: `${formatTime(start)} - ${formatTime(end)}`,
+          };
+        }
+        return event;
+      })
     );
     setIsEditModalOpen(false);
-    setEditAvailability(null);
+    setSelectedDates([]);
   };
 
   const updateHeaderToolbar = (date: Date) => {
@@ -348,7 +345,10 @@ function AvailabilityCalendar({
           )}
         />
         {showOptionsMenu && (
-          <div className="z-10 absolute top-12 right-0 bg-white border border-gray-300 shadow-lg rounded p-4">
+          <div
+            ref={optionsMenuRef}
+            className="z-10 absolute top-12 right-0 bg-white border border-gray-300 shadow-lg rounded p-4"
+          >
             <button
               onClick={() => handleOptionSelect("single")}
               className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
@@ -383,16 +383,13 @@ function AvailabilityCalendar({
           isRecurring={isRecurring}
           onSubmit={handleAddAvailability}
         />
-        {editAvailability && (
-          <EditAvailabilityModal
-            isOpen={isEditModalOpen}
-            closeModal={() => setIsEditModalOpen(false)}
-            availabilityId={editAvailability.id}
-            initialStartTime={editAvailability.startTime}
-            initialEndTime={editAvailability.endTime}
-            onSubmit={handleEditAvailability}
-          />
-        )}
+        <EditAvailabilityModal
+          isOpen={isEditModalOpen}
+          closeModal={() => setIsEditModalOpen(false)}
+          selectedDates={selectedDates}
+          interviewAvailability={interviewAvailability}
+          onSubmit={handleEditAvailability}
+        />
       </div>
     </>
   );
