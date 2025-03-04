@@ -11,7 +11,7 @@ import { Interview } from "@prisma/client";
 import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import EditInterviewModal from "./EditInterviewModal";
 import InterviewDetailsModal from "./InterviewDetailsModal";
-import { clientInterviewTypes } from "@/app/lib/clientInterviewTypes"; // Import the types for color mapping
+import { clientInterviewTypes } from "@/app/lib/clientInterviewTypes"; 
 
 interface Event {
   id: string;
@@ -46,13 +46,12 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
 
   const mapInterviewsToEvents = (interviews: any[]) =>
     interviews.map((interview) => {
-      // Find the matching interview type and its color
       const interviewType = clientInterviewTypes.find(
         (type) => type.type === interview.interviewType
       );
       const color = interviewType
         ? interviewType.color.replace("bg-", "")
-        : "gray-400"; // Default to gray if not found
+        : "gray-400";
 
       return {
         id: interview.id,
@@ -60,8 +59,8 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
           ? new Date(interview.interviewDate)
           : undefined,
         title: interview.job.title,
-        backgroundColor: color, // Use the color value directly (e.g., "yellow-400")
-        borderColor: color, // Same color for border
+        backgroundColor: color,
+        borderColor: color,
         textColor: "white",
         extendedProps: {
           interviewData: interview,
