@@ -158,77 +158,126 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { id, startTime, endTime } = body;
 
-    if (!id || !startTime || !endTime) {
+    if (body.id && body.startTime && body.endTime) {
+      const { id, startTime, endTime } = body;
+
+      const availability = await prisma.interviewAvailability.findUnique({
+        where: { id },
+      });
+
+      if (!availability || availability.userId !== currentUser.id) {
+        return NextResponse.json(
+          { error: "Availability not found or not owned by user" },
+          { status: 404 }
+        );
+      }
+
+      const updatedStart = new Date(startTime);
+      const updatedEnd = new Date(endTime);
+
+      if (isNaN(updatedStart.getTime()) || isNaN(updatedEnd.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid startTime or endTime" },
+          { status: 400 }
+        );
+      }
+
+      if (updatedEnd <= updatedStart) {
+        return NextResponse.json(
+          { error: "End time must be after start time" },
+          { status: 400 }
+        );
+      }
+
+      const overlapping = await prisma.interviewAvailability.findMany({
+        where: {
+          userId: currentUser.id,
+          id: { not: id },
+          dayOfWeek: availability.dayOfWeek,
+          OR: [
+            {
+              startTime: { lte: updatedEnd },
+              endTime: { gte: updatedStart },
+            },
+          ],
+        },
+      });
+
+      if (overlapping.length > 0) {
+        return NextResponse.json(
+          { error: "Updated time range overlaps with existing availability" },
+          { status: 400 }
+        );
+      }
+
+      const updatedAvailability = await prisma.interviewAvailability.update({
+        where: { id },
+        data: {
+          startTime: updatedStart,
+          endTime: updatedEnd,
+          updatedAt: new Date(),
+        },
+      });
+
       return NextResponse.json(
-        { error: "Missing required fields: id, startTime, or endTime" },
+        { message: "Availability updated successfully", updatedAvailability },
+        { status: 200 }
+      );
+    } else if (body.events && Array.isArray(body.events)) {
+      // Bulk update
+      const { events } = body;
+
+      if (events.length === 0) {
+        return NextResponse.json(
+          { error: "No events provided for update" },
+          { status: 400 }
+        );
+      }
+
+      const updatedAvailabilities = await prisma.$transaction(
+        events.map(
+          (event: { id: string; startTime: string; endTime: string }) => {
+            const updatedStart = new Date(event.startTime);
+            const updatedEnd = new Date(event.endTime);
+            const dayOfWeek = convertToDayOfWeek(updatedStart.getDay());
+
+            if (isNaN(updatedStart.getTime()) || isNaN(updatedEnd.getTime())) {
+              throw new Error(`Invalid time for event ${event.id}`);
+            }
+
+            if (updatedEnd <= updatedStart) {
+              throw new Error(
+                `End time must be after start time for event ${event.id}`
+              );
+            }
+
+            return prisma.interviewAvailability.update({
+              where: { id: event.id, userId: currentUser.id },
+              data: {
+                startTime: updatedStart,
+                endTime: updatedEnd,
+                dayOfWeek,
+                updatedAt: new Date(),
+              },
+            });
+          }
+        )
+      );
+
+      return NextResponse.json(
+        {
+          message: "Availabilities updated successfully",
+          updatedAvailabilities,
+        },
+        { status: 200 }
+      );
+    } else {
+      return NextResponse.json(
+        { error: "Invalid request body" },
         { status: 400 }
       );
     }
-
-    const availability = await prisma.interviewAvailability.findUnique({
-      where: { id },
-    });
-
-    if (!availability || availability.userId !== currentUser.id) {
-      return NextResponse.json(
-        { error: "Availability not found or not owned by user" },
-        { status: 404 }
-      );
-    }
-
-    const updatedStart = new Date(startTime);
-    const updatedEnd = new Date(endTime);
-
-    if (isNaN(updatedStart.getTime()) || isNaN(updatedEnd.getTime())) {
-      return NextResponse.json(
-        { error: "Invalid startTime or endTime" },
-        { status: 400 }
-      );
-    }
-
-    if (updatedEnd <= updatedStart) {
-      return NextResponse.json(
-        { error: "End time must be after start time" },
-        { status: 400 }
-      );
-    }
-
-    const overlapping = await prisma.interviewAvailability.findMany({
-      where: {
-        userId: currentUser.id,
-        id: { not: id },
-        dayOfWeek: availability.dayOfWeek,
-        OR: [
-          {
-            startTime: { lte: updatedEnd },
-            endTime: { gte: updatedStart },
-          },
-        ],
-      },
-    });
-
-    if (overlapping.length > 0) {
-      return NextResponse.json(
-        { error: "Updated time range overlaps with existing availability" },
-        { status: 400 }
-      );
-    }
-
-    const updatedAvailability = await prisma.interviewAvailability.update({
-      where: { id },
-      data: {
-        startTime: updatedStart,
-        endTime: updatedEnd,
-        updatedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json(
-      { message: "Availability updated successfully", updatedAvailability },
-      { status: 200 }
-    );
   } catch (error) {
     console.error("Error updating availability:", error);
     return NextResponse.json(
@@ -267,7 +316,6 @@ export async function DELETE(req: NextRequest) {
 
     const dayOfWeek = convertToDayOfWeek(selectedDate.getDay());
 
-    // First, delete associated EventTypeAvailability records
     await prisma.eventTypeAvailability.deleteMany({
       where: {
         availability: {
@@ -283,7 +331,6 @@ export async function DELETE(req: NextRequest) {
       },
     });
 
-    // Then, delete the InterviewAvailability records
     await prisma.interviewAvailability.deleteMany({
       where: {
         userId: currentUser.id,

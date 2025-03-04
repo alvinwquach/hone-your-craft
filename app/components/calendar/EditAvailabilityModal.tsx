@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { format, parse, isToday, isSameDay } from "date-fns";
+import { useState, useEffect, useMemo } from "react";
+import { format, parse, isToday, isSameDay, startOfDay } from "date-fns";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { HiX } from "react-icons/hi";
 import { toast } from "react-toastify";
@@ -12,40 +12,50 @@ interface TimeRange {
   endTime: string;
 }
 
+interface AvailabilityItem {
+  id: string;
+  startTime: string;
+  endTime: string;
+}
+
 interface EditAvailabilityModalProps {
   isOpen: boolean;
   closeModal: () => void;
-  availabilityId: string;
-  initialStartTime: string;
-  initialEndTime: string;
-  onSubmit: (id: string, startTime: string, endTime: string) => void;
+  selectedDates: Date[];
+  interviewAvailability: AvailabilityItem[];
+  onSubmit: (
+    updatedEvents: { id: string; startTime: string; endTime: string }[]
+  ) => void;
 }
 
 function EditAvailabilityModal({
   isOpen,
   closeModal,
-  availabilityId,
-  initialStartTime,
-  initialEndTime,
+  selectedDates,
+  interviewAvailability,
   onSubmit,
 }: EditAvailabilityModalProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>({
-    startTime: "",
-    endTime: "",
+    startTime: "09:00 AM",
+    endTime: "10:00 AM",
   });
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dates, setDates] = useState<Date[]>([]);
 
   useEffect(() => {
-    const start = new Date(initialStartTime);
-    const end = new Date(initialEndTime);
-    setTimeRange({
-      startTime: format(start, "hh:mm a"),
-      endTime: format(end, "hh:mm a"),
-    });
-    setSelectedDate(start);
-    setDates([start]);
-  }, [initialStartTime, initialEndTime, isOpen]);
+    if (isOpen && selectedDates.length > 0) {
+      setDates(selectedDates);
+      const eventsInRange = interviewAvailability.filter((item) =>
+        selectedDates.some((d) => isSameDay(d, new Date(item.startTime)))
+      );
+      if (eventsInRange.length > 0) {
+        const firstEvent = eventsInRange[0];
+        setTimeRange({
+          startTime: format(new Date(firstEvent.startTime), "hh:mm a"),
+          endTime: format(new Date(firstEvent.endTime), "hh:mm a"),
+        });
+      }
+    }
+  }, [isOpen, selectedDates, interviewAvailability]);
 
   const timeOptions = useMemo(() => {
     const times: string[] = [];
@@ -67,42 +77,50 @@ function EditAvailabilityModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const startDate = parse(
-      timeRange.startTime,
-      "hh:mm a",
-      new Date(initialStartTime)
-    );
-    const endDate = parse(
-      timeRange.endTime,
-      "hh:mm a",
-      new Date(initialEndTime)
+    const eventsInRange = interviewAvailability.filter((item) =>
+      dates.some((d) => isSameDay(d, new Date(item.startTime)))
     );
 
-    if (endDate <= startDate) {
-      toast.error("End time must be after start time");
+    const updatedEvents = eventsInRange
+      .map((event) => {
+        const eventDate = startOfDay(new Date(event.startTime));
+        const startDate = parse(timeRange.startTime, "hh:mm a", eventDate);
+        const endDate = parse(timeRange.endTime, "hh:mm a", eventDate);
+
+        if (endDate <= startDate) {
+          toast.error("End time must be after start time");
+          return null;
+        }
+
+        return {
+          id: event.id,
+          startTime: startDate.toISOString(),
+          endTime: endDate.toISOString(),
+        };
+      })
+      .filter(Boolean);
+
+    if (updatedEvents.length === 0) {
+      toast.error("No valid events to update");
       return;
     }
 
     try {
-      const body = {
-        id: availabilityId,
-        startTime: startDate.toISOString(),
-        endTime: endDate.toISOString(),
-      };
-
       const response = await fetch("/api/interview-availability", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ events: updatedEvents }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to update availability");
       }
 
-      onSubmit(availabilityId, startDate.toISOString(), endDate.toISOString());
+      onSubmit(
+        updatedEvents as { id: string; startTime: string; endTime: string }[]
+      );
       toast.success("Availability updated successfully");
       closeModal();
       mutate("/api/interview-availability");
@@ -114,32 +132,81 @@ function EditAvailabilityModal({
 
   if (!isOpen) return null;
 
+  const today = new Date();
+
   return (
-    <div className="z-10 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg w-96">
+    <div
+      className="z-10 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      onClick={closeModal}
+    >
+      <div
+        className="bg-white p-6 rounded-lg w-96"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="text-lg font-semibold text-black">
-          Edit Availability for{" "}
-          {format(selectedDate || new Date(), "MMMM d, yyyy")}
+          Edit Availability for {dates.length} Date(s)
         </h2>
-        <div className="mt-4 flex justify-center items-center">
-          <Calendar
-            value={selectedDate}
-            minDate={new Date()}
-            showOtherDays={true}
-            mapDays={({ date }) => {
-              const isTodayDate = isToday(date.toDate());
-              const isSelected = dates.some((d) => isSameDay(d, date.toDate()));
-              let dayClasses = "cursor-pointer";
-              if (isTodayDate) {
-                dayClasses = "bg-transparent text-blue-700";
-              } else if (isSelected) {
-                dayClasses = "bg-blue-700 text-white";
-              }
-              return { className: dayClasses };
-            }}
-          />
-        </div>
         <form onSubmit={handleSubmit}>
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 sr-only">
+              Selected Dates
+            </label>
+            <div className="flex justify-center items-center">
+              <Calendar
+                value={dates.map((date) => new DateObject(date))}
+                onChange={(newDates) => {
+                  const selectedDates = newDates.map((dateObject) =>
+                    dateObject.toDate()
+                  );
+                  setDates(selectedDates);
+                }}
+                multiple
+                minDate={today}
+                headerOrder={["MONTH_YEAR", "LEFT_BUTTON", "RIGHT_BUTTON"]}
+                monthYearSeparator={" "}
+                showOtherDays={true}
+                mapDays={({ date }) => {
+                  const isTodayDate = isToday(date.toDate());
+                  const isSelected = dates.some((d) =>
+                    isSameDay(d, date.toDate())
+                  );
+                  const isBeforeToday = date.toDate() < today;
+                  let dayClasses = "cursor-pointer";
+                  if (isBeforeToday) {
+                    dayClasses = "text-gray-400";
+                  } else if (isSelected) {
+                    dayClasses = "bg-blue-700 text-white";
+                  } else if (isTodayDate) {
+                    dayClasses = "bg-transparent text-blue-700";
+                  } else {
+                    dayClasses = "bg-blue-100 text-blue-700 font-bold";
+                  }
+                  return {
+                    className: dayClasses,
+                    children: isTodayDate ? (
+                      <div>
+                        <div>{date.day}</div>
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: 2,
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            width: 4,
+                            height: 4,
+                            backgroundColor: "white",
+                            borderRadius: "50%",
+                          }}
+                        ></div>
+                      </div>
+                    ) : (
+                      date.day
+                    ),
+                  };
+                }}
+              />
+            </div>
+          </div>
           <div className="mt-4">
             <label className="block text-sm font-medium text-black">
               Available Hours
