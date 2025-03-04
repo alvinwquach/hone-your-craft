@@ -303,15 +303,18 @@ body {
   white-space: normal !important;
   align-items: normal !important;
   word-wrap: break-word !important;
+  background-color: inherit; 
 }
 
-.interview-calendar .fc-time-grid-event {
+.interview-calendar .fc-timegrid-event {
   margin-bottom: 2px;
+  background-color: inherit; 
 }
 
-.interview-calendar .fc-time-grid-event .fc-content {
+.interview-calendar .fc-timegrid-event .fc-content {
   padding: 2px;
-  background-color: inherit;
+  background-color: transparent;
+  color: #000000 !important;
 }
 
 .interview-calendar .fc-event-main-frame {
@@ -319,17 +322,19 @@ body {
   flex-direction: column;
   gap: 2px;
   padding: 2px;
+  background-color: inherit;
 }
 
 .interview-calendar .fc-event-title {
   padding-right: 5px;
   white-space: normal !important;
   overflow: visible !important;
+  color: #000000 !important; 
 }
 
 .interview-calendar .fc-event-time {
   font-size: 0.8em;
-  color: #666;
+  color: #000000 !important; 
   margin-top: auto;
 }
 
@@ -339,28 +344,30 @@ body {
 
 .interview-calendar .fc-list-event-title {
   margin-bottom: 4px;
+  color: #000000 !important; 
 }
 
 .interview-calendar .fc-list-event-time {
   font-size: 0.9em;
-  color: #666;
+  color: #000000 !important; 
 }
 
 .interview-calendar .fc-event {
   position: relative;
+  background-color: inherit; 
 }
 
 .interview-calendar .fc-event-inner {
-  background-color: inherit !important;
   padding: 2px !important;
+  background-color: transparent !important; 
+  color: #000000 !important; 
 }
 
 .interview-calendar .fc-event-title,
 .interview-calendar .fc-event-time {
-  background-color: transparent !important;
+  background-color: transparent !important; 
 }
 
 .interview-calendar .event-container {
   padding: 2px !important;
-  background-color: inherit !important;
 }

@@ -11,7 +11,8 @@ function LegendItem({ color, label }: InterviewType) {
   return (
     <div className="flex items-center space-x-3 py-2">
       <div
-        className={`${color} w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full opacity-75`}
+        style={{ backgroundColor: color }}
+        className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full opacity-75"
       />
       <div className="text-xs lg:text-sm font-medium text-gray-700">
         {label}
@@ -33,4 +34,3 @@ function Legend({ interviewTypes }: LegendProps) {
 }
 
 export default Legend;
-
