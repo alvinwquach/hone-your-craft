@@ -62,12 +62,8 @@ export async function POST(req: NextRequest) {
         const existingEntries = await prisma.interviewAvailability.findMany({
           where: {
             userId: currentUser.id,
-            startTime: {
-              lte: end,
-            },
-            endTime: {
-              gte: start,
-            },
+            startTime: { lte: end },
+            endTime: { gte: start },
             dayOfWeek: dayOfWeek,
           },
         });
@@ -90,9 +86,7 @@ export async function POST(req: NextRequest) {
         });
 
         const eventTypes = await prisma.eventType.findMany({
-          where: {
-            userId: currentUser.id,
-          },
+          where: { userId: currentUser.id },
         });
 
         for (const eventType of eventTypes) {
@@ -118,7 +112,6 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 export async function GET(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
@@ -127,12 +120,8 @@ export async function GET(req: NextRequest) {
     }
 
     const availabilities = await prisma.interviewAvailability.findMany({
-      where: {
-        userId: currentUser.id,
-      },
-      orderBy: {
-        dayOfWeek: "asc",
-      },
+      where: { userId: currentUser.id },
+      orderBy: { dayOfWeek: "asc" },
     });
 
     const formattedAvailabilities = availabilities.map((avail) => ({
@@ -225,7 +214,6 @@ export async function PUT(req: NextRequest) {
         { status: 200 }
       );
     } else if (body.events && Array.isArray(body.events)) {
-      // Bulk update
       const { events } = body;
 
       if (events.length === 0) {
@@ -237,7 +225,12 @@ export async function PUT(req: NextRequest) {
 
       const updatedAvailabilities = await prisma.$transaction(
         events.map(
-          (event: { id: string; startTime: string; endTime: string }) => {
+          (event: {
+            id: string;
+            startTime: string;
+            endTime: string;
+            isRecurring?: boolean;
+          }) => {
             const updatedStart = new Date(event.startTime);
             const updatedEnd = new Date(event.endTime);
             const dayOfWeek = convertToDayOfWeek(updatedStart.getDay());
@@ -258,6 +251,8 @@ export async function PUT(req: NextRequest) {
                 startTime: updatedStart,
                 endTime: updatedEnd,
                 dayOfWeek,
+                isRecurring:
+                  event.isRecurring !== undefined ? event.isRecurring : false,
                 updatedAt: new Date(),
               },
             });
@@ -321,12 +316,8 @@ export async function DELETE(req: NextRequest) {
         availability: {
           userId: currentUser.id,
           dayOfWeek: dayOfWeek,
-          startTime: {
-            gte: startOfDay,
-          },
-          endTime: {
-            lte: endOfDay,
-          },
+          startTime: { gte: startOfDay },
+          endTime: { lte: endOfDay },
         },
       },
     });
@@ -335,12 +326,8 @@ export async function DELETE(req: NextRequest) {
       where: {
         userId: currentUser.id,
         dayOfWeek: dayOfWeek,
-        startTime: {
-          gte: startOfDay,
-        },
-        endTime: {
-          lte: endOfDay,
-        },
+        startTime: { gte: startOfDay },
+        endTime: { lte: endOfDay },
       },
     });
 
@@ -361,3 +348,4 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
+
