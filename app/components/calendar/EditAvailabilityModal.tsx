@@ -1,9 +1,17 @@
 "use client";
-
 import { useState, useEffect, useMemo } from "react";
-import { format, parse, isToday, isSameDay, startOfDay } from "date-fns";
+import {
+  format,
+  parse,
+  isToday,
+  isSameDay,
+  startOfDay,
+  getDay,
+  addDays,
+  addMonths,
+  startOfMonth,
+} from "date-fns";
 import { Calendar, DateObject } from "react-multi-date-picker";
-import { HiX } from "react-icons/hi";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
 
@@ -16,6 +24,7 @@ interface AvailabilityItem {
   id: string;
   startTime: string;
   endTime: string;
+  isRecurring: boolean;
 }
 
 interface EditAvailabilityModalProps {
@@ -23,8 +32,16 @@ interface EditAvailabilityModalProps {
   closeModal: () => void;
   selectedDates: Date[];
   interviewAvailability: AvailabilityItem[];
+  isRecurring?: boolean;
+  editAllRecurring?: boolean;
   onSubmit: (
-    updatedEvents: { id: string; startTime: string; endTime: string }[]
+    updatedEvents: {
+      id: string;
+      startTime: string;
+      endTime: string;
+      isRecurring: boolean;
+    }[],
+    editAllRecurring?: boolean
   ) => void;
 }
 
@@ -33,6 +50,8 @@ function EditAvailabilityModal({
   closeModal,
   selectedDates,
   interviewAvailability,
+  isRecurring = false,
+  editAllRecurring = false,
   onSubmit,
 }: EditAvailabilityModalProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>({
@@ -43,7 +62,25 @@ function EditAvailabilityModal({
 
   useEffect(() => {
     if (isOpen && selectedDates.length > 0) {
-      setDates(selectedDates);
+      if (editAllRecurring) {
+        const firstDate = selectedDates[0];
+        const dayOfWeek = getDay(firstDate);
+        const recurringDates: Date[] = [];
+        const startDate = startOfMonth(firstDate);
+        const endDate = addMonths(startDate, 12);
+
+        let currentDay = startDate;
+        while (currentDay <= endDate) {
+          if (getDay(currentDay) === dayOfWeek) {
+            recurringDates.push(new Date(currentDay));
+          }
+          currentDay = addDays(currentDay, 1);
+        }
+        setDates(recurringDates);
+      } else {
+        setDates(selectedDates);
+      }
+
       const eventsInRange = interviewAvailability.filter((item) =>
         selectedDates.some((d) => isSameDay(d, new Date(item.startTime)))
       );
@@ -55,7 +92,7 @@ function EditAvailabilityModal({
         });
       }
     }
-  }, [isOpen, selectedDates, interviewAvailability]);
+  }, [isOpen, selectedDates, interviewAvailability, editAllRecurring]);
 
   const timeOptions = useMemo(() => {
     const times: string[] = [];
@@ -77,11 +114,20 @@ function EditAvailabilityModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const eventsInRange = interviewAvailability.filter((item) =>
+    let eventsToUpdate = interviewAvailability.filter((item) =>
       dates.some((d) => isSameDay(d, new Date(item.startTime)))
     );
 
-    const updatedEvents = eventsInRange
+    if (editAllRecurring) {
+      const sampleEvent = eventsToUpdate[0];
+      eventsToUpdate = interviewAvailability.filter(
+        (item) =>
+          getDay(new Date(item.startTime)) ===
+            getDay(new Date(sampleEvent.startTime)) && item.isRecurring
+      );
+    }
+
+    const updatedEvents = eventsToUpdate
       .map((event) => {
         const eventDate = startOfDay(new Date(event.startTime));
         const startDate = parse(timeRange.startTime, "hh:mm a", eventDate);
@@ -96,6 +142,7 @@ function EditAvailabilityModal({
           id: event.id,
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
+          isRecurring: event.isRecurring,
         };
       })
       .filter(Boolean);
@@ -108,10 +155,8 @@ function EditAvailabilityModal({
     try {
       const response = await fetch("/api/interview-availability", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ events: updatedEvents }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ events: updatedEvents, editAllRecurring }),
       });
 
       if (!response.ok) {
@@ -119,7 +164,13 @@ function EditAvailabilityModal({
       }
 
       onSubmit(
-        updatedEvents as { id: string; startTime: string; endTime: string }[]
+        updatedEvents as {
+          id: string;
+          startTime: string;
+          endTime: string;
+          isRecurring: boolean;
+        }[],
+        editAllRecurring
       );
       toast.success("Availability updated successfully");
       closeModal();
@@ -144,69 +195,79 @@ function EditAvailabilityModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold text-black">
-          Edit Availability for {dates.length} Date(s)
+          Edit{" "}
+          {editAllRecurring
+            ? `All ${format(dates[0] || today, "EEEE")}s`
+            : "Availability for"}{" "}
+          {editAllRecurring ? "" : `${dates.length} Date(s)`}
         </h2>
         <form onSubmit={handleSubmit}>
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 sr-only">
-              Selected Dates
-            </label>
-            <div className="flex justify-center items-center">
-              <Calendar
-                value={dates.map((date) => new DateObject(date))}
-                onChange={(newDates) => {
-                  const selectedDates = newDates.map((dateObject) =>
-                    dateObject.toDate()
-                  );
-                  setDates(selectedDates);
-                }}
-                multiple
-                minDate={today}
-                headerOrder={["MONTH_YEAR", "LEFT_BUTTON", "RIGHT_BUTTON"]}
-                monthYearSeparator={" "}
-                showOtherDays={true}
-                mapDays={({ date }) => {
-                  const isTodayDate = isToday(date.toDate());
-                  const isSelected = dates.some((d) =>
-                    isSameDay(d, date.toDate())
-                  );
-                  const isBeforeToday = date.toDate() < today;
-                  let dayClasses = "cursor-pointer";
-                  if (isBeforeToday) {
-                    dayClasses = "text-gray-400";
-                  } else if (isSelected) {
-                    dayClasses = "bg-blue-700 text-white";
-                  } else if (isTodayDate) {
-                    dayClasses = "bg-transparent text-blue-700";
-                  } else {
-                    dayClasses = "bg-blue-100 text-blue-700 font-bold";
-                  }
-                  return {
-                    className: dayClasses,
-                    children: isTodayDate ? (
-                      <div>
-                        <div>{date.day}</div>
-                        <div
-                          style={{
-                            position: "absolute",
-                            bottom: 2,
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            width: 4,
-                            height: 4,
-                            backgroundColor: "white",
-                            borderRadius: "50%",
-                          }}
-                        ></div>
-                      </div>
-                    ) : (
-                      date.day
-                    ),
-                  };
-                }}
-              />
+          {!editAllRecurring && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 sr-only">
+                Selected Dates
+              </label>
+              <div className="flex justify-center items-center">
+                <Calendar
+                  value={dates.map((date) => new DateObject(date))}
+                  onChange={(newDates) => {
+                    if (!newDates) {
+                      setDates([]);
+                      return;
+                    }
+                    const selectedDates = Array.isArray(newDates)
+                      ? newDates.map((dateObject) => dateObject.toDate())
+                      : [newDates.toDate()];
+                    setDates(selectedDates);
+                  }}
+                  multiple={!isRecurring}
+                  minDate={today}
+                  headerOrder={["MONTH_YEAR", "LEFT_BUTTON", "RIGHT_BUTTON"]}
+                  monthYearSeparator={" "}
+                  showOtherDays={true}
+                  mapDays={({ date }) => {
+                    const isTodayDate = isToday(date.toDate());
+                    const isSelected = dates.some((d) =>
+                      isSameDay(d, date.toDate())
+                    );
+                    const isBeforeToday = date.toDate() < today;
+                    let dayClasses = "cursor-pointer";
+                    if (isBeforeToday) {
+                      dayClasses = "text-gray-400";
+                    } else if (isSelected) {
+                      dayClasses = "bg-blue-700 text-white";
+                    } else if (isTodayDate) {
+                      dayClasses = "bg-transparent text-blue-700";
+                    } else {
+                      dayClasses = "bg-blue-100 text-blue-700 font-bold";
+                    }
+                    return {
+                      className: dayClasses,
+                      children: isTodayDate ? (
+                        <div>
+                          <div>{date.day}</div>
+                          <div
+                            style={{
+                              position: "absolute",
+                              bottom: 2,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              width: 4,
+                              height: 4,
+                              backgroundColor: "white",
+                              borderRadius: "50%",
+                            }}
+                          ></div>
+                        </div>
+                      ) : (
+                        date.day
+                      ),
+                    };
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          )}
           <div className="mt-4">
             <label className="block text-sm font-medium text-black">
               Available Hours
