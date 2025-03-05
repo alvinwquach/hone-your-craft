@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -24,7 +22,9 @@ interface Event {
   title: string;
   start: Date;
   end: Date;
-  extendedProps?: { isRecurring: boolean };
+  extendedProps?: {
+    isRecurring: boolean;
+  };
 }
 
 interface AvailabilityItem {
@@ -82,7 +82,9 @@ function AvailabilityCalendar({
         start,
         end,
         title: `${formatTime(start)} - ${formatTime(end)}`,
-        extendedProps: { isRecurring: item.isRecurring },
+        extendedProps: {
+          isRecurring: item.isRecurring,
+        },
       };
     }
   );
@@ -106,6 +108,7 @@ function AvailabilityCalendar({
     if (clickedDate < today) return;
     setSelectedDate(arg.date);
     setSelectedDates([arg.date]);
+    setIsRecurring(false);
     setShowOptionsMenu(true);
   };
 
@@ -115,25 +118,23 @@ function AvailabilityCalendar({
       (item) => item.id === eventId
     );
     if (availabilityItem) {
-      const eventDate = startOfDay(new Date(availabilityItem.startTime));
-      setSelectedDates([eventDate]);
+      const eventStartDate = startOfDay(new Date(availabilityItem.startTime));
+      setSelectedDate(eventStartDate);
+      setSelectedDates([eventStartDate]);
       setIsRecurring(availabilityItem.isRecurring);
-      setSelectedDate(eventDate);
       setShowOptionsMenu(true);
     }
   };
 
   const handleOptionSelect = (
-    option: "addSingle" | "addRecurring" | "edit" | "editRecurring"
+    option: "single" | "recurring" | "editSingle" | "editRecurring"
   ) => {
-    if (option === "addSingle") {
+    if (option === "single") {
       setIsRecurring(false);
-      setEditAllRecurring(false);
       setSelectedDates(selectedDate ? [startOfDay(selectedDate)] : []);
       setIsAddModalOpen(true);
-    } else if (option === "addRecurring") {
+    } else if (option === "recurring") {
       setIsRecurring(true);
-      setEditAllRecurring(false);
       if (selectedDate) {
         const normalizedDate = startOfDay(selectedDate);
         const dayOfWeek = getDay(normalizedDate);
@@ -151,7 +152,7 @@ function AvailabilityCalendar({
         setSelectedDates([]);
       }
       setIsAddModalOpen(true);
-    } else if (option === "edit") {
+    } else if (option === "editSingle") {
       setIsRecurring(false);
       setEditAllRecurring(false);
       setIsEditModalOpen(true);
@@ -179,8 +180,17 @@ function AvailabilityCalendar({
     }
     setSelectedDates(dateRange);
     setSelectedDate(null);
-    setShowOptionsMenu(true);
+    setShowOptionsMenu(false);
     setIsRecurring(false);
+    const hasEvents = interviewAvailability.some((item) =>
+      dateRange.some((d) => isSameDay(d, new Date(item.startTime)))
+    );
+    if (hasEvents) {
+      setEditAllRecurring(false);
+      setIsEditModalOpen(true);
+    } else {
+      setIsAddModalOpen(true);
+    }
   };
 
   const handleUnselect = () => {
@@ -212,9 +222,12 @@ function AvailabilityCalendar({
         );
         eventEnd.setHours(endHour, endMinute, 0, 0);
         return {
-          title: `${eventStart.toLocaleTimeString()} - ${eventEnd.toLocaleTimeString()}`,
+          title: `${formatTime(eventStart)} - ${formatTime(eventEnd)}`,
           start: eventStart,
           end: eventEnd,
+          extendedProps: {
+            isRecurring,
+          },
         };
       })
     );
@@ -231,6 +244,7 @@ function AvailabilityCalendar({
     setSelectedDates([]);
     setSelectedDate(null);
     setIsRecurring(false);
+    mutate("/api/interview-availability");
   };
 
   const handleEditAvailability = (
@@ -239,7 +253,8 @@ function AvailabilityCalendar({
       startTime: string;
       endTime: string;
       isRecurring: boolean;
-    }[]
+    }[],
+    editAllRecurring?: boolean
   ) => {
     setAvailability((prev) =>
       prev.map((event) => {
@@ -252,7 +267,9 @@ function AvailabilityCalendar({
             start,
             end,
             title: `${formatTime(start)} - ${formatTime(end)}`,
-            extendedProps: { isRecurring: updatedEvent.isRecurring },
+            extendedProps: {
+              isRecurring: updatedEvent.isRecurring,
+            },
           };
         }
         return event;
@@ -261,6 +278,7 @@ function AvailabilityCalendar({
     setIsEditModalOpen(false);
     setSelectedDates([]);
     setEditAllRecurring(false);
+    mutate("/api/interview-availability");
   };
 
   const updateHeaderToolbar = (date: Date) => {
@@ -323,21 +341,21 @@ function AvailabilityCalendar({
       setShowOptionsMenu(false);
     } catch (error) {
       console.error("Error resetting availability:", error);
+      toast.error("Failed to reset availability");
     }
   };
 
-  const hasRecurringEvent = selectedDates.some((date) =>
+  const hasRecurringEvent =
+    selectedDates.length === 1 &&
     interviewAvailability.some(
       (item) =>
-        item.isRecurring && getDay(new Date(item.startTime)) === getDay(date)
-    )
-  );
+        isSameDay(new Date(item.startTime), selectedDates[0]) &&
+        item.isRecurring
+    );
 
-  const hasEventOnSelectedDate = selectedDates.some((date) =>
-    interviewAvailability.some((item) =>
-      isSameDay(new Date(item.startTime), date)
-    )
-  );
+  const recurringEventDay = hasRecurringEvent
+    ? format(selectedDates[0], "EEEE")
+    : format(selectedDate || today, "EEEE");
 
   return (
     <>
@@ -383,48 +401,47 @@ function AvailabilityCalendar({
             className="z-10 absolute top-12 right-0 bg-white border border-gray-300 shadow-lg rounded p-4"
           >
             <button
-              onClick={() => handleOptionSelect("addSingle")}
+              onClick={() => handleOptionSelect("single")}
               className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
             >
-              Add availability for this date
+              Add single availability
             </button>
-            {!hasRecurringEvent && (
-              <button
-                onClick={() => handleOptionSelect("addRecurring")}
-                className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
-              >
-                Add recurring availability for all{" "}
-                {format(selectedDate || today, "EEEE")}s
-              </button>
-            )}
-            {hasEventOnSelectedDate && (
-              <button
-                onClick={() => handleOptionSelect("edit")}
-                className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
-              >
-                Edit all selected days
-              </button>
-            )}
-            {hasRecurringEvent && (
-              <button
-                onClick={() => handleOptionSelect("editRecurring")}
-                className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
-              >
-                Edit recurring availability for all{" "}
-                {format(selectedDate || today, "EEEE")}s
-              </button>
-            )}
-            {hasEventOnSelectedDate && (
-              <button
-                onClick={() => handleResetAvailability(selectedDate)}
-                className="relative block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
-              >
-                <div className="flex">
-                  <GrPowerReset className="h-4 w-4" />
-                  <span className="ml-2">Reset</span>
-                </div>
-              </button>
-            )}
+            <button
+              onClick={() => handleOptionSelect("recurring")}
+              className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+            >
+              Add recurring availability
+            </button>
+            {selectedDates.length === 1 &&
+              interviewAvailability.some((item) =>
+                isSameDay(new Date(item.startTime), selectedDates[0])
+              ) && (
+                <>
+                  <button
+                    onClick={() => handleOptionSelect("editSingle")}
+                    className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+                  >
+                    Edit this date
+                  </button>
+                  {hasRecurringEvent && (
+                    <button
+                      onClick={() => handleOptionSelect("editRecurring")}
+                      className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+                    >
+                      Edit all {recurringEventDay}s
+                    </button>
+                  )}
+                </>
+              )}
+            <button
+              onClick={() => handleResetAvailability(selectedDate)}
+              className="relative block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+            >
+              <div className="flex">
+                <GrPowerReset className="h-4 w-4" />
+                <span className="ml-2">Reset</span>
+              </div>
+            </button>
           </div>
         )}
         <AddAvailabilityModal
