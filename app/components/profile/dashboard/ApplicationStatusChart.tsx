@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
 
@@ -16,7 +15,6 @@ type StatusColors = Record<
   (typeof applicationStatuses)[number],
   { bg: string; border: string }
 >;
-
 type StatusData = {
   status: string;
   percentage: number;
@@ -32,7 +30,6 @@ const ApplicationStatusChart = ({
   statusPercentages,
 }: ApplicationStatusChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
-
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState<number>(window.innerHeight);
 
@@ -52,16 +49,14 @@ const ApplicationStatusChart = ({
     },
   };
 
-  useEffect(() => {
-    const renderChart = () => {
+  const renderChart = useMemo(() => {
+    return () => {
       if (!chartRef.current) return;
-
       const margin = { top: 20, right: 30, bottom: 60, left: 100 };
       const width = chartRef.current.offsetWidth - margin.left - margin.right;
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
 
       d3.select(chartRef.current).html("");
-
       const svg = d3
         .select(chartRef.current)
         .append("svg")
@@ -78,7 +73,6 @@ const ApplicationStatusChart = ({
       }));
 
       const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
-
       const y = d3
         .scaleBand()
         .domain(data.map((d) => d.status))
@@ -164,15 +158,17 @@ const ApplicationStatusChart = ({
           tooltip.style("visibility", "hidden");
         });
     };
-
-    renderChart();
   }, [statusPercentages, windowWidth, windowHeight, statusColors]);
+
+  useEffect(() => {
+    renderChart();
+  }, [statusPercentages, windowWidth, windowHeight, renderChart]);
 
   return (
     <div
       className="bg-zinc-900 border-gray-700 rounded-lg w-full mt-2 p-4"
       ref={chartRef}
-    ></div>
+    />
   );
 };
 

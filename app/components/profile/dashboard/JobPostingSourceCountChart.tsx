@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
 
@@ -12,7 +12,6 @@ const JobPostingSourceCountChart = ({
   jobPostingSourceCount,
 }: JobPostingSourceCountChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
-
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState<number>(window.innerHeight);
 
@@ -21,32 +20,33 @@ const JobPostingSourceCountChart = ({
     setWindowHeight(height);
   });
 
-  const sourceColors: Record<string, string> = {
-    Referral: "#6B7280",
-    Otta: "#10B981",
-    LinkedIn: "#3B82F6",
-    Wellfound: "#F59E0B",
-    Glassdoor: "#F43F5E",
-    Monster: "#6366F1",
-    "Zip Recruiter": "#9333EA",
-    "Career Builder": "#F472B6",
-    Indeed: "#EF4444",
-    SimplyHired: "#22C55E",
-    "Stack Overflow": "#2563EB",
-    Dice: "#DC2626",
-    "We Work Remotely": "#1D4ED8",
-    Adzuna: "#84CC16",
-    "Company Website": "#F9A8D4",
-  };
+  const sourceColors = useMemo<Record<string, string>>(
+    () => ({
+      Referral: "#6B7280",
+      Otta: "#10B981",
+      LinkedIn: "#3B82F6",
+      Wellfound: "#F59E0B",
+      Glassdoor: "#F43F5E",
+      Monster: "#6366F1",
+      "Zip Recruiter": "#9333EA",
+      "Career Builder": "#F472B6",
+      Indeed: "#EF4444",
+      SimplyHired: "#22C55E",
+      "Stack Overflow": "#2563EB",
+      Dice: "#DC2626",
+      "We Work Remotely": "#1D4ED8",
+      Adzuna: "#84CC16",
+      "Company Website": "#F9A8D4",
+    }),
+    []
+  );
 
   useEffect(() => {
     const renderChart = () => {
       if (!chartRef.current) return;
-
       const margin = { top: 20, right: 30, bottom: 80, left: 120 };
       const width = chartRef.current.offsetWidth - margin.left - margin.right;
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
-
       d3.select(chartRef.current).html("");
 
       const svg = d3
@@ -68,7 +68,6 @@ const JobPostingSourceCountChart = ({
         .scaleLinear()
         .domain([0, Math.max(800, maxCount)])
         .range([0, width]);
-
       const y = d3
         .scaleBand()
         .domain(data.map((d) => d.source))
@@ -151,13 +150,13 @@ const JobPostingSourceCountChart = ({
     };
 
     renderChart();
-  }, [jobPostingSourceCount, windowWidth, windowHeight, sourceColors]); 
-  
+  }, [jobPostingSourceCount, windowWidth, windowHeight, sourceColors]);
+
   return (
     <div
       className="bg-zinc-900 border-gray-700 rounded-lg w-full mt-2 p-4"
       ref={chartRef}
-    ></div>
+    />
   );
 };
 
