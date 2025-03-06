@@ -61,8 +61,8 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
     }
   }, [message]);
 
-  const debouncedHandleMentions = useCallback(
-    debounce((newMessage: string) => {
+  useEffect(() => {
+    const debouncedMentions = debounce((newMessage: string) => {
       const mentionPattern = /@([a-zA-Z0-9_]+)$/;
       const match = newMessage.match(mentionPattern);
 
@@ -77,13 +77,10 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
         setIsMentioning(false);
         setMentionSuggestions([]);
       }
-    }, 300),
-    [selectedUsers]
-  );
+    }, 300);
 
-  useEffect(() => {
-    debouncedHandleMentions(message);
-  }, [message, debouncedHandleMentions]);
+    debouncedMentions(message);
+  }, [message, selectedUsers]);
 
   function debounce(func: Function, wait: number) {
     let timeout: ReturnType<typeof setTimeout> | null;
