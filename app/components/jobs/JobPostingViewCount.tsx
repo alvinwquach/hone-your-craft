@@ -30,15 +30,13 @@ export default function JobPostingViewCount({
 
   useEffect(() => {
     if (hasMounted.current) return;
-
     hasMounted.current = true;
     const updateViews = async () => {
       const updatedViews = await incrementViews(jobId);
       setViews(updatedViews);
     };
-
     updateViews();
-  }, []);
+  }, [jobId]);
 
   return <p>Total Views: {views}</p>;
 }
