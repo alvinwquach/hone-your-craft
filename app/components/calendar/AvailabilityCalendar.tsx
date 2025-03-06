@@ -105,13 +105,14 @@ function AvailabilityCalendar({
   const handleDateClick = (arg: any) => {
     const clickedDate = startOfDay(arg.date);
     const today = startOfDay(new Date());
+
     if (clickedDate < today) return;
+
     setSelectedDate(arg.date);
     setSelectedDates([arg.date]);
     setIsRecurring(false);
     setShowOptionsMenu(true);
   };
-
   const handleEventClick = (arg: any) => {
     const eventId = arg.event.id;
     const availabilityItem = interviewAvailability.find(
@@ -141,11 +142,11 @@ function AvailabilityCalendar({
         const rangeEnd = new Date(today);
         rangeEnd.setFullYear(today.getFullYear() + 1);
         let dates: Date[] = [];
-        let d = new Date(normalizedDate);
-        while (d.getDay() !== dayOfWeek) d.setDate(d.getDate() + 1);
-        while (d <= rangeEnd) {
-          dates.push(startOfDay(new Date(d)));
-          d.setDate(d.getDate() + 7);
+        let date = new Date(normalizedDate);
+        while (date.getDay() !== dayOfWeek) date.setDate(date.getDate() + 1);
+        while (date <= rangeEnd) {
+          dates.push(startOfDay(new Date(date)));
+          date.setDate(date.getDate() + 7);
         }
         setSelectedDates(dates);
       } else {
@@ -169,27 +170,36 @@ function AvailabilityCalendar({
     const normalizedStart = startOfDay(start);
     const normalizedEnd = startOfDay(end);
     const today = startOfDay(new Date());
+
     if (normalizedStart < today || normalizedEnd < today) return;
+
     const adjustedEndDate = new Date(end);
     adjustedEndDate.setDate(end.getDate() - 1);
+
     const dateRange: Date[] = [];
     let currentDate = new Date(start);
     while (currentDate <= adjustedEndDate) {
       dateRange.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
+
     setSelectedDates(dateRange);
     setSelectedDate(null);
-    setShowOptionsMenu(false);
     setIsRecurring(false);
+
     const hasEvents = interviewAvailability.some((item) =>
       dateRange.some((d) => isSameDay(d, new Date(item.startTime)))
     );
-    if (hasEvents) {
-      setEditAllRecurring(false);
-      setIsEditModalOpen(true);
+
+    if (dateRange.length === 1) {
+      setShowOptionsMenu(true);
     } else {
-      setIsAddModalOpen(true);
+      if (hasEvents) {
+        setIsEditModalOpen(true);
+        setEditAllRecurring(false);
+      } else {
+        setIsAddModalOpen(true);
+      }
     }
   };
 
