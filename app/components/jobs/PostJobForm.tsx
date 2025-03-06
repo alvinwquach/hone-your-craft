@@ -345,6 +345,10 @@ const PostJobForm = () => {
     );
   };
 
+  const paymentTypeValue = watch("paymentType");
+  const salaryTypeValue = watch("salary.salaryType"); 
+  
+
   useEffect(() => {
     const selectedSkillValues = selectedRequiredSkills.map(
       (skill) => skill.value
@@ -371,11 +375,11 @@ const PostJobForm = () => {
   ]);
 
   useEffect(() => {
-    if (salaryType !== SalaryType.RANGE) {
+    if (salaryTypeValue !== SalaryType.RANGE) {
       setValue("salary.rangeMin", null);
       setValue("salary.rangeMax", null);
     }
-  }, [salaryType, setValue]);
+  }, [salaryTypeValue, setValue]);
 
   useEffect(() => {
     setValue(
@@ -389,10 +393,10 @@ const PostJobForm = () => {
   }, [selectedBonusSkills, setValue]);
 
   useEffect(() => {
-    if (watch("paymentType") === PaymentType.ONE_TIME_PAYMENT) {
+    if (paymentTypeValue === PaymentType.ONE_TIME_PAYMENT) {
       setValue("salary.frequency", null);
     }
-  }, [watch("paymentType"), setValue]);
+  }, [paymentTypeValue, setValue]);
 
   const customSelectStyles = {
     control: (styles: any) => ({
