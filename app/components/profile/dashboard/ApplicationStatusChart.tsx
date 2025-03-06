@@ -113,7 +113,6 @@ const ApplicationStatusChart = ({
         .attr("stroke", (d) => d.borderColor)
         .attr("stroke-width", 1);
 
-      // Add bottom axis
       svg
         .append("g")
         .attr("transform", `translate(0,${height})`)
