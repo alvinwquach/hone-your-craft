@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
@@ -13,8 +14,12 @@ const applicationStatuses = [
 
 type StatusColors = Record<
   (typeof applicationStatuses)[number],
-  { bg: string; border: string }
+  {
+    bg: string;
+    border: string;
+  }
 >;
+
 type StatusData = {
   status: string;
   percentage: number;
@@ -39,10 +44,22 @@ const ApplicationStatusChart = ({
   });
 
   const statusColors: StatusColors = {
-    Saved: { bg: "rgba(156, 163, 175, 0.2)", border: "rgba(156, 163, 175, 1)" },
-    Applied: { bg: "rgba(254, 215, 0, 0.2)", border: "rgba(254, 215, 0, 1)" },
-    Interview: { bg: "rgba(34, 197, 94, 0.2)", border: "rgba(34, 197, 94, 1)" },
-    Offer: { bg: "rgba(248, 113, 113, 0.2)", border: "rgba(248, 113, 113, 1)" },
+    Saved: {
+      bg: "rgba(156, 163, 175, 0.2)",
+      border: "rgba(156, 163, 175, 1)",
+    },
+    Applied: {
+      bg: "rgba(254, 215, 0, 0.2)",
+      border: "rgba(254, 215, 0, 1)",
+    },
+    Interview: {
+      bg: "rgba(34, 197, 94, 0.2)",
+      border: "rgba(34, 197, 94, 1)",
+    },
+    Offer: {
+      bg: "rgba(248, 113, 113, 0.2)",
+      border: "rgba(248, 113, 113, 1)",
+    },
     Rejected: {
       bg: "rgba(59, 130, 246, 0.2)",
       border: "rgba(59, 130, 246, 1)",
@@ -52,11 +69,13 @@ const ApplicationStatusChart = ({
   const renderChart = useMemo(() => {
     return () => {
       if (!chartRef.current) return;
+
       const margin = { top: 20, right: 30, bottom: 60, left: 100 };
       const width = chartRef.current.offsetWidth - margin.left - margin.right;
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
 
       d3.select(chartRef.current).html("");
+
       const svg = d3
         .select(chartRef.current)
         .append("svg")
@@ -73,6 +92,7 @@ const ApplicationStatusChart = ({
       }));
 
       const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
+
       const y = d3
         .scaleBand()
         .domain(data.map((d) => d.status))
@@ -93,6 +113,7 @@ const ApplicationStatusChart = ({
         .attr("stroke", (d) => d.borderColor)
         .attr("stroke-width", 1);
 
+      // Add bottom axis
       svg
         .append("g")
         .attr("transform", `translate(0,${height})`)
@@ -145,6 +166,7 @@ const ApplicationStatusChart = ({
           const percentage = !isNaN(statusData.percentage)
             ? statusData.percentage
             : 0;
+
           tooltip
             .style("visibility", "visible")
             .text(`${statusData.status}: ${percentage.toFixed(2)}%`);
@@ -158,7 +180,7 @@ const ApplicationStatusChart = ({
           tooltip.style("visibility", "hidden");
         });
     };
-  }, [statusPercentages, windowWidth, windowHeight, statusColors]);
+  }, [statusPercentages, windowHeight, statusColors]);
 
   useEffect(() => {
     renderChart();
