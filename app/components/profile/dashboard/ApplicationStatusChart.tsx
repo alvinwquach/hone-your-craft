@@ -166,7 +166,7 @@ const ApplicationStatusChart = ({
     };
 
     renderChart();
-  }, [statusPercentages, windowWidth, windowHeight]);
+  }, [statusPercentages, windowWidth, windowHeight, statusColors]);
 
   return (
     <div

@@ -151,8 +151,8 @@ const JobPostingSourceCountChart = ({
     };
 
     renderChart();
-  }, [jobPostingSourceCount, windowWidth, windowHeight]);
-
+  }, [jobPostingSourceCount, windowWidth, windowHeight, sourceColors]); 
+  
   return (
     <div
       className="bg-zinc-900 border-gray-700 rounded-lg w-full mt-2 p-4"
