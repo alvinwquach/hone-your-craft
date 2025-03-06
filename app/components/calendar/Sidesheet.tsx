@@ -153,7 +153,6 @@ function Sidesheet({ onClose }: SidesheetProps) {
   useEffect(() => {
     if (interviewAvailability && !interviewAvailabilityLoading) {
       const newAvailability = { ...availability };
-
       Object.keys(newAvailability.weekly).forEach((day) => {
         newAvailability.weekly[day] = interviewAvailability
           .filter(
@@ -167,7 +166,6 @@ function Sidesheet({ onClose }: SidesheetProps) {
             end: format(new Date(avail.endTime), "hh:mm a"),
           }));
       });
-
       setAvailability({
         ...newAvailability,
         dateSpecific: interviewAvailability.map((avail: any) => ({
@@ -180,8 +178,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
         })),
       });
     }
-  }, [interviewAvailability, interviewAvailabilityLoading]);
-
+  }, [availability, interviewAvailability, interviewAvailabilityLoading]); 
   const renderTimeSlotInputs = (day: string) => {
     return availability.weekly[day].map((slot, index) => (
       <div
