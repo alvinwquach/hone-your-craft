@@ -163,7 +163,7 @@ function SchedulePage({ params }: SchedulePageProps) {
       );
       setTimeSlots(newTimeSlots);
     }
-  }, [selectedDate, data]);
+  }, [selectedDate, data, findAvailabilityForDate, generateTimeSlots]);
 
   const handleNextButtonClick = () => {
     if (selectedTime) setIsFormVisible(true);

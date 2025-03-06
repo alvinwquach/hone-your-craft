@@ -178,7 +178,7 @@ function ReschedulePage({ params }: ReschedulePageProps) {
       );
       setTimeSlots(newTimeSlots);
     }
-  }, [selectedDate, data, originalStart]);
+  }, [selectedDate, data, findAvailabilityForDate, generateTimeSlots]);
 
   const handleNextButtonClick = () => {
     if (selectedTime) setIsFormVisible(true);
