@@ -105,54 +105,49 @@ function SchedulePage({ params }: SchedulePageProps) {
     }`;
   };
 
-  const findAvailabilityForDate = (date: Date): BookingTime[] => {
-    if (!data?.event) return [];
-
-    return data.event.availabilities
-      .filter((item) => isSameDay(parseISO(item.startTime), date))
-      .map((item) => ({ start: item.startTime, end: item.endTime }));
-  };
-
-  const generateTimeSlots = (
-    timeRange: BookingTime,
-    meetingLength: number
-  ): string[] => {
-    const start = parseISO(timeRange.start);
-    const end = parseISO(timeRange.end);
-    const slots: string[] = [];
-    let current = start;
-
-    const bookedSlotsOnDate =
-      data?.bookedSlots
-        .filter((slot) => isSameDay(parseISO(slot.startTime), selectedDate!))
-        .map((slot) => ({
-          start: parseISO(slot.startTime),
-          end: parseISO(slot.endTime),
-        })) || [];
-
-    while (current < end) {
-      const nextSlot = new Date(current);
-      nextSlot.setMinutes(nextSlot.getMinutes() + meetingLength);
-
-      if (nextSlot <= end) {
-        const slotStart = current;
-        const slotEnd = nextSlot;
-
-        const isBooked = bookedSlotsOnDate.some((booked) => {
-          return slotStart < booked.end && slotEnd > booked.start;
-        });
-
-        if (!isBooked) {
-          const formattedStart = format(slotStart, "h:mma").toLowerCase();
-          slots.push(formattedStart);
-        }
-      }
-      current = nextSlot;
-    }
-    return slots;
-  };
-
   useEffect(() => {
+    const findAvailabilityForDate = (date: Date): BookingTime[] => {
+      if (!data?.event) return [];
+      return data.event.availabilities
+        .filter((item) => isSameDay(parseISO(item.startTime), date))
+        .map((item) => ({ start: item.startTime, end: item.endTime }));
+    };
+
+    const generateTimeSlots = (
+      timeRange: BookingTime,
+      meetingLength: number
+    ): string[] => {
+      const start = parseISO(timeRange.start);
+      const end = parseISO(timeRange.end);
+      const slots: string[] = [];
+      let current = start;
+      const bookedSlotsOnDate = selectedDate
+        ? (data?.bookedSlots || [])
+            .filter((slot) => isSameDay(parseISO(slot.startTime), selectedDate))
+            .map((slot) => ({
+              start: parseISO(slot.startTime),
+              end: parseISO(slot.endTime),
+            }))
+        : [];
+      while (current < end) {
+        const nextSlot = new Date(current);
+        nextSlot.setMinutes(nextSlot.getMinutes() + meetingLength);
+        if (nextSlot <= end) {
+          const slotStart = current;
+          const slotEnd = nextSlot;
+          const isBooked = bookedSlotsOnDate.some((booked) => {
+            return slotStart < booked.end && slotEnd > booked.start;
+          });
+          if (!isBooked) {
+            const formattedStart = format(slotStart, "h:mma").toLowerCase();
+            slots.push(formattedStart);
+          }
+        }
+        current = nextSlot;
+      }
+      return slots;
+    };
+
     if (selectedDate && data?.event) {
       const newTimeSlots = findAvailabilityForDate(selectedDate).flatMap(
         (timeRange) =>
@@ -163,7 +158,7 @@ function SchedulePage({ params }: SchedulePageProps) {
       );
       setTimeSlots(newTimeSlots);
     }
-  }, [selectedDate, data, findAvailabilityForDate, generateTimeSlots]);
+  }, [selectedDate, data]);
 
   const handleNextButtonClick = () => {
     if (selectedTime) setIsFormVisible(true);
