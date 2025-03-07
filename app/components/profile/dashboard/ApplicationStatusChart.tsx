@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
 
@@ -12,9 +12,36 @@ const applicationStatuses = [
   "Rejected",
 ];
 
+const statusColors: StatusColors = {
+  Saved: {
+    bg: "rgba(156, 163, 175, 0.2)",
+    border: "rgba(156, 163, 175, 1)",
+  },
+  Applied: {
+    bg: "rgba(254, 215, 0, 0.2)",
+    border: "rgba(254, 215, 0, 1)",
+  },
+  Interview: {
+    bg: "rgba(34, 197, 94, 0.2)",
+    border: "rgba(34, 197, 94, 1)",
+  },
+  Offer: {
+    bg: "rgba(248, 113, 113, 0.2)",
+    border: "rgba(248, 113, 113, 1)",
+  },
+  Rejected: {
+    bg: "rgba(59, 130, 246, 0.2)",
+    border: "rgba(59, 130, 246, 1)",
+  },
+};
+
+// Define types
 type StatusColors = Record<
   (typeof applicationStatuses)[number],
-  { bg: string; border: string }
+  {
+    bg: string;
+    border: string;
+  }
 >;
 
 type StatusData = {
@@ -32,7 +59,6 @@ const ApplicationStatusChart = ({
   statusPercentages,
 }: ApplicationStatusChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
-
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState<number>(window.innerHeight);
 
@@ -41,19 +67,8 @@ const ApplicationStatusChart = ({
     setWindowHeight(height);
   });
 
-  const statusColors: StatusColors = {
-    Saved: { bg: "rgba(156, 163, 175, 0.2)", border: "rgba(156, 163, 175, 1)" },
-    Applied: { bg: "rgba(254, 215, 0, 0.2)", border: "rgba(254, 215, 0, 1)" },
-    Interview: { bg: "rgba(34, 197, 94, 0.2)", border: "rgba(34, 197, 94, 1)" },
-    Offer: { bg: "rgba(248, 113, 113, 0.2)", border: "rgba(248, 113, 113, 1)" },
-    Rejected: {
-      bg: "rgba(59, 130, 246, 0.2)",
-      border: "rgba(59, 130, 246, 1)",
-    },
-  };
-
-  useEffect(() => {
-    const renderChart = () => {
+  const renderChart = useMemo(() => {
+    return () => {
       if (!chartRef.current) return;
 
       const margin = { top: 20, right: 30, bottom: 60, left: 100 };
@@ -61,7 +76,6 @@ const ApplicationStatusChart = ({
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
 
       d3.select(chartRef.current).html("");
-
       const svg = d3
         .select(chartRef.current)
         .append("svg")
@@ -164,15 +178,17 @@ const ApplicationStatusChart = ({
           tooltip.style("visibility", "hidden");
         });
     };
+  }, [statusPercentages, windowHeight]);
 
+  useEffect(() => {
     renderChart();
-  }, [statusPercentages, windowWidth, windowHeight]);
+  }, [statusPercentages, windowWidth, windowHeight, renderChart]);
 
   return (
     <div
       className="bg-zinc-900 border-gray-700 rounded-lg w-full mt-2 p-4"
       ref={chartRef}
-    ></div>
+    />
   );
 };
 
