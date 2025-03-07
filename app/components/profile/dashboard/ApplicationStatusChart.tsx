@@ -12,6 +12,30 @@ const applicationStatuses = [
   "Rejected",
 ];
 
+const statusColors: StatusColors = {
+  Saved: {
+    bg: "rgba(156, 163, 175, 0.2)",
+    border: "rgba(156, 163, 175, 1)",
+  },
+  Applied: {
+    bg: "rgba(254, 215, 0, 0.2)",
+    border: "rgba(254, 215, 0, 1)",
+  },
+  Interview: {
+    bg: "rgba(34, 197, 94, 0.2)",
+    border: "rgba(34, 197, 94, 1)",
+  },
+  Offer: {
+    bg: "rgba(248, 113, 113, 0.2)",
+    border: "rgba(248, 113, 113, 1)",
+  },
+  Rejected: {
+    bg: "rgba(59, 130, 246, 0.2)",
+    border: "rgba(59, 130, 246, 1)",
+  },
+};
+
+// Define types
 type StatusColors = Record<
   (typeof applicationStatuses)[number],
   {
@@ -43,29 +67,6 @@ const ApplicationStatusChart = ({
     setWindowHeight(height);
   });
 
-  const statusColors: StatusColors = {
-    Saved: {
-      bg: "rgba(156, 163, 175, 0.2)",
-      border: "rgba(156, 163, 175, 1)",
-    },
-    Applied: {
-      bg: "rgba(254, 215, 0, 0.2)",
-      border: "rgba(254, 215, 0, 1)",
-    },
-    Interview: {
-      bg: "rgba(34, 197, 94, 0.2)",
-      border: "rgba(34, 197, 94, 1)",
-    },
-    Offer: {
-      bg: "rgba(248, 113, 113, 0.2)",
-      border: "rgba(248, 113, 113, 1)",
-    },
-    Rejected: {
-      bg: "rgba(59, 130, 246, 0.2)",
-      border: "rgba(59, 130, 246, 1)",
-    },
-  };
-
   const renderChart = useMemo(() => {
     return () => {
       if (!chartRef.current) return;
@@ -75,7 +76,6 @@ const ApplicationStatusChart = ({
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
 
       d3.select(chartRef.current).html("");
-
       const svg = d3
         .select(chartRef.current)
         .append("svg")
@@ -165,7 +165,6 @@ const ApplicationStatusChart = ({
           const percentage = !isNaN(statusData.percentage)
             ? statusData.percentage
             : 0;
-
           tooltip
             .style("visibility", "visible")
             .text(`${statusData.status}: ${percentage.toFixed(2)}%`);
@@ -179,7 +178,7 @@ const ApplicationStatusChart = ({
           tooltip.style("visibility", "hidden");
         });
     };
-  }, [statusPercentages, windowHeight, statusColors]);
+  }, [statusPercentages, windowHeight]);
 
   useEffect(() => {
     renderChart();
