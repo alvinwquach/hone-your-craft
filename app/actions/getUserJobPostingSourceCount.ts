@@ -3,7 +3,6 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 
-// Define source mappings as a Record for O(1) lookup performance
 const SOURCE_MAPPINGS: Record<string, string> = {
   otta: "Otta",
   linkedin: "LinkedIn",
