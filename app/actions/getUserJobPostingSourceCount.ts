@@ -3,46 +3,43 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 
-const getSourceFromUrl = (postUrl: string) => {
-  if (postUrl.includes("otta")) {
-    return "Otta";
-  } else if (postUrl.includes("linkedin")) {
-    return "LinkedIn";
-  } else if (postUrl.includes("wellfound")) {
-    return "Wellfound";
-  } else if (postUrl.includes("glassdoor")) {
-    return "Glassdoor";
-  } else if (postUrl.includes("monster")) {
-    return "Monster";
-  } else if (postUrl.includes("ziprecruiter")) {
-    return "Zip Recruiter";
-  } else if (postUrl.includes("careerbuilder")) {
-    return "Career Builder";
-  } else if (postUrl.includes("indeed")) {
-    return "Indeed";
-  } else if (postUrl.includes("simplyhired")) {
-    return "SimplyHired";
-  } else if (postUrl.includes("stackoverflow")) {
-    return "Stack Overflow";
-  } else if (postUrl.includes("dice")) {
-    return "Dice";
-  } else if (postUrl.includes("weworkremotely")) {
-    return "We Work Remotely";
-  } else if (postUrl.includes("adzuna")) {
-    return "Adzuna";
-  } else {
-    return "Company Website";
-  }
+const SOURCE_MAPPINGS: Record<string, string> = {
+  otta: "Otta",
+  linkedin: "LinkedIn",
+  wellfound: "Wellfound",
+  glassdoor: "Glassdoor",
+  monster: "Monster",
+  ziprecruiter: "Zip Recruiter",
+  careerbuilder: "Career Builder",
+  indeed: "Indeed",
+  simplyhired: "SimplyHired",
+  stackoverflow: "Stack Overflow",
+  dice: "Dice",
+  weworkremotely: "We Work Remotely",
+  adzuna: "Adzuna",
+};
+
+
+const getSourceFromUrl = (postUrl: string): string => {
+  const lowercaseUrl = postUrl.toLowerCase();
+  return (
+    Object.entries(SOURCE_MAPPINGS).find(([key]) =>
+      lowercaseUrl.includes(key)
+    )?.[1] ?? "Company Website"
+  );
 };
 
 export const getUserJobPostingSourceCount = async () => {
   try {
+    // Retrieve the current user
     const currentUser = await getCurrentUser();
 
+    // Check if the user ID is missing
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
 
+    // Group jobs by source and count occurrences
     const jobSourceCount = await prisma.job.groupBy({
       by: ["postUrl", "referral"],
       where: {
@@ -59,8 +56,14 @@ export const getUserJobPostingSourceCount = async () => {
       },
     });
 
-    const sourceCountRecord: Record<string, number> = {};
+    // Initialize source count record with known sources
+    const sourceCountRecord: Record<string, number> = {
+      ...SOURCE_MAPPINGS,
+      Referral: 0,
+      "Company Website": 0,
+    };
 
+    // Count occurrences of each source
     jobSourceCount.forEach((group) => {
       const source = group.referral
         ? "Referral"
@@ -72,7 +75,7 @@ export const getUserJobPostingSourceCount = async () => {
 
     return sourceCountRecord;
   } catch (error) {
-    console.error("Error fetching user jobs or extracting skills:", error);
-    throw new Error("Failed to fetch user jobs or extract skills");
+    console.error("Error fetching user jobs or counting sources:", error);
+    throw new Error("Failed to fetch user jobs or count sources");
   }
 };
