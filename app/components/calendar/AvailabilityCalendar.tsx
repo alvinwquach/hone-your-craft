@@ -48,6 +48,10 @@ function AvailabilityCalendar({
   const [isRecurring, setIsRecurring] = useState(false);
   const [editAllRecurring, setEditAllRecurring] = useState(false);
   const [availability, setAvailability] = useState<Event[]>([]);
+  const [eventContext, setEventContext] = useState<{
+    eventId?: string;
+    isRecurring?: boolean;
+  }>({});
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(true);
   const [headerToolbar, setHeaderToolbar] = useState<HeaderToolbar>({
@@ -112,56 +116,75 @@ function AvailabilityCalendar({
     setSelectedDates([arg.date]);
     setIsRecurring(false);
     setShowOptionsMenu(true);
+
+    setEventContext({});
   };
   const handleEventClick = (arg: any) => {
     const eventId = arg.event.id;
     const availabilityItem = interviewAvailability.find(
       (item) => item.id === eventId
     );
+
     if (availabilityItem) {
       const eventStartDate = startOfDay(new Date(availabilityItem.startTime));
+
       setSelectedDate(eventStartDate);
       setSelectedDates([eventStartDate]);
       setIsRecurring(availabilityItem.isRecurring);
       setShowOptionsMenu(true);
+
+      setEventContext({
+        eventId: eventId,
+        isRecurring: availabilityItem.isRecurring,
+      });
     }
   };
 
   const handleOptionSelect = (
     option: "single" | "recurring" | "editSingle" | "editRecurring"
   ) => {
-    if (option === "single") {
-      setIsRecurring(false);
-      setSelectedDates(selectedDate ? [startOfDay(selectedDate)] : []);
-      setIsAddModalOpen(true);
-    } else if (option === "recurring") {
-      setIsRecurring(true);
-      if (selectedDate) {
-        const normalizedDate = startOfDay(selectedDate);
-        const dayOfWeek = getDay(normalizedDate);
-        const rangeEnd = new Date(today);
-        rangeEnd.setFullYear(today.getFullYear() + 1);
-        let dates: Date[] = [];
-        let date = new Date(normalizedDate);
-        while (date.getDay() !== dayOfWeek) date.setDate(date.getDate() + 1);
-        while (date <= rangeEnd) {
-          dates.push(startOfDay(new Date(date)));
-          date.setDate(date.getDate() + 7);
+    const optionHandlers = {
+      single: () => {
+        setIsRecurring(false);
+        setSelectedDates(selectedDate ? [startOfDay(selectedDate)] : []);
+        setIsAddModalOpen(true);
+      },
+      recurring: () => {
+        setIsRecurring(true);
+        if (selectedDate) {
+          const normalizedDate = startOfDay(selectedDate);
+          const dayOfWeek = getDay(normalizedDate);
+          const rangeEnd = new Date(today);
+          rangeEnd.setFullYear(today.getFullYear() + 1);
+          const dates = [];
+          let date = new Date(normalizedDate);
+
+          while (date.getDay() !== dayOfWeek) date.setDate(date.getDate() + 1);
+          while (date <= rangeEnd) {
+            dates.push(startOfDay(new Date(date)));
+            date.setDate(date.getDate() + 7);
+          }
+          setSelectedDates(dates);
+        } else {
+          setSelectedDates([]);
         }
-        setSelectedDates(dates);
-      } else {
-        setSelectedDates([]);
-      }
-      setIsAddModalOpen(true);
-    } else if (option === "editSingle") {
-      setIsRecurring(false);
-      setEditAllRecurring(false);
-      setIsEditModalOpen(true);
-    } else if (option === "editRecurring") {
-      setIsRecurring(true);
-      setEditAllRecurring(true);
-      setIsEditModalOpen(true);
-    }
+        setIsAddModalOpen(true);
+      },
+      editSingle: () => {
+        if (!eventContext?.eventId) return;
+        setIsRecurring(false);
+        setEditAllRecurring(false);
+        setIsEditModalOpen(true);
+      },
+      editRecurring: () => {
+        if (!eventContext?.eventId || !eventContext.isRecurring) return;
+        setIsRecurring(true);
+        setEditAllRecurring(true);
+        setIsEditModalOpen(true);
+      },
+    };
+
+    optionHandlers[option]?.();
     setShowOptionsMenu(false);
   };
 
@@ -175,9 +198,9 @@ function AvailabilityCalendar({
 
     const adjustedEndDate = new Date(end);
     adjustedEndDate.setDate(end.getDate() - 1);
-
     const dateRange: Date[] = [];
     let currentDate = new Date(start);
+
     while (currentDate <= adjustedEndDate) {
       dateRange.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
@@ -194,12 +217,8 @@ function AvailabilityCalendar({
     if (dateRange.length === 1) {
       setShowOptionsMenu(true);
     } else {
-      if (hasEvents) {
-        setIsEditModalOpen(true);
-        setEditAllRecurring(false);
-      } else {
-        setIsAddModalOpen(true);
-      }
+      hasEvents ? setIsEditModalOpen(true) : setIsAddModalOpen(true);
+      setEditAllRecurring(false);
     }
   };
 
@@ -263,8 +282,7 @@ function AvailabilityCalendar({
       startTime: string;
       endTime: string;
       isRecurring: boolean;
-    }[],
-    editAllRecurring?: boolean
+    }[]
   ) => {
     setAvailability((prev) =>
       prev.map((event) => {
@@ -300,40 +318,60 @@ function AvailabilityCalendar({
   useEffect(() => {
     const updateViewBasedOnScreenSize = () => {
       const calendarApi = calendarRef.current?.getApi();
-      if (calendarApi) {
-        if (window.innerWidth >= 1280) {
-          calendarApi.changeView("dayGridMonth");
-          setHeaderToolbar({
+      if (!calendarApi) return;
+
+      const screenConfigs = [
+        {
+          minWidth: 1280,
+          view: "dayGridMonth",
+          toolbar: {
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-          });
-        } else if (window.innerWidth >= 1024) {
-          calendarApi.changeView("dayGridMonth");
-          setHeaderToolbar({
+          },
+        },
+        {
+          minWidth: 1024,
+          view: "dayGridMonth",
+          toolbar: {
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-          });
-        } else if (window.innerWidth >= 640) {
-          calendarApi.changeView("timeGridWeek");
-          setHeaderToolbar({
+          },
+        },
+        {
+          minWidth: 640,
+          view: "timeGridWeek",
+          toolbar: {
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
             right: "timeGridWeek,timeGridDay,listWeek",
-          });
-        } else {
-          calendarApi.changeView("timeGridDay");
-          setHeaderToolbar({
+          },
+        },
+        {
+          minWidth: 0,
+          view: "timeGridDay",
+          toolbar: {
             left: currentMonth ? "next today" : "prev next today",
             center: "title",
             right: "timeGridDay,listWeek",
-          });
-        }
+          },
+        },
+      ];
+
+      const matchedConfig = screenConfigs.find(
+        (config) => window.innerWidth >= config.minWidth
+      );
+
+      if (matchedConfig) {
+        calendarApi.changeView(matchedConfig.view);
+        setHeaderToolbar(matchedConfig.toolbar);
       }
     };
+
     window.addEventListener("resize", updateViewBasedOnScreenSize);
     updateViewBasedOnScreenSize();
+
     return () =>
       window.removeEventListener("resize", updateViewBasedOnScreenSize);
   }, [currentMonth]);
@@ -422,27 +460,24 @@ function AvailabilityCalendar({
             >
               Add recurring availability
             </button>
-            {selectedDates.length === 1 &&
-              interviewAvailability.some((item) =>
-                isSameDay(new Date(item.startTime), selectedDates[0])
-              ) && (
-                <>
+            {eventContext?.eventId && (
+              <>
+                <button
+                  onClick={() => handleOptionSelect("editSingle")}
+                  className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+                >
+                  Edit this date
+                </button>
+                {eventContext.isRecurring && (
                   <button
-                    onClick={() => handleOptionSelect("editSingle")}
+                    onClick={() => handleOptionSelect("editRecurring")}
                     className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
                   >
-                    Edit this date
+                    Edit all {recurringEventDay}s
                   </button>
-                  {hasRecurringEvent && (
-                    <button
-                      onClick={() => handleOptionSelect("editRecurring")}
-                      className="block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
-                    >
-                      Edit all {recurringEventDay}s
-                    </button>
-                  )}
-                </>
-              )}
+                )}
+              </>
+            )}
             <button
               onClick={() => handleResetAvailability(selectedDate)}
               className="relative block w-full py-2 mt-2 text-sm text-left text-gray-700 hover:bg-gray-200"
