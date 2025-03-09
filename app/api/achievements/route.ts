@@ -2,21 +2,17 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 
-const usHolidays = [
-  { name: "New Year's Day", date: "01-01" },
-  { name: "Martin Luther King Jr. Day", type: "monday_in_january" },
-  { name: "Inauguration Day", date: "01-20", special: true },
-  { name: "President's Day", type: "third_monday_in_february" },
-  { name: "Memorial Day", type: "last_monday_in_may" },
-  { name: "Juneteenth", date: "06-19" },
-  { name: "Independence Day", date: "07-04" },
-  { name: "Labor Day", type: "first_monday_in_september" },
-  { name: "Columbus Day", type: "second_monday_in_october" },
-  { name: "Halloween", date: "10-31" },
-  { name: "Veterans Day", date: "11-11" },
-  { name: "Thanksgiving Day", type: "fourth_thursday_in_november" },
-  { name: "Christmas Day", date: "12-25" },
-];
+interface Holiday {
+  name: string;
+  date?: string;
+  special?: boolean;
+  type?: string;
+  weekday?: {
+    month: number;
+    n: number;
+    day: "monday" | "thursday";
+  };
+}
 
 interface HolidayAchievement {
   name: string;
@@ -24,25 +20,40 @@ interface HolidayAchievement {
   unlocked: boolean;
 }
 
-const getHolidayDate = (holiday: any, year: number): Date => {
-  const [month, day] = holiday.date ? holiday.date.split("-") : ["", ""];
-  let date = new Date(year, parseInt(month) - 1, parseInt(day));
+const holidayTypeHandlers: {
+  [key: string]: (year: number) => Date | null;
+} = {
+  monday_in_january: (year: number) => getNthMondayOfMonth(year, 1, 3), // Third Monday of January
+  third_monday_in_february: (year: number) => getNthMondayOfMonth(year, 2, 3), // Third Monday of February
+  last_monday_in_may: (year: number) => getLastMondayOfMonth(year, 5), // Last Monday in May
+  first_monday_in_september: (year: number) => getNthMondayOfMonth(year, 9, 1), // First Monday in September
+  second_monday_in_october: (year: number) => getNthMondayOfMonth(year, 10, 2), // Second Monday in October
+  fourth_thursday_in_november: (year: number) =>
+    getNthThursdayOfMonth(year, 11, 4), // Fourth Thursday in November
+};
 
-  if (holiday.type === "monday_in_january") {
-    date = getNthMondayOfMonth(year, 1, 3); // Third Monday of January
-  } else if (holiday.type === "third_monday_in_february") {
-    date = getNthMondayOfMonth(year, 2, 3); // Third Monday of February
-  } else if (holiday.type === "last_monday_in_may") {
-    date = getLastMondayOfMonth(year, 5); // Last Monday in May
-  } else if (holiday.type === "first_monday_in_september") {
-    date = getNthMondayOfMonth(year, 9, 1); // First Monday in September
-  } else if (holiday.type === "second_monday_in_october") {
-    date = getNthMondayOfMonth(year, 10, 2); // Second Monday in October
-  } else if (holiday.type === "fourth_thursday_in_november") {
-    date = getNthThursdayOfMonth(year, 11, 4); // Fourth Thursday in November
+const getHolidayDate = (holiday: Holiday, year: number): Date | null => {
+  // Check if the holiday has a fixed date
+  if (holiday.date) {
+    const [month, day] = holiday.date.split("-");
+    const holidayDate = new Date(year, parseInt(month) - 1, parseInt(day));
+    return holidayDate;
   }
 
-  return date;
+  if (holiday.weekday) {
+    const { month, n, day } = holiday.weekday;
+    if (day === "monday") {
+      return getNthMondayOfMonth(year, month, n);
+    } else if (day === "thursday") {
+      return getNthThursdayOfMonth(year, month, n);
+    }
+  }
+
+  if (holiday.type && holidayTypeHandlers[holiday.type]) {
+    return holidayTypeHandlers[holiday.type](year);
+  }
+
+  return null;
 };
 
 const getNthMondayOfMonth = (
@@ -77,26 +88,46 @@ const getNthThursdayOfMonth = (
   return date;
 };
 
-const checkIfHoliday = (date: Date, holidays: any[]): string | null => {
+const checkIfHoliday = (date: Date, holidays: Holiday[]): string | null => {
   const formattedDate = `${(date.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
   for (const holiday of holidays) {
     const holidayDate = getHolidayDate(holiday, date.getFullYear());
-    if (
-      formattedDate ===
-      `${(holidayDate.getMonth() + 1).toString().padStart(2, "0")}-${holidayDate
-        .getDate()
-        .toString()
-        .padStart(2, "0")}`
-    ) {
+
+    if (!holidayDate) continue;
+
+    const holidayFormattedDate = `${(holidayDate.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${holidayDate.getDate().toString().padStart(2, "0")}`;
+
+    if (formattedDate === holidayFormattedDate) {
       return holiday.name;
     }
   }
 
   return null;
 };
+
+const usHolidays: Holiday[] = [
+  { name: "New Year's Day", date: "01-01" },
+  {
+    name: "Martin Luther King Jr. Day",
+    weekday: { month: 1, n: 3, day: "monday" },
+  },
+  { name: "Inauguration Day", date: "01-20", special: true },
+  { name: "President's Day", weekday: { month: 2, n: 3, day: "monday" } },
+  { name: "Memorial Day", weekday: { month: 5, n: -1, day: "monday" } },
+  { name: "Juneteenth", date: "06-19" },
+  { name: "Independence Day", date: "07-04" },
+  { name: "Labor Day", weekday: { month: 9, n: 1, day: "monday" } },
+  { name: "Columbus Day", weekday: { month: 10, n: 2, day: "monday" } },
+  { name: "Halloween", date: "10-31" },
+  { name: "Veterans Day", date: "11-11" },
+  { name: "Thanksgiving Day", weekday: { month: 11, n: 4, day: "thursday" } },
+  { name: "Christmas Day", date: "12-25" },
+];
 
 const trackApplicationDays = (jobs: any[]): number => {
   const appliedDays = new Set<string>();
@@ -172,36 +203,48 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
 
     const streakWeeks = Math.floor(newStreak / 1);
 
-    let achievementName = "";
-    let achievementDescription = "";
+    const achievements = [
+      {
+        weeks: 12,
+        name: "Persistent",
+        description: "Target met for 3 months in a row",
+      },
+      {
+        weeks: 8,
+        name: "Consistent",
+        description: "Target met for 2 months in a row",
+      },
+      {
+        weeks: 4,
+        name: "Steady",
+        description: "Target met for 1 month in a row",
+      },
+      {
+        weeks: 2,
+        name: "Steady",
+        description: "Target met for 2 weeks in a row",
+      },
+      {
+        weeks: 1,
+        name: "Committed",
+        description: "Target met for 1 week in a row",
+      },
+    ];
 
-    if (streakWeeks >= 12) {
-      achievementName = "Persistent";
-      achievementDescription = "Target met for 3 months in a row";
-    } else if (streakWeeks >= 8) {
-      achievementName = "Consistent";
-      achievementDescription = "Target met for 2 months in a row";
-    } else if (streakWeeks >= 4) {
-      achievementName = "Steady";
-      achievementDescription = "Target met for 1 month in a row";
-    } else if (streakWeeks >= 2) {
-      achievementName = "Steady";
-      achievementDescription = "Target met for 2 weeks in a row";
-    } else if (streakWeeks >= 1) {
-      achievementName = "Committed";
-      achievementDescription = "Target met for 1 week in a row";
-    }
+    const achievement = achievements.find(
+      (achievement) => streakWeeks >= achievement.weeks
+    );
 
-    if (achievementName) {
+    if (achievement) {
       await prisma.userAchievement.create({
         data: {
           user: { connect: { id: userId } },
           achievement: {
             connectOrCreate: {
-              where: { name: achievementName },
+              where: { name: achievement.name },
               create: {
-                name: achievementName,
-                description: achievementDescription,
+                name: achievement.name,
+                description: achievement.description,
               },
             },
           },
@@ -221,6 +264,14 @@ const calculateAchievements = async (
   appliedJobs: any[],
   interviews: any[]
 ) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   const jobMilestones = [
     10, 25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 1500, 2000, 2500, 5000,
     10000,
@@ -315,12 +366,28 @@ const calculateAchievements = async (
     }
   }
 
+  for (const achievement of awardedAchievements) {
+    await prisma.userAchievement.create({
+      data: {
+        user: { connect: { id: userId } },
+        achievement: {
+          connectOrCreate: {
+            where: { name: achievement.name },
+            create: {
+              name: achievement.name,
+              description: achievement.description,
+            },
+          },
+        },
+      },
+    });
+  }
+
   return {
     awardedAchievements,
     lockedAchievements,
   };
 };
-
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
@@ -372,21 +439,29 @@ export async function GET(request: NextRequest) {
 
     usHolidays.forEach((holiday) => {
       const holidayDate = getHolidayDate(holiday, new Date().getFullYear());
-      const holidayName = holiday.name;
-      const holidayExists = userJobs.some((job) => {
-        const jobDate = new Date(job.createdAt);
-        return (
-          jobDate.toISOString().split("T")[0] ===
-          holidayDate.toISOString().split("T")[0]
-        );
-      });
 
-      if (!holidayExists) {
-        lockedHolidayAchievements.push({
-          name: `Applied on ${holidayName} ${new Date().getFullYear()}`,
-          description: `Awarded for applying on ${holidayName} in ${new Date().getFullYear()}`,
-          unlocked: false,
+      if (holidayDate) {
+        const holidayExists = userJobs.some((job) => {
+          const jobDate = new Date(job.createdAt);
+          return (
+            jobDate.toISOString().split("T")[0] ===
+            holidayDate.toISOString().split("T")[0]
+          );
         });
+
+        if (!holidayExists) {
+          lockedHolidayAchievements.push({
+            name: `Applied on ${holiday.name} ${new Date().getFullYear()}`,
+            description: `Awarded for applying on ${
+              holiday.name
+            } in ${new Date().getFullYear()}`,
+            unlocked: false,
+          });
+        }
+      } else {
+        console.warn(
+          `Holiday date for ${holiday.name} could not be determined.`
+        );
       }
     });
 
@@ -424,7 +499,6 @@ export async function GET(request: NextRequest) {
         return yearA - yearB;
       }
 
-      // Sort by holiday order in usHolidays
       const holidayNameMatchA = a.name.match(/Applied on (.*) \d{4}/);
       const holidayNameMatchB = b.name.match(/Applied on (.*) \d{4}/);
 
