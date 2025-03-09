@@ -50,7 +50,7 @@ import { GoGoal } from "react-icons/go";
 import GoalForm from "../components/profile/goal/GoalForm";
 import { BsBriefcase, BsLock } from "react-icons/bs";
 import { MdMeetingRoom, MdStairs } from "react-icons/md";
-import { GiTombstone, GiPartyPopper } from "react-icons/gi";
+import { GiPartyPopper } from "react-icons/gi";
 import { TbChristmasTree } from "react-icons/tb";
 import { gsap } from "gsap";
 import { GrTrophy } from "react-icons/gr";
@@ -635,6 +635,13 @@ function Profile() {
     }
   }
 
+  const holidayIconMap: { [key: string]: JSX.Element } = {
+    "Memorial Day": <FaFlagUsa className="w-8 h-8 text-white" />,
+    "New Year's Day": <GiPartyPopper className="w-8 h-8 text-white" />,
+    Halloween: <GiPumpkinMask className="w-8 h-8 text-white" />,
+    "Christmas Day": <TbChristmasTree className="w-8 h-8 text-white" />,
+  };
+
   function AchievementCard({ achievement }: AchievementCardProps) {
     const { description, unlocked, name } = achievement;
 
@@ -655,28 +662,46 @@ function Profile() {
     const isStreakAchievement = description.includes("week in a row");
     const isHolidayAchievement = name.includes("Applied on");
 
-    let icon = null;
-    let borderColor = "border-blue-500";
+    const createAchievement = (
+      condition: boolean,
+      icon: JSX.Element,
+      borderColor: string
+    ) => ({ condition, icon, borderColor });
 
-    if (isJobAchievement) {
-      icon = <BsBriefcase className="w-8 h-8 text-white" />;
-    } else if (isInterviewAchievement) {
-      icon = <FaUserTie className="w-8 h-8 text-white" />;
-      borderColor = "border-green-500";
-    } else if (isStreakAchievement) {
-      icon = <MdStairs className="w-8 h-8 text-white" />;
-      borderColor = "border-yellow-500";
-    } else if (isHolidayAchievement) {
-      if (name.includes("Memorial Day"))
-        icon = <FaFlagUsa className="w-8 h-8 text-white" />;
-      else if (name.includes("New Year's Day"))
-        icon = <GiPartyPopper className="w-8 h-8 text-white" />;
-      else if (name.includes("Halloween"))
-        icon = <GiPumpkinMask className="w-8 h-8 text-white" />;
-      else if (name.includes("Christmas Day"))
-        icon = <TbChristmasTree className="w-8 h-8 text-white" />;
-      else icon = <FaFlagUsa className="w-8 h-8 text-white" />;
-      borderColor = "border-red-500";
+    const achievementsMapping = {
+      job: createAchievement(
+        isJobAchievement,
+        <BsBriefcase className="w-8 h-8 text-white" />,
+        "border-blue-500"
+      ),
+      interview: createAchievement(
+        isInterviewAchievement,
+        <FaUserTie className="w-8 h-8 text-white" />,
+        "border-green-500"
+      ),
+      streak: createAchievement(
+        isStreakAchievement,
+        <MdStairs className="w-8 h-8 text-white" />,
+        "border-yellow-500"
+      ),
+      holiday: createAchievement(
+        isHolidayAchievement,
+        holidayIconMap[name] || <FaFlagUsa className="w-8 h-8 text-white" />,
+        "border-red-500"
+      ),
+    };
+
+    let selectedIcon: JSX.Element | null = null;
+    let selectedBorderColor = "border-blue-500";
+
+    for (const key in achievementsMapping) {
+      const achievement =
+        achievementsMapping[key as keyof typeof achievementsMapping];
+      if (achievement.condition) {
+        selectedIcon = achievement.icon;
+        selectedBorderColor = achievement.borderColor;
+        break;
+      }
     }
 
     const lockIcon = unlocked ? (
@@ -695,10 +720,10 @@ function Profile() {
     return (
       <div className="flex flex-col items-center justify-center p-4 bg-zinc-800 opacity-80 rounded-lg shadow-md">
         <div
-          className={`relative bg-zinc-700 ${borderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
+          className={`relative bg-zinc-700 ${selectedBorderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
           style={cardStyle}
         >
-          {icon}
+          {selectedIcon}
           {achievementNumber && (
             <div className="absolute top-10 right-2 rounded-full text-white text-xs font-bold w-6 h-6 flex items-center justify-center">
               {achievementNumber}
@@ -714,6 +739,7 @@ function Profile() {
       </div>
     );
   }
+
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userRole === "CANDIDATE" ? (
