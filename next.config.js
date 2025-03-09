@@ -1,12 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      "lh3.googleusercontent.com",
-      "cdn.discordapp.com",
-      "avatars.githubusercontent.com",
-      "hone-your-craft.s3.us-east-2.amazonaws.com",
-    ],
     remotePatterns: [
       {
         protocol: "https",
