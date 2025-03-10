@@ -55,16 +55,9 @@ export async function PUT(request: NextRequest) {
         );
       }
 
-      if (jobsAppliedToWeeklyGoalMin === jobsAppliedToWeeklyGoalMax) {
+      if (jobsAppliedToWeeklyGoalMin >= jobsAppliedToWeeklyGoalMax) {
         return NextResponse.json(
           { message: "Weekly goal max must be greater than weekly goal min." },
-          { status: 400 }
-        );
-      }
-
-      if (jobsAppliedToWeeklyGoalMin > jobsAppliedToWeeklyGoalMax) {
-        return NextResponse.json(
-          { message: "Weekly goal min must be less than weekly goal max." },
           { status: 400 }
         );
       }
@@ -105,7 +98,10 @@ export async function PUT(request: NextRequest) {
       updateData.candidateGoal = candidateGoal;
     }
 
-    if (offerReceivedByDateGoal !== undefined) {
+    if (
+      offerReceivedByDateGoal !== undefined &&
+      offerReceivedByDateGoal !== null
+    ) {
       const parsedOfferReceivedByDateGoal = new Date(offerReceivedByDateGoal);
       if (isNaN(parsedOfferReceivedByDateGoal.getTime())) {
         return NextResponse.json(
@@ -114,11 +110,15 @@ export async function PUT(request: NextRequest) {
         );
       }
       updateData.offerReceivedByDateGoal = parsedOfferReceivedByDateGoal;
+      updateData.offerReceivedByDateGoalStart = null;
+      updateData.offerReceivedByDateGoalEnd = null;
     }
 
     if (
       offerReceivedByDateGoalStart !== undefined &&
-      offerReceivedByDateGoalEnd !== undefined
+      offerReceivedByDateGoalEnd !== undefined &&
+      (offerReceivedByDateGoalStart !== null ||
+        offerReceivedByDateGoalEnd !== null)
     ) {
       const parsedStart = new Date(offerReceivedByDateGoalStart);
       const parsedEnd = new Date(offerReceivedByDateGoalEnd);
@@ -139,16 +139,17 @@ export async function PUT(request: NextRequest) {
 
       updateData.offerReceivedByDateGoalStart = parsedStart;
       updateData.offerReceivedByDateGoalEnd = parsedEnd;
-
       updateData.offerReceivedByDateGoal = null;
-    } else {
-      if (
-        offerReceivedByDateGoalStart === undefined ||
-        offerReceivedByDateGoalEnd === undefined
-      ) {
-        updateData.offerReceivedByDateGoalStart = null;
-        updateData.offerReceivedByDateGoalEnd = null;
-      }
+    }
+
+    if (
+      offerReceivedByDateGoal === null &&
+      offerReceivedByDateGoalStart === null &&
+      offerReceivedByDateGoalEnd === null
+    ) {
+      updateData.offerReceivedByDateGoal = null;
+      updateData.offerReceivedByDateGoalStart = null;
+      updateData.offerReceivedByDateGoalEnd = null;
     }
 
     const updatedUser = await prisma.user.update({

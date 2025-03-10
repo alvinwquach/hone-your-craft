@@ -86,6 +86,108 @@ interface GoalFormProps {
   monthlyInterviewGoalTrackerData: any;
 }
 
+const Hexagon = ({
+  children,
+  className,
+  onClick,
+}: {
+  children?: React.ReactNode;
+  className: string;
+  onClick?: () => void;
+}) => (
+  <div
+    onClick={onClick}
+    className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30 ${className}`}
+    style={{
+      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+    }}
+  >
+    {children}
+  </div>
+);
+
+const WeeklyGoalHexagons = ({
+  selectedGoal,
+  onHexagonClick,
+}: {
+  selectedGoal: number | null;
+  onHexagonClick: (day: number) => void;
+}) => {
+  const numberOfDaysInAWeek = [1, 2, 3, 4, 5, 6, 7];
+
+  return (
+    <div className="flex gap-6 justify-start">
+      {numberOfDaysInAWeek.map((day) => (
+        <Hexagon
+          key={day}
+          onClick={() => onHexagonClick(day)}
+          className={`text-white ${
+            (selectedGoal ?? 0) >= day ? "bg-blue-600" : "bg-blue-200"
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
+
+const WeeklyApplicationDayTracker = ({
+  weeklyApplicationDayTrackerData,
+  weeklyDayTargetMap,
+}: {
+  weeklyApplicationDayTrackerData: weeklyApplicationDayTrackerData | undefined;
+  weeklyDayTargetMap: Map<string, string>;
+}) => (
+  <div className="flex gap-6 justify-start">
+    {[...weeklyDayTargetMap.keys()].map((day, index) => {
+      const dayAbbreviation = weeklyDayTargetMap.get(day);
+      const wasApplied =
+        weeklyApplicationDayTrackerData?.applicationPresence.find(
+          ([dayKey]: [DayOfWeek, boolean]) => dayKey === day
+        )?.[1] || false;
+
+      return (
+        <Hexagon
+          key={index}
+          className={`${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
+        >
+          <span className="text-sm">{dayAbbreviation}</span>
+        </Hexagon>
+      );
+    })}
+  </div>
+);
+
+const WeeklyApplicationGoalTracker = ({
+  weeklyApplicationGoalTrackerData,
+  weeklyDayTargetMap,
+}: {
+  weeklyApplicationGoalTrackerData:
+    | weeklyApplicationGoalTrackerData
+    | undefined;
+  weeklyDayTargetMap: Map<string, string>;
+}) => (
+  <div className="mt-4 flex gap-6 justify-start">
+    {[...weeklyDayTargetMap.keys()].map((day, index) => {
+      const dayAbbreviation = weeklyDayTargetMap.get(day);
+      const dayData =
+        weeklyApplicationGoalTrackerData?.applicationPresence.find(
+          ([dayKey]) => dayKey === day
+        )?.[1] || { presence: false, count: 0 };
+      const wasApplied = dayData.presence;
+      const applicationCount = dayData.count;
+
+      return (
+        <div key={index} className="flex flex-col items-center">
+          <Hexagon className={`${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}>
+            <span className="text-lg text-white">{dayAbbreviation}</span>
+          </Hexagon>
+          <div className="text-xs mt-2 text-white">{applicationCount}</div>
+        </div>
+      );
+    })}
+  </div>
+);
+
 const GoalForm = ({
   currentGoalData,
   weeklyApplicationDayTrackerData,
@@ -124,101 +226,75 @@ const GoalForm = ({
   const [selectedDates, setSelectedDates] = useState<DateObject[]>([]);
 
   useEffect(() => {
-    if (currentGoalData) {
-      if (currentGoalData?.jobsAppliedToDaysPerWeekGoal) {
-        const currentGoal = Number(
-          currentGoalData?.jobsAppliedToDaysPerWeekGoal
-        );
-        setSelectedGoal(currentGoal);
-        setValue("jobsAppliedToDaysPerWeekGoal", currentGoal);
-      }
+    if (!currentGoalData) return;
 
-      if (currentGoalData.jobsAppliedToWeeklyGoalMin) {
-        setGoalMin(Number(currentGoalData.jobsAppliedToWeeklyGoalMin));
-        setValue(
-          "jobsAppliedToWeeklyGoalMin",
-          currentGoalData.jobsAppliedToWeeklyGoalMin
-        );
-      }
+    const goalMappings: {
+      [key: string]: {
+        stateSetter: (value: any) => void;
+        formField: keyof FormData;
+        transform?: (value: any) => any;
+      };
+    } = {
+      jobsAppliedToDaysPerWeekGoal: {
+        stateSetter: setSelectedGoal,
+        formField: "jobsAppliedToDaysPerWeekGoal",
+        transform: Number,
+      },
+      jobsAppliedToWeeklyGoalMin: {
+        stateSetter: setGoalMin,
+        formField: "jobsAppliedToWeeklyGoalMin",
+        transform: Number,
+      },
+      jobsAppliedToWeeklyGoalMax: {
+        stateSetter: setGoalMax,
+        formField: "jobsAppliedToWeeklyGoalMax",
+        transform: Number,
+      },
+      monthlyInterviewGoal: {
+        stateSetter: setMonthlyInterviewsGoal,
+        formField: "monthlyInterviewGoal",
+      },
+      candidateGoal: {
+        stateSetter: setCandidateGoal,
+        formField: "candidateGoal",
+      },
+    };
 
-      if (currentGoalData.jobsAppliedToWeeklyGoalMax) {
-        setGoalMax(Number(currentGoalData.jobsAppliedToWeeklyGoalMax));
-        setValue(
-          "jobsAppliedToWeeklyGoalMax",
-          currentGoalData.jobsAppliedToWeeklyGoalMax
-        );
+    Object.entries(goalMappings).forEach(
+      ([key, { stateSetter, formField, transform }]) => {
+        const value = currentGoalData[key as keyof typeof currentGoalData];
+        if (value !== undefined && value !== null) {
+          const transformedValue = transform ? transform(value) : value;
+          stateSetter(transformedValue);
+          setValue(formField, transformedValue);
+        }
       }
+    );
 
-      if (currentGoalData.monthlyInterviewGoal !== undefined) {
-        setMonthlyInterviewsGoal(currentGoalData.monthlyInterviewGoal);
-        setValue("monthlyInterviewGoal", currentGoalData.monthlyInterviewGoal);
-      }
-
-      if (currentGoalData.candidateGoal) {
-        setCandidateGoal(
-          currentGoalData.candidateGoal as
-            | "NotSureYet"
-            | "ChangeMyCareer"
-            | "GrowInMyExistingRole"
-            | "ExploreNewOpportunities"
-            | "ImproveSkillset"
-            | "LookingForANewJob"
-            | "ReceiveAnOffer"
-            | "BuildAPortfolio"
-        );
-        setValue(
-          "candidateGoal",
-          currentGoalData.candidateGoal as
-            | "NotSureYet"
-            | "ChangeMyCareer"
-            | "GrowInMyExistingRole"
-            | "ExploreNewOpportunities"
-            | "ImproveSkillset"
-            | "LookingForANewJob"
-            | "ReceiveAnOffer"
-            | "BuildAPortfolio"
-        );
-      }
-      if (currentGoalData.offerReceivedByDateGoal) {
-        const offerReceivedByDateGoal = new Date(
-          currentGoalData.offerReceivedByDateGoal
-        );
-        setValue("offerReceivedByDateGoal", offerReceivedByDateGoal);
-        setSelectedDates([new DateObject(offerReceivedByDateGoal)]);
-      }
-
+    const handleDates = () => {
       if (
         currentGoalData.offerReceivedByDateGoalStart &&
         currentGoalData.offerReceivedByDateGoalEnd
       ) {
-        const offerReceivedByDateGoalStart = new Date(
-          currentGoalData.offerReceivedByDateGoalStart
-        );
-        const offerReceivedByDateGoalEnd = new Date(
-          currentGoalData.offerReceivedByDateGoalEnd
-        );
-
-        setValue("offerReceivedByDateGoalStart", offerReceivedByDateGoalStart);
-        setValue("offerReceivedByDateGoalEnd", offerReceivedByDateGoalEnd);
-
-        setSelectedDates([
-          new DateObject(offerReceivedByDateGoalStart),
-          new DateObject(offerReceivedByDateGoalEnd),
-        ]);
+        const start = new Date(currentGoalData.offerReceivedByDateGoalStart);
+        const end = new Date(currentGoalData.offerReceivedByDateGoalEnd);
+        setValue("offerReceivedByDateGoalStart", start);
+        setValue("offerReceivedByDateGoalEnd", end);
+        setSelectedDates([new DateObject(start), new DateObject(end)]);
       } else if (
         currentGoalData.offerReceivedByDateGoalStart === null &&
         currentGoalData.offerReceivedByDateGoalEnd === null
       ) {
-        if (currentGoalData.offerReceivedByDateGoal) {
-          const offerReceivedByDateGoal = new Date(
-            currentGoalData.offerReceivedByDateGoal
-          );
-          setSelectedDates([new DateObject(offerReceivedByDateGoal)]);
-        } else {
-          setSelectedDates([]);
-        }
+        const date = currentGoalData.offerReceivedByDateGoal;
+        setSelectedDates(date ? [new DateObject(new Date(date))] : []);
+      } else if (currentGoalData.offerReceivedByDateGoal) {
+        const date = new Date(currentGoalData.offerReceivedByDateGoal);
+        setValue("offerReceivedByDateGoal", date);
+        setSelectedDates([new DateObject(date)]);
       }
-    }
+    };
+
+    handleDates();
   }, [currentGoalData, setValue]);
 
   const handleSave: SubmitHandler<FormData> = async (data) => {
@@ -277,7 +353,6 @@ const GoalForm = ({
 
       const result = await response.json();
       const isPlural = result.jobsAppliedToDaysPerWeekGoal > 1;
-
       toast.success(
         `Your weekly goal is to apply to ${
           result.jobsAppliedToWeeklyGoalMin
@@ -409,57 +484,68 @@ const GoalForm = ({
       ([_, applied]) => applied
     ).length || 0;
 
-  const numberOfDaysInAWeek = [1, 2, 3, 4, 5, 6, 7];
-
   const totalApplications =
     weeklyApplicationGoalTrackerData?.totalApplications || 0;
 
-  const jobsAppliedToDaysPerWeekGoalMessage =
-    appliedDaysCount >= currentGoalData?.jobsAppliedToDaysPerWeekGoal
-      ? "Great job! You've met your weekly target!"
-      : `${
-          currentGoalData?.jobsAppliedToDaysPerWeekGoal - appliedDaysCount
-        } days left to meet your weekly target. Keep up the good work!`;
+  const getWeeklyGoalMessage = (
+    total: number,
+    min: number | undefined,
+    max: number | undefined
+  ): string => {
+    if (!min || !max) return "";
 
-  let jobsAppliedToWeeklyGoalMessage = "";
+    const messages = {
+      belowMin: (remaining: number) =>
+        `You're almost there! You need to apply to ${remaining} more jobs to meet your minimum goal.`,
+      atMin: () =>
+        `Great job! You've met your minimum goal of ${min} applications. Keep going!`,
+      inRange: () =>
+        `You're on track! You've applied within your weekly goal range.`,
+      atMax: () =>
+        `Awesome! You've exactly met your maximum goal of ${max} applications. Well done!`,
+      aboveMax: (excess: number) =>
+        `Great job! You've surpassed your goal by ${excess} applications. Keep it up!`,
+    };
 
-  if (totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMin) {
-    const remainingApplications =
-      currentGoalData?.jobsAppliedToWeeklyGoalMin - totalApplications;
-    jobsAppliedToWeeklyGoalMessage = `You're almost there! You need to apply to ${remainingApplications} more jobs to meet your minimum goal.`;
-  } else if (
-    totalApplications === currentGoalData?.jobsAppliedToWeeklyGoalMin
-  ) {
-    jobsAppliedToWeeklyGoalMessage = `Great job! You've met your minimum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMin} applications. Keep going!`;
-  } else if (
-    totalApplications > currentGoalData?.jobsAppliedToWeeklyGoalMin &&
-    totalApplications < currentGoalData?.jobsAppliedToWeeklyGoalMax
-  ) {
-    jobsAppliedToWeeklyGoalMessage = `You're on track! You've applied within your weekly goal range.`;
-  } else if (
-    totalApplications === currentGoalData?.jobsAppliedToWeeklyGoalMax
-  ) {
-    jobsAppliedToWeeklyGoalMessage = `Awesome! You've exactly met your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Well done!`;
-  } else {
-    const exceededApplications =
-      totalApplications - currentGoalData?.jobsAppliedToWeeklyGoalMax;
-    jobsAppliedToWeeklyGoalMessage = `Great job! You've surpassed your goal by ${exceededApplications} applications. Keep it up!`;
-  }
+    if (total < min) return messages.belowMin(min - total);
+    if (total === min) return messages.atMin();
+    if (total > min && total < max) return messages.inRange();
+    if (total === max) return messages.atMax();
+    return messages.aboveMax(total - max);
+  };
+
+  const jobsAppliedToWeeklyGoalMessage = getWeeklyGoalMessage(
+    totalApplications,
+    currentGoalData?.jobsAppliedToWeeklyGoalMin,
+    currentGoalData?.jobsAppliedToWeeklyGoalMax
+  );
+
+  const getDistanceToMaxMessage = (
+    remaining: number | undefined,
+    max: number | undefined
+  ): string => {
+    if (!remaining || !max) return "";
+
+    const messages = {
+      below: (count: number) =>
+        `You're ${count} applications away from hitting your maximum goal of ${max} applications. Keep pushing!`,
+      at: () =>
+        `You've exactly hit your maximum goal of ${max} applications. Awesome!`,
+      above: (count: number) =>
+        `You've surpassed your maximum goal by ${count} applications. Fantastic!`,
+    };
+
+    if (remaining > 0) return messages.below(remaining);
+    if (remaining === 0) return messages.at();
+    return messages.above(Math.abs(remaining));
+  };
 
   const remainingApplicationsToMaxGoal =
     currentGoalData?.jobsAppliedToWeeklyGoalMax - totalApplications;
-  let distanceToMaxGoalMessage = "";
-
-  if (remainingApplicationsToMaxGoal > 0) {
-    distanceToMaxGoalMessage = `You're ${remainingApplicationsToMaxGoal} applications away from hitting your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Keep pushing!`;
-  } else if (remainingApplicationsToMaxGoal === 0) {
-    distanceToMaxGoalMessage = `You've exactly hit your maximum goal of ${currentGoalData?.jobsAppliedToWeeklyGoalMax} applications. Awesome!`;
-  } else {
-    const exceededApplicationsToMaxGoal = Math.abs(
-      remainingApplicationsToMaxGoal
-    );
-    distanceToMaxGoalMessage = `You've surpassed your maximum goal by ${exceededApplicationsToMaxGoal} applications. Fantastic!`;
-  }
+  const distanceToMaxGoalMessage = getDistanceToMaxMessage(
+    remainingApplicationsToMaxGoal,
+    currentGoalData?.jobsAppliedToWeeklyGoalMax
+  );
 
   return (
     <div>
@@ -554,50 +640,17 @@ const GoalForm = ({
         <h3 className="text-lg sm:text-xl font-semibold my-4 text-white">
           How many days a week do you plan on applying? (optional)
         </h3>
-        <div className="flex gap-6 justify-start">
-          {numberOfDaysInAWeek.map((day) => (
-            <div
-              key={day}
-              onClick={() => handleHexagonClick(day)}
-              className={`w-6 h-6 sm:w-12 sm:h-12 text-white flex items-center justify-center relative transform rotate-30 ${
-                (selectedGoal ?? 0) >= day ? "bg-blue-600" : "bg-blue-200"
-              }`}
-              style={{
-                clipPath:
-                  "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-              }}
-            ></div>
-          ))}
-        </div>
+        <WeeklyGoalHexagons
+          selectedGoal={selectedGoal}
+          onHexagonClick={handleHexagonClick}
+        />
         <form onSubmit={handleSubmit(handleSave)} className="mt-8">
           <div>
-            <p className="text-white mb-4">
-              {jobsAppliedToDaysPerWeekGoalMessage}
-            </p>
-            <div className="flex gap-6 justify-start">
-              {[...weeklyDayTargetMap.keys()].map((day, index) => {
-                const dayAbbreviation = weeklyDayTargetMap.get(day);
-
-                const wasApplied =
-                  weeklyApplicationDayTrackerData?.applicationPresence.find(
-                    ([dayKey]: [DayOfWeek, boolean]) => dayKey === day
-                  )?.[1] || false;
-
-                return (
-                  <div
-                    key={index}
-                    className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30
-           ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
-                    style={{
-                      clipPath:
-                        "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                    }}
-                  >
-                    <span className="text-sm">{dayAbbreviation}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <p className="text-white mb-4">{jobsAppliedToWeeklyGoalMessage}</p>
+            <WeeklyApplicationDayTracker
+              weeklyApplicationDayTrackerData={weeklyApplicationDayTrackerData}
+              weeklyDayTargetMap={weeklyDayTargetMap}
+            />
             <div className="text-lg sm:text-xl font-semibold my-4 text-white">
               <span className="text-2xl font-bold">{appliedDaysCount}</span> /{" "}
               <span>{currentGoalData?.jobsAppliedToDaysPerWeekGoal}</span> days
@@ -682,39 +735,12 @@ const GoalForm = ({
             <div className="mt-4">
               <span>{distanceToMaxGoalMessage}</span>
             </div>
-            <div className="mt-4 flex gap-6 justify-start">
-              {[...weeklyDayTargetMap.keys()].map((day, index) => {
-                const dayAbbreviation = weeklyDayTargetMap.get(day);
-
-                const dayData =
-                  weeklyApplicationGoalTrackerData?.applicationPresence.find(
-                    ([dayKey]) => dayKey === day
-                  )?.[1] || { presence: false, count: 0 };
-
-                const wasApplied = dayData.presence;
-                const applicationCount = dayData.count;
-
-                return (
-                  <div key={index} className="flex flex-col items-center">
-                    <div
-                      className={`w-6 h-6 sm:w-12 sm:h-12 flex items-center justify-center relative transform rotate-30
-           ${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
-                      style={{
-                        clipPath:
-                          "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                      }}
-                    >
-                      <span className="text-lg text-white">
-                        {dayAbbreviation}
-                      </span>
-                    </div>
-                    <div className="text-xs mt-2 text-white">
-                      {applicationCount}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <WeeklyApplicationGoalTracker
+              weeklyApplicationGoalTrackerData={
+                weeklyApplicationGoalTrackerData
+              }
+              weeklyDayTargetMap={weeklyDayTargetMap}
+            />
           </div>
           <div className="mt-6 text-white">
             <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
