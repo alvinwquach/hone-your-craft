@@ -6,8 +6,10 @@ export default withAuth(
   async function middleware(req) {
     // Retrieve the token from the request headers
     const token = await getToken({ req });
+
     // Check if a token exists
     const isAuthenticated = !!token;
+
     // Define a list of protected routes that require authentication
     const authRoutes = [
       "/profile",
@@ -17,26 +19,36 @@ export default withAuth(
       "/metrics",
       "/jobs",
     ];
+
     // Check if the requested route is in the list of protected routes
     if (authRoutes.includes(req.nextUrl.pathname)) {
       // If the user is authenticated, allow access to the requested route
       if (isAuthenticated) {
         // Check if the user's role is set in the token
         if (!token.userRole) {
-          // Redirect the user to the onboarding page if user role is not set
+          // Redirect to onboarding if role is not set
           return NextResponse.redirect(new URL("/onboarding", req.url));
         }
-        // If authenticated and user's role is set, allow access to the requested route
+
+        // If the user's role is client, disable access to the requested route
+        if (req.nextUrl.pathname === "/track") {
+          if (token.userRole === "CLIENT") {
+            // Redirect to profile if role is client
+            return NextResponse.redirect(new URL("/profile", req.url));
+          }
+        }
+
+        // Allow access to protected routes based on authentication
         return NextResponse.next();
       } else {
         // If the user is not authenticated, redirect them to the login page
         return NextResponse.redirect(new URL("/login", req.url));
       }
-    } else {
-      // If the requested route is not in the list of protected routes,
-      // allow access to the requested route
-      return NextResponse.next();
     }
+
+    // If the requested route is not in the list of protected routes,
+    // allow access to the requested route
+    return NextResponse.next();
   },
   {
     callbacks: {
