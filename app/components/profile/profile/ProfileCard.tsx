@@ -1,4 +1,4 @@
-import { useState, Suspense, useEffect, useMemo } from "react";
+import { useState, Suspense, useMemo } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +54,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
     register,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -65,15 +66,8 @@ function ProfileCard({ userData }: ProfileCardProps) {
   const selectedRole = watch("role");
   const selectedExperience = watch("yearsOfExperience");
 
-  useEffect(() => {
-    if (selectedExperience) {
-      updateProfile();
-    }
-  }, [selectedExperience]);
-
   const handleOpenToRoleAdd = async (role: string) => {
     if (selectedRoles.includes(role)) return;
-
     try {
       const response = await fetch(`/api/user/${session?.user?.email}/role`, {
         method: "POST",
@@ -82,16 +76,12 @@ function ProfileCard({ userData }: ProfileCardProps) {
         },
         body: JSON.stringify({ openToRoles: [role] }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to add role");
       }
-
       setSelectedRoles((prev) => [...prev, role]);
-
       mutate(`/api/user/${session?.user?.email}/role`);
       toast.success("Open to Role Added");
-
       setQuery("");
     } catch (error) {
       console.error("Error adding role:", error);
@@ -108,14 +98,11 @@ function ProfileCard({ userData }: ProfileCardProps) {
         },
         body: JSON.stringify({ openToRoles: [role] }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to remove role");
       }
-
       const updatedRolesList = selectedRoles.filter((r) => r !== role);
       setSelectedRoles(updatedRolesList);
-
       mutate(`/api/user/${session?.user?.email}/role`);
       toast.success("Open to Role Removed");
     } catch (error) {
@@ -124,10 +111,9 @@ function ProfileCard({ userData }: ProfileCardProps) {
     }
   };
 
-  const updateProfile = async () => {
+  const updateProfile = async (data: FormData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-
     try {
       const response = await fetch(`/api/user/${session?.user?.email}/role`, {
         method: "PUT",
@@ -135,33 +121,29 @@ function ProfileCard({ userData }: ProfileCardProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          role: selectedRole,
-          yearsOfExperience: selectedExperience,
+          role: data.role,
+          yearsOfExperience: data.yearsOfExperience,
         }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to update role and experience");
       }
-
       mutate(
         `/api/user/${session?.user?.email}/role`,
         {
           ...userData,
           user: {
             ...userData.user,
-            role: selectedRole,
-            yearsOfExperience: selectedExperience,
+            role: data.role,
+            yearsOfExperience: data.yearsOfExperience,
           },
         },
         false
       );
-
-      if (selectedRole !== userData?.user?.role) {
+      if (data.role !== userData?.user?.role) {
         toast.success("Role Updated");
       }
-
-      if (selectedExperience !== userData?.user?.yearsOfExperience) {
+      if (data.yearsOfExperience !== userData?.user?.yearsOfExperience) {
         toast.success("Experience Updated");
       }
     } catch (error) {
@@ -169,6 +151,17 @@ function ProfileCard({ userData }: ProfileCardProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleExperienceChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newExperience = e.target.value;
+    setValue("yearsOfExperience", newExperience);
+    await updateProfile({
+      role: selectedRole,
+      yearsOfExperience: selectedExperience,
+    });
   };
 
   const cancelEditBio = () => {
@@ -183,7 +176,6 @@ function ProfileCard({ userData }: ProfileCardProps) {
 
   const saveBio = async () => {
     if (!bio || bio === userData?.user?.bio) return;
-
     try {
       const response = await fetch(`/api/user/${session?.user?.email}/bio`, {
         method: "PUT",
@@ -192,11 +184,9 @@ function ProfileCard({ userData }: ProfileCardProps) {
         },
         body: JSON.stringify({ bio }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to update bio");
       }
-
       mutate(`/api/user/${session?.user?.email}/bio`, { bio }, false);
       toast.success("Bio updated successfully");
       setIsEditingBio(false);
@@ -222,11 +212,9 @@ function ProfileCard({ userData }: ProfileCardProps) {
             body: JSON.stringify({ headline }),
           }
         );
-
         if (!response.ok) {
           throw new Error("Failed to update headline");
         }
-
         mutate(
           `/api/user/${session?.user?.email}/headline`,
           { headline },
@@ -253,8 +241,8 @@ function ProfileCard({ userData }: ProfileCardProps) {
           );
   }, [query, selectedRoles]);
 
-  const onSubmit = async () => {
-    updateProfile();
+  const onSubmit = async (data: FormData) => {
+    await updateProfile(data);
   };
 
   return (
@@ -321,9 +309,8 @@ function ProfileCard({ userData }: ProfileCardProps) {
                   type="text"
                   id="role"
                   {...register("role")}
-                  className="block w-full  p-4 pl-10 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
+                  className="block w-full p-4 pl-10 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
                   placeholder="Enter your role"
-                  defaultValue={userData?.user?.role || ""}
                 />
                 {errors.role?.message && (
                   <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
@@ -342,8 +329,8 @@ function ProfileCard({ userData }: ProfileCardProps) {
               <select
                 id="yearsOfExperience"
                 {...register("yearsOfExperience")}
-                className="block w-full  p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400 max-h-[200px] overflow-y-auto"
-                defaultValue={userData?.user?.yearsOfExperience || ""}
+                onChange={handleExperienceChange}
+                className="block w-full p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400 max-h-[200px] overflow-y-auto"
               >
                 {Object.values(YearsOfExperience).map((experience) => (
                   <option
@@ -379,7 +366,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
                   onClick={() => handleOpenToRoleRemove(role)}
                   className="ml-2 text-red-500 hover:text-red-300"
                 >
-                  &times;
+                  ×
                 </button>
               </div>
             ))}
@@ -387,7 +374,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
           <Combobox as="div" value={query} onChange={setQuery}>
             <Combobox.Input
               onChange={(e) => setQuery(e.target.value)}
-              className="block w-full  p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
+              className="block w-full p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
               placeholder="Select role"
               value={query}
             />
@@ -422,7 +409,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
           />
           {isEditingBio && (
             <div className="flex justify-end gap-6 mt-4">
-              <button onClick={cancelEditBio} className=" text-white">
+              <button onClick={cancelEditBio} className="text-white">
                 Cancel
               </button>
               <button
