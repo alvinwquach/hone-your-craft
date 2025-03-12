@@ -12,7 +12,7 @@ function Onboarding() {
   const [userRole, setUserRole] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const router = useRouter();
-  const cutoffDate = "2024-10-31T00:00:00Z";
+  const cutoffDate = "2024-12-31T00:00:00Z";
   const userCreatedAt = session?.user?.createdAt;
   const isNewUser = userCreatedAt ? userCreatedAt >= cutoffDate : false;
 
