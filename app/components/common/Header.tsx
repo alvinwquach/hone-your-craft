@@ -1,5 +1,4 @@
 "use client";
-
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -56,12 +55,6 @@ interface SidebarItemProps {
   icon: IconType;
 }
 
-interface BottomNavigationItemProps {
-  href: string;
-  text: string;
-  icon: IconType;
-}
-
 function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -70,19 +63,15 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
     <li>
       <Link
         href={href}
-        className={`flex flex-col items-center p-3 rounded-lg ${
-          isActive
-            ? "bg-zinc-700"
-            : "hover:bg-zinc-700 hover:underline hover:text-zinc-400"
+        className={`flex items-center p-2 text-zinc-400 rounded-lg ${
+          isActive ? "bg-zinc-700" : "hover:bg-zinc-700"
         }`}
       >
         <Icon
-          className={`w-6 h-6 ${isActive ? "text-blue-500" : "text-zinc-300"}`}
+          className={`w-5 h-5 ${isActive ? "text-blue-500" : "text-zinc-300"}`}
         />
         <span
-          className={`mt-1 text-xs ${
-            isActive ? "text-blue-500" : "text-zinc-300"
-          }`}
+          className={`ms-3 ${isActive ? "text-blue-500" : "text-zinc-300"}`}
         >
           {text}
         </span>
@@ -91,75 +80,25 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
   );
 }
 
-function BottomNavigationItem({
-  href,
-  text,
-  icon: Icon,
-}: BottomNavigationItemProps) {
-  const pathname = usePathname();
-  const isActive = pathname === href;
-
-  return (
-    <Link href={href}>
-      <button
-        className={`inline-flex flex-col items-center justify-center rounded-lg group ${
-          isActive
-            ? "bg-zinc-700"
-            : "hover:bg-zinc-700 hover:underline hover:text-zinc-400"
-        }`}
-      >
-        <Icon
-          className={`w-5 h-5 mt-1 ${
-            isActive ? "text-blue-500" : "text-zinc-400"
-          }`}
-        />
-        <span
-          className={`text-xs ${isActive ? "text-blue-500" : "text-zinc-400"}`}
-        >
-          {text}
-        </span>
-      </button>
-    </Link>
-  );
-}
-
 function Sidebar({ navigation }: { navigation: NavigationItem[] }) {
   return (
-    <nav className="fixed inset-y-0 left-0 z-50">
-      <div className="fixed inset-y-0 left-0 w-24 bg-zinc-900 z-40">
-        <div className="h-full">
-          <div className="px-4 py-10 mt-10">
-            <ul className="space-y-4">
-              {navigation.map((item, index) => (
-                <SidebarItem
-                  key={index}
-                  href={item.href}
-                  text={item.text}
-                  icon={item.icon}
-                />
-              ))}
-            </ul>
-          </div>
-        </div>
+    <aside
+      className="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform bg-zinc-900 border-r border-gray-200 b dark:border-gray-700"
+      aria-label="Sidebar"
+    >
+      <div className="h-full px-3 pb-4 overflow-y-auto">
+        <ul className="space-y-2 font-medium">
+          {navigation.map((item, index) => (
+            <SidebarItem
+              key={index}
+              href={item.href}
+              text={item.text}
+              icon={item.icon}
+            />
+          ))}
+        </ul>
       </div>
-    </nav>
-  );
-}
-
-function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
-  return (
-    <div className="fixed bottom-0 z-50 w-full bg-zinc-900 border-t border-zinc-600">
-      <div className="flex justify-around my-2">
-        {navigation.map((item, index) => (
-          <BottomNavigationItem
-            key={index}
-            href={item.href}
-            text={item.text}
-            icon={item.icon}
-          />
-        ))}
-      </div>
-    </div>
+    </aside>
   );
 }
 
@@ -167,10 +106,13 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { data: session } = useSession();
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center">
       <Menu as="div" className="relative">
         <div>
-          <Menu.Button className="rounded-lg px-2 py-3 hover:bg-zinc-700">
+          <Menu.Button
+            className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+            aria-expanded="false"
+          >
             <span className="sr-only">Open user menu</span>
             <div className="flex items-center">
               <Suspense fallback={<p>Loading user...</p>}>
@@ -181,16 +123,17 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
                       ? `${session?.user?.name}'s profile picture`
                       : "A default profile picture"
                   }
-                  height={40}
-                  width={40}
+                  height={32}
+                  width={32}
                   className="rounded-full"
                   priority
                 />
               </Suspense>
-              <HiOutlineChevronDown className="w-6 h-6 ml-1 text-zinc-500 transition-colors group-hover:text-zinc-700" />
+              <HiOutlineChevronDown className="w-4 h-4 ml-1 text-gray-500" />
             </div>
           </Menu.Button>
         </div>
+
         <Transition
           as={Fragment}
           enter="transition ease-out duration-100"
@@ -212,7 +155,7 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
                       width={40}
                       className="rounded-full"
                     />
-                    <span className="text-sm text-gray-700 mb-3 font-semibold">
+                    <span className="text-sm text-gray-700 font-semibold">
                       {session?.user?.name}
                     </span>
                   </div>
@@ -223,22 +166,21 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
                   {({ active }) => (
                     <Link
                       href="/profile"
-                      className={`${
+                      className={`block px-4 py-2 text-sm text-zinc-700 w-full text-left ${
                         active ? "bg-zinc-100" : ""
-                      } block px-4 py-2 text-sm text-zinc-700 w-full text-left`}
+                      }`}
                     >
                       Edit Profile
                     </Link>
                   )}
                 </Menu.Item>
-                <hr className="my-1 border-zinc-200 w-4/5 mx-auto" />
                 <Menu.Item>
                   {({ active }) => (
                     <button
                       onClick={() => signOut()}
-                      className={`${
+                      className={`block px-4 py-2 text-sm text-zinc-700 w-full text-left ${
                         active ? "bg-zinc-100" : ""
-                      } block px-4 py-2 text-sm text-zinc-700 w-full text-left`}
+                      }`}
                     >
                       Log out
                     </button>
@@ -270,22 +212,22 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <header className="fixed top-0 right-0 bg-zinc-900 w-full h-20 flex items-center z-50 border-b border-zinc-700">
-        <div className="flex items-center space-x-5 flex-1 justify-center w-full"></div>
-        <div className="mr-6">
-          <ProfileMenu isAuthenticated={isAuthenticated} />
+      <nav className="fixed top-0 right-0 z-50 w-full  border-b  bg-zinc-900 border-gray-700">
+        <div className="px-3 py-3 lg:px-5 lg:pl-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-start">
+              <span className="text-2xl font-semibold whitespace-nowrap">
+                Hone Your Craft
+              </span>
+            </div>
+            <div className="flex items-center">
+              <ProfileMenu isAuthenticated={isAuthenticated} />
+            </div>
+          </div>
         </div>
-      </header>
-      {isAuthenticated && (
-        <>
-          <div className="2xl:hidden">
-            <BottomNavigation navigation={navigation} />
-          </div>
-          <div className="hidden 2xl:block">
-            <Sidebar navigation={navigation} />
-          </div>
-        </>
-      )}
+      </nav>
+
+      {isAuthenticated && <Sidebar navigation={navigation} />}
     </>
   );
 }
