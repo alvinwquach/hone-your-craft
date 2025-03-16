@@ -63,17 +63,20 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
     <li>
       <Link
         href={href}
-        className={`flex items-center p-2 text-zinc-400 rounded-lg ${
-          isActive ? "bg-zinc-700" : "hover:bg-zinc-700"
+        className={`group flex items-center rounded-full transition-all duration-200 ${
+          isActive ? "bg-zinc-700" : "bg-zinc-700"
         }`}
       >
-        <Icon
-          className={`w-5 h-5 ${isActive ? "text-blue-500" : "text-zinc-300"}`}
-        />
-        <span
-          className={`ms-3 ${isActive ? "text-blue-500" : "text-zinc-300"}`}
-        >
+        <div className="w-8 h-8 flex items-center justify-center">
+          <Icon
+            className={`w-5 h-5 transition-colors duration-200 ${
+              isActive ? "text-blue-500" : "text-zinc-300"
+            }`}
+          />
+        </div>
+        <span className="absolute left-full ml-2 whitespace-nowrap opacity-0 rounded-md bg-black px-2 py-1 text-xs text-white transition-opacity duration-200 group-hover:opacity-100">
           {text}
+          <span className="absolute top-1/2 left-[-6px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-black"></span>
         </span>
       </Link>
     </li>
@@ -83,10 +86,10 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 function Sidebar({ navigation }: { navigation: NavigationItem[] }) {
   return (
     <aside
-      className="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform bg-zinc-900 border-r border-gray-200 b dark:border-gray-700"
+      className="fixed top-0 left-0 z-40 w-12 h-screen pt-20 transition-transform bg-zinc-900 border-r border-gray-700"
       aria-label="Sidebar"
     >
-      <div className="h-full px-3 pb-4 overflow-y-auto">
+      <div className="h-full px-2 pb-4 overflow-y-auto">
         <ul className="space-y-2 font-medium">
           {navigation.map((item, index) => (
             <SidebarItem
@@ -110,10 +113,9 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
       <Menu as="div" className="relative">
         <div>
           <Menu.Button
-            className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+            className="flex text-sm bg-zinc-900 rounded-full focus:ring-4 focus:ring-gray-600 hover:bg-zinc-800 transition-colors duration-200"
             aria-expanded="false"
           >
-            <span className="sr-only">Open user menu</span>
             <div className="flex items-center">
               <Suspense fallback={<p>Loading user...</p>}>
                 <Image
@@ -133,7 +135,6 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
             </div>
           </Menu.Button>
         </div>
-
         <Transition
           as={Fragment}
           enter="transition ease-out duration-100"
@@ -212,7 +213,7 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <nav className="fixed top-0 right-0 z-50 w-full  border-b  bg-zinc-900 border-gray-700">
+      <nav className="fixed top-0 right-0 z-50 w-full border-b bg-zinc-900 border-gray-700">
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start">
@@ -226,7 +227,6 @@ export default function CustomNavigation() {
           </div>
         </div>
       </nav>
-
       {isAuthenticated && <Sidebar navigation={navigation} />}
     </>
   );
