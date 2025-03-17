@@ -75,17 +75,19 @@ function Track() {
   };
 
   return (
-    <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+    <div className="max-w-screen-lg mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userRole === "CANDIDATE" ? (
         <>
-          <JobTitleSearchForm
-            titleSearchString={titleSearchString}
-            setTitleSearchString={setTitleSearchString}
-          />
-          <CompanyTitleSearchForm
-            companySearchString={companySearchString}
-            setCompanySearchString={setCompanySearchString}
-          />
+          <div className="w-2/3 lg:w-full mx-auto">
+            <JobTitleSearchForm
+              titleSearchString={titleSearchString}
+              setTitleSearchString={setTitleSearchString}
+            />
+            <CompanyTitleSearchForm
+              companySearchString={companySearchString}
+              setCompanySearchString={setCompanySearchString}
+            />
+          </div>
           {loadingUserJobs ? (
             <div>
               <Suspense fallback={<Board userJobs={[]} />}>
