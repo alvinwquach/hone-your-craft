@@ -231,7 +231,7 @@ function Board({ userJobs, onDeleteJob }: any) {
 
   if (isEmptyBoard) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mx-auto justify-center mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mx-auto justify-center mt-4">
         {Object.keys(userJobs).map((status: string, index: number) => (
           <Column
             key={status}
@@ -254,7 +254,7 @@ function Board({ userJobs, onDeleteJob }: any) {
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="grid grid-cols-1 md:grid-cols-5 gap-5 mx-auto justify-center mt-4"
+            className="grid grid-cols-1 md:grid-cols-5 gap-2 mx-auto justify-center mt-4 w-2/3 md:w-full"
           >
             {board.columns.map((column: ColumnType, index: number) => (
               <Column
