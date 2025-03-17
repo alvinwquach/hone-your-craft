@@ -211,7 +211,7 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
           minWidth: 1280,
           view: "dayGridMonth",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
           },
@@ -220,7 +220,7 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
           minWidth: 1024,
           view: "dayGridMonth",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
           },
@@ -229,7 +229,7 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
           minWidth: 640,
           view: "timeGridWeek",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "timeGridWeek,timeGridDay,listWeek",
           },
@@ -238,7 +238,7 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
           minWidth: 0,
           view: "timeGridDay",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "timeGridDay,listWeek",
           },
