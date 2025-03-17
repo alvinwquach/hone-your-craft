@@ -29,6 +29,12 @@ interface Event {
   };
 }
 
+interface HeaderToolbar {
+  left: string;
+  center: string;
+  right: string;
+}
+
 interface InterviewCalendarProps {
   interviews: Interview[];
   events: Event[];
@@ -41,8 +47,15 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(true);
+  const [headerToolbar, setHeaderToolbar] = useState<HeaderToolbar>({
+    left: "prev,next today",
+    center: "title",
+    right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+  });
   const calendarRef = useRef<FullCalendar | null>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
+  const today = new Date();
 
   const mapInterviewsToEvents = (interviews: any[]) =>
     interviews.map((interview) => {
@@ -182,23 +195,87 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
     }
   };
 
+  const updateHeaderToolbar = (date: Date) => {
+    const currentMonth = today.getMonth();
+    const selectedMonth = date.getMonth();
+    setCurrentMonth(currentMonth === selectedMonth);
+  };
+
+  useEffect(() => {
+    const updateViewBasedOnScreenSize = () => {
+      const calendarApi = calendarRef.current?.getApi();
+      if (!calendarApi) return;
+
+      const screenConfigs = [
+        {
+          minWidth: 1280,
+          view: "dayGridMonth",
+          toolbar: {
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+          },
+        },
+        {
+          minWidth: 1024,
+          view: "dayGridMonth",
+          toolbar: {
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+          },
+        },
+        {
+          minWidth: 640,
+          view: "timeGridWeek",
+          toolbar: {
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "timeGridWeek,timeGridDay,listWeek",
+          },
+        },
+        {
+          minWidth: 0,
+          view: "timeGridDay",
+          toolbar: {
+            left: currentMonth ? "next today" : "prev next today",
+            center: "title",
+            right: "timeGridDay,listWeek",
+          },
+        },
+      ];
+
+      const matchedConfig = screenConfigs.find(
+        (config) => window.innerWidth >= config.minWidth
+      );
+
+      if (matchedConfig) {
+        calendarApi.changeView(matchedConfig.view);
+        setHeaderToolbar(matchedConfig.toolbar);
+      }
+    };
+
+    window.addEventListener("resize", updateViewBasedOnScreenSize);
+    updateViewBasedOnScreenSize();
+
+    return () =>
+      window.removeEventListener("resize", updateViewBasedOnScreenSize);
+  }, [currentMonth]);
+
   return (
     <div className="relative text-black interview-calendar">
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        headerToolbar={{
-          left: "prev,next today",
-          center: "title",
-          right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-        }}
+        headerToolbar={headerToolbar}
         events={combinedEvents}
         eventClick={handleEventClick}
         eventContent={eventContent}
         height="auto"
         eventDisplay="block"
         eventClassNames="event-container"
+        datesSet={(dateInfo) => updateHeaderToolbar(dateInfo.view.currentStart)}
       />
       {showOptionsMenu && (selectedInterview || selectedEvent) && (
         <div
