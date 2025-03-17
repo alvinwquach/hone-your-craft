@@ -164,18 +164,18 @@ function Calendar() {
     <DeleteInterviewContext.Provider value={handleDeleteInterview}>
       <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 animate-fade-in-up min-h-screen">
         <div className="flex flex-wrap">
-          <div className="w-full md:w-1/5 my-4 sm:mt-6 md:mt-0 pr-0 md:pr-4">
+          <div className="w-full md:w-1/4 lg:w-1/5 my-4 sm:mt-6 md:mt-0 pr-0 md:pr-4 md:pl-6 flex justify-center">
             <Legend interviewTypes={clientInterviewTypes} />
           </div>
-          <div className="w-full md:w-4/5">
-            <div className="flex justify-center lg:justify-start mb-4">
-              <div className="flex p-2 bg-zinc-900 rounded-lg shadow-lg">
+          <div className="w-full md:w-3/4 lg:w-4/5">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start lg:p-0 px-8 mb-4">
+              <div className="flex p-2 bg-zinc-900 rounded-lg shadow-lg w-full sm:w-auto">
                 <button
                   onClick={() => toggleTab("eventTypes")}
-                  className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
+                  className={`flex items-center space-x-2 px-6 py-2 rounded-md w-full sm:w-auto ${
                     activeTab === "eventTypes"
                       ? "bg-blue-600 text-white font-semibold border-b-4 border-blue-600"
-                      : "bg-transparent text-gray-300 cursor-pointer "
+                      : "bg-transparent text-gray-300 cursor-pointer"
                   }`}
                 >
                   <FaLink />
@@ -183,10 +183,10 @@ function Calendar() {
                 </button>
                 <button
                   onClick={() => toggleTab("interviews")}
-                  className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
+                  className={`flex items-center space-x-2 px-6 py-2 rounded-md w-full sm:w-auto ${
                     activeTab === "interviews"
                       ? "bg-blue-600 text-white font-semibold border-b-2 border-blue-600"
-                      : "bg-transparent text-gray-300 cursor-pointer "
+                      : "bg-transparent text-gray-300 cursor-pointer"
                   }`}
                 >
                   <FaCalendarCheck />
@@ -194,10 +194,10 @@ function Calendar() {
                 </button>
                 <button
                   onClick={() => toggleTab("availability")}
-                  className={`flex items-center space-x-2 px-6 py-2 rounded-md ${
+                  className={`flex items-center space-x-2 px-6 py-2 rounded-md w-full sm:w-auto ${
                     activeTab === "availability"
                       ? "bg-blue-600 text-white font-semibold border-b-4 border-blue-600"
-                      : "bg-transparent text-gray-300 cursor-pointer "
+                      : "bg-transparent text-gray-300 cursor-pointer"
                   }`}
                 >
                   <FaCalendarPlus />
@@ -205,7 +205,7 @@ function Calendar() {
                 </button>
               </div>
             </div>
-            <div className="relative">
+            <div className="">
               {activeTab === "eventTypes" && (
                 <div className="p-4">
                   <div className="flex flex-col items-center p-4 space-y-4">
@@ -327,7 +327,7 @@ function Calendar() {
               )}
               {isSidesheetOpen && <Sidesheet onClose={toggleSidesheet} />}
               {activeTab === "interviews" && (
-                <div>
+                <div className="lg:p-0 px-10">
                   {loadingInterviews ? (
                     <Suspense
                       fallback={
@@ -351,7 +351,7 @@ function Calendar() {
                 </div>
               )}
               {activeTab === "availability" && (
-                <div>
+                <div className="lg:p-0 px-10">
                   <AvailabilityCalendar
                     interviewAvailability={interviewAvailability}
                   />
