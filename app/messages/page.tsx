@@ -35,8 +35,8 @@ const [isModalOpen, setIsModalOpen] = useState(false);
 const toggleModal = () => setIsModalOpen(!isModalOpen);
 
 return (
-  <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen text-white">
-    <div className="flex justify-end mt-4 lg:mt-0">
+  <section className="max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen text-white">
+    <div className="flex justify-center lg:justify-end mt-4 lg:mt-0">
       <button
         className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg shadow-lg transition-all duration-200 ease-in-out"
         onClick={toggleModal}
@@ -45,13 +45,15 @@ return (
         Send Message
       </button>
     </div>
-    <MessagesCard
-      userData={userData}
-      sentMessages={sentMessages}
-      receivedMessages={receivedMessages}
-      trashedSentMessages={trashedSentMessages}
-      mentionedInMessages={mentionedInMessages}
-    />
+    <div className="w-4/5 lg:w-full mx-auto">
+      <MessagesCard
+        userData={userData}
+        sentMessages={sentMessages}
+        receivedMessages={receivedMessages}
+        trashedSentMessages={trashedSentMessages}
+        mentionedInMessages={mentionedInMessages}
+      />
+    </div>
     {isModalOpen && <MessageModal users={users} closeModal={toggleModal} />}
   </section>
 );
