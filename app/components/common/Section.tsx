@@ -26,7 +26,7 @@ function Section({
       <div
         style={style}
         className={cn(
-          "max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24",
+          "max-w-5xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24",
           className
         )}
       >

@@ -14,16 +14,18 @@ const words = ["vue", "kubernetes", "angular", "react", "docker"];
 export default function Home() {
   return (
     <main>
-      <Section bg={Section.Colors.Dark}>
+      <section className="max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
         <GetReadyToHoneYourCraft />
-      </Section>
-      <Section bg={Section.Colors.Light} className="!py-16">
+      </section>
+      {/* <Section bg={Section.Colors.Dark}> */}
+      {/* </Section> */}
+      {/* <Section bg={Section.Colors.Light} className="!py-16">
         <TheWeekAhead />
-      </Section>
-      <Section bg={Section.Colors.Dark} className="!py-16">
+      </Section> */}
+      {/* <Section bg={Section.Colors.Dark} className="!py-16">
         <ImageCarousel />
-      </Section>
-      <Section bg={Section.Colors.Light}>
+      </Section> */}
+      {/* <Section bg={Section.Colors.Light}>
         <p className="text-lg font-semibold text-center">
           Unlock top industry skills below!
         </p>
@@ -34,10 +36,10 @@ export default function Home() {
             </Suspense>
           </div>
         ))}
-      </Section>
-      <div className="flex items-center justify-center h-[44rem] lg:h-[55rem] relative bg-gray-800">
+      </Section> */}
+      {/* <div className="flex items-center justify-center h-[44rem] lg:h-[55rem] relative bg-gray-800">
         <MockJobDeck />
-      </div>
+      </div> */}
     </main>
   );
 }
