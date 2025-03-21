@@ -201,6 +201,7 @@ function Profile() {
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(
     new Set()
   );
+
   const router = useRouter();
 
   const interviewConversionRate = interviewConversionRateData?.message ?? "";
@@ -739,7 +740,6 @@ function Profile() {
       </div>
     );
   }
-
   return (
     <section className="max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userRole === "CANDIDATE" ? (
@@ -1198,7 +1198,7 @@ function Profile() {
                           />
                           Past
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => setActiveMeetingTab("cancelled")}
                           className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
                             activeMeetingTab === "cancelled"
@@ -1214,7 +1214,7 @@ function Profile() {
                             }`}
                           />
                           Cancelled
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                     <div className="w-full max-w-3xl mx-auto">
@@ -1222,7 +1222,7 @@ function Profile() {
                         Object.entries(groupedUpcomingEvents).map(
                           ([date, events]: any) => (
                             <div key={date} className="w-full">
-                              <h2 className="text-lg font-semibold text-gray-100 mb-4">
+                              <h2 className="text-lg font-semibold text-gray-100 my-4">
                                 {new Date(date).toLocaleDateString("en-US", {
                                   weekday: "long",
                                   year: "numeric",
@@ -1259,25 +1259,26 @@ function Profile() {
                                       </div>
                                     </button>
                                   </div>
-
-                                  <div className="flex justify-between items-start gap-4">
-                                    <div className="flex-1">
+                                  <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                                    <div className="flex items-center flex-shrink-0 mb-4 md:mb-0">
+                                      <span className="text-sm text-gray-300 dark:text-gray-400">
+                                        {new Date(
+                                          event.startTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}{" "}
+                                        -{" "}
+                                        {new Date(
+                                          event.endTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col flex-1 ml-4 mb-4 md:mb-0">
                                       <div className="flex items-center gap-3 mb-2">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                                          {new Date(
-                                            event.startTime
-                                          ).toLocaleTimeString([], {
-                                            hour: "numeric",
-                                            minute: "2-digit",
-                                          })}{" "}
-                                          -{" "}
-                                          {new Date(
-                                            event.endTime
-                                          ).toLocaleTimeString([], {
-                                            hour: "numeric",
-                                            minute: "2-digit",
-                                          })}
-                                        </span>
                                         <h3 className="text-lg font-semibold text-gray-200 dark:text-gray-100">
                                           {event.title}
                                         </h3>
@@ -1286,19 +1287,19 @@ function Profile() {
                                         {event.description ||
                                           "No description provided"}
                                       </p>
-                                      <div className="mt-2">
-                                        <div className="flex items-center gap-2 text-sm text-gray-300 dark:text-gray-400">
-                                          <span>Host:</span>
-                                          <span className="font-medium">
-                                            {event.creator.name}
-                                          </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-300 dark:text-gray-400">
-                                          <span>Invitee:</span>
-                                          <span className="font-medium">
-                                            {event.participant.name}
-                                          </span>
-                                        </div>
+                                    </div>
+                                    <div className="flex flex-col justify-start ml-4 text-sm text-gray-400 dark:text-gray-300">
+                                      <div className="flex items-center gap-2">
+                                        <span>Host:</span>
+                                        <span className="font-medium">
+                                          {event.creator.name}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span>Invitee:</span>
+                                        <span className="font-medium">
+                                          {event.participant.name}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
@@ -1311,7 +1312,7 @@ function Profile() {
                         Object.entries(groupedPastEvents).map(
                           ([date, events]: any) => (
                             <div key={date} className="w-full">
-                              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                              <h2 className="text-lg font-semibold text-gray-100 my-4">
                                 {new Date(date).toLocaleDateString("en-US", {
                                   weekday: "long",
                                   year: "numeric",
@@ -1322,47 +1323,49 @@ function Profile() {
                               {events.map((event: any) => (
                                 <div
                                   key={event.id}
-                                  className="p-4 mb-4 rounded-lg border  bg-zinc-700 shadow-sm hover:shadow-md transition-shadow border-gray-700"
+                                  className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
                                 >
-                                  <div className="flex justify-between items-start gap-4">
-                                    <div className="flex-1">
+                                  <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                                    <div className="flex items-center flex-shrink-0 mb-4 md:mb-0">
+                                      <span className="text-sm text-gray-300 dark:text-gray-400">
+                                        {new Date(
+                                          event.startTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}{" "}
+                                        -{" "}
+                                        {new Date(
+                                          event.endTime
+                                        ).toLocaleTimeString([], {
+                                          hour: "numeric",
+                                          minute: "2-digit",
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col flex-1 ml-4 mb-4 md:mb-0">
                                       <div className="flex items-center gap-3 mb-2">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium  bg-zinc-700 text-gray-200">
-                                          {new Date(
-                                            event.startTime
-                                          ).toLocaleTimeString([], {
-                                            hour: "numeric",
-                                            minute: "2-digit",
-                                          })}{" "}
-                                          -{" "}
-                                          {new Date(
-                                            event.endTime
-                                          ).toLocaleTimeString([], {
-                                            hour: "numeric",
-                                            minute: "2-digit",
-                                          })}
-                                        </span>
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                        <h3 className="text-lg font-semibold text-gray-200 dark:text-gray-100">
                                           {event.title}
                                         </h3>
                                       </div>
-                                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                                      <p className="text-sm text-gray-400 dark:text-gray-300 mb-2">
                                         {event.description ||
                                           "No description provided"}
                                       </p>
-                                      <div className="mt-2">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                          <span>Host:</span>
-                                          <span className="font-medium">
-                                            {event.creator.name}
-                                          </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                          <span>Invitee:</span>
-                                          <span className="font-medium">
-                                            {event.participant.name}
-                                          </span>
-                                        </div>
+                                    </div>
+                                    <div className="flex flex-col justify-start ml-4 text-sm text-gray-400 dark:text-gray-300">
+                                      <div className="flex items-center gap-2">
+                                        <span>Host:</span>
+                                        <span className="font-medium">
+                                          {event.creator.name}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span>Invitee:</span>
+                                        <span className="font-medium">
+                                          {event.participant.name}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
@@ -1371,7 +1374,7 @@ function Profile() {
                             </div>
                           )
                         )}
-                      {activeMeetingTab === "cancelled" && <></>}
+                      {/* {activeMeetingTab === "cancelled" && <></>} */}
                     </div>
                   </div>
                 </>
@@ -1675,7 +1678,7 @@ function Profile() {
                     Object.entries(groupedUpcomingEvents).map(
                       ([date, events]: any) => (
                         <div key={date} className="w-full">
-                          <h2 className="text-lg font-semibold text-gray-100 mb-4">
+                          <h2 className="text-lg font-semibold text-gray-100 my-4">
                             {new Date(date).toLocaleDateString("en-US", {
                               weekday: "long",
                               year: "numeric",
@@ -1689,7 +1692,6 @@ function Profile() {
                               className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
                             >
                               <div className="absolute top-2 right-2 flex flex-col gap-2">
-                                {/* Reschedule Button */}
                                 <button
                                   onClick={() => rescheduleEvent(event.id)}
                                   className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
@@ -1701,8 +1703,6 @@ function Profile() {
                                     </span>
                                   </div>
                                 </button>
-
-                                {/* Cancel Button */}
                                 <button
                                   onClick={() => cancelEvent(event.id)}
                                   className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
@@ -1715,7 +1715,6 @@ function Profile() {
                                   </div>
                                 </button>
                               </div>
-
                               <div className="flex justify-between items-start gap-4">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-3 mb-2">
