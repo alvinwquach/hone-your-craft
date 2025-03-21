@@ -1,4 +1,5 @@
 "use client";
+
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,10 +11,10 @@ import { HiOutlineChevronDown } from "react-icons/hi";
 import {
   FiCalendar,
   FiUser,
-  FiClipboard,
   FiMessageCircle,
+  FiClipboard,
 } from "react-icons/fi";
-import { MdAssignmentInd } from "react-icons/md";
+import { FaBriefcase } from "react-icons/fa";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
 import { usePathname } from "next/navigation";
 
@@ -33,7 +34,7 @@ const navigationConfig: NavigationConfig = {
     { href: "/profile", text: "Profile", icon: FiUser },
     { href: "/messages", text: "Messages", icon: FiMessageCircle },
     { href: "/calendar", text: "Calendar", icon: FiCalendar },
-    { href: "/jobs", text: "Jobs", icon: MdAssignmentInd },
+    { href: "/jobs", text: "Jobs", icon: FaBriefcase },
   ],
   CANDIDATE: [
     { href: "/", text: "Home", icon: AiOutlineHome },
@@ -41,7 +42,7 @@ const navigationConfig: NavigationConfig = {
     { href: "/messages", text: "Messages", icon: FiMessageCircle },
     { href: "/track", text: "Track", icon: FiClipboard },
     { href: "/calendar", text: "Calendar", icon: FiCalendar },
-    { href: "/jobs", text: "Jobs", icon: MdAssignmentInd },
+    { href: "/jobs", text: "Jobs", icon: FaBriefcase },
   ],
 };
 
@@ -64,19 +65,21 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
       <Link
         href={href}
         className={`group flex items-center rounded-full transition-all duration-200 ${
-          isActive ? "bg-zinc-700" : "bg-zinc-700"
+          isActive ? "bg-zinc-700" : "hover:bg-zinc-800"
         }`}
       >
         <div className="w-8 h-8 flex items-center justify-center">
           <Icon
             className={`w-5 h-5 transition-colors duration-200 ${
-              isActive ? "text-blue-500" : "text-zinc-300"
+              isActive
+                ? "text-blue-500"
+                : "text-zinc-300 group-hover:text-blue-500"
             }`}
           />
         </div>
         <span className="absolute left-full ml-2 whitespace-nowrap opacity-0 rounded-md bg-black px-2 py-1 text-xs text-white transition-opacity duration-200 group-hover:opacity-100">
           {text}
-          <span className="absolute top-1/2 left-[-6px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-black"></span>
+          <span className="absolute top-1/2 left-[-6px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-black border-r-gray-900"></span>
         </span>
       </Link>
     </li>
@@ -86,7 +89,7 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 function Sidebar({ navigation }: { navigation: NavigationItem[] }) {
   return (
     <aside
-      className="fixed top-0 left-0 z-40 w-12 h-screen pt-20 transition-transform bg-zinc-900 border-r border-gray-700"
+      className="fixed top-0 left-0 z-40 w-12 h-screen pt-20 transition-transform bg-zinc-900 border-r border-gray-700 lg:block hidden"
       aria-label="Sidebar"
     >
       <div className="h-full px-2 pb-4 overflow-y-auto">
@@ -205,6 +208,72 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
   );
 }
 
+interface NavigationItem {
+  href: string;
+  text: string;
+  icon: IconType;
+}
+
+interface BottomNavigationProps {
+  navigation: NavigationItem[];
+}
+
+function BottomNavigation({ navigation }: BottomNavigationProps) {
+  return (
+    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-gray-200 rounded-full bottom-4 left-1/2">
+      <div className="grid h-full max-w-xl grid-cols-6 mx-auto">
+        {navigation.map((item, index) => {
+          const pathname = usePathname();
+          const isActive = pathname === item.href;
+          const isFirstItem = index === 0;
+          const isLastItem = index === navigation.length - 1;
+
+          return (
+            <div
+              key={index}
+              className={`inline-flex flex-col items-center justify-center group relative ${
+                isActive ? "bg-zinc-700" : "hover:bg-zinc-800"
+              } ${isFirstItem ? "rounded-l-full" : ""} ${
+                isLastItem ? "rounded-r-full" : ""
+              }`}
+            >
+              <button
+                type="button"
+                className={`inline-flex flex-col items-center justify-center w-full h-full transition-colors duration-200 ${
+                  isActive
+                    ? "text-blue-500 dark:text-blue-500"
+                    : "text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-500"
+                }`}
+              >
+                <item.icon
+                  className={`w-5 h-5 mb-1 transition-colors duration-200 ${
+                    isActive
+                      ? "text-blue-500 dark:text-blue-500"
+                      : "text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-500"
+                  }`}
+                  aria-hidden="true"
+                />
+                <span className="sr-only">{item.text}</span>
+              </button>
+              <div
+                className={`absolute bottom-full mb-2 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-200 bg-black rounded-lg shadow-xs opacity-0 group-hover:opacity-100 bg-black ${
+                  isActive ? "visible opacity-100" : ""
+                }`}
+              >
+                {item.text}
+                <div
+                  className="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black"
+                  data-popper-arrow
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function CustomNavigation() {
   const { data: session } = useSession();
   const isAuthenticated = !!session;
@@ -227,7 +296,12 @@ export default function CustomNavigation() {
           </div>
         </div>
       </nav>
-      {isAuthenticated && <Sidebar navigation={navigation} />}
+      {isAuthenticated && (
+        <Fragment>
+          <Sidebar navigation={navigation} />
+          <BottomNavigation navigation={navigation} />
+        </Fragment>
+      )}
     </>
   );
 }
