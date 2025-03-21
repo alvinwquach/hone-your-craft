@@ -68,18 +68,21 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
           isActive ? "bg-zinc-700" : "hover:bg-zinc-800"
         }`}
       >
-        <div className="w-8 h-8 flex items-center justify-center">
+        <div className="w-10 h-10 flex items-center justify-center">
           <Icon
-            className={`w-5 h-5 transition-colors duration-200 ${
+            className={`w-6 h-6 transition-colors duration-200 ${
               isActive
                 ? "text-blue-500"
                 : "text-zinc-300 group-hover:text-blue-500"
             }`}
           />
         </div>
-        <span className="absolute left-full ml-2 whitespace-nowrap opacity-0 rounded-md bg-black px-2 py-1 text-xs text-white transition-opacity duration-200 group-hover:opacity-100">
+        <span className="absolute left-full ml-3 whitespace-nowrap opacity-0 rounded-md bg-black px-3 py-2 text-sm font-medium text-white transition-opacity duration-200 group-hover:opacity-100">
           {text}
-          <span className="absolute top-1/2 left-[-6px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-black border-r-gray-900"></span>
+          <div
+            className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-black border-r-gray-900"
+            data-popper-arrow
+          />
         </span>
       </Link>
     </li>
@@ -89,11 +92,11 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
 function Sidebar({ navigation }: { navigation: NavigationItem[] }) {
   return (
     <aside
-      className="fixed top-0 left-0 z-40 w-12 h-screen pt-20 transition-transform bg-zinc-900 border-r border-gray-700 lg:block hidden"
+      className="fixed top-0 left-0 z-40 w-16 h-screen pt-20 transition-transform bg-zinc-900 border-r border-gray-700 lg:block hidden"
       aria-label="Sidebar"
     >
-      <div className="h-full px-2 pb-4 overflow-y-auto">
-        <ul className="space-y-2 font-medium">
+      <div className="h-full px-3 pb-4 overflow-y-auto">
+        <ul className="space-y-3 font-medium">
           {navigation.map((item, index) => (
             <SidebarItem
               key={index}
@@ -222,7 +225,7 @@ function BottomNavigation({ navigation }: BottomNavigationProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-gray-200 rounded-full bottom-4 left-1/2">
+    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-gray-200 rounded-full bottom-4 left-1/2 lg:hidden">
       <div className="grid h-full max-w-xl grid-cols-6 mx-auto">
         {navigation.map((item, index) => {
           const isActive = pathname === item.href;
@@ -238,13 +241,9 @@ function BottomNavigation({ navigation }: BottomNavigationProps) {
                 isLastItem ? "rounded-r-full" : ""
               }`}
             >
-              <button
-                type="button"
-                className={`inline-flex flex-col items-center justify-center w-full h-full transition-colors duration-200 ${
-                  isActive
-                    ? "text-blue-500 dark:text-blue-500"
-                    : "text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-500"
-                }`}
+              <Link
+                href={item.href}
+                className="flex flex-col items-center justify-center w-full h-full transition-colors duration-200"
               >
                 <item.icon
                   className={`w-5 h-5 mb-1 transition-colors duration-200 ${
@@ -255,7 +254,7 @@ function BottomNavigation({ navigation }: BottomNavigationProps) {
                   aria-hidden="true"
                 />
                 <span className="sr-only">{item.text}</span>
-              </button>
+              </Link>
               <div
                 className={`absolute bottom-full mb-2 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-200 bg-black rounded-lg shadow-xs opacity-0 group-hover:opacity-100 bg-black ${
                   isActive ? "visible opacity-100" : ""
