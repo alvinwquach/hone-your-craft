@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FaClock, FaCalendarAlt } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 type BookingTime = { start: string; end: string };
@@ -33,6 +33,9 @@ type Event = {
     updatedAt: string;
   }>;
   user: { name: string; image: string; email: string };
+  eventTypeId: string;
+  creatorId: string;
+  participantId: string;
 };
 
 type BookedSlot = {
@@ -52,7 +55,6 @@ type BookedSlot = {
     participant: { id: string; name: string; email: string };
   };
 };
-
 interface ReschedulePageProps {
   params: { id: string };
 }
@@ -77,7 +79,10 @@ const fetcher = async (url: string) => {
 function ReschedulePage({ params }: ReschedulePageProps) {
   const { id } = params;
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const eventId = searchParams?.get("eventId");
+  const originalStart = searchParams?.get("start");
   const { data, error, isLoading } = useSWR<{
     event: Event;
     bookedSlots: BookedSlot[];
@@ -124,7 +129,6 @@ function ReschedulePage({ params }: ReschedulePageProps) {
       const end = parseISO(timeRange.end);
       const slots: string[] = [];
       let current = start;
-
       const bookedSlotsOnDate = selectedDate
         ? (data?.bookedSlots || [])
             .filter((slot) => isSameDay(parseISO(slot.startTime), selectedDate))
@@ -133,22 +137,29 @@ function ReschedulePage({ params }: ReschedulePageProps) {
               end: parseISO(slot.endTime),
             }))
         : [];
-
       while (current < end) {
         const nextSlot = new Date(current);
         nextSlot.setMinutes(nextSlot.getMinutes() + meetingLength);
         if (nextSlot <= end) {
           const slotStart = current;
           const slotEnd = nextSlot;
-          const isBooked = bookedSlotsOnDate.some((booked) => {
-            return slotStart < booked.end && slotEnd > booked.start;
-          });
-          if (!isBooked) {
-            const formattedStart = format(slotStart, "h:mma").toLowerCase();
-            slots.push(formattedStart);
-          }
+          const formattedStart = format(slotStart, "h:mma").toLowerCase();
+          slots.push(formattedStart);
         }
         current = nextSlot;
+      }
+      if (
+        originalStart &&
+        selectedDate &&
+        isSameDay(parseISO(originalStart), selectedDate)
+      ) {
+        const originalTime = format(
+          parseISO(originalStart),
+          "h:mma"
+        ).toLowerCase();
+        if (!slots.includes(originalTime)) {
+          slots.unshift(originalTime);
+        }
       }
       return slots;
     };
@@ -163,14 +174,19 @@ function ReschedulePage({ params }: ReschedulePageProps) {
       );
       setTimeSlots(newTimeSlots);
     }
-  }, [selectedDate, data]);
-
+  }, [selectedDate, data, originalStart]);
   const handleNextButtonClick = () => {
     if (selectedTime) setCurrentStep("form");
   };
 
   const onSubmit = async (formData: FormData) => {
-    if (selectedDate && selectedTime && data?.event && session?.user?.userId) {
+    if (
+      selectedDate &&
+      selectedTime &&
+      data?.event &&
+      session?.user?.userId &&
+      eventId
+    ) {
       const meetingTime = generateMeetingTime(
         selectedDate,
         selectedTime,
@@ -181,26 +197,32 @@ function ReschedulePage({ params }: ReschedulePageProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          eventId,
+          newStartTime: meetingTime[0].start,
+          newEndTime: meetingTime[0].end,
+          eventTypeId: data.event.eventTypeId,
+          creatorId: data.event.creatorId,
+          participantId: data.event.participantId,
           title: data.event.title,
           description: `Rescheduled meeting with ${formData.name}`,
-          startTime: meetingTime[0].start,
-          endTime: meetingTime[0].end,
-          creatorId: session.user.userId,
-          participantId: data.event.userId,
-          eventTypeId: id,
         }),
       });
 
       const result = await response.json();
+
       if (response.ok) {
+        setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
+        setSelectedTime(null);
+        setSelectedDate(null);
+        reset();
         const startTime = format(new Date(meetingTime[0].start), "hh:mm a");
         const endTime = format(new Date(meetingTime[0].end), "hh:mm a");
         const dateStr = format(selectedDate, "EEEE, MMMM d");
+
         const formattedMeetingTime = `${startTime} - ${endTime}, ${format(
           selectedDate!,
           "EEEE, MMMM d, yyyy"
         )}`;
-
         const queryParams = new URLSearchParams({
           name: formData.name,
           email: formData.email,
@@ -209,14 +231,9 @@ function ReschedulePage({ params }: ReschedulePageProps) {
 
         router.push(`/schedule/confirmation?${queryParams.toString()}`);
         toast.success(
-          `Event rescheduled successfully! Your ${data.event.title} with ${formData.name} is rescheduled for ${startTime} - ${endTime} on ${dateStr}`
+          `Event rescheduled successfully! Your ${data.event.title} with ${formData.name} is now booked for ${startTime} - ${endTime} on ${dateStr}`
         );
 
-        setTimeSlots(timeSlots.filter((time) => time !== selectedTime));
-        setSelectedTime(null);
-        setSelectedDate(null);
-        reset();
-        setCurrentStep("calendar");
         mutate(`/api/event-type/${id}`);
       } else {
         toast.error(
@@ -234,13 +251,17 @@ function ReschedulePage({ params }: ReschedulePageProps) {
     const match = selectedTime.match(/(\d+):(\d+)([ap]m)/i);
     if (!match) throw new Error("Invalid time format");
     const [, hour, minute, ampm] = match;
+
     let hours = parseInt(hour, 10);
     if (ampm.toLowerCase() === "pm") hours = hours === 12 ? hours : hours + 12;
     else if (ampm.toLowerCase() === "am" && hours === 12) hours = 0;
+
     const meetingStart = new Date(selectedDate);
     meetingStart.setHours(hours, parseInt(minute, 10), 0, 0);
+
     const meetingEnd = new Date(meetingStart);
     meetingEnd.setMinutes(meetingEnd.getMinutes() + meetingLength);
+
     return [
       { start: meetingStart.toISOString(), end: meetingEnd.toISOString() },
     ];
@@ -257,6 +278,29 @@ function ReschedulePage({ params }: ReschedulePageProps) {
 
   if (isLoading) return <div>Loading event details...</div>;
   if (status === "loading") return <div>Loading user session...</div>;
+  if (!session) return <div>Please sign in to reschedule an event.</div>;
+  if (error) {
+    toast.error("Failed to fetch event details and booked slots");
+    return <div>Error loading data</div>;
+  }
+  if (!data?.event) return <div>Event not found!</div>;
+
+  const isFormerTime = (time: string): boolean => {
+    if (!selectedDate || !originalStart) return false;
+
+    const isSameDayAsOriginal = isSameDay(
+      parseISO(originalStart),
+      selectedDate
+    );
+
+    const formattedOriginalStart = format(
+      parseISO(originalStart),
+      "h:mma"
+    ).toLowerCase();
+
+    return isSameDayAsOriginal && time === formattedOriginalStart;
+  };
+  if (isLoading) return <div>Loading event details...</div>;
   if (!session) return <div>Please sign in to reschedule an event.</div>;
   if (error) {
     toast.error("Failed to fetch event details and booked slots");
@@ -389,7 +433,10 @@ function ReschedulePage({ params }: ReschedulePageProps) {
                                   : ""
                               }`}
                             >
-                              {time}
+                              <span>{time}</span>
+                              {selectedDate && time && isFormerTime(time) && (
+                                <span className="text-xs">Former Time</span>
+                              )}
                             </button>
                             {selectedTime === time && (
                               <button
