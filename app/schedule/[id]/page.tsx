@@ -20,6 +20,7 @@ const fetcher = async (url: string) => {
 };
 
 type BookingTime = { start: string; end: string };
+
 type Event = {
   id: string;
   userId: string;
@@ -279,14 +280,6 @@ function SchedulePage({ params }: SchedulePageProps) {
                 <p className="text-sm text-gray-600">{data.event.title}</p>
               </div>
             </div>
-            {currentStep === "form" && (
-              <button
-                onClick={() => setCurrentStep("calendar")}
-                className="absolute left-0"
-              >
-                ← Back
-              </button>
-            )}
           </div>
           <div className="relative">
             {currentStep === "calendar" ? (
