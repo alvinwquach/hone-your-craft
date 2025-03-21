@@ -487,32 +487,46 @@ const GoalForm = ({
   const totalApplications =
     weeklyApplicationGoalTrackerData?.totalApplications || 0;
 
-  const getWeeklyGoalMessage = (
-    total: number,
-    min: number | undefined,
-    max: number | undefined
-  ): string => {
-    if (!min || !max) return "";
+    const getWeeklyGoalMessage = (
+      total: number,
+      min: number | undefined,
+      max: number | undefined
+    ): string => {
+      if (!min || !max) return "";
 
-    const messages = {
-      belowMin: (remaining: number) =>
-        `You're almost there! You need to apply to ${remaining} more jobs to meet your minimum goal.`,
-      atMin: () =>
-        `Great job! You've met your minimum goal of ${min} applications. Keep going!`,
-      inRange: () =>
-        `You're on track! You've applied within your weekly goal range.`,
-      atMax: () =>
-        `Awesome! You've exactly met your maximum goal of ${max} applications. Well done!`,
-      aboveMax: (excess: number) =>
-        `Great job! You've surpassed your goal by ${excess} applications. Keep it up!`,
+      const isSingular = (count: number): boolean => count === 1;
+
+      const messages = {
+        belowMin: (remaining: number) =>
+          `You're almost there! You need to apply to ${
+            remaining === 1 ? "1 more job" : `${remaining} more jobs`
+          } to meet your minimum goal.`,
+
+        atMin: () =>
+          `Great job! You've met your minimum goal of ${min} ${
+            isSingular(min) ? "application" : "applications"
+          }. Keep going!`,
+
+        inRange: () =>
+          `You're on track! You've applied within your weekly goal range.`,
+
+        atMax: () =>
+          `Awesome! You've exactly met your maximum goal of ${max} ${
+            isSingular(max) ? "application" : "applications"
+          }. Well done!`,
+
+        aboveMax: (excess: number) =>
+          `Great job! You've surpassed your goal by ${
+            excess === 1 ? "1 application" : `${excess} applications`
+          }. Keep it up!`,
+      };
+
+      if (total < min) return messages.belowMin(min - total);
+      if (total === min) return messages.atMin();
+      if (total > min && total < max) return messages.inRange();
+      if (total === max) return messages.atMax();
+      return messages.aboveMax(total - max);
     };
-
-    if (total < min) return messages.belowMin(min - total);
-    if (total === min) return messages.atMin();
-    if (total > min && total < max) return messages.inRange();
-    if (total === max) return messages.atMax();
-    return messages.aboveMax(total - max);
-  };
 
   const jobsAppliedToWeeklyGoalMessage = getWeeklyGoalMessage(
     totalApplications,
