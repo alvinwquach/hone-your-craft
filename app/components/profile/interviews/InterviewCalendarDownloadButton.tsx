@@ -31,7 +31,7 @@ export default function InterviewCalendarDownloadButton() {
     <div className="flex justify-center items-center">
       <button
         onClick={handleDownload}
-        className="md:ml-auto inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-semibold text-lg rounded-xl shadow-md hover:from-blue-400 hover:to-teal-400 transition duration-300 ease-in-out transform hover:scale-105"
+        className="md:ml-auto inline-flex items-center px-3 py-1.5 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 text-white font-semibold text-lg rounded-xl shadow-md transition duration-300 ease-in-out transform hover:scale-105"
       >
         <FaCalendar className="mr-3 text-xl" />
         iCal
