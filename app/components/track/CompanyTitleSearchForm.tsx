@@ -14,7 +14,7 @@ function CompanyTitleSearchForm({
   };
 
   return (
-    <form className="mx-auto relative w-full mt-5">
+    <form className="mx-auto relative lg:w-full w-2/3 mt-5">
       <label
         htmlFor="company-title-search"
         className="mb-2 text-sm font-medium text-gray-400 sr-only dark:text-white"
