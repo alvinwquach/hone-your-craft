@@ -136,9 +136,11 @@ function CandidateJobPostingCard({
     return (
       <div key={skill.id} className="flex items-center">
         <span
-          className={`${
-            isMatched ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-          } px-3 py-1 rounded-full text-sm`}
+          className={`inline-block ${
+            isMatched
+              ? "bg-green-500 bg-opacity-20 text-green-300 border border-green-500/30"
+              : "bg-gray-700 text-gray-300"
+          } text-xs font-medium px-2.5 py-1 rounded-full`}
         >
           {skill.skill.name}
         </span>
@@ -156,9 +158,11 @@ function CandidateJobPostingCard({
     return (
       <div key={skill.id} className="flex items-center">
         <span
-          className={`${
-            isMatched ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-          } px-3 py-1 rounded-full text-sm`}
+          className={`inline-block ${
+            isMatched
+              ? "bg-green-500 bg-opacity-20 text-green-300 border border-green-500/30"
+              : "bg-gray-700 text-gray-300"
+          } text-xs font-medium px-2.5 py-1 rounded-full`}
         >
           {skill.skill.name}
         </span>
@@ -169,7 +173,7 @@ function CandidateJobPostingCard({
   return (
     <div
       key={job.id}
-      className="bg-zinc-900 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300 my-6"
+      className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300 my-6"
     >
       <div className="lg:flex space-y-4 lg:space-y-0 lg:space-x-8">
         <div className="flex-1 space-y-4">
@@ -237,7 +241,7 @@ function CandidateJobPostingCard({
               <FaCalendarAlt className="mr-2 text-white" />
               <span className="font-medium text-gray-400">
                 Deadline:{" "}
-                <span className="text-gray-600">
+                <span className="text-gray-400">
                   {new Date(job.deadline).toLocaleString("en-US", {
                     weekday: "long",
                     year: "numeric",
@@ -257,7 +261,7 @@ function CandidateJobPostingCard({
             <FaToolbox className="mr-2 text-white" />
             <h4 className="font-semibold text-gray-400">Required Skills:</h4>
           </div>
-          <div className="max-h-40 flex flex-wrap gap-2">
+          <div className="max-h-40 flex flex-wrap gap-2 ">
             {getSortedRequiredSkills(job.requiredSkills, true).map(
               (skill: any) => renderRequiredSkill(skill, true)
             )}
