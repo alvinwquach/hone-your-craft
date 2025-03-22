@@ -422,7 +422,6 @@ function Sidesheet({ onClose }: SidesheetProps) {
         }
 
         const data = await response.json();
-        console.log("Success:", data);
         mutate(`/api/event-type/${data.event.id}`);
         mutate("/api/event-types");
 
@@ -435,7 +434,6 @@ function Sidesheet({ onClose }: SidesheetProps) {
         );
       }
     } else {
-      console.log("Client availability is still loading or not available.");
       toast.error(
         "Client availability is not available. Please try again later."
       );
