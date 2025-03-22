@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import InterviewCalendarDownloadButton from "./InterviewCalendarDownloadButton";
+import { FaCalendar } from "react-icons/fa";
 
 interface JobInterview {
   id: string;
@@ -25,101 +26,85 @@ function UpcomingInterviews({
   jobInterviews,
   interviewConversionRate,
 }: UpcomingInterviewsProps) {
-  const upcomingInterviews = jobInterviews.filter((interview) => {
-    const interviewDate = new Date(interview.interviewDate);
-    const today = new Date();
-    const oneWeekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return interviewDate >= today && interviewDate <= oneWeekFromNow;
-  });
+  const [activeTab, setActiveTab] = useState("upcoming");
 
-  upcomingInterviews.sort((a, b) => {
-    return (
-      new Date(a.interviewDate).getTime() - new Date(b.interviewDate).getTime()
+  // Filter interviews within next week
+  const upcomingInterviews = jobInterviews
+    .filter((interview) => {
+      const interviewDate = new Date(interview.interviewDate);
+      const today = new Date();
+      const oneWeekFromNow = new Date(
+        today.getTime() + 7 * 24 * 60 * 60 * 1000
+      );
+      return interviewDate >= today && interviewDate <= oneWeekFromNow;
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.interviewDate).getTime() -
+        new Date(b.interviewDate).getTime()
     );
-  });
-
-  if (upcomingInterviews.length === 0) {
-    return (
-      <div className="relative overflow-x-auto">
-        <div className="mt-4">
-          <InterviewCalendarDownloadButton />
-        </div>
-        <div className="p-4 text-center">{interviewConversionRate}</div>
-        <table className="w-full text-sm text-left rtl:text-right text-gray-200">
-          <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
-            <tr>
-              <th scope="col" className="px-6 py-3">
-                Interview Date
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Company
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Job Title
-              </th>
-              <th scope="col" className="px-6 py-3">
-                Interview Type
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b bg-zinc-700 border-gray-700">
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-              <td className="px-6 py-4">N/A</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
 
   return (
-    <div className="relative overflow-x-auto">
-      <table className="w-full text-sm text-left rtl:text-right text-gray-200">
-        <thead className="text-xs uppercase bg-zinc-900 text-gray-200">
-          <tr>
-            <th scope="col" className="px-6 py-3">
-              Interview Date
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Company
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Job Title
-            </th>
-            <th scope="col" className="px-6 py-3">
-              Interview Type
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {upcomingInterviews.map((interview) => (
-            <tr
-              key={interview.id}
-              className="border-b bg-zinc-700 border-gray-700"
-            >
-              <td className="px-6 py-4">
-                <span className="md:hidden">
-                  {format(new Date(interview.interviewDate), "MM/dd/yy h:mm a")}
-                </span>
-                <span className="hidden md:inline">
-                  {format(
-                    new Date(interview.interviewDate),
-                    "MM/dd/yy @ h:mm a"
-                  )}
-                </span>
-              </td>
-              <td className="px-6 py-4">{interview.job.company}</td>
-              <td className="px-6 py-4">{interview.job.title}</td>
-              <td className="px-6 py-4">
-                {convertToSentenceCase(interview.interviewType)}
-              </td>
-            </tr>
+    <div className="container mx-auto p-4">
+      <InterviewCalendarDownloadButton />
+      <div className="flex flex-wrap -mb-px justify-start mb-8">
+        <button
+          onClick={() => setActiveTab("upcoming")}
+          className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+            activeTab === "upcoming"
+              ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+              : ""
+          }`}
+        >
+          <FaCalendar
+            className={`w-4 h-4 mr-2 text-gray-400 ${
+              activeTab === "upcoming" ? "text-blue-600 dark:text-blue-500" : ""
+            }`}
+          />
+          Upcoming Interviews
+        </button>
+      </div>
+
+      {/* Interview List */}
+      <div className="w-full max-w-3xl mx-auto">
+        {activeTab === "upcoming" &&
+          (upcomingInterviews.length > 0 ? (
+            upcomingInterviews.map((interview) => (
+              <div
+                key={interview.id}
+                className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
+              >
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                  {/* Interview Details */}
+                  <div className="flex-shrink-0">
+                    <span className="text-sm text-gray-300 dark:text-gray-400">
+                      {format(
+                        new Date(interview.interviewDate),
+                        "MM/dd/yy @ h:mm a"
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="flex-1 ml-4">
+                    <h3 className="text-lg font-semibold text-gray-200 dark:text-gray-100">
+                      {convertToSentenceCase(interview.job.title)}
+                    </h3>
+                    <p className="text-sm text-gray-400 dark:text-gray-300 mt-1">
+                      {interview.job.company}
+                    </p>
+                    <p className="text-sm text-gray-400 dark:text-gray-300 mt-1 capitalize">
+                      {convertToSentenceCase(interview.interviewType)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center p-8 text-gray-400">
+              No upcoming interviews scheduled
+            </div>
           ))}
-        </tbody>
-      </table>
+      </div>
     </div>
   );
 }

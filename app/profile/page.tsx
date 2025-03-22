@@ -1455,7 +1455,7 @@ function Profile() {
                               {events.map((event: any) => (
                                 <div
                                   key={event.id}
-                                  className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
+                                  className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow "
                                 >
                                   <div className="absolute top-2 right-2 flex flex-col gap-2 md:absolute md:top-2 md:right-2 lg:static lg:self-start lg:mb-4">
                                     <button
@@ -1545,7 +1545,7 @@ function Profile() {
                               {events.map((event: any) => (
                                 <div
                                   key={event.id}
-                                  className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
+                                  className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow "
                                 >
                                   <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                                     <div className="flex items-center flex-shrink-0 mb-4 md:mb-0">
@@ -1911,7 +1911,7 @@ function Profile() {
                           {events.map((event: any) => (
                             <div
                               key={event.id}
-                              className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow dark:bg-zinc-700 dark:border-zinc-600"
+                              className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow "
                             >
                               <div className="absolute top-2 right-2 flex flex-col gap-2">
                                 <button
@@ -1999,7 +1999,7 @@ function Profile() {
                           {events.map((event: any) => (
                             <div
                               key={event.id}
-                              className="p-4 mb-4 rounded-lg border  bg-zinc-700 shadow-sm hover:shadow-md transition-shadow border-gray-700"
+                              className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow "
                             >
                               <div className="flex justify-between items-start gap-4">
                                 <div className="flex-1">
