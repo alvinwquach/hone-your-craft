@@ -225,7 +225,7 @@ function BottomNavigation({ navigation }: BottomNavigationProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-gray-200 rounded-full bottom-4 left-1/2 lg:hidden">
+    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-gray-200 rounded-full bottom-4 left-1/2">
       <div className="grid h-full max-w-xl grid-cols-6 mx-auto">
         {navigation.map((item, index) => {
           const isActive = pathname === item.href;
@@ -298,7 +298,7 @@ export default function CustomNavigation() {
       </nav>
       {isAuthenticated && (
         <Fragment>
-          <Sidebar navigation={navigation} />
+          {/* <Sidebar navigation={navigation} /> */}
           <BottomNavigation navigation={navigation} />
         </Fragment>
       )}
