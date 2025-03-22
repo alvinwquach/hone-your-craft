@@ -23,7 +23,7 @@ function LegendItem({ color, label }: InterviewType) {
 
 function Legend({ interviewTypes }: LegendProps) {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-lg max-w-lg mx-auto">
+    <div className="bg-white p-4 rounded-lg shadow-lg max-w-md mx-auto">
       <div className="max-h-[1100px] overflow-y-auto md:overflow-auto">
         {interviewTypes.map((type) => (
           <LegendItem key={type.label} color={type.color} label={type.label} />
