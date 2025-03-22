@@ -115,15 +115,15 @@ const fetchDocument = async () => {
 };
 
 const JobMatchCard = ({ job }: { job: JobMatchPosting }) => {
-  const getPercentageColor = (pct: number) => {
-    if (pct >= 90) return "text-green-700";
-    if (pct >= 80) return "text-green-600";
-    if (pct >= 70) return "text-green-500";
-    if (pct >= 60) return "text-teal-500";
-    if (pct >= 50) return "text-lime-400";
-    if (pct >= 40) return "text-yellow-500";
-    if (pct >= 30) return "text-orange-500";
-    if (pct >= 20) return "text-red-500";
+  const getPercentageColor = (percentage: number) => {
+    if (percentage >= 90) return "text-green-700";
+    if (percentage >= 80) return "text-green-600";
+    if (percentage >= 70) return "text-green-500";
+    if (percentage >= 60) return "text-teal-500";
+    if (percentage >= 50) return "text-lime-400";
+    if (percentage >= 40) return "text-yellow-500";
+    if (percentage >= 30) return "text-orange-500";
+    if (percentage >= 20) return "text-red-500";
     return "text-red-600";
   };
 
@@ -183,7 +183,6 @@ const JobMatchCard = ({ job }: { job: JobMatchPosting }) => {
                 <stop offset="100%" stopColor="#16a34a" />
               </linearGradient>
             </defs>
-            {/* Tick Marks and Labels (0-100 every 10) */}
             {Array.from({ length: 11 }).map((_, i) => {
               const percent = i * 10;
               const angle = (percent / 100) * 180 + -90;
