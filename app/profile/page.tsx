@@ -384,7 +384,6 @@ function Profile() {
       try {
         const matchPostings = await getUserJobPostingsWithSkillMatch();
         setJobMatchPostings(matchPostings);
-        console.log("Job Match Postings:", matchPostings); // Log to console
       } catch (error) {
         console.error("Error fetching job match postings:", error);
       }
