@@ -119,7 +119,7 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
       <Menu as="div" className="relative">
         <div>
           <Menu.Button
-            className="flex text-sm bg-zinc-900 rounded-full focus:ring-4 focus:ring-gray-600 hover:bg-zinc-800 transition-colors duration-200"
+            className="flex text-sm  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-full focus:ring-4 focus:ring-gray-600 hover:bg-zinc-800 transition-colors duration-200"
             aria-expanded="false"
           >
             <div className="flex items-center">
@@ -225,7 +225,7 @@ function BottomNavigation({ navigation }: BottomNavigationProps) {
   const pathname = usePathname();
 
   return (
-    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-gray-200 rounded-full bottom-4 left-1/2">
+    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80 rounded-full bottom-4 left-1/2">
       <div className="grid h-full max-w-xl grid-cols-6 mx-auto">
         {navigation.map((item, index) => {
           const isActive = pathname === item.href;
@@ -236,7 +236,7 @@ function BottomNavigation({ navigation }: BottomNavigationProps) {
             <div
               key={index}
               className={`inline-flex flex-col items-center justify-center group relative ${
-                isActive ? "bg-zinc-700" : "hover:bg-zinc-800"
+                isActive ? "bg-gray-900" : "hover:bg-gray-900"
               } ${isFirstItem ? "rounded-l-full" : ""} ${
                 isLastItem ? "rounded-r-full" : ""
               }`}
@@ -248,8 +248,8 @@ function BottomNavigation({ navigation }: BottomNavigationProps) {
                 <item.icon
                   className={`w-5 h-5 mb-1 transition-colors duration-200 ${
                     isActive
-                      ? "text-blue-500 dark:text-blue-500"
-                      : "text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-500"
+                      ? "text-blue-500"
+                      : "text-gray-400 group-hover:text-blue-500"
                   }`}
                   aria-hidden="true"
                 />
@@ -282,7 +282,7 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <nav className="fixed top-0 right-0 z-50 w-full border-b bg-zinc-900 border-gray-700">
+      <nav className="fixed top-0 right-0 z-50 w-full border-b  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80">
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start">
