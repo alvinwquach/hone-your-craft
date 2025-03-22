@@ -44,7 +44,7 @@ import {
 import { MdRefresh } from "react-icons/md";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
-import { GiPumpkinMask, GiThreeFriends } from "react-icons/gi";
+import { GiPumpkinMask, GiTargeting, GiThreeFriends } from "react-icons/gi";
 import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
 import { GoGoal } from "react-icons/go";
 import GoalForm from "../components/profile/goal/GoalForm";
@@ -62,6 +62,7 @@ import {
 } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import MeetingCalendarDownloadButton from "../components/profile/meetings/MeetingCalendarDownloadButton";
+import { getUserJobPostingsWithSkillMatch } from "@/app/actions/getUserJobPostingsWithSkillMatch";
 
 interface User {
   id: string;
@@ -79,6 +80,17 @@ interface JobPosting {
   company: string;
   postUrl: string;
   skills: string[];
+}
+
+interface JobMatchPosting {
+  id: string;
+  title: string;
+  company: string;
+  postUrl: string;
+  source: string;
+  matchingSkills: string[];
+  missingSkills: string[];
+  matchPercentage: number;
 }
 
 interface JobApplicationStatus {
@@ -100,6 +112,169 @@ const fetchDocument = async () => {
     throw new Error("Failed to fetch document.");
   }
   return response.json();
+};
+
+const JobMatchCard = ({ job }: { job: JobMatchPosting }) => {
+  const getPercentageColor = (pct: number) => {
+    if (pct >= 90) return "text-green-700";
+    if (pct >= 80) return "text-green-600";
+    if (pct >= 70) return "text-green-500";
+    if (pct >= 60) return "text-teal-500";
+    if (pct >= 50) return "text-lime-400";
+    if (pct >= 40) return "text-yellow-500";
+    if (pct >= 30) return "text-orange-500";
+    if (pct >= 20) return "text-red-500";
+    return "text-red-600";
+  };
+
+  const percentage = job.matchPercentage;
+  const circleColorClass = getPercentageColor(percentage);
+  const circumference = 2 * Math.PI * 50;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const needleAngle = (percentage / 100) * 180 + -135;
+
+  return (
+    <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80">
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-white tracking-tight">
+            {job.title}
+          </h3>
+          <p className="text-sm text-gray-400 mt-1">{job.company}</p>
+          <a
+            href={job.postUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+          >
+            {job.source}
+          </a>
+        </div>
+        <div className="relative flex items-center justify-center">
+          <svg
+            className="w-32 h-32 animate-in fade-in zoom-in duration-1000"
+            viewBox="0 0 140 140"
+          >
+            <path
+              d="M 35,105 A 50,50 0 1,1 105,105"
+              fill="none"
+              stroke="#374151"
+              strokeWidth="16"
+              className="opacity-30"
+            />
+            <path
+              d="M 35,105 A 50,50 0 1,1 105,105"
+              fill="none"
+              stroke="url(#gradient)"
+              strokeWidth="16"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              className="transition-all duration-1500 ease-out"
+            />
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#dc2626" />
+                <stop offset="25%" stopColor="#ef4444" />
+                <stop offset="50%" stopColor="#f97316" />
+                <stop offset="60%" stopColor="#f59e0b" />
+                <stop offset="70%" stopColor="#bef264" />
+                <stop offset="80%" stopColor="#5eead4" />
+                <stop offset="90%" stopColor="#4ade80" />
+                <stop offset="100%" stopColor="#16a34a" />
+              </linearGradient>
+            </defs>
+            {/* Tick Marks and Labels (0-100 every 10) */}
+            {Array.from({ length: 11 }).map((_, i) => {
+              const percent = i * 10;
+              const angle = (percent / 100) * 180 + -90;
+              const x1 = 70 + 50 * Math.cos((angle * Math.PI) / 180);
+              const y1 = 70 + 50 * Math.sin((angle * Math.PI) / 180);
+              const x2 = 70 + 45 * Math.cos((angle * Math.PI) / 180);
+              const y2 = 70 + 45 * Math.sin((angle * Math.PI) / 180);
+              const labelX = 70 + 60 * Math.cos((angle * Math.PI) / 180);
+              const labelY = 70 + 60 * Math.sin((angle * Math.PI) / 180);
+              return (
+                <g key={i}>
+                  <line
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="#ffffff"
+                    strokeWidth="2"
+                    className="opacity-70"
+                  />
+                  <text
+                    x={labelX}
+                    y={labelY}
+                    textAnchor="middle"
+                    fill="#ffffff"
+                    fontSize="10"
+                    className="font-sans"
+                  >
+                    {percent}
+                  </text>
+                </g>
+              );
+            })}
+            <polygon
+              points={`${70 + 40 * Math.cos((needleAngle * Math.PI) / 180)},${
+                70 + 40 * Math.sin((needleAngle * Math.PI) / 180)
+              } 65,75 75,75`}
+              fill="#ffffff"
+              className="transition-all duration-1500 ease-out"
+            />
+            <circle
+              cx="70"
+              cy="70"
+              r="30"
+              fill="#ffffff"
+              stroke="#374151"
+              strokeWidth="2"
+            />
+            <text
+              x="70"
+              y="75"
+              textAnchor="middle"
+              fill="#1f2937"
+              fontSize="24"
+              fontWeight="bold"
+              className={`font-sans ${circleColorClass}`}
+            >
+              {percentage}
+            </text>
+          </svg>
+        </div>
+      </div>
+      <div className="mt-6 space-y-4">
+        {(job.matchingSkills.length > 0 || job.missingSkills.length > 0) && (
+          <div>
+            <h4 className="text-sm font-semibold text-green-400 mb-2">
+              Skills
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {job.matchingSkills.map((skill, index) => (
+                <span
+                  key={`match-${index}`}
+                  className="inline-block bg-green-500 bg-opacity-20 text-green-300 text-xs font-medium px-2.5 py-1 rounded-full border border-green-500/30"
+                >
+                  {skill}
+                </span>
+              ))}
+              {job.missingSkills.map((skill, index) => (
+                <span
+                  key={`miss-${index}`}
+                  className="inline-block bg-gray-700 text-gray-300 text-xs font-medium px-2.5 py-1 rounded-full"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 function Profile() {
@@ -179,7 +354,6 @@ function Profile() {
   const [frequencies, setFrequencies] = useState<number[]>([]);
   const [currentPageSkills, setCurrentPageSkills] = useState(1);
   const [totalPagesSkills, setTotalPagesSkills] = useState(1);
-
   const [missingSkills, setMissingSkills] = useState<string[]>([]);
   const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
     number[]
@@ -201,8 +375,23 @@ function Profile() {
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(
     new Set()
   );
-
+  const [jobMatchPostings, setJobMatchPostings] = useState<JobMatchPosting[]>(
+    []
+  );
   const router = useRouter();
+
+  useEffect(() => {
+    async function fetchJobMatchPostings() {
+      try {
+        const matchPostings = await getUserJobPostingsWithSkillMatch();
+        setJobMatchPostings(matchPostings);
+        console.log("Job Match Postings:", matchPostings); // Log to console
+      } catch (error) {
+        console.error("Error fetching job match postings:", error);
+      }
+    }
+    fetchJobMatchPostings();
+  }, []);
 
   const interviewConversionRate = interviewConversionRateData?.message ?? "";
   const jobAchievements = userAchievementData?.jobAchievements || [];
@@ -766,6 +955,23 @@ function Profile() {
                 </li>
                 <li className="me-2">
                   <button
+                    onClick={() => setActiveTab("match")}
+                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+                      activeTab === "match"
+                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
+                        : ""
+                    }`}
+                  >
+                    <GiTargeting
+                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
+                        activeTab === "match" ? "text-blue-600" : ""
+                      }`}
+                    />
+                    Match
+                  </button>
+                </li>
+                <li className="me-2">
+                  <button
                     onClick={() => setActiveTab("connections")}
                     className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
                       activeTab === "connections"
@@ -1005,6 +1211,23 @@ function Profile() {
                   <div className="my-4 border-t border-gray-600" />
                   <EducationList />
                 </Suspense>
+              )}
+              {activeTab === "match" && (
+                <div className="bg-zinc-800 border-gray-600">
+                  <div className="p-4">
+                    {jobMatchPostings.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {jobMatchPostings.map((job) => (
+                          <JobMatchCard key={job.id} job={job} />
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-400">
+                        No job matches available yet.
+                      </p>
+                    )}
+                  </div>
+                </div>
               )}
               {activeTab === "awards" && (
                 <div className="container mx-auto p-4">
