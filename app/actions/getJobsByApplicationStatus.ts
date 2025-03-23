@@ -4,10 +4,12 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { ApplicationStatus } from "@prisma/client";
 import { convertToSentenceCase } from "../lib/convertToSentenceCase";
+import { unstable_cache } from "next/cache";
 
-export const getJobsByApplicationStatus = async () => {
-  try {
+const getCachedJobsByApplicationStatus = unstable_cache(
+  async () => {
     // Retrieve the current user
+
     const currentUser = await getCurrentUser();
 
     // Check if the user ID is missing
@@ -23,7 +25,6 @@ export const getJobsByApplicationStatus = async () => {
     });
 
     const statusCounts = new Map<string, number>();
-
     userJobs.forEach((job) => {
       const status: ApplicationStatus | null = job.status;
       if (status) {
@@ -45,9 +46,24 @@ export const getJobsByApplicationStatus = async () => {
 
     const applicationStatuses = Array.from(statusCounts.keys());
 
-    return { userJobs, percentages, applicationStatuses };
+    return {
+      userJobs,
+      percentages,
+      applicationStatuses,
+    };
+  },
+  ["user-jobs"],
+  {
+    revalidate: 30,
+    tags: ["jobs", "applications"],
+  }
+);
+
+export const getJobsByApplicationStatus = async () => {
+  try {
+    return await getCachedJobsByApplicationStatus();
   } catch (error) {
-    console.error("Error fetching user jobs or application status:", error);
+    console.error("Error fetching cached user jobs:", error);
     throw new Error("Failed to fetch user jobs or application status");
   }
 };

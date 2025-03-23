@@ -3,6 +3,7 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
+import { unstable_cache } from "next/cache";
 
 const updateSkillFrequencyMap = (
   skillFrequencyMap: Map<string, number>,
@@ -10,18 +11,16 @@ const updateSkillFrequencyMap = (
 ) => {
   // Iterate through each skill in the jobSkills array
   for (const skill of jobSkills) {
-    /* If the skill already exists in the skillFrequencyMap, 
-    increment the value of skill in frequencyMap, 
-    else set the value of skill in skillFrequency map to 1 */
+    /* If the skill already exists in the skillFrequencyMap,
+        increment the value of skill in frequencyMap,
+        else set the value of skill in skillFrequency map to 1 */
     skillFrequencyMap.set(skill, (skillFrequencyMap.get(skill) || 0) + 1);
   }
 };
 
-export const getUserJobSkillsAndFrequency = async (
-  page: number = 1,
-  pageSize: number = 10
-) => {
-  try {
+const getCachedUserJobSkillsAndFrequency = unstable_cache(
+  async (page: number = 1, pageSize: number = 10) => {
+    // Retrieve the current user
     const currentUser = await getCurrentUser();
 
     if (!currentUser?.id) {
@@ -47,8 +46,8 @@ export const getUserJobSkillsAndFrequency = async (
       // Push the extracted skills into the jobSkills array
       jobSkills.push(...extractedSkills);
     }
-    // Update skill frequency map
 
+    // Update skill frequency map
     updateSkillFrequencyMap(skillFrequencyMap, jobSkills);
 
     // Convert the skillFrequencyMap to an array of objects for sorting
@@ -62,10 +61,8 @@ export const getUserJobSkillsAndFrequency = async (
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedSkills = skillFrequencyArray.slice(startIndex, endIndex);
-
     const sortedSkills = paginatedSkills.map((entry) => entry.skill);
     const sortedFrequencies = paginatedSkills.map((entry) => entry.frequency);
-
     const totalPages = Math.ceil(skillFrequencyArray.length / pageSize);
 
     return {
@@ -75,9 +72,23 @@ export const getUserJobSkillsAndFrequency = async (
       currentPage: page,
       pageSize,
     };
+  },
+  ["user-job-skills"],
+  {
+    revalidate: 30,
+    tags: ["jobs", "skills"],
+  }
+);
+
+export const getUserJobSkillsAndFrequency = async (
+  page: number = 1,
+  pageSize: number = 10
+) => {
+  try {
+    return await getCachedUserJobSkillsAndFrequency(page, pageSize);
   } catch (error) {
     console.error(
-      "Error fetching user jobs or calculating skill frequency:",
+      "Error fetching cached user job skills and frequency:",
       error
     );
     throw new Error("Failed to fetch user jobs or calculate skill frequency");

@@ -3,6 +3,7 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
+import { unstable_cache } from "next/cache";
 
 const SOURCE_MAPPINGS: Record<string, string> = {
   otta: "Otta",
@@ -22,7 +23,6 @@ const SOURCE_MAPPINGS: Record<string, string> = {
 
 const getSourceFromUrl = (postUrl: string): string => {
   const lowercaseUrl = postUrl.toLowerCase();
-
   return (
     Object.entries(SOURCE_MAPPINGS).find(([key]) =>
       lowercaseUrl.includes(key)
@@ -30,8 +30,8 @@ const getSourceFromUrl = (postUrl: string): string => {
   );
 };
 
-const getUserJobPostings = async () => {
-  try {
+const getCachedUserJobPostings = unstable_cache(
+  async () => {
     // Retrieve the current user
     const currentUser = await getCurrentUser();
 
@@ -56,11 +56,21 @@ const getUserJobPostings = async () => {
         job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
       skills: extractSkillsFromDescription(job.description),
     }));
+
     return jobPostings;
+  },
+  ["user-job-postings"],
+  {
+    revalidate: 30,
+    tags: ["jobs", "postings"],
+  }
+);
+
+export default async function getUserJobPostings() {
+  try {
+    return await getCachedUserJobPostings();
   } catch (error) {
-    console.error("Error fetching user jobs or extracting skills:", error);
+    console.error("Error fetching cached user job postings:", error);
     throw new Error("Failed to fetch user jobs or extract skills");
   }
-};
-
-export default getUserJobPostings;
+}

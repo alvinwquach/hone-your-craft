@@ -2,6 +2,7 @@
 
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
+import { unstable_cache } from "next/cache";
 
 const SOURCE_MAPPINGS: Record<string, string> = {
   otta: "Otta",
@@ -19,7 +20,6 @@ const SOURCE_MAPPINGS: Record<string, string> = {
   adzuna: "Adzuna",
 };
 
-
 const getSourceFromUrl = (postUrl: string): string => {
   const lowercaseUrl = postUrl.toLowerCase();
   return (
@@ -29,9 +29,10 @@ const getSourceFromUrl = (postUrl: string): string => {
   );
 };
 
-export const getUserJobPostingSourceCount = async () => {
-  try {
+const getCachedUserJobPostingSourceCount = unstable_cache(
+  async () => {
     // Retrieve the current user
+
     const currentUser = await getCurrentUser();
 
     // Check if the user ID is missing
@@ -68,14 +69,24 @@ export const getUserJobPostingSourceCount = async () => {
       const source = group.referral
         ? "Referral"
         : getSourceFromUrl(group.postUrl);
-
       sourceCountRecord[source] =
         (sourceCountRecord[source] || 0) + group._count.postUrl;
     });
 
     return sourceCountRecord;
+  },
+  ["user-job-sources"],
+  {
+    revalidate: 30,
+    tags: ["jobs", "sources"],
+  }
+);
+
+export const getUserJobPostingSourceCount = async () => {
+  try {
+    return await getCachedUserJobPostingSourceCount();
   } catch (error) {
-    console.error("Error fetching user jobs or counting sources:", error);
+    console.error("Error fetching cached user job posting sources:", error);
     throw new Error("Failed to fetch user jobs or count sources");
   }
 };
