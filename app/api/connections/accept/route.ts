@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   const currentUser = await getCurrentUser();
@@ -48,6 +49,8 @@ export async function PUT(request: NextRequest) {
         receiver: true,
       },
     });
+
+    revalidatePath("/messages", "page");
 
     return NextResponse.json(acceptedConnection, { status: 200 });
   } catch (error) {

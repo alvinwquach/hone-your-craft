@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
   try {
@@ -44,6 +45,8 @@ export async function POST(request: Request) {
         url: documentUrl,
       },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json({ url, fields, document });
   } catch (error: unknown) {

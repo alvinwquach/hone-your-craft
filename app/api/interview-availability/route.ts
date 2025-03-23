@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import { format, getDay } from "date-fns";
 import { DayOfWeek } from "@prisma/client";
+import { format, getDay } from "date-fns";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 function convertToDayOfWeek(dayNumber: number): DayOfWeek {
   return [
@@ -99,6 +100,8 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+
+    revalidatePath("/calendar", "page");
 
     return NextResponse.json(
       { message: "Availability added successfully" },
@@ -260,6 +263,8 @@ export async function PUT(req: NextRequest) {
         )
       );
 
+      revalidatePath("/calendar", "page");
+
       return NextResponse.json(
         {
           message: "Availabilities updated successfully",
@@ -331,6 +336,8 @@ export async function DELETE(req: NextRequest) {
       },
     });
 
+    revalidatePath("/calendar", "page");
+
     return NextResponse.json(
       {
         message: `Availability cleared for ${format(
@@ -348,4 +355,3 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
-

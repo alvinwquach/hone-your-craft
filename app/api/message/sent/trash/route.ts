@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -43,6 +44,8 @@ export async function POST(request: NextRequest) {
         isDeletedBySender: true,
       },
     });
+
+    revalidatePath("/messages", "page");
 
     return NextResponse.json({
       message: "Message moved to trash",

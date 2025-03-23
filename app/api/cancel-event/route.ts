@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
+import { revalidatePath } from "next/cache";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { format } from "date-fns";
 
@@ -141,6 +142,8 @@ export async function DELETE(req: NextRequest) {
         });
       }
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json(
       { message: "Event cancelled successfully" },

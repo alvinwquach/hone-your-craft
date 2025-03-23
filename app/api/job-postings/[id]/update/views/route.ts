@@ -1,4 +1,5 @@
 import prisma from "@/app/lib/db/prisma";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function PUT(
@@ -16,6 +17,8 @@ export async function PUT(
         },
       },
     });
+
+    revalidatePath("/jobs", "page");
 
     return NextResponse.json({ views: jobPosting.views }, { status: 200 });
   } catch (error) {

@@ -1,6 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export async function PUT(request: NextRequest) {
   try {
@@ -13,6 +14,9 @@ export async function PUT(request: NextRequest) {
       where: { email: currentUser.email },
       data: { userRole },
     });
+
+    revalidatePath("/profile", "page");
+
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
     console.error("Error updating user:", error);

@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest) {
@@ -33,6 +34,8 @@ export async function PATCH(request: NextRequest) {
         isReadByRecipient: newStatus,
       },
     });
+
+    revalidatePath("/messages", "page");
 
     return NextResponse.json({
       message: "Message status updated successfully",

@@ -1,6 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 interface Skill {
   skill: string;
@@ -158,6 +159,8 @@ export async function POST(request: NextRequest) {
         requiredDegree: true,
       },
     });
+
+    revalidatePath("/jobs", "page");
 
     return NextResponse.json({ jobPosting }, { status: 201 });
   } catch (error) {

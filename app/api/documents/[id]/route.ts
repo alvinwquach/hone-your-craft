@@ -7,6 +7,7 @@ import {
   PutObjectCommand,
   S3ServiceException,
 } from "@aws-sdk/client-s3";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   try {
@@ -53,7 +54,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-
     const documentId = params.id;
 
     const currentUser = await getCurrentUser();
@@ -115,6 +115,8 @@ export async function PUT(
         name: newName,
       },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json({ updatedDocument });
   } catch (error: unknown) {
@@ -184,6 +186,8 @@ export async function DELETE(
         id: documentId,
       },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json({ message: "Document deleted successfully" });
   } catch (error: unknown) {

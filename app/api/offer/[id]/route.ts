@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RequiredOfferData {
@@ -64,6 +65,8 @@ export async function POST(request: NextRequest) {
       data: offerData,
     });
 
+    revalidatePath("/track", "page");
+
     return NextResponse.json({ offer }, { status: 201 });
   } catch (error) {
     console.error("Error creating offer:", error);
@@ -119,6 +122,8 @@ export async function PUT(
       data: updateData,
     });
 
+    revalidatePath("/track", "page");
+
     return NextResponse.json({ offer: updatedOffer });
   } catch (error) {
     console.error("Error updating offer:", error);
@@ -144,6 +149,8 @@ export async function DELETE(
     await prisma.offer.delete({
       where: { id: offerId },
     });
+
+    revalidatePath("/track", "page");
 
     return NextResponse.json({ message: "Offer deleted successfully" });
   } catch (error) {

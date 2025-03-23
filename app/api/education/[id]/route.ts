@@ -1,6 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export async function PUT(
   request: NextRequest,
@@ -71,6 +72,8 @@ export async function PUT(
         description,
       },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json(updatedEducation, { status: 200 });
   } catch (error) {

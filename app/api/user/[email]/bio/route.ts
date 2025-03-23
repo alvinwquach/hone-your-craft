@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -22,6 +23,8 @@ export async function POST(
         bio,
       },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
@@ -53,6 +56,8 @@ export async function PUT(
         bio,
       },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {

@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -76,6 +77,8 @@ export async function POST(
         conversationId: conversation.id,
       },
     });
+
+    revalidatePath("/messages");
 
     return NextResponse.json({
       message: "Reply sent successfully",

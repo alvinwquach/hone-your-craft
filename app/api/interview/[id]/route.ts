@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RequiredInterviewData {
@@ -115,6 +116,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    revalidatePath("/calendar", "page");
+
     // Return the created interview as a JSON response
     return NextResponse.json({ interview }, { status: 201 });
   } catch (error) {
@@ -172,6 +175,8 @@ export async function PUT(
       },
     });
 
+    revalidatePath("/calendar", "page");
+
     return NextResponse.json({ interview: updatedInterview });
   } catch (error) {
     console.error("Error updating interview:", error);
@@ -217,6 +222,9 @@ export async function DELETE(
     await prisma.interview.delete({
       where: { id: interviewId },
     });
+
+    revalidatePath("/calendar", "page");
+
     // Return a success message
     return NextResponse.json({ message: "Interview deleted successfully" });
   } catch (error) {
@@ -227,4 +235,3 @@ export async function DELETE(
     );
   }
 }
-

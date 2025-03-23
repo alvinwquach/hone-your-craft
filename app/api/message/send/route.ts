@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -118,16 +119,18 @@ export async function POST(request: NextRequest) {
         deliveryStatus: null,
         reactionCount: 0,
         readAt: null,
-        conversationId, 
+        conversationId,
       },
     });
+
+    revalidatePath("/messages");
 
     return NextResponse.json({
       message: "Message sent successfully",
       data: {
         message,
         conversationId,
-        recipients: receivers, 
+        recipients: receivers,
       },
     });
   } catch (error: unknown) {

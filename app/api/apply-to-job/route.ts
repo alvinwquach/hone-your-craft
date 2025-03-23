@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
+import { revalidatePath } from "next/cache";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -98,6 +99,9 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    revalidatePath("/jobs", "page");
+
     return NextResponse.json(application);
   } catch (error: unknown) {
     console.error("Error applying to job:", error);
