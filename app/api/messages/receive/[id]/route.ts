@@ -1,21 +1,13 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 
-export async function GET() {
-  try {
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
+const getCachedConversations = unstable_cache(
+  async (userId: string) => {
     const conversations = await prisma.conversation.findMany({
       where: {
-        OR: [
-          { senderId: currentUser.id },
-          { receiverIds: { has: currentUser.id } },
-        ],
+        OR: [{ senderId: userId }, { receiverIds: { has: userId } }],
       },
       select: {
         id: true,
@@ -40,7 +32,7 @@ export async function GET() {
             },
           },
         },
-        receiverIds: true, 
+        receiverIds: true,
       },
     });
 
@@ -89,27 +81,34 @@ export async function GET() {
       })
     );
 
-    return NextResponse.json(
-      {
-        message: "Conversations retrieved successfully",
-        data: detailedConversations,
-      },
-      { status: 200 }
-    );
-  } catch (error: unknown) {
-    console.error("Error fetching conversations:", error);
+    return detailedConversations;
+  },
+  ["conversations"], 
+  {
+    revalidate: 30, 
+    tags: ["conversations"], 
+  }
+);
 
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { message: "Error fetching conversations", error: error.message },
-        { status: 500 }
-      );
+export async function GET() {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const conversations = await getCachedConversations(currentUser.id);
+    return NextResponse.json({
+      message: "Conversations retrieved successfully",
+      data: conversations,
+    });
+  } catch (error: unknown) {
+    console.error("Error fetching conversations:", error);
     return NextResponse.json(
       {
         message: "Error fetching conversations",
-        error: "Unknown error occurred",
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       },
       { status: 500 }
     );

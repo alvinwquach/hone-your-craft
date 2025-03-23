@@ -1,9 +1,10 @@
 import prisma from "@/app/lib/db/prisma";
+import { unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-  try {
-    const allJobPostings = await prisma.jobPosting.findMany({
+const getCachedJobPostings = unstable_cache(
+  async () => {
+    return await prisma.jobPosting.findMany({
       include: {
         salary: true,
         requiredSkills: {
@@ -23,8 +24,18 @@ export async function GET() {
         createdAt: "desc",
       },
     });
+  },
+  ["job-postings"],
+  { revalidate: 300 }
+);
 
-    return NextResponse.json({ jobPostings: allJobPostings }, { status: 200 });
+export async function GET() {
+  try {
+    const cachedJobPostings = await getCachedJobPostings();
+    return NextResponse.json(
+      { jobPostings: cachedJobPostings },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error retrieving job postings:", error);
     return NextResponse.json(

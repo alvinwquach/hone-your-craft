@@ -2,7 +2,7 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { DayOfWeek } from "@prisma/client";
 import { format, getDay } from "date-fns";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 function convertToDayOfWeek(dayNumber: number): DayOfWeek {
@@ -115,23 +115,29 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+const getCachedAvailability = unstable_cache(
+  async (userId: string) => {
+    return await prisma.interviewAvailability.findMany({
+      where: { userId },
+      orderBy: { dayOfWeek: "asc" },
+    });
+  },
+  ["availability"],
+  { revalidate: 60 }
+);
+
 export async function GET(req: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const availabilities = await prisma.interviewAvailability.findMany({
-      where: { userId: currentUser.id },
-      orderBy: { dayOfWeek: "asc" },
-    });
-
-    const formattedAvailabilities = availabilities.map((avail) => ({
+    const cachedAvailabilities = await getCachedAvailability(currentUser.id);
+    const formattedAvailabilities = cachedAvailabilities.map((avail) => ({
       ...avail,
       dayOfWeek: convertToDayOfWeek(avail.dayOfWeek as unknown as number),
     }));
-
     return NextResponse.json(formattedAvailabilities, { status: 200 });
   } catch (error) {
     console.error("Error fetching availability:", error);

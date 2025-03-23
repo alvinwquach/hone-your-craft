@@ -1,19 +1,13 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 
-export async function GET(request: NextRequest) {
-  try {
-    // Get the current user
-    const currentUser = await getCurrentUser();
-
-    // If user is not authenticated, return a 401 response
-    if (!currentUser) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    const userInterviews = await prisma.interview.findMany({
+const getCachedInterviews = unstable_cache(
+  async (userId: string) => {
+    return await prisma.interview.findMany({
       where: {
-        userId: currentUser.id,
+        userId,
       },
       include: {
         job: {
@@ -24,8 +18,19 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+  },
+  ["interviews"],
+  { revalidate: 60 }
+);
 
-    return NextResponse.json(userInterviews);
+export async function GET(request: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const cachedInterviews = await getCachedInterviews(currentUser.id);
+    return NextResponse.json(cachedInterviews);
   } catch (error) {
     console.error("Error fetching user's jobs:", error);
     return NextResponse.error();

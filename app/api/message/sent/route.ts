@@ -1,26 +1,18 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 
-export async function GET(request: NextRequest) {
-  try {
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
+const getCachedConversations = unstable_cache(
+  async (userId: string) => {
     const conversations = await prisma.conversation.findMany({
       where: {
-        OR: [
-          { senderId: currentUser.id },
-          { receiverIds: { has: currentUser.id } },
-        ],
+        OR: [{ senderId: userId }, { receiverIds: { has: userId } }],
       },
       include: {
         messages: {
           where: {
-            senderId: currentUser.id,
+            senderId: userId,
             isDeletedBySender: false,
           },
           orderBy: { createdAt: "desc" },
@@ -45,9 +37,8 @@ export async function GET(request: NextRequest) {
 
     const conversationsWithMessages = await Promise.all(
       filteredConversations.map(async (conversation) => {
-        const sentMessages = conversation.messages; 
+        const sentMessages = conversation.messages;
         const receiverIds = conversation.receiverIds;
-
         const receivers = await prisma.user.findMany({
           where: { id: { in: receiverIds } },
           select: {
@@ -57,14 +48,12 @@ export async function GET(request: NextRequest) {
             image: true,
           },
         });
-
         const filteredReceivers = receivers.filter(
-          (receiver) => receiver.id !== currentUser.id
+          (receiver) => receiver.id !== userId
         );
-
         return {
           conversationId: conversation.id,
-          receiverIds: filteredReceivers.map((receiver) => receiver.id), 
+          receiverIds: filteredReceivers.map((receiver) => receiver.id),
           sentMessages: sentMessages,
           receivers: filteredReceivers,
         };
@@ -75,35 +64,54 @@ export async function GET(request: NextRequest) {
       where: {
         OR: [
           {
-            recipientId: {
-              has: currentUser.id, 
-            },
+            recipientId: { has: userId },
             isReadByRecipient: false,
           },
           {
-            senderId: currentUser.id,
+            senderId: userId,
             isReadByRecipient: false,
           },
         ],
       },
     });
 
+    return {
+      conversations: conversationsWithMessages,
+      unreadMessageCount,
+    };
+  },
+  ["sent-conversations"],
+  {
+    revalidate: 30, 
+    tags: ["conversations", "messages"], 
+  }
+);
+
+export async function GET(request: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const { conversations, unreadMessageCount } = await getCachedConversations(
+      currentUser.id
+    );
+
     return NextResponse.json({
       message:
         "Sent conversations and unread message count retrieved successfully",
-      data: conversationsWithMessages,
+      data: conversations,
       unreadMessageCount,
     });
   } catch (error: unknown) {
     console.error("Error retrieving conversations and messages:", error);
-
     if (error instanceof Error) {
       return NextResponse.json(
         { message: "Error retrieving conversations", error: error.message },
         { status: 500 }
       );
     }
-
     return NextResponse.json(
       {
         message: "Error retrieving conversations",

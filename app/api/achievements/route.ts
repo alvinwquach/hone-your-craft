@@ -1,7 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 interface Holiday {
   name: string;
@@ -40,7 +40,6 @@ const getHolidayDate = (holiday: Holiday, year: number): Date | null => {
     const holidayDate = new Date(year, parseInt(month) - 1, parseInt(day));
     return holidayDate;
   }
-
   if (holiday.weekday) {
     const { month, n, day } = holiday.weekday;
     if (day === "monday") {
@@ -49,11 +48,9 @@ const getHolidayDate = (holiday: Holiday, year: number): Date | null => {
       return getNthThursdayOfMonth(year, month, n);
     }
   }
-
   if (holiday.type && holidayTypeHandlers[holiday.type]) {
     return holidayTypeHandlers[holiday.type](year);
   }
-
   return null;
 };
 
@@ -93,21 +90,16 @@ const checkIfHoliday = (date: Date, holidays: Holiday[]): string | null => {
   const formattedDate = `${(date.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-
   for (const holiday of holidays) {
     const holidayDate = getHolidayDate(holiday, date.getFullYear());
-
     if (!holidayDate) continue;
-
     const holidayFormattedDate = `${(holidayDate.getMonth() + 1)
       .toString()
       .padStart(2, "0")}-${holidayDate.getDate().toString().padStart(2, "0")}`;
-
     if (formattedDate === holidayFormattedDate) {
       return holiday.name;
     }
   }
-
   return null;
 };
 
@@ -132,12 +124,10 @@ const usHolidays: Holiday[] = [
 
 const trackApplicationDays = (jobs: any[]): number => {
   const appliedDays = new Set<string>();
-
   jobs.forEach((job) => {
     const applicationDay = new Date(job.createdAt).toISOString().split("T")[0];
     appliedDays.add(applicationDay);
   });
-
   return appliedDays.size;
 };
 
@@ -146,16 +136,13 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
     where: { id: userId },
     select: { jobsAppliedToDaysPerWeekGoal: true },
   });
-
   if (!target) {
     throw new Error("User not found");
   }
-
   const now = new Date();
   const currentWeekStart = new Date(now);
   currentWeekStart.setDate(now.getDate() - now.getDay());
   currentWeekStart.setHours(0, 0, 0, 0);
-
   const currentWeekEnd = new Date(currentWeekStart);
   currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
   currentWeekEnd.setHours(23, 59, 59, 999);
@@ -170,21 +157,16 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
   });
 
   const distinctDaysApplied = trackApplicationDays(jobsThisWeek);
-
   const goalMet =
     distinctDaysApplied >= (target?.jobsAppliedToDaysPerWeekGoal ?? 0);
 
   let newStreak = 0;
-
   if (goalMet) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
-
     if (!user) {
       throw new Error("User not found");
     }
-
     const lastStreakUpdate = user.lastStreakUpdate;
-
     if (
       !lastStreakUpdate ||
       new Date(lastStreakUpdate).getTime() < currentWeekStart.getTime()
@@ -193,7 +175,6 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
     } else {
       newStreak = user.weeklyStreak || 0;
     }
-
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -203,7 +184,6 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
     });
 
     const streakWeeks = Math.floor(newStreak / 1);
-
     const achievements = [
       {
         weeks: 12,
@@ -268,7 +248,6 @@ const calculateAchievements = async (
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
-
   if (!user) {
     throw new Error("User not found");
   }
@@ -277,6 +256,7 @@ const calculateAchievements = async (
     10, 25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 1500, 2000, 2500, 5000,
     10000,
   ];
+
   const interviewMilestones = [
     1, 5, 10, 20, 30, 50, 75, 100, 125, 150, 175, 200, 250, 300, 400, 500, 600,
     700, 800, 900, 1000, 1250, 1500, 2000, 2500, 3000, 4000, 5000, 10000,
@@ -284,10 +264,8 @@ const calculateAchievements = async (
 
   const awardedAchievements: any[] = [];
   const lockedAchievements: any[] = [];
-
   let appliedJobsCount = 0;
   const jobMilestonesMap = new Map<number, string>();
-
   let interviewsCount = 0;
   const interviewMilestonesMap = new Map<number, string>();
 
@@ -302,7 +280,6 @@ const calculateAchievements = async (
 
   for (const job of sortedJobs) {
     appliedJobsCount++;
-
     for (let milestone of jobMilestones) {
       if (appliedJobsCount === milestone && !jobMilestonesMap.has(milestone)) {
         jobMilestonesMap.set(milestone, job.createdAt);
@@ -312,7 +289,6 @@ const calculateAchievements = async (
 
   for (const interview of sortedInterviews) {
     interviewsCount++;
-
     for (let milestone of interviewMilestones) {
       if (
         interviewsCount === milestone &&
@@ -326,7 +302,6 @@ const calculateAchievements = async (
   for (let milestone of jobMilestones) {
     if (jobMilestonesMap.has(milestone)) {
       const achievedDate = jobMilestonesMap.get(milestone);
-
       if (achievedDate) {
         awardedAchievements.push({
           name: `Applied to ${milestone} Jobs`,
@@ -348,7 +323,6 @@ const calculateAchievements = async (
   for (let milestone of interviewMilestones) {
     if (interviewMilestonesMap.has(milestone)) {
       const achievedDate = interviewMilestonesMap.get(milestone);
-
       if (achievedDate) {
         awardedAchievements.push({
           name: `Attended ${milestone} Interviews`,
@@ -389,31 +363,65 @@ const calculateAchievements = async (
     lockedAchievements,
   };
 };
+
+// Create cached versions of database queries
+const getUserJobs = unstable_cache(
+  async (userId: string) => {
+    return await prisma.job.findMany({
+      where: {
+        userId,
+        status: { not: "SAVED" },
+      },
+    });
+  },
+  ["user_jobs"],
+  { tags: ["user_data"] }
+);
+
+const getUserInterviews = unstable_cache(
+  async (userId: string) => {
+    return await prisma.interview.findMany({
+      where: {
+        userId,
+        interviewDate: { not: null },
+      },
+    });
+  },
+  ["user_interviews"],
+  { tags: ["user_data"] }
+);
+
+const getUserAchievements = unstable_cache(
+  async (userId: string) => {
+    return await prisma.userAchievement.findMany({
+      where: { userId },
+      select: {
+        achievement: {
+          select: {
+            id: true,
+            description: true,
+          },
+        },
+      },
+    });
+  },
+  ["user_achievements"],
+  { tags: ["user_data"] }
+);
+
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
-
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const userJobs = await prisma.job.findMany({
-      where: {
-        userId: currentUser.id,
-        status: {
-          not: "SAVED",
-        },
-      },
-    });
-
-    const userInterviews = await prisma.interview.findMany({
-      where: {
-        userId: currentUser.id,
-        interviewDate: {
-          not: null,
-        },
-      },
-    });
+    // Use cached versions of queries
+    const [userJobs, userInterviews, userAchievements] = await Promise.all([
+      getUserJobs(currentUser.id),
+      getUserInterviews(currentUser.id),
+      getUserAchievements(currentUser.id),
+    ]);
 
     const { awardedAchievements, lockedAchievements } =
       await calculateAchievements(currentUser.id, userJobs, userInterviews);
@@ -427,7 +435,6 @@ export async function GET(request: NextRequest) {
     userJobs.forEach((job) => {
       const appliedDate = new Date(job.createdAt);
       const holiday = checkIfHoliday(appliedDate, usHolidays);
-
       if (holiday && !uniqueHolidaysAppliedOn.has(holiday)) {
         uniqueHolidaysAppliedOn.add(holiday);
         holidayAchievements.push({
@@ -440,7 +447,6 @@ export async function GET(request: NextRequest) {
 
     usHolidays.forEach((holiday) => {
       const holidayDate = getHolidayDate(holiday, new Date().getFullYear());
-
       if (holidayDate) {
         const holidayExists = userJobs.some((job) => {
           const jobDate = new Date(job.createdAt);
@@ -449,7 +455,6 @@ export async function GET(request: NextRequest) {
             holidayDate.toISOString().split("T")[0]
           );
         });
-
         if (!holidayExists) {
           lockedHolidayAchievements.push({
             name: `Applied on ${holiday.name} ${new Date().getFullYear()}`,
@@ -489,30 +494,22 @@ export async function GET(request: NextRequest) {
       if (a.unlocked !== b.unlocked) {
         return a.unlocked ? -1 : 1;
       }
-
       const yearMatchA = a.name.match(/\d{4}$/);
       const yearMatchB = b.name.match(/\d{4}$/);
-
       const yearA = yearMatchA ? parseInt(yearMatchA[0]) : 0;
       const yearB = yearMatchB ? parseInt(yearMatchB[0]) : 0;
-
       if (yearA !== yearB) {
         return yearA - yearB;
       }
-
       const holidayNameMatchA = a.name.match(/Applied on (.*) \d{4}/);
       const holidayNameMatchB = b.name.match(/Applied on (.*) \d{4}/);
-
       const holidayNameA = holidayNameMatchA ? holidayNameMatchA[1] : "";
       const holidayNameB = holidayNameMatchB ? holidayNameMatchB[1] : "";
-
       const indexA = usHolidays.findIndex((h) => h.name === holidayNameA);
       const indexB = usHolidays.findIndex((h) => h.name === holidayNameB);
-
       if (indexA === -1 || indexB === -1) {
         return holidayNameA.localeCompare(holidayNameB);
       }
-
       return indexA - indexB;
     };
 
@@ -532,6 +529,7 @@ export async function GET(request: NextRequest) {
     };
 
     revalidatePath("/profile", "page");
+    revalidateTag("user_data");
 
     return NextResponse.json({
       ...organizedAchievements,

@@ -1,31 +1,34 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import { NextRequest, NextResponse } from "next/server";
 import { ApplicationStatus } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
+
+const getCachedJobs = unstable_cache(
+  async () => {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("Unauthorized");
+
+    return await prisma.job.findMany({
+      where: { userId: currentUser.id },
+      orderBy: [{ createdAt: "desc" }],
+    });
+  },
+  ["jobs"],
+  {
+    revalidate: 60,
+  }
+);
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the current user
-    const currentUser = await getCurrentUser();
+    const userJobs = await getCachedJobs();
 
-    // If user is not authenticated, return a 401 response
-    if (!currentUser) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    // Fetch user jobs from the database
-    const userJobs = await prisma.job.findMany({
-      where: {
-        userId: currentUser.id,
-      },
-    });
-
-    /* Initialize a Map to store columns
-    Group jobs by columns */
-
-    const columns = new Map<ApplicationStatus, Column>();
-
-    // Ensure all columns are initialized, even if no jobs exist for them
+    // Create columns with sorted jobs
+    const columns = new Map<
+      ApplicationStatus,
+      { id: ApplicationStatus; jobs: typeof userJobs }
+    >();
     const columnTypes: ApplicationStatus[] = [
       "SAVED",
       "APPLIED",
@@ -34,41 +37,19 @@ export async function GET(request: NextRequest) {
       "REJECTED",
     ];
 
-    // Iterate over column types
     columnTypes.forEach((columnType) => {
-      // Initialize a new column object with an empty array of jobs
-      const column = {
+      columns.set(columnType, {
         id: columnType,
-        jobs: [],
-      };
-      // Add the column to the map, using the column type as the key
-      columns.set(columnType, column);
+        jobs: userJobs.filter((job) => job.status === columnType),
+      });
     });
 
-    /* Iterate over user jobs
-    Add user's jobs to the respective columns */
-    for (const job of userJobs) {
-      // Check if job status is not null
-      if (job.status !== null) {
-        // Get the column corresponding to the job status and push the job into its array of jobs
-        columns.get(job.status)?.jobs.push(job);
-      }
-    }
-
-    // Reverse the order of jobs in each column
-    columns.forEach((column) => {
-      column.jobs.reverse();
-    });
-
-    // Initialize a new board object with columns
-    const board = {
-      columns: Array.from(columns.values()), // Convert Map values to an array
-    };
-
-    // Return the board
-    return NextResponse.json(board);
+    return NextResponse.json({ columns: Array.from(columns.values()) });
   } catch (error) {
-    console.error("Error fetching or grouping user's jobs:", error);
-    return NextResponse.error();
+    console.error("Error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch jobs" },
+      { status: 500 }
+    );
   }
 }
