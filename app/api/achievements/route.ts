@@ -1,6 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 interface Holiday {
   name: string;
@@ -529,6 +530,8 @@ export async function GET(request: NextRequest) {
         ...lockedHolidayAchievements,
       ].sort(sortAchievements),
     };
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json({
       ...organizedAchievements,

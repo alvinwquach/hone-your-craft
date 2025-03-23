@@ -1,6 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { ExperienceLevel } from "@prisma/client"; 
+import { revalidatePath } from "next/cache";
 
 interface Skill {
   skill: string;
@@ -227,6 +228,8 @@ export async function PUT(
       },
     });
 
+    revalidatePath("/jobs", "page");
+
     return NextResponse.json(
       { jobPosting: updatedJobPosting },
       { status: 200 }
@@ -265,6 +268,8 @@ export async function DELETE(
     await prisma.jobPosting.delete({
       where: { id },
     });
+
+    revalidatePath("/jobs", "page");
 
     return NextResponse.json(
       { message: "Job posting deleted successfully" },

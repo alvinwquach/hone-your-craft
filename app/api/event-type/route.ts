@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -43,6 +44,8 @@ export async function POST(request: Request) {
         },
       });
     }
+
+    revalidatePath("/calendar", "page");
 
     return NextResponse.json(
       { message: "Event type created successfully", event },

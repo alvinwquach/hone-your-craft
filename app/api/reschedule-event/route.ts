@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { format } from "date-fns";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     const conflictingEvents = await prisma.userEvent.findMany({
       where: {
-        id: { not: eventId }, 
+        id: { not: eventId },
         OR: [
           {
             creatorId: {
@@ -141,7 +142,7 @@ export async function POST(req: NextRequest) {
       data: {
         startTime: startDateTime,
         endTime: endDateTime,
-        eventTypeId: existingEvent.eventTypeId, 
+        eventTypeId: existingEvent.eventTypeId,
       },
     });
 
@@ -228,6 +229,8 @@ export async function POST(req: NextRequest) {
         conversationId,
       },
     });
+
+    revalidatePath("/calendar", "page");
 
     return NextResponse.json(
       {

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { format } from "date-fns";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -186,6 +187,8 @@ export async function POST(req: NextRequest) {
         conversationId,
       },
     });
+
+    revalidatePath("/calendar", "page");
 
     return NextResponse.json(
       {

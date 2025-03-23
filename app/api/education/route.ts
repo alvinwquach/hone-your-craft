@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
         description,
       },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json(newEducation, { status: 201 });
   } catch (error) {
@@ -114,6 +117,8 @@ export async function DELETE(request: Request) {
     const deletedEducation = await prisma.education.delete({
       where: { id: educationId },
     });
+
+    revalidatePath("/profile", "page");
 
     return NextResponse.json(deletedEducation, { status: 200 });
   } catch (error) {

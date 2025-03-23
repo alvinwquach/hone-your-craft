@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RequiredRejectionData {
@@ -72,6 +73,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    revalidatePath("/profile", "page");
+
     return NextResponse.json({ rejection }, { status: 201 });
   } catch (error) {
     console.error("Error creating rejection:", error);
@@ -112,6 +115,8 @@ export async function PUT(
       data: updateData,
     });
 
+    revalidatePath("/profile", "page");
+
     return NextResponse.json({ rejection: updatedRejection });
   } catch (error) {
     console.error("Error updating rejection:", error);
@@ -121,7 +126,6 @@ export async function PUT(
     );
   }
 }
-
 
 // Delete rejection by ID
 export async function DELETE(
@@ -141,6 +145,8 @@ export async function DELETE(
     await prisma.rejection.delete({
       where: { id: rejectionId },
     });
+
+    revalidatePath("/profile", "page");
 
     // Return a success message as a JSON response
     return NextResponse.json({ message: "Rejection deleted successfully" });

@@ -1,5 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -62,6 +63,8 @@ export async function PUT(
         rejectedAt: new Date(),
       },
     });
+
+    revalidatePath("/jobs", "page");
 
     return NextResponse.json({
       message: "Application rejected successfully",

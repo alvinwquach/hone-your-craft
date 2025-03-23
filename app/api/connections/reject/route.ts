@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   const currentUser = await getCurrentUser();
@@ -50,11 +51,16 @@ export async function PUT(request: NextRequest) {
       },
     });
 
+    revalidatePath("/messages", "page");
+
     return NextResponse.json(rejectedConnection, { status: 200 });
   } catch (error) {
     console.error("Error rejecting connection request:", error);
     return NextResponse.json(
-      { message: "Error rejecting connection request" },
+      {
+        message: "Error rejecting connection request",
+      },
+
       { status: 500 }
     );
   }

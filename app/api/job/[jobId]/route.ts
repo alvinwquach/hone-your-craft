@@ -1,6 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 interface RequiredJobData {
   company: string;
@@ -144,6 +145,8 @@ export async function PUT(
       data: dataToUpdate,
     });
 
+    revalidatePath("/track", "page");
+
     return NextResponse.json({ job: updatedJob });
   } catch (error) {
     console.error("Error updating job:", error);
@@ -197,6 +200,8 @@ export async function DELETE(
 
     // Delete the job itself
     await prisma.job.delete({ where: { id: jobId } });
+
+    revalidatePath("/track", "page");
 
     // Return a success message as a JSON response
     return NextResponse.json({
