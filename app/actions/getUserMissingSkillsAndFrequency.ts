@@ -96,7 +96,7 @@ const getCachedUserMissingSkillsAndFrequency = unstable_cache(
   }
 );
 
-export const getUserJobSkillsAndFrequency = async (
+export const getUserMissingSkillsAndFrequency = async (
   page: number = 1,
   pageSize: number = 10
 ) => {
