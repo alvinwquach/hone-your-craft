@@ -8,18 +8,27 @@ const getCachedJobs = unstable_cache(
   async () => {
     const currentUser = await getCurrentUser();
     if (!currentUser) throw new Error("Unauthorized");
+
     return await prisma.job.findMany({
       where: { userId: currentUser.id },
+      orderBy: [{ createdAt: "desc" }],
     });
   },
   ["jobs"],
-  { revalidate: 60 }
+  {
+    revalidate: 60,
+  }
 );
 
 export async function GET(request: NextRequest) {
   try {
     const userJobs = await getCachedJobs();
-    const columns = new Map<ApplicationStatus, Column>();
+
+    // Create columns with sorted jobs
+    const columns = new Map<
+      ApplicationStatus,
+      { id: ApplicationStatus; jobs: typeof userJobs }
+    >();
     const columnTypes: ApplicationStatus[] = [
       "SAVED",
       "APPLIED",
@@ -27,20 +36,20 @@ export async function GET(request: NextRequest) {
       "OFFER",
       "REJECTED",
     ];
+
     columnTypes.forEach((columnType) => {
-      columns.set(columnType, { id: columnType, jobs: [] });
+      columns.set(columnType, {
+        id: columnType,
+        jobs: userJobs.filter((job) => job.status === columnType),
+      });
     });
-    for (const job of userJobs) {
-      if (job.status !== null) {
-        columns.get(job.status)?.jobs.push(job);
-      }
-    }
-    columns.forEach((column) => {
-      column.jobs.reverse();
-    });
+
     return NextResponse.json({ columns: Array.from(columns.values()) });
   } catch (error) {
     console.error("Error:", error);
-    return NextResponse.error();
+    return NextResponse.json(
+      { error: "Failed to fetch jobs" },
+      { status: 500 }
+    );
   }
 }
