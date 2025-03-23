@@ -1,28 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { unstable_cache } from "next/cache";
 
-export async function GET(req: NextRequest) {
-  try {
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "User not authenticated" },
-        { status: 401 }
-      );
-    }
-
+const getCachedEvents = unstable_cache(
+  async (userId: string) => {
     const now = new Date();
-
     const events = await prisma.userEvent.findMany({
       where: {
         AND: [
           {
-            OR: [
-              { creatorId: currentUser.id },
-              { participantId: currentUser.id },
-            ],
+            OR: [{ creatorId: userId }, { participantId: userId }],
           },
           {
             endTime: { lt: now },
@@ -53,7 +41,31 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(events, { status: 200 });
+    return events.map((event) => ({
+      ...event,
+      startTime: new Date(event.startTime),
+      endTime: new Date(event.endTime),
+    }));
+  },
+  ["events", "user-events"], 
+  {
+    revalidate: 60, 
+    tags: ["events"],
+  }
+);
+
+export async function GET(req: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "User not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const cachedEvents = await getCachedEvents(currentUser.id);
+    return NextResponse.json(cachedEvents, { status: 200 });
   } catch (error) {
     console.error("Error fetching events:", error);
     return NextResponse.json(

@@ -1,19 +1,14 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import { unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  try {
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const mentions = await prisma.message.findMany({
+const getCachedMentions = unstable_cache(
+  async (userId: string) => {
+    return await prisma.message.findMany({
       where: {
         mentionedUserIds: {
-          has: currentUser.id,
+          has: userId,
         },
       },
       select: {
@@ -36,10 +31,21 @@ export async function GET(request: NextRequest) {
         createdAt: "desc",
       },
     });
+  },
+  ["mentions"],
+  { revalidate: 30 } 
+);
 
+export async function GET(request: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const cachedMentions = await getCachedMentions(currentUser.id);
     return NextResponse.json({
       message: "Mentions retrieved successfully",
-      data: mentions,
+      data: cachedMentions,
     });
   } catch (error: unknown) {
     console.error("Error retrieving mentions:", error);

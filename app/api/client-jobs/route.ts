@@ -1,22 +1,13 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 
-export async function GET() {
-  try {
-    // Retrieve the current user from the session
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { message: "User not authenticated" },
-        { status: 401 }
-      );
-    }
-    // Fetch job postings created by the current user
-    const postedJobs = await prisma.jobPosting.findMany({
+const getPostedJobs = unstable_cache(
+  async (userId: string) => {
+    return await prisma.jobPosting.findMany({
       where: {
-        userId: currentUser.id,
+        userId: userId,
       },
       include: {
         salary: true,
@@ -53,7 +44,20 @@ export async function GET() {
         createdAt: "desc",
       },
     });
-
+  },
+  ["job_postings"],
+  { tags: ["job_postings"] }
+);
+export async function GET() {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json(
+        { message: "User not authenticated" },
+        { status: 401 }
+      );
+    }
+    const postedJobs = await getPostedJobs(currentUser.id);
     return NextResponse.json({ jobPostings: postedJobs }, { status: 200 });
   } catch (error) {
     console.error("Error fetching job postings:", error);

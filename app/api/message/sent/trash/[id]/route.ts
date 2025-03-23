@@ -1,7 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
     const restoredMessage = await prisma.message.update({
       where: { id: messageId },
       data: {
-        isDeletedBySender: true, 
-        isDeletedFromTrashBySender: true, 
+        isDeletedBySender: true,
+        isDeletedFromTrashBySender: true,
       },
     });
-
+    revalidatePath("/messages", "page");
     return NextResponse.json({
       message: "Message restored from trash",
       data: restoredMessage,
@@ -76,38 +76,44 @@ export async function POST(request: NextRequest) {
   }
 }
 
+const getCachedTrashedMessages = unstable_cache(
+  async (userId: string) => {
+    const trashedMessages = await prisma.message.findMany({
+      where: {
+        senderId: userId,
+        isDeletedBySender: true,
+      },
+    });
+    return trashedMessages;
+  },
+  ["trashed-messages"], 
+  {
+    revalidate: 30,
+    tags: ["trashed-messages"], 
+  }
+);
+
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
-
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const trashedMessages = await prisma.message.findMany({
-      where: {
-        senderId: currentUser.id, 
-        isDeletedBySender: true, 
-      },
-    });
+    const trashedMessages = await getCachedTrashedMessages(currentUser.id);
 
-    revalidatePath("/messages", "page");
-    
-    // Return the trashed messages
     return NextResponse.json({
       message: "Trashed messages fetched successfully",
       data: trashedMessages,
     });
   } catch (error: unknown) {
     console.error("Error fetching trashed messages:", error);
-
     if (error instanceof Error) {
       return NextResponse.json(
         { message: "Error fetching trashed messages", error: error.message },
         { status: 500 }
       );
     }
-
     return NextResponse.json(
       {
         message: "Error fetching trashed messages",

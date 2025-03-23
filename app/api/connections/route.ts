@@ -1,6 +1,6 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -80,16 +80,11 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return NextResponse.error();
-    }
-
-    const connections = await prisma.connection.findMany({
+const getCachedConnections = unstable_cache(
+  async (userId: string) => {
+    return await prisma.connection.findMany({
       where: {
-        OR: [{ requesterId: currentUser.id }, { receiverId: currentUser.id }],
+        OR: [{ requesterId: userId }, { receiverId: userId }],
         status: { in: ["ACCEPTED"] },
       },
       include: {
@@ -115,13 +110,25 @@ export async function GET(request: NextRequest) {
         },
       },
     });
+  },
+  ["connections_accepted"],
+  { tags: ["connections"] }
+);
+
+export async function GET(request: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.error();
+    }
+
+    const connections = await getCachedConnections(currentUser.id);
 
     const userConnections = connections.map((connection) => {
       const connectedUser =
         connection.requesterId === currentUser.id
           ? connection.receiver
           : connection.requester;
-
       return {
         id: connectedUser.id,
         name: connectedUser.name,
@@ -142,3 +149,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
