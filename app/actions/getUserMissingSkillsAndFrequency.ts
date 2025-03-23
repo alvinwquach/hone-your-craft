@@ -3,6 +3,7 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
+import { unstable_cache } from "next/cache";
 
 // Update the missing skills frequency map
 const updateMissingSkillsFrequencyMap = (
@@ -21,15 +22,12 @@ const updateMissingSkillsFrequencyMap = (
   }
 };
 
-export const getUserMissingSkillsAndFrequency = async (
-  page: number = 1,
-  pageSize: number = 10
-) => {
-  try {
+const getCachedUserMissingSkillsAndFrequency = unstable_cache(
+  async (page: number = 1, pageSize: number = 10) => {
     // Retrieve the current user
+
     const currentUser = await getCurrentUser();
 
-    // Check if the user ID is missing
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
@@ -46,7 +44,6 @@ export const getUserMissingSkillsAndFrequency = async (
 
     // Initialize a Map to store the frequency of missing skills
     const missingSkillsFrequencyMap = new Map<string, number>();
-
     // Iterate over user jobs
     for (const job of userJobs) {
       // Get the list of job skills extracted from the job description
@@ -91,13 +88,25 @@ export const getUserMissingSkillsAndFrequency = async (
       currentPage: page,
       pageSize,
     };
+  },
+  ["user-job-skills"],
+  {
+    revalidate: 30,
+    tags: ["jobs", "skills"],
+  }
+);
+
+export const getUserJobSkillsAndFrequency = async (
+  page: number = 1,
+  pageSize: number = 10
+) => {
+  try {
+    return await getCachedUserMissingSkillsAndFrequency(page, pageSize);
   } catch (error) {
     console.error(
-      "Error fetching user jobs or calculating missing skills frequency:",
+      "Error fetching cached user job skills and frequency:",
       error
     );
-    throw new Error(
-      "Failed to fetch user jobs or calculate missing skills frequency"
-    );
+    throw new Error("Failed to fetch user jobs or calculate skill frequency");
   }
 };

@@ -3,6 +3,7 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
+import { unstable_cache } from "next/cache";
 
 const SOURCE_MAPPINGS: Record<string, string> = {
   otta: "Otta",
@@ -29,9 +30,10 @@ const getSourceFromUrl = (postUrl: string): string => {
   );
 };
 
-export const getUserJobPostingsWithSkillMatch = async () => {
-  try {
+const getCachedUserJobPostingsWithSkillMatch = unstable_cache(
+  async () => {
     // Retrieve the current user
+
     const currentUser = await getCurrentUser();
 
     if (!currentUser?.id) {
@@ -77,10 +79,25 @@ export const getUserJobPostingsWithSkillMatch = async () => {
         matchPercentage,
       };
     });
+
     jobPostings.sort((a, b) => b.matchPercentage - a.matchPercentage);
     return jobPostings;
+  },
+  ["user-job-postings-with-skills"],
+  {
+    revalidate: 30,
+    tags: ["jobs", "skills"],
+  }
+);
+
+export const getUserJobPostingsWithSkillMatch = async () => {
+  try {
+    return await getCachedUserJobPostingsWithSkillMatch();
   } catch (error) {
-    console.error("Error fetching user jobs or processing skills:", error);
+    console.error(
+      "Error fetching cached user job postings with skill match:",
+      error
+    );
     throw new Error("Failed to fetch user jobs or process skills");
   }
 };

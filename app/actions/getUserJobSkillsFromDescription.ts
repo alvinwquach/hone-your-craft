@@ -3,13 +3,14 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
+import { unstable_cache } from "next/cache";
 
-const getUserJobSkillsFromDescription = async () => {
-  try {
+const getCachedUserJobSkillsFromDescription = unstable_cache(
+  async () => {
     // Retrieve the current user
+
     const currentUser = await getCurrentUser();
 
-    // Check if the user ID is missing
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
@@ -30,10 +31,19 @@ const getUserJobSkillsFromDescription = async () => {
     }));
 
     return jobSkills;
+  },
+  ["user-job-skills"],
+  {
+    revalidate: 30,
+    tags: ["jobs", "skills"],
+  }
+);
+
+export default async function getUserJobSkillsFromDescription() {
+  try {
+    return await getCachedUserJobSkillsFromDescription();
   } catch (error) {
-    console.error("Error fetching user jobs or extracting skills:", error);
+    console.error("Error fetching cached user job skills:", error);
     throw new Error("Failed to fetch user jobs or extract skills");
   }
-};
-
-export default getUserJobSkillsFromDescription;
+}

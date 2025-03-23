@@ -3,9 +3,10 @@
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { InterviewType } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 
-const getUserJobInterviews = async () => {
-  try {
+const getCachedUserJobInterviews = unstable_cache(
+  async () => {
     // Retrieve the current user
     const currentUser = await getCurrentUser();
 
@@ -19,7 +20,6 @@ const getUserJobInterviews = async () => {
       where: {
         userId: currentUser.id,
       },
-      // Include related job details along with interviews
       include: {
         job: {
           select: {
@@ -68,6 +68,7 @@ const getUserJobInterviews = async () => {
       HIRING_FREEZE: 0,
       TAKE_HOME_ASSESSMENT: 0,
     };
+
     // Calculate the frequency count of interview types
     const interviewTypeFrequency = { ...initialInterviewTypeFrequency };
     userInterviews.forEach((interview) => {
@@ -77,22 +78,29 @@ const getUserJobInterviews = async () => {
 
     // Sort interview type frequency from highest to lowest
     const sortedInterviewTypeFrequency = Object.entries(interviewTypeFrequency)
-      // Sort by frequency in descending order
       .sort(([, freq1], [, freq2]) => freq2 - freq1)
       .reduce((acc, [type, freq]) => {
         acc[type as InterviewType] = freq;
         return acc;
       }, {} as Record<InterviewType, number>);
 
-    // Return user interviews along with sorted interview type frequency
     return {
       userInterviews,
       interviewTypeFrequency: sortedInterviewTypeFrequency,
     };
-  } catch (error) {
-    console.error("Error fetching user interviews:", error);
-    throw new Error("Failed to fetch user interviews");
+  },
+  ["candidate-interviews"],
+  {
+    revalidate: 30,
+    tags: ["interviews", "jobs"],
   }
-};
+);
 
-export default getUserJobInterviews;
+export default async function getUserJobInterviews() {
+  try {
+    return await getCachedUserJobInterviews();
+  } catch (error) {
+    console.error("Error fetching cached candidate interviews:", error);
+    throw new Error("Failed to fetch candidate interviews");
+  }
+}
