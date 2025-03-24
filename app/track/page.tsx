@@ -45,7 +45,7 @@ function Track() {
     data: userJobs,
     isLoading: userJobsLoading,
     error,
-  } = useSWR<UserJobs>("/api/jobs", fetcher);
+  } = useSWR<UserJobs>("/api/trackedjobs", fetcher);
 
   const loadingUserJobs = !userJobs || userJobsLoading;
   if (error) return <div>Error loading user jobs</div>;
