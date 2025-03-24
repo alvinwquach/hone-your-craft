@@ -800,6 +800,8 @@ model Job {
   updatedAt    DateTime           @updatedAt
 
   @@map("job")
+  @@index([userId, status])
+
 }
 
 model Interview {
