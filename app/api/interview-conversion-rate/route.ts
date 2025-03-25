@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser();
-    console.timeLog("getCurrentUser");
 
     if (!currentUser) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
