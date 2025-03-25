@@ -801,6 +801,7 @@ model Job {
 
   @@map("job")
   @@index([userId, status])
+  @@index([status, createdAt])
 
 }
 
