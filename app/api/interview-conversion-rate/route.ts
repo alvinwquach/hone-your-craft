@@ -10,20 +10,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const jobsAndInterviews = await prisma.job.findMany({
+    const jobData = await prisma.job.findMany({
       where: {
         userId: currentUser.id,
         status: { not: "SAVED" },
       },
-      include: {
-        interviews: true,
+      select: {
+        id: true,
+        _count: {
+          select: {
+            interviews: true,
+          },
+        },
       },
     });
 
-    const totalJobs = jobsAndInterviews.length;
-    const totalInterviews = jobsAndInterviews.filter(
-      (item) => item.interviews && item.interviews.length > 0
-    ).length;
+    const totalJobs = jobData.length;
+    const totalInterviews = jobData.reduce(
+      (count, job) => count + job._count.interviews,
+      0
+    );
 
     let interviewRate = 0;
     if (totalJobs > 0) {
@@ -40,6 +46,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching user data:", error);
-    return NextResponse.error();
+    return NextResponse.json(
+      { error: "Failed to fetch interview data" },
+      { status: 500 }
+    );
   }
 }

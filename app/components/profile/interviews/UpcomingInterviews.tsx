@@ -28,7 +28,6 @@ function UpcomingInterviews({
 }: UpcomingInterviewsProps) {
   const [activeTab, setActiveTab] = useState("upcoming");
 
-  // Filter interviews within next week
   const upcomingInterviews = jobInterviews
     .filter((interview) => {
       const interviewDate = new Date(interview.interviewDate);
@@ -46,6 +45,9 @@ function UpcomingInterviews({
 
   return (
     <div className="container mx-auto p-4">
+      <div className="text-center text-gray-400 sm:pb-0 pb-2">
+        {interviewConversionRate}
+      </div>
       <InterviewCalendarDownloadButton />
       <div className="flex flex-wrap -mb-px justify-start mb-8">
         <button
@@ -64,8 +66,6 @@ function UpcomingInterviews({
           Upcoming Interviews
         </button>
       </div>
-
-      {/* Interview List */}
       <div className="w-full max-w-3xl mx-auto">
         {activeTab === "upcoming" &&
           (upcomingInterviews.length > 0 ? (
