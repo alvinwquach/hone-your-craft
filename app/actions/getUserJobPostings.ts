@@ -1,5 +1,4 @@
 "use server";
-
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
@@ -32,32 +31,29 @@ const getSourceFromUrl = (postUrl: string): string => {
 
 const getCachedUserJobPostings = unstable_cache(
   async () => {
-    // Retrieve the current user
     const currentUser = await getCurrentUser();
-
-    // Check if the user ID is missing
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
 
-    // Fetch user jobs from the database
     const userJobs = await prisma.job.findMany({
-      where: {
-        userId: currentUser.id,
+      where: { userId: currentUser.id },
+      select: {
+        id: true,
+        title: true,
+        company: true,
+        postUrl: true,
+        description: true,
+        referral: true,
       },
+      orderBy: { createdAt: "desc" },
     });
 
-    const jobPostings = userJobs.map((job) => ({
-      id: job.id,
-      title: job.title,
-      company: job.company,
-      postUrl: job.postUrl,
-      source:
-        job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
+    return userJobs.map((job) => ({
+      ...job,
+      source: job.referral ? "Referral" : getSourceFromUrl(job.postUrl),
       skills: extractSkillsFromDescription(job.description),
     }));
-
-    return jobPostings;
   },
   ["user-job-postings"],
   {
