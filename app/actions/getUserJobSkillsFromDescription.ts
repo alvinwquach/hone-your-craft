@@ -7,30 +7,27 @@ import { unstable_cache } from "next/cache";
 
 const getCachedUserJobSkillsFromDescription = unstable_cache(
   async () => {
-    // Retrieve the current user
-
     const currentUser = await getCurrentUser();
-
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
 
-    // Fetch user jobs from the database
-    const userJobs = await prisma.job.findMany({
-      where: {
-        userId: currentUser.id,
+    const jobs = await prisma.job.findMany({
+      where: { userId: currentUser.id },
+      select: {
+        id: true,
+        title: true,
+        company: true,
+        postUrl: true,
+        description: true,
+        jobSkills: true,
       },
     });
 
-    // Initialize an array to store job skills
-    const jobSkills = userJobs.map((job) => ({
-      title: job.title,
-      company: job.company,
-      postUrl: job.postUrl,
+    return jobs.map((job) => ({
+      ...job,
       skills: extractSkillsFromDescription(job.description),
     }));
-
-    return jobSkills;
   },
   ["user-job-skills"],
   {
