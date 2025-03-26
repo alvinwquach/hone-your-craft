@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
 import getUserJobPostings from "../actions/getUserJobPostings";
 import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
-import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
+import { getUserJobMissingSkillsAndFrequency } from "@/app/actions/getUserJobMissingSkillsAndFrequency";
 import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
 import { getCandidateJobInterviewFrequency } from "@/app/actions/getCandidateJobInterviewFrequency";
 import { getCandidateJobPostingSourceCount } from "@/app/actions/getCandidateJobPostingSourceCount";
@@ -489,7 +489,7 @@ function Profile() {
     async function fetchMissingSkillsData() {
       try {
         const { sortedMissingSkills, sortedMissingFrequencies, totalPages } =
-          await getUserMissingSkillsAndFrequency(currentPageMissingSkills);
+          await getUserJobMissingSkillsAndFrequency(currentPageMissingSkills);
         setMissingSkills(sortedMissingSkills);
         setMissingSkillsFrequency(sortedMissingFrequencies);
         setTotalPagesMissingSkills(totalPages);
