@@ -8,7 +8,7 @@ import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndF
 import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
 import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
 import { getCandidateJobInterviewFrequency } from "@/app/actions/getCandidateJobInterviewFrequency";
-import { getCandidateJobPostingSourceCount } from "@/app/actions/getUserJobPostingSourceCount";
+import { getCandidateJobPostingSourceCount } from "@/app/actions/getCandidateJobPostingSourceCount";
 import { getCandidateApplicationStatus } from "../actions/getCandidateApplicationStatus";
 import ProfileCard from "../components/profile/profile/ProfileCard";
 import SkillsCard from "../components/profile/profile/SkillsCard";
