@@ -1,5 +1,4 @@
 "use server";
-
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
@@ -32,56 +31,57 @@ const getSourceFromUrl = (postUrl: string): string => {
 
 const getCachedUserJobPostingsWithSkillMatch = unstable_cache(
   async () => {
-    // Retrieve the current user
-
     const currentUser = await getCurrentUser();
-
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
 
-    // Get user's skills
     const userSkills = new Set(currentUser.skills || []);
 
-    // Fetch user jobs from the database
     const userJobs = await prisma.job.findMany({
       where: {
         userId: currentUser.id,
       },
+      select: {
+        id: true,
+        title: true,
+        company: true,
+        postUrl: true,
+        description: true,
+        referral: true,
+      },
     });
 
-    const jobPostings = userJobs.map((job) => {
-      // Extract skills from job description
-      const jobSkills = [
-        ...new Set(extractSkillsFromDescription(job.description)),
-      ]; // Remove duplicates
+    return userJobs
+      .map((job) => {
+        const jobSkills = [
+          ...new Set(extractSkillsFromDescription(job.description)),
+        ];
+        const matchingSkills = jobSkills.filter((skill) =>
+          userSkills.has(skill)
+        );
+        const missingSkills = jobSkills.filter(
+          (skill) => !userSkills.has(skill)
+        );
+        const totalSkills = jobSkills.length;
+        const matchPercentage =
+          totalSkills > 0
+            ? Math.round((matchingSkills.length / totalSkills) * 100)
+            : 0;
 
-      // Separate matching and missing skills
-      const matchingSkills = jobSkills.filter((skill) => userSkills.has(skill));
-      const missingSkills = jobSkills.filter((skill) => !userSkills.has(skill));
-
-      // Calculate match percentage
-      const totalSkills = jobSkills.length;
-      const matchPercentage =
-        totalSkills > 0
-          ? Math.round((matchingSkills.length / totalSkills) * 100)
-          : 0;
-
-      return {
-        id: job.id,
-        title: job.title,
-        company: job.company,
-        postUrl: job.postUrl,
-        source:
-          job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
-        matchingSkills,
-        missingSkills,
-        matchPercentage,
-      };
-    });
-
-    jobPostings.sort((a, b) => b.matchPercentage - a.matchPercentage);
-    return jobPostings;
+        return {
+          id: job.id,
+          title: job.title,
+          company: job.company,
+          postUrl: job.postUrl,
+          source:
+            job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
+          matchingSkills,
+          missingSkills,
+          matchPercentage,
+        };
+      })
+      .sort((a, b) => b.matchPercentage - a.matchPercentage);
   },
   ["user-job-postings-with-skills"],
   {
