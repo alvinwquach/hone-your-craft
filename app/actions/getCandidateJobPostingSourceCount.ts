@@ -1,5 +1,4 @@
 "use server";
-
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { unstable_cache } from "next/cache";
@@ -16,31 +15,29 @@ const SOURCE_MAPPINGS: Record<string, string> = {
   simplyhired: "SimplyHired",
   stackoverflow: "Stack Overflow",
   dice: "Dice",
-  weworkremotely: "We Work Remotely",
+  weeworkremotely: "We Work Remotely",
   adzuna: "Adzuna",
 };
 
+const SOURCE_MAPPINGS_SET = new Set(Object.keys(SOURCE_MAPPINGS));
+
 const getSourceFromUrl = (postUrl: string): string => {
   const lowercaseUrl = postUrl.toLowerCase();
-  return (
-    Object.entries(SOURCE_MAPPINGS).find(([key]) =>
-      lowercaseUrl.includes(key)
-    )?.[1] ?? "Company Website"
-  );
+  for (const source of SOURCE_MAPPINGS_SET) {
+    if (lowercaseUrl.includes(source)) {
+      return SOURCE_MAPPINGS[source];
+    }
+  }
+  return "Company Website";
 };
 
-const getCachedUserJobPostingSourceCount = unstable_cache(
+const getCachedCandidateJobPostingSourceCount = unstable_cache(
   async () => {
-    // Retrieve the current user
-
     const currentUser = await getCurrentUser();
-
-    // Check if the user ID is missing
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
 
-    // Group jobs by source and count occurrences
     const jobSourceCount = await prisma.job.groupBy({
       by: ["postUrl", "referral"],
       where: {
@@ -57,14 +54,12 @@ const getCachedUserJobPostingSourceCount = unstable_cache(
       },
     });
 
-    // Initialize source count record with known sources
     const sourceCountRecord: Record<string, number> = {
       ...SOURCE_MAPPINGS,
       Referral: 0,
       "Company Website": 0,
     };
 
-    // Count occurrences of each source
     jobSourceCount.forEach((group) => {
       const source = group.referral
         ? "Referral"
@@ -82,9 +77,9 @@ const getCachedUserJobPostingSourceCount = unstable_cache(
   }
 );
 
-export const getUserJobPostingSourceCount = async () => {
+export const getCandidateJobPostingSourceCount = async () => {
   try {
-    return await getCachedUserJobPostingSourceCount();
+    return await getCachedCandidateJobPostingSourceCount();
   } catch (error) {
     console.error("Error fetching cached user job posting sources:", error);
     throw new Error("Failed to fetch user jobs or count sources");
