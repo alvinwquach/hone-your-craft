@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
+import { getUserJobMissingSkillsAndFrequency } from "@/app/actions/getUserJobMissingSkillsAndFrequency";
 import { gsap } from "gsap";
 import { FaTimes } from "react-icons/fa";
 
@@ -16,7 +16,7 @@ function Top10MissingSkillsTicker() {
     async function fetchMissingSkillsData() {
       try {
         const { sortedMissingSkills, sortedMissingFrequencies } =
-          await getUserMissingSkillsAndFrequency();
+          await getUserJobMissingSkillsAndFrequency();
         setMissingSkills(sortedMissingSkills);
         setMissingSkillsFrequency(sortedMissingFrequencies);
       } catch (error) {
