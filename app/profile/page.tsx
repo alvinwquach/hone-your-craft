@@ -8,7 +8,7 @@ import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndF
 import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
 import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
 import { getCandidateJobInterviewFrequency } from "@/app/actions/getCandidateJobInterviewFrequency";
-import { getUserJobPostingSourceCount } from "@/app/actions/getUserJobPostingSourceCount";
+import { getCandidateJobPostingSourceCount } from "@/app/actions/getCandidateJobPostingSourceCount";
 import { getCandidateApplicationStatus } from "../actions/getCandidateApplicationStatus";
 import ProfileCard from "../components/profile/profile/ProfileCard";
 import SkillsCard from "../components/profile/profile/SkillsCard";
@@ -557,7 +557,7 @@ function Profile() {
   useEffect(() => {
     async function fetchJobPostingSourceCount() {
       try {
-        const sourceCount = await getUserJobPostingSourceCount();
+        const sourceCount = await getCandidateJobPostingSourceCount();
         setJobPostingSourceCount(sourceCount);
       } catch (error) {
         console.error("Error fetching job posting source count:", error);
