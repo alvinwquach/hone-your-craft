@@ -7,7 +7,7 @@ import getUserJobPostings from "../actions/getUserJobPostings";
 import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
 import { getUserMissingSkillsAndFrequency } from "@/app/actions/getUserMissingSkillsAndFrequency";
 import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
-import { getCandidateJobInterviews } from "@/app/actions/getCandidateJobInterviews";
+import { getCandidateJobInterviewFrequency } from "@/app/actions/getCandidateJobInterviewFrequency";
 import { getUserJobPostingSourceCount } from "@/app/actions/getUserJobPostingSourceCount";
 import { getCandidateApplicationStatus } from "../actions/getCandidateApplicationStatus";
 import ProfileCard from "../components/profile/profile/ProfileCard";
@@ -544,7 +544,8 @@ function Profile() {
   useEffect(() => {
     const fetchCandidateJobInterviews = async () => {
       try {
-        const { interviewTypeFrequency } = await getCandidateJobInterviews();
+        const { interviewTypeFrequency } =
+          await getCandidateJobInterviewFrequency();
         setInterviewTypeFrequency(interviewTypeFrequency);
       } catch (error) {
         console.error("Error fetching user job interviews:", error);
