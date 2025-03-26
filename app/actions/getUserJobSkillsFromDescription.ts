@@ -1,4 +1,5 @@
 "use server";
+
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
@@ -19,6 +20,7 @@ const getCachedUserJobSkillsFromDescription = unstable_cache(
         company: true,
         postUrl: true,
         description: true,
+        jobSkills: true,
       },
     });
 
