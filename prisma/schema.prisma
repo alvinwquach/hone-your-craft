@@ -798,6 +798,7 @@ model Job {
   jobSkills    JobSkill[]
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
+  holidayApplied String?
 
   @@map("job")
   @@index([userId, status])
