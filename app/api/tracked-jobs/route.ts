@@ -15,6 +15,7 @@ const getCachedTrackedJobs = unstable_cache(
       where: { userId: currentUser.id },
       select: {
         id: true,
+        referral: true,
         title: true,
         company: true,
         postUrl: true,
