@@ -801,7 +801,7 @@ model Job {
   holidayApplied String?
 
   @@map("job")
-  @@index([userId, status])
+ @@index([userId, status, createdAt])
   @@index([status, createdAt])
 
 }
