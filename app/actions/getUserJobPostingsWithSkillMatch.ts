@@ -1,4 +1,5 @@
 "use server";
+
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
@@ -19,7 +20,7 @@ const SOURCE_MAPPINGS: Record<string, string> = {
   weworkremotely: "We Work Remotely",
   adzuna: "Adzuna",
 };
-
+const ITEMS_PER_PAGE = 4;
 const getSourceFromUrl = (postUrl: string): string => {
   const lowercaseUrl = postUrl.toLowerCase();
   return (
@@ -30,18 +31,15 @@ const getSourceFromUrl = (postUrl: string): string => {
 };
 
 const getCachedUserJobPostingsWithSkillMatch = unstable_cache(
-  async () => {
+  async (page: number, take: number) => {
+    console.time("getUserJobPostingsWithSkillMatch");
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
     }
-
     const userSkills = new Set(currentUser.skills || []);
-
     const userJobs = await prisma.job.findMany({
-      where: {
-        userId: currentUser.id,
-      },
+      where: { userId: currentUser.id },
       select: {
         id: true,
         title: true,
@@ -51,37 +49,45 @@ const getCachedUserJobPostingsWithSkillMatch = unstable_cache(
         referral: true,
       },
     });
-
-    return userJobs
-      .map((job) => {
-        const jobSkills = [
-          ...new Set(extractSkillsFromDescription(job.description)),
-        ];
-        const matchingSkills = jobSkills.filter((skill) =>
-          userSkills.has(skill)
-        );
-        const missingSkills = jobSkills.filter(
-          (skill) => !userSkills.has(skill)
-        );
-        const totalSkills = jobSkills.length;
-        const matchPercentage =
-          totalSkills > 0
-            ? Math.round((matchingSkills.length / totalSkills) * 100)
-            : 0;
-
-        return {
-          id: job.id,
-          title: job.title,
-          company: job.company,
-          postUrl: job.postUrl,
-          source:
-            job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
-          matchingSkills,
-          missingSkills,
-          matchPercentage,
-        };
-      })
-      .sort((a, b) => b.matchPercentage - a.matchPercentage);
+    console.timeLog("getUserJobPostingsWithSkillMatch", "Fetched jobs");
+    const processedJobs = userJobs.map((job) => {
+      const jobSkills = [
+        ...new Set(extractSkillsFromDescription(job.description)),
+      ];
+      const matchingSkills = jobSkills.filter((skill) => userSkills.has(skill));
+      const missingSkills = jobSkills.filter((skill) => !userSkills.has(skill));
+      const totalSkills = jobSkills.length;
+      const matchPercentage =
+        totalSkills > 0
+          ? Math.round((matchingSkills.length / totalSkills) * 100)
+          : 0;
+      return {
+        id: job.id.toString(),
+        title: job.title,
+        company: job.company,
+        postUrl: job.postUrl,
+        source:
+          job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
+        matchingSkills,
+        missingSkills,
+        matchPercentage,
+      };
+    });
+    console.timeLog("getUserJobPostingsWithSkillMatch", "Processed jobs");
+    const sortedJobs = processedJobs.sort(
+      (a, b) => b.matchPercentage - a.matchPercentage
+    );
+    console.timeLog("getUserJobPostingsWithSkillMatch", "Sorted jobs");
+    const totalPages = Math.ceil(sortedJobs.length / take);
+    const startIndex = (page - 1) * take;
+    const resultJobs = sortedJobs.slice(startIndex, startIndex + take);
+    console.timeEnd("getUserJobPostingsWithSkillMatch");
+    return {
+      jobs: resultJobs,
+      totalPages,
+      currentPage: page,
+      totalJobs: sortedJobs.length,
+    };
   },
   ["user-job-postings-with-skills"],
   {
@@ -89,10 +95,12 @@ const getCachedUserJobPostingsWithSkillMatch = unstable_cache(
     tags: ["jobs", "skills"],
   }
 );
-
-export const getUserJobPostingsWithSkillMatch = async () => {
+export const getUserJobPostingsWithSkillMatch = async (
+  page: number = 1,
+  take: number = ITEMS_PER_PAGE
+) => {
   try {
-    return await getCachedUserJobPostingsWithSkillMatch();
+    return await getCachedUserJobPostingsWithSkillMatch(page, take);
   } catch (error) {
     console.error(
       "Error fetching cached user job postings with skill match:",

@@ -799,6 +799,7 @@ model Job {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   holidayApplied String?
+matchPercentage Float? 
 
   @@map("job")
  @@index([userId, status, createdAt])
