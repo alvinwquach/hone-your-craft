@@ -1,7 +1,7 @@
 "use client";
 import { getUserJobPostingsWithSkillMatch } from "@/app/actions/getUserJobPostingsWithSkillMatch";
-import { JobMatchCard } from "@/app/profile/match/page";
 import { useState, useEffect, useRef } from "react";
+import JobMatchCard from "../profile/match/JobMatchCard";
 
 type JobMatchPosting = {
   id: string;
