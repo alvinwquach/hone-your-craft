@@ -6,12 +6,12 @@ import MeetingTabs from "@/app/components/profile/meetings/MeetingTabs";
 interface Event {
   id: string;
   title: string;
-  description: string | null; // Allow null
+  description: string | null;
   startTime: Date;
   endTime: Date;
-  creator: { name: string | null; email: string | null }; // Allow null
-  participant: { name: string | null; email: string | null }; // Allow null
-  eventType?: { id: string; title: string } | null; // Optional and nullable
+  creator: { name: string | null; email: string | null };
+  participant: { name: string | null; email: string | null };
+  eventType?: { id: string; title: string } | null;
 }
 
 async function groupEventsByDate(events: Event[]) {

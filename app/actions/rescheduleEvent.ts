@@ -10,9 +10,9 @@ export async function rescheduleEvent(
   newEndTime: string
 ) {
   const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    throw new Error("User not authenticated");
-  }
+  // if (!currentUser) {
+  //   throw new Error("User not authenticated");
+  // }
 
   if (!eventId || !newStartTime || !newEndTime) {
     throw new Error("Event ID, start time, and end time are required");
@@ -24,8 +24,8 @@ export async function rescheduleEvent(
 
   if (
     !event ||
-    (event.creatorId !== currentUser.id &&
-      event.participantId !== currentUser.id)
+    (event.creatorId !== currentUser?.id &&
+      event.participantId !== currentUser?.id)
   ) {
     throw new Error("Event not found or unauthorized");
   }

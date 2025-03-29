@@ -15,9 +15,9 @@ export async function getPastEvents(): Promise<
   }[]
 > {
   const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    throw new Error("User not authenticated");
-  }
+  // if (!currentUser) {
+  //   throw new Error("User not authenticated");
+  // }
 
   const now = new Date();
   const events = await prisma.userEvent.findMany({
@@ -25,8 +25,8 @@ export async function getPastEvents(): Promise<
       AND: [
         {
           OR: [
-            { creatorId: currentUser.id },
-            { participantId: currentUser.id },
+            { creatorId: currentUser?.id },
+            { participantId: currentUser?.id },
           ],
         },
         { endTime: { lt: now } },

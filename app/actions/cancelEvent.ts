@@ -6,9 +6,9 @@ import { revalidatePath } from "next/cache";
 
 export async function cancelEvent(eventId: string) {
   const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    throw new Error("User not authenticated");
-  }
+  // if (!currentUser) {
+  //   throw new Error("User not authenticated");
+  // }
 
   if (!eventId) {
     throw new Error("Event ID is required");
