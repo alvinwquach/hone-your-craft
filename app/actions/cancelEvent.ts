@@ -20,8 +20,8 @@ export async function cancelEvent(eventId: string) {
 
   if (
     !event ||
-    (event.creatorId !== currentUser.id &&
-      event.participantId !== currentUser.id)
+    (event.creatorId !== currentUser?.id &&
+      event.participantId !== currentUser?.id)
   ) {
     throw new Error("Event not found or unauthorized");
   }
