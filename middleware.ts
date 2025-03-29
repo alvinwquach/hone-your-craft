@@ -6,11 +6,10 @@ export default withAuth(
   async function middleware(req) {
     // Retrieve the token from the request headers
     const token = await getToken({ req });
-
     // Check if a token exists
     const isAuthenticated = !!token;
 
-    // Define a list of protected routes that require authentication
+    // Define a list of protected route prefixes
     const authRoutes = [
       "/profile",
       "/messages",
@@ -20,8 +19,12 @@ export default withAuth(
       "/jobs",
     ];
 
-    // Check if the requested route is in the list of protected routes
-    if (authRoutes.includes(req.nextUrl.pathname)) {
+    // Check if the requested route starts with any protected route
+    const isProtectedRoute = authRoutes.some((route) =>
+      req.nextUrl.pathname.startsWith(route)
+    );
+
+    if (isProtectedRoute) {
       // If the user is authenticated, allow access to the requested route
       if (isAuthenticated) {
         // Check if the user's role is set in the token
@@ -59,11 +62,11 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/profile",
-    "/messages",
-    "/calendar",
-    "/track",
-    "/metrics",
-    "/jobs",
+    "/profile/:path*",
+    "/messages/:path*",
+    "/calendar/:path*",
+    "/track/:path*",
+    "/metrics/:path*",
+    "/jobs/:path*",
   ],
 };
