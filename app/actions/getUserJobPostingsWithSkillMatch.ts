@@ -37,13 +37,10 @@ export const getUserJobPostingsWithSkillMatch = async (
   console.time("getUserJobPostingsWithSkillMatch");
   try {
     const currentUser = await getCurrentUser();
-    if (!currentUser?.id) {
-      throw new Error("User not authenticated or user ID not found");
-    }
 
-    const userSkills = new Set(currentUser.skills || []);
+    const userSkills = new Set(currentUser?.skills || []);
     const userJobs = await prisma.job.findMany({
-      where: { userId: currentUser.id },
+      where: { userId: currentUser?.id },
       select: {
         id: true,
         title: true,
