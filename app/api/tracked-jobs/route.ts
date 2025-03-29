@@ -8,11 +8,10 @@ const getCachedTrackedJobs = unstable_cache(
   async () => {
     console.time("getCachedTrackedJobs");
     const currentUser = await getCurrentUser();
-    if (!currentUser) throw new Error("Unauthorized");
 
     console.time("prismaQuery");
     const jobs = await prisma.job.findMany({
-      where: { userId: currentUser.id },
+      where: { userId: currentUser?.id },
       select: {
         id: true,
         referral: true,
