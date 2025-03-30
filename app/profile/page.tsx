@@ -154,10 +154,6 @@ function Profile() {
   const { data: userAchievementData } = useSWR("/api/achievements", (url) =>
     fetch(url).then((res) => res.json())
   );
-  const { data: interviewConversionRateData } = useSWR(
-    "/api/interview-conversion-rate",
-    (url) => fetch(url).then((res) => res.json())
-  );
 
   const [activeTab, setActiveTab] = useState<string>("profile");
   const [activeAchievementTab, setActiveAchievementTab] =
@@ -188,7 +184,6 @@ function Profile() {
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(
     new Set()
   );
-  const interviewConversionRate = interviewConversionRateData?.message ?? "";
   const jobAchievements = userAchievementData?.jobAchievements || [];
   const interviewAchievements =
     userAchievementData?.interviewAchievements || [];
