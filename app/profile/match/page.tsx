@@ -2,18 +2,7 @@ import JobMatchCard from "@/app/components/profile/match/JobMatchCard";
 import InfiniteScrollClient from "@/app/components/ui/InfiniteScrollClient";
 import { getUserJobPostingsWithSkillMatch } from "../../actions/getUserJobPostingsWithSkillMatch";
 
-type JobMatchPosting = {
-  id: string;
-  title: string;
-  company: string;
-  postUrl: string;
-  source: string;
-  matchingSkills: string[];
-  missingSkills: string[];
-  matchPercentage: number;
-};
-
-export default async function JobMatchesPage() {
+export default async function Match() {
   const initialData = await getUserJobPostingsWithSkillMatch(1);
 
   if (initialData.jobs.length === 0) {
