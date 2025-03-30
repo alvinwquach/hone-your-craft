@@ -5,6 +5,8 @@ import {
   getUpcomingInterviews,
   InterviewWithJob,
 } from "@/app/actions/getUpcomingInterviews";
+import { getInterviewConversionRate } from "@/app/actions/getInterviewConversionRate";
+import { FaCalendarDay } from "react-icons/fa";
 
 interface InterviewGroup {
   [date: string]: InterviewWithJob[];
@@ -12,18 +14,29 @@ interface InterviewGroup {
 
 export default async function Interviews() {
   const upcomingInterviews: InterviewGroup = await getUpcomingInterviews();
+  const conversionRate = await getInterviewConversionRate();
 
   return (
     <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 sr-only">
             Upcoming Interviews
           </h1>
+        </div>
+        <div className="flex justify-end mb-4">
           {Object.entries(upcomingInterviews).length > 0 && (
             <InterviewCalendarDownloadButton />
           )}
         </div>
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-center gap-2">
+            <p className="text-gray-600 text-center">
+              {conversionRate.message}
+            </p>
+          </div>
+        </div>
+
         <div className="w-full max-w-3xl mx-auto mt-6">
           {Object.entries(upcomingInterviews).length > 0 ? (
             Object.entries(upcomingInterviews).map(([date, interviews]) => (
@@ -71,8 +84,18 @@ export default async function Interviews() {
               </div>
             ))
           ) : (
-            <div className="text-gray-700 text-center p-8">
-              No upcoming interviews scheduled
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-20rem)] space-y-6">
+              <div className="w-36 h-36 bg-gray-100 rounded-full flex items-center justify-center">
+                <FaCalendarDay className="w-24 h-24 text-gray-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                No Upcoming Interviews
+              </h2>
+              <p className="text-gray-600 text-center max-w-md">
+                You don&apos;t have any scheduled interviews at the moment.
+                Start by applying to jobs or responding to interview
+                invitations.
+              </p>
             </div>
           )}
         </div>
