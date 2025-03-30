@@ -21,7 +21,6 @@ import ApplicationStatusChart from "../components/profile/dashboard/ApplicationS
 import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
 import JobApplicationStatusChart from "../components/profile/dashboard/JobApplicationStatusChart";
 import ResumeUpload from "../components/profile/resume/ResumeUpload";
-import UpcomingInterviews from "../components/profile/interviews/UpcomingInterviews";
 import JobOffers from "../components/profile/offers/JobOffers";
 import JobRejections from "../components/profile/rejections/JobRejections";
 import { toast } from "react-toastify";
@@ -125,10 +124,6 @@ function Profile() {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
-  const { data: userInterviews, isLoading: userInterviewsLoading } = useSWR(
-    "/api/interviews",
-    (url) => fetch(url).then((res) => res.json())
-  );
   const { data: userOffers, isLoading: userOffersLoading } = useSWR(
     "/api/offers",
     (url) => fetch(url).then((res) => res.json())
@@ -212,20 +207,19 @@ function Profile() {
   const userRole = data?.user?.userRole;
   const jobOffers = userOffers || [];
   const jobRejections = userRejections || [];
-  const jobInterviews = userInterviews || [];
   const userSkills = data?.user?.skills || [];
   const userData = data || [];
 
-  const groupEventsByDate = (events: any[]) => {
-    return events?.reduce((acc, event) => {
-      const eventDate = new Date(event.startTime).toLocaleDateString();
-      if (!acc[eventDate]) {
-        acc[eventDate] = [];
-      }
-      acc[eventDate].push(event);
-      return acc;
-    }, {} as Record<string, any[]>);
-  };
+  // const groupEventsByDate = (events: any[]) => {
+  //   return events?.reduce((acc, event) => {
+  //     const eventDate = new Date(event.startTime).toLocaleDateString();
+  //     if (!acc[eventDate]) {
+  //       acc[eventDate] = [];
+  //     }
+  //     acc[eventDate].push(event);
+  //     return acc;
+  //   }, {} as Record<string, any[]>);
+  // };
 
   const sendConnectionRequest = async (receiverId: string) => {
     const connectionStatus = users.find(
@@ -551,7 +545,6 @@ function Profile() {
   };
 
   const loadingUserData = !userData || userDataLoading;
-  const loadingUserInterviews = !userInterviews || userInterviewsLoading;
   const loadingUserOffers = !userOffers || userOffersLoading;
   const loadingUserRejections = !userRejections || userRejectionsLoading;
   const loadingUserSkills = !userSkills || userDataLoading;
@@ -1130,26 +1123,6 @@ function Profile() {
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload resumeData={resumeData} />}>
                   <ResumeUpload resumeData={resumeData} />
-                </Suspense>
-              )}
-
-              {activeTab === "interviews" && (
-                <Suspense
-                  fallback={
-                    <UpcomingInterviews
-                      jobInterviews={[]}
-                      interviewConversionRate={""}
-                    />
-                  }
-                >
-                  {!loadingUserInterviews ? (
-                    <UpcomingInterviews
-                      jobInterviews={jobInterviews}
-                      interviewConversionRate={interviewConversionRate}
-                    />
-                  ) : (
-                    <div>Loading Interviews...</div>
-                  )}
                 </Suspense>
               )}
               {activeTab === "offers" && (
