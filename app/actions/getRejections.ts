@@ -4,6 +4,7 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { RejectionInitiator } from "@prisma/client";
 
+// In getRejections.ts
 export interface JobRejection {
   id: string;
   job: {
@@ -36,6 +37,8 @@ export async function getRejections(): Promise<Record<string, JobRejection[]>> {
   });
 
   return rejections.reduce((acc, rejection) => {
+    if (!rejection) return acc;
+
     const date = rejection.date
       ? new Date(rejection.date).toLocaleDateString()
       : "No Date";
@@ -44,18 +47,20 @@ export async function getRejections(): Promise<Record<string, JobRejection[]>> {
       acc[date] = [];
     }
 
-    acc[date].push({
-      id: rejection.id,
-      job: {
-        id: rejection.job!.id,
-        company: rejection.job!.company,
-        title: rejection.job!.title,
-        postUrl: rejection.job!.postUrl,
-      },
-      date: rejection.date ? new Date(rejection.date) : new Date(),
-      initiatedBy: rejection.initiatedBy,
-      notes: rejection.notes ?? "",
-    });
+    if (rejection.id && rejection.job) {
+      acc[date].push({
+        id: rejection.id,
+        job: {
+          id: rejection.job.id,
+          company: rejection.job.company,
+          title: rejection.job.title,
+          postUrl: rejection.job.postUrl,
+        },
+        date: rejection.date ? new Date(rejection.date) : new Date(),
+        initiatedBy: rejection.initiatedBy,
+        notes: rejection.notes ?? "",
+      });
+    }
 
     return acc;
   }, {} as Record<string, JobRejection[]>);
