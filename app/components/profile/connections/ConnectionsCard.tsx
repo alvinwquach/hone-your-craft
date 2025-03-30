@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { FaUsers, FaInbox, FaPaperPlane } from "react-icons/fa";
 import Image from "next/image";
@@ -8,38 +10,38 @@ import {
 } from "react-icons/ai";
 import { IoIosContacts } from "react-icons/io";
 import defaultPfp from "../../../../public/images/icons/default_pfp.jpeg";
+import { toast } from "react-toastify";
 
 interface User {
   id: string;
-  name: string;
-  email: string;
+  name: string | null; 
+  email: string | null; 
   role?: string;
-  userRole?: string;
-  image?: string;
-  headline?: string;
-  connectionStatus?: string;
+  userRole?: string | null;
+  image?: string | null;
+  headline?: string | null;
+  connectionStatus?: "PENDING" | "ACCEPTED" | "NONE" | "REJECTED";
 }
 
 interface Connection {
   id: string;
   requesterId: string;
   receiverId: string;
-  status: "PENDING" | "ACCEPTED" | "NONE";
-  createdAt: string;
-  updatedAt: string;
+  status: "PENDING" | "ACCEPTED" | "NONE" | "REJECTED";
+  createdAt: Date | string;
+  updatedAt: Date | string;
   requester: User;
   receiver: User;
 }
 
 interface ConnectionsCardProps {
   users: User[];
-  connections: User[];
+  connections: User[]; 
   connectionsReceived: Connection[];
   connectionsSent: Connection[];
-  sendConnectionRequest: (receiverId: string) => void;
-  pendingRequests: Set<string>;
-  acceptConnectionRequest: (connectionId: string) => void;
-  rejectionConnectionRequest: (connectionId: string) => void;
+  sendConnectionRequest: (userId: string) => Promise<boolean>;
+  acceptConnectionRequest: (connectionId: string) => Promise<boolean>;
+  rejectConnectionRequest: (connectionId: string) => Promise<boolean>;
 }
 
 const ConnectionsCard = ({
@@ -48,16 +50,51 @@ const ConnectionsCard = ({
   connectionsSent,
   connectionsReceived,
   sendConnectionRequest,
-  pendingRequests,
   acceptConnectionRequest,
-  rejectionConnectionRequest,
+  rejectConnectionRequest,
 }: ConnectionsCardProps) => {
   const [activeTab, setActiveTab] = useState("users");
+
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
 
-  const formatUserRole = (role: string | undefined) => {
+  const handleSendConnectionRequest = async (userId: string) => {
+    try {
+      await sendConnectionRequest(userId);
+      toast.success("Connection request sent successfully!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error sending connection request"
+      );
+    }
+  };
+
+  const handleAcceptConnection = async (connectionId: string) => {
+    try {
+      await acceptConnectionRequest(connectionId);
+      toast.success("Connection accepted successfully!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Error accepting connection"
+      );
+    }
+  };
+
+  const handleRejectConnection = async (connectionId: string) => {
+    try {
+      await rejectConnectionRequest(connectionId);
+      toast.success("Connection rejected successfully!");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Error rejecting connection"
+      );
+    }
+  };
+
+  const formatUserRole = (role: string | null | undefined) => {
     if (role) {
       return role.split(" ").map((word, index) => (
         <span key={index} className="block text-sm text-zinc-300">
@@ -138,14 +175,15 @@ const ConnectionsCard = ({
                   >
                     <Image
                       src={user.image || defaultPfp}
-                      alt={user.name}
+                      alt={user.name || "User"}
                       width={64}
                       height={64}
                       className="w-16 h-16 rounded-full mb-2"
                     />
-
-                    <h4 className="text-xl font-bold">{user.name}</h4>
-                    <p>{user.email}</p>
+                    <h4 className="text-xl font-bold">
+                      {user.name || "Unknown"}
+                    </h4>
+                    <p>{user.email || "No email"}</p>
                     {user.role && <p>{user.role}</p>}
                     {user.userRole && (
                       <div className="mt-2">
@@ -161,7 +199,7 @@ const ConnectionsCard = ({
                       )}
                     <div className="absolute top-4 right-4 p-2 rounded-lg">
                       <button
-                        onClick={() => sendConnectionRequest(user.id)}
+                        onClick={() => handleSendConnectionRequest(user.id)}
                         className={`p-2 rounded-lg text-white ${
                           user.connectionStatus === "PENDING"
                             ? "bg-yellow-600 hover:bg-yellow-500"
@@ -172,7 +210,6 @@ const ConnectionsCard = ({
                             : ""
                         }`}
                         disabled={
-                          pendingRequests.has(user.id) ||
                           user.connectionStatus === "ACCEPTED" ||
                           user.connectionStatus === "PENDING"
                         }
@@ -200,7 +237,7 @@ const ConnectionsCard = ({
         {activeTab === "connections" && (
           <div className="rounded-lg h-full">
             {connections && connections.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {connections.map((connection) => (
                   <div
                     key={connection.id}
@@ -208,13 +245,15 @@ const ConnectionsCard = ({
                   >
                     <Image
                       src={connection.image || defaultPfp}
-                      alt={connection.name}
+                      alt={connection.name || "User"}
                       width={64}
                       height={64}
                       className="w-16 h-16 rounded-full mb-2"
                     />
-                    <h4 className="text-xl font-bold">{connection.name}</h4>
-                    <p>{connection.email}</p>
+                    <h4 className="text-xl font-bold">
+                      {connection.name || "Unknown"}
+                    </h4>
+                    <p>{connection.email || "No email"}</p>
                     {connection.role && <p>{connection.role}</p>}
                     {connection.userRole && (
                       <div className="mt-2">
@@ -236,7 +275,6 @@ const ConnectionsCard = ({
             )}
           </div>
         )}
-
         {activeTab === "sent" && (
           <div className="rounded-lg h-full">
             {connectionsSent && connectionsSent.length > 0 ? (
@@ -247,16 +285,16 @@ const ConnectionsCard = ({
                     className="bg-zinc-800 p-4 rounded-lg relative"
                   >
                     <Image
-                      src={connection.receiver.image || "/default-avatar.png"}
-                      alt={connection.receiver.name}
+                      src={connection.receiver.image || defaultPfp}
+                      alt={connection.receiver.name || "User"}
                       width={64}
                       height={64}
                       className="w-16 h-16 rounded-full mb-2"
                     />
                     <h4 className="text-xl font-bold">
-                      {connection.receiver.name}
+                      {connection.receiver.name || "Unknown"}
                     </h4>
-                    <p>{connection.receiver.email}</p>
+                    <p>{connection.receiver.email || "No email"}</p>
                     {connection.receiver.userRole && (
                       <div className="mt-2">
                         {formatUserRole(connection.receiver.userRole)}
@@ -308,19 +346,20 @@ const ConnectionsCard = ({
                   >
                     <Image
                       src={connection.requester.image || defaultPfp}
-                      alt={connection.requester.name}
+                      alt={connection.requester.name || "User"}
                       width={64}
                       height={64}
                       className="w-16 h-16 rounded-full mb-4 mx-auto"
                     />
                     <h4 className="text-xl font-bold text-center">
-                      {connection.requester.name}
+                      {connection.requester.name || "Unknown"}
                     </h4>
                     <p className="text-center text-zinc-400">
                       {connection.requester.headline}
                     </p>
-                    <p className="text-center">{connection.requester.email}</p>
-
+                    <p className="text-center">
+                      {connection.requester.email || "No email"}
+                    </p>
                     {connection.requester.userRole && (
                       <div className="mt-3 text-center text-zinc-300">
                         {formatUserRole(connection.requester.userRole)}
@@ -329,16 +368,14 @@ const ConnectionsCard = ({
                     {connection.status === "PENDING" && (
                       <div className="flex justify-center gap-4 mt-6">
                         <button
-                          onClick={() => acceptConnectionRequest(connection.id)}
-                          className="p-3 px-6 rounded-lg  text-white bg-zinc-700 hover:bg-zinc-600 border-gray-700 border-2 transition-all duration-200"
+                          onClick={() => handleAcceptConnection(connection.id)}
+                          className="p-3 px-6 rounded-lg text-white bg-zinc-700 hover:bg-zinc-600 border-gray-700 border-2 transition-all duration-200"
                         >
                           Accept
                         </button>
                         <button
-                          onClick={() =>
-                            rejectionConnectionRequest(connection.id)
-                          }
-                          className="p-3 px-6 rounded-lg  text-white bg-zinc-700 hover:bg-zinc-600 border-gray-700 border-2 transition-all duration-200"
+                          onClick={() => handleRejectConnection(connection.id)}
+                          className="p-3 px-6 rounded-lg text-white bg-zinc-700 hover:bg-zinc-600 border-gray-700 border-2 transition-all duration-200"
                         >
                           Reject
                         </button>
