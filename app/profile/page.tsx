@@ -135,26 +135,9 @@ function Profile() {
   const { data: connectionsSent } = useSWR("/api/connections/sent", (url) =>
     fetch(url).then((res) => res.json())
   );
-  const { data: currentGoalData } = useSWR(
-    "/api/weekly-application-goal",
-    (url) => fetch(url).then((res) => res.json())
-  );
-  const { data: weeklyApplicationDayTrackerData } = useSWR(
-    "/api/weekly-application-day-tracker",
-    (url) => fetch(url).then((res) => res.json())
-  );
-  const { data: weeklyApplicationGoalTrackerData } = useSWR(
-    "/api/weekly-application-goal-tracker",
-    (url) => fetch(url).then((res) => res.json())
-  );
-  const { data: monthlyInterviewGoalTrackerData } = useSWR(
-    "/api/monthly-interview-goal-tracker",
-    (url) => fetch(url).then((res) => res.json())
-  );
   const { data: userAchievementData } = useSWR("/api/achievements", (url) =>
     fetch(url).then((res) => res.json())
   );
-
   const [activeTab, setActiveTab] = useState<string>("profile");
   const [activeAchievementTab, setActiveAchievementTab] =
     useState<string>("all");
@@ -971,20 +954,6 @@ function Profile() {
                     )}
                   </div>
                 </div>
-              )}
-              {activeTab === "goal" && (
-                <GoalForm
-                  currentGoalData={currentGoalData}
-                  weeklyApplicationDayTrackerData={
-                    weeklyApplicationDayTrackerData
-                  }
-                  weeklyApplicationGoalTrackerData={
-                    weeklyApplicationGoalTrackerData
-                  }
-                  monthlyInterviewGoalTrackerData={
-                    monthlyInterviewGoalTrackerData
-                  }
-                />
               )}
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload resumeData={resumeData} />}>
