@@ -9,7 +9,6 @@ type JobMatchPosting = {
   matchPercentage: number;
 };
 
-// Move this component to a separate file: components/ui/JobMatchCard.tsx
 export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
   const getPercentageColor = (percentage: number) => {
     if (percentage >= 90) return "text-green-700";

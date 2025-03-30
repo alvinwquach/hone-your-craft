@@ -1,5 +1,8 @@
-import { format } from "date-fns";
+"use client";
+
 import { useState } from "react";
+import { format } from "date-fns";
+import { toast } from "react-toastify";
 
 interface Job {
   company: string;
@@ -10,25 +13,18 @@ interface JobOffer {
   job: Job;
   id: string;
   offerDate: Date;
-  offerDeadline: Date;
+  offerDeadline: Date | null;
   salary: string;
 }
 
 interface JobOffersProps {
   jobOffers: JobOffer[];
-  onEditOffer: (offerId: string, updatedSalary: string) => void;
-  onDeleteOffer: (offerId: string) => void;
+  onEditOffer?: (offerId: string, updatedSalary: string) => void;
+  onDeleteOffer?: (offerId: string) => void;
 }
 
 function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
-  const [editingOffer, setEditingOffer] = useState<{ [key: string]: string }>(
-    {}
-  );
-
-  jobOffers.sort(
-    (a, b) =>
-      new Date(a.offerDeadline).getTime() - new Date(b.offerDeadline).getTime()
-  );
+  const [editingOffer, setEditingOffer] = useState<Record<string, string>>({});
 
   const formatSalaryDisplay = (value: string) => {
     const numericValue = value.replace(/\D/g, "");
@@ -50,16 +46,35 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
     return formattedValue.replace(/[^\d.-]/g, "");
   };
 
-  const handleSaveOffer = (id: string) => {
+  const handleSaveOffer = async (id: string) => {
     const formattedSalary = editingOffer[id] || "";
     const rawSalary = getRawSalary(formattedSalary);
-
     if (rawSalary) {
-      onEditOffer(id, rawSalary);
-      setEditingOffer((prev) => {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      });
+      try {
+        await onEditOffer?.(id, rawSalary);
+        toast.success("Offer Updated");
+        setEditingOffer((prev) => {
+          const { [id]: _, ...rest } = prev;
+          return rest;
+        });
+      } catch (error) {
+        toast.error("Failed To Update Offer");
+        console.error("Error updating offer:", error);
+      }
+    }
+  };
+
+  const handleDeleteOffer = async (offerId: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this offer?"
+    );
+    if (!confirmed) return;
+    try {
+      await onDeleteOffer?.(offerId);
+      toast.success("Offer Deleted");
+    } catch (error) {
+      toast.error("Failed To Delete Offer");
+      console.error("Error deleting offer:", error);
     }
   };
 
@@ -76,7 +91,7 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
       {jobOffers.map((offer) => (
         <div
           key={offer.id}
-          className="bg-zinc-800 p-6 rounded-lg shadow-md w-full"
+          className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80"
         >
           <div className="flex justify-between items-center mb-2">
             <div>
@@ -88,11 +103,13 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
           <p className="text-sm text-gray-300 mb-2">{offer.job.title}</p>
           <div className="text-sm text-gray-300">
             <strong>Offer Received:</strong>{" "}
-            {format(new Date(offer.offerDate), "MM/dd/yy @ h:mm a")}
+            {format(offer.offerDate, "MM/dd/yy @ h:mm a")}
           </div>
           <div className="text-sm text-gray-300 mb-4">
             <strong>Offer Deadline:</strong>{" "}
-            {format(new Date(offer.offerDeadline), "MM/dd/yy @ h:mm a")}
+            {offer.offerDeadline
+              ? format(offer.offerDeadline, "MM/dd/yy @ h:mm a")
+              : "No deadline set"}
           </div>
           <div className="mb-4">
             <strong>Salary:</strong>
@@ -107,7 +124,7 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
           </div>
           <div className="flex justify-between mt-4">
             <button
-              onClick={() => onDeleteOffer(offer.id)}
+              onClick={() => handleDeleteOffer(offer.id)}
               className="px-4 py-2 border border-gray-300 text-white rounded-md hover:bg-gray-700"
             >
               Delete Offer

@@ -10,9 +10,6 @@ export async function rescheduleEvent(
   newEndTime: string
 ) {
   const currentUser = await getCurrentUser();
-  // if (!currentUser) {
-  //   throw new Error("User not authenticated");
-  // }
 
   if (!eventId || !newStartTime || !newEndTime) {
     throw new Error("Event ID, start time, and end time are required");

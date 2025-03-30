@@ -15,9 +15,6 @@ export async function getPastEvents(): Promise<
   }[]
 > {
   const currentUser = await getCurrentUser();
-  // if (!currentUser) {
-  //   throw new Error("User not authenticated");
-  // }
 
   const now = new Date();
   const events = await prisma.userEvent.findMany({

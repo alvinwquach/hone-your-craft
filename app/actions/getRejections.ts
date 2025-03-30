@@ -15,7 +15,6 @@ export interface RejectionWithJob {
     id: string;
     company: string;
     title: string;
-    updatedAt: Date;
     postUrl: string;
     rejection: {
       date: Date | null;
@@ -40,7 +39,6 @@ export async function getRejections(): Promise<RejectionGroup> {
           id: true,
           company: true,
           title: true,
-          updatedAt: true,
           postUrl: true,
           rejection: {
             select: {
@@ -52,6 +50,7 @@ export async function getRejections(): Promise<RejectionGroup> {
         },
       },
     },
+    orderBy: { createdAt: "desc" },
   });
 
   return rejections.reduce((acc, rejection) => {
@@ -75,7 +74,6 @@ export async function getRejections(): Promise<RejectionGroup> {
             id: rejection.job.id,
             company: rejection.job.company,
             title: rejection.job.title,
-            updatedAt: new Date(rejection.job.updatedAt),
             postUrl: rejection.job.postUrl,
             rejection: rejection.job.rejection.map((r) => ({
               date: r.date ? new Date(r.date) : null,

@@ -8,7 +8,6 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { cancelEvent } from "@/app/actions/cancelEvent";
 import { rescheduleEvent } from "@/app/actions/rescheduleEvent";
-// import { cancelEvent, rescheduleEvent } from "@/app/actions/meetingActions";
 
 interface Event {
   id: string;
@@ -35,7 +34,6 @@ export default function MeetingTabs({
 
   const handleRescheduleEvent = async (event: Event) => {
     try {
-      // Using existing startTime and endTime as placeholders; adjust if new times are provided elsewhere
       await rescheduleEvent(
         event.id,
         event.startTime.toISOString(),
@@ -63,7 +61,7 @@ export default function MeetingTabs({
   const renderEventCard = (event: Event) => (
     <div
       key={event.id}
-      className="relative p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow"
+      className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80"
     >
       {activeTab === "upcoming" && (
         <div className="absolute top-2 right-2 flex flex-col gap-2 md:absolute md:top-2 md:right-2 lg:static lg:self-start lg:mb-4">
