@@ -1,4 +1,8 @@
+import { deleteRejection } from "@/app/actions/deleteRejection";
+import { editRejection } from "@/app/actions/editRejection";
 import { getRejections } from "@/app/actions/getRejections";
+import JobRejections from "@/app/components/profile/rejections/JobRejections";
+import { Suspense } from "react";
 
 export default async function Rejections() {
   const groupedRejections = await getRejections();
@@ -21,38 +25,13 @@ export default async function Rejections() {
                         day: "numeric",
                       })}
                 </h2>
-                {rejections.map((rejection) => (
-                  <div
-                    key={rejection.id}
-                    className="p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <span className="text-sm text-gray-300">
-                          {rejection.date
-                            ? new Date(rejection.date).toLocaleString()
-                            : "Date TBD"}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-200">
-                          {rejection.job?.title || "Unknown Job"}
-                        </h3>
-                        <p className="text-sm text-gray-400">
-                          {rejection.job?.company || "Unknown Company"}
-                        </p>
-                        <p className="text-sm text-gray-400 capitalize">
-                          Initiated by: {rejection.initiatedBy.toLowerCase()}
-                        </p>
-                        {rejection.notes && (
-                          <p className="text-sm text-gray-400 mt-1">
-                            Notes: {rejection.notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                <Suspense fallback={<div>Loading Rejections...</div>}>
+                  <JobRejections
+                    groupedRejections={groupedRejections}
+                    onEditRejection={editRejection}
+                    onDeleteRejection={deleteRejection}
+                  />
+                </Suspense>
               </div>
             ))
           ) : (

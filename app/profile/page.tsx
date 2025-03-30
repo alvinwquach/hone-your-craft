@@ -21,8 +21,6 @@ import ApplicationStatusChart from "../components/profile/dashboard/ApplicationS
 import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
 import JobApplicationStatusChart from "../components/profile/dashboard/JobApplicationStatusChart";
 import ResumeUpload from "../components/profile/resume/ResumeUpload";
-import JobOffers from "../components/profile/offers/JobOffers";
-import JobRejections from "../components/profile/rejections/JobRejections";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -124,14 +122,6 @@ function Profile() {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
-  const { data: userOffers, isLoading: userOffersLoading } = useSWR(
-    "/api/offers",
-    (url) => fetch(url).then((res) => res.json())
-  );
-  const { data: userRejections, isLoading: userRejectionsLoading } = useSWR(
-    "/api/rejections",
-    (url) => fetch(url).then((res) => res.json())
-  );
   const { data: users } = useSWR("/api/users", (url) =>
     fetch(url).then((res) => res.json())
   );
@@ -205,21 +195,8 @@ function Profile() {
   const holidayAchievements = userAchievementData?.holidayAchievements || [];
 
   const userRole = data?.user?.userRole;
-  const jobOffers = userOffers || [];
-  const jobRejections = userRejections || [];
   const userSkills = data?.user?.skills || [];
   const userData = data || [];
-
-  // const groupEventsByDate = (events: any[]) => {
-  //   return events?.reduce((acc, event) => {
-  //     const eventDate = new Date(event.startTime).toLocaleDateString();
-  //     if (!acc[eventDate]) {
-  //       acc[eventDate] = [];
-  //     }
-  //     acc[eventDate].push(event);
-  //     return acc;
-  //   }, {} as Record<string, any[]>);
-  // };
 
   const sendConnectionRequest = async (receiverId: string) => {
     const connectionStatus = users.find(
@@ -392,110 +369,6 @@ function Profile() {
     )
   );
 
-  const handleEditOffer = async (id: string, updatedSalary: string) => {
-    try {
-      const currentOffer = jobOffers.find((offer: any) => offer.id === id);
-      const response = await fetch(`/api/offer/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          salary: updatedSalary,
-          offerDate: currentOffer?.offerDate,
-          offerDeadline: currentOffer?.offerDeadline,
-        }),
-      });
-
-      if (response.ok) {
-        mutate("/api/offers");
-        toast.success("Offer Updated");
-      } else {
-        throw new Error("Failed to update offer");
-      }
-    } catch (error) {
-      console.error("Error updating offer:", error);
-      toast.error("Failed To Update Offer");
-      throw error;
-    }
-  };
-
-  const handleEditRejection = async (id: string, updatedNotes: string) => {
-    try {
-      const currentRejection = jobRejections.find(
-        (rejection: any) => rejection.id === id
-      );
-      const response = await fetch(`/api/rejection/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          notes: updatedNotes,
-          date: currentRejection?.date,
-          initiatedBy: currentRejection?.initiatedBy,
-        }),
-      });
-
-      if (response.ok) {
-        mutate("/api/rejections");
-        toast.success("Rejection Updated");
-      } else {
-        throw new Error("Failed to update rejection");
-      }
-    } catch (error) {
-      console.error("Error updating rejection:", error);
-      toast.error("Failed To Update Rejection");
-      throw error;
-    }
-  };
-
-  const handleDeleteRejection = async (id: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this rejection?"
-    );
-    if (!confirmed) return;
-
-    try {
-      const response = await fetch(`/api/rejection/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        mutate("/api/rejections");
-        toast.success("Rejection Deleted");
-      } else {
-        throw new Error("Failed to delete rejection");
-      }
-    } catch (error) {
-      console.error("Error deleting rejection:", error);
-      toast.error("Failed To Delete Rejection");
-      throw error;
-    }
-  };
-
-  const handleDeleteOffer = async (offerId: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this offer?"
-    );
-    if (!confirmed) return;
-
-    try {
-      const response = await fetch(`/api/offer/${offerId}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        mutate("/api/offers");
-        toast.success("Offer Deleted");
-      } else {
-        throw new Error("Failed to delete offer");
-      }
-    } catch (error) {
-      console.error("Error deleting offer:", error);
-      toast.error("Failed To Delete Offer");
-      throw error;
-    }
-  };
-
   const rejectConnectionRequest = async (connectionId: string) => {
     try {
       const response = await fetch("/api/connections/reject", {
@@ -545,8 +418,6 @@ function Profile() {
   };
 
   const loadingUserData = !userData || userDataLoading;
-  const loadingUserOffers = !userOffers || userOffersLoading;
-  const loadingUserRejections = !userRejections || userRejectionsLoading;
   const loadingUserSkills = !userSkills || userDataLoading;
 
   interface Achievement {
@@ -1123,48 +994,6 @@ function Profile() {
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload resumeData={resumeData} />}>
                   <ResumeUpload resumeData={resumeData} />
-                </Suspense>
-              )}
-              {activeTab === "offers" && (
-                <Suspense
-                  fallback={
-                    <JobOffers
-                      jobOffers={[]}
-                      onEditOffer={handleEditOffer}
-                      onDeleteOffer={handleDeleteOffer}
-                    />
-                  }
-                >
-                  {!loadingUserOffers ? (
-                    <JobOffers
-                      jobOffers={jobOffers}
-                      onEditOffer={handleEditOffer}
-                      onDeleteOffer={handleDeleteOffer}
-                    />
-                  ) : (
-                    <div>Loading Offers...</div>
-                  )}
-                </Suspense>
-              )}
-              {activeTab === "rejections" && (
-                <Suspense
-                  fallback={
-                    <JobRejections
-                      jobRejections={[]}
-                      onEditRejection={handleEditRejection}
-                      onDeleteRejection={handleDeleteRejection}
-                    />
-                  }
-                >
-                  {!loadingUserRejections ? (
-                    <JobRejections
-                      jobRejections={jobRejections}
-                      onEditRejection={handleEditRejection}
-                      onDeleteRejection={handleDeleteRejection}
-                    />
-                  ) : (
-                    <div>Loading Rejections...</div>
-                  )}
                 </Suspense>
               )}
             </div>
