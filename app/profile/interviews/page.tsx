@@ -92,8 +92,9 @@ export default async function Interviews() {
                 No Upcoming Interviews
               </h2>
               <p className="text-gray-600 text-center max-w-md">
-                You don't have any scheduled interviews at the moment. Start by
-                applying to jobs or responding to interview invitations.
+                You don&apos;t have any scheduled interviews at the moment.
+                Start by applying to jobs or responding to interview
+                invitations.
               </p>
             </div>
           )}
