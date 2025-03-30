@@ -3,6 +3,27 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag, unstable_cache } from "next/cache";
 
+const performance = {
+  marks: new Map(),
+
+  // Helper function to start timing
+  time(name) {
+    console.time(name);
+    this.marks.set(name, Date.now());
+  },
+
+  // Helper function to end timing
+  timeEnd(name) {
+    const startTime = this.marks.get(name);
+    if (!startTime) return;
+
+    const duration = Date.now() - startTime;
+    console.log(`${name}: ${duration.toFixed(2)}ms`);
+    this.marks.delete(name);
+    console.timeEnd(name); // Also use browser's built-in timer
+  },
+};
+
 interface Holiday {
   name: string;
   date?: string;
@@ -243,7 +264,17 @@ const calculateAchievements = async (
   let appliedJobsCount = 0;
   let interviewsCount = 0;
 
-  appliedJobs
+  const processedAppliedJobs = appliedJobs.map((job) => ({
+    ...job,
+    createdAt: new Date(job.createdAt),
+  }));
+
+  const processedInterviews = interviews.map((interview) => ({
+    ...interview,
+    acceptedDate: new Date(interview.acceptedDate),
+  }));
+
+  processedAppliedJobs
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     .forEach((job) => {
       appliedJobsCount++;
@@ -251,7 +282,7 @@ const calculateAchievements = async (
         jobMilestonesMap.set(appliedJobsCount, job.createdAt);
     });
 
-  interviews
+  processedInterviews
     .sort((a, b) => a.acceptedDate.getTime() - b.acceptedDate.getTime())
     .forEach((interview) => {
       interviewsCount++;
@@ -368,23 +399,114 @@ const sortAchievements = (a: HolidayAchievement, b: HolidayAchievement) => {
     : indexA - indexB;
 };
 
+// export async function GET(request: NextRequest) {
+//   try {
+//     const currentUser = await getCurrentUser();
+//     if (!currentUser)
+//       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+//     const [userJobs, userInterviews, userAchievements] = await Promise.all([
+//       getUserJobs(currentUser.id),
+//       getUserInterviews(currentUser.id),
+//       getUserAchievements(currentUser.id),
+//     ]);
+
+//     const [achievementsResult, weeklyResult] = await Promise.all([
+//       cachedCalculateAchievements(currentUser.id, userJobs, userInterviews),
+//       calculateWeeklyApplicationStreak(currentUser.id),
+//     ]);
+
+//     const { awardedAchievements, lockedAchievements } = achievementsResult;
+//     const holidayAchievements: HolidayAchievement[] = [];
+//     const lockedHolidayAchievements: HolidayAchievement[] = [];
+//     const uniqueHolidaysAppliedOn = new Set<string>();
+
+//     userJobs.forEach((job) => {
+//       const holiday =
+//         job.holidayApplied || checkIfHoliday(new Date(job.createdAt));
+//       if (holiday && !uniqueHolidaysAppliedOn.has(holiday)) {
+//         uniqueHolidaysAppliedOn.add(holiday);
+//         holidayAchievements.push({
+//           name: `Applied on ${holiday} ${new Date(
+//             job.createdAt
+//           ).getFullYear()}`,
+//           description: `Awarded for applying on ${holiday} in ${new Date(
+//             job.createdAt
+//           ).getFullYear()}.`,
+//           unlocked: true,
+//         });
+//       }
+//     });
+
+//     usHolidays.forEach((holiday) => {
+//       if (!uniqueHolidaysAppliedOn.has(holiday.name)) {
+//         lockedHolidayAchievements.push({
+//           name: `Applied on ${holiday.name} ${currentYear}`,
+//           description: `Awarded for applying on ${holiday.name} in ${currentYear}`,
+//           unlocked: false,
+//         });
+//       }
+//     });
+
+//     const organizedAchievements = {
+//       jobAchievements: [
+//         ...awardedAchievements.filter((a) => a.name.includes("Applied to")),
+//         ...lockedAchievements.filter((a) => a.name.includes("Applied to")),
+//       ].sort(sortAchievements),
+//       interviewAchievements: [
+//         ...awardedAchievements.filter((a) => a.name.includes("Attended")),
+//         ...lockedAchievements.filter((a) => a.name.includes("Attended")),
+//       ].sort(sortAchievements),
+//       holidayAchievements: [
+//         ...holidayAchievements,
+//         ...lockedHolidayAchievements,
+//       ].sort(sortAchievements),
+//     };
+
+//     return NextResponse.json({
+//       ...organizedAchievements,
+//       allAchievements: userAchievements.map((ua) => ua.achievement),
+//       weeklyStreak: weeklyResult.streak,
+//       appliedDaysThisWeek: weeklyResult.appliedDaysCount,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching or calculating user achievements:", error);
+//     return NextResponse.error();
+//   }
+// }
+
 export async function GET(request: NextRequest) {
   try {
+    // Start overall request timing
+    performance.time("total_request");
+
+    // Time getCurrentUser operation
+    performance.time("get_current_user");
     const currentUser = await getCurrentUser();
+    performance.timeEnd("get_current_user");
+
     if (!currentUser)
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
+    // Time parallel operations
+    performance.time("parallel_queries");
     const [userJobs, userInterviews, userAchievements] = await Promise.all([
       getUserJobs(currentUser.id),
       getUserInterviews(currentUser.id),
       getUserAchievements(currentUser.id),
     ]);
+    performance.timeEnd("parallel_queries");
 
+    // Time achievement calculations
+    performance.time("achievement_calculations");
     const [achievementsResult, weeklyResult] = await Promise.all([
       cachedCalculateAchievements(currentUser.id, userJobs, userInterviews),
       calculateWeeklyApplicationStreak(currentUser.id),
     ]);
+    performance.timeEnd("achievement_calculations");
 
+    // Time holiday achievements processing
+    performance.time("holiday_processing");
     const { awardedAchievements, lockedAchievements } = achievementsResult;
     const holidayAchievements: HolidayAchievement[] = [];
     const lockedHolidayAchievements: HolidayAchievement[] = [];
@@ -416,7 +538,10 @@ export async function GET(request: NextRequest) {
         });
       }
     });
+    performance.timeEnd("holiday_processing");
 
+    // Time final organization
+    performance.time("achievement_organization");
     const organizedAchievements = {
       jobAchievements: [
         ...awardedAchievements.filter((a) => a.name.includes("Applied to")),
@@ -431,6 +556,10 @@ export async function GET(request: NextRequest) {
         ...lockedHolidayAchievements,
       ].sort(sortAchievements),
     };
+    performance.timeEnd("achievement_organization");
+
+    // End overall request timing
+    performance.timeEnd("total_request");
 
     return NextResponse.json({
       ...organizedAchievements,
