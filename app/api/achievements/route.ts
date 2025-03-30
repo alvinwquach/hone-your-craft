@@ -1,7 +1,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { unstable_cache } from "next/cache";
 
 interface Holiday {
   name: string;
@@ -243,7 +243,17 @@ const calculateAchievements = async (
   let appliedJobsCount = 0;
   let interviewsCount = 0;
 
-  appliedJobs
+  const processedAppliedJobs = appliedJobs.map((job) => ({
+    ...job,
+    createdAt: new Date(job.createdAt),
+  }));
+
+  const processedInterviews = interviews.map((interview) => ({
+    ...interview,
+    acceptedDate: new Date(interview.acceptedDate),
+  }));
+
+  processedAppliedJobs
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
     .forEach((job) => {
       appliedJobsCount++;
@@ -251,7 +261,7 @@ const calculateAchievements = async (
         jobMilestonesMap.set(appliedJobsCount, job.createdAt);
     });
 
-  interviews
+  processedInterviews
     .sort((a, b) => a.acceptedDate.getTime() - b.acceptedDate.getTime())
     .forEach((interview) => {
       interviewsCount++;
