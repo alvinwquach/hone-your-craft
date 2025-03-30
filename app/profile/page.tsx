@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import getUserJobPostings from "../actions/getUserJobPostings";
 import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
 import { getUserJobMissingSkillsAndFrequency } from "@/app/actions/getUserJobMissingSkillsAndFrequency";
@@ -21,7 +21,6 @@ import ApplicationStatusChart from "../components/profile/dashboard/ApplicationS
 import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
 import JobApplicationStatusChart from "../components/profile/dashboard/JobApplicationStatusChart";
 import ResumeUpload from "../components/profile/resume/ResumeUpload";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   FaUser,
@@ -30,36 +29,13 @@ import {
   FaFileAlt,
   FaBan,
   FaAward,
-  FaUserTie,
-  FaCheck,
-  FaFlagUsa,
-  FaTrophy,
-  FaBriefcase,
-  FaCalendar,
-  FaTrash,
 } from "react-icons/fa";
-import { MdRefresh } from "react-icons/md";
 import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
-import { GiPumpkinMask, GiTargeting, GiThreeFriends } from "react-icons/gi";
-import ConnectionsCard from "../components/profile/connections/ConnectionsCard";
+import { GiTargeting, GiThreeFriends } from "react-icons/gi";
 import { GoGoal } from "react-icons/go";
-import GoalForm from "../components/profile/goal/GoalForm";
-import { BsBriefcase, BsLock } from "react-icons/bs";
-import { MdMeetingRoom, MdStairs } from "react-icons/md";
-import { GiPartyPopper } from "react-icons/gi";
-import { TbChristmasTree } from "react-icons/tb";
+import { MdMeetingRoom } from "react-icons/md";
 import { gsap } from "gsap";
-import { GrTrophy } from "react-icons/gr";
-import { IoMdMedal } from "react-icons/io";
-import {
-  IoCalendarClearSharp,
-  IoCalendarNumberSharp,
-  IoCalendarSharp,
-} from "react-icons/io5";
-import { useRouter } from "next/navigation";
-import MeetingCalendarDownloadButton from "../components/profile/meetings/MeetingCalendarDownloadButton";
-import { getUserJobPostingsWithSkillMatch } from "@/app/actions/getUserJobPostingsWithSkillMatch";
 
 interface User {
   id: string;
@@ -122,19 +98,6 @@ function Profile() {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
-  const { data: users } = useSWR("/api/users", (url) =>
-    fetch(url).then((res) => res.json())
-  );
-  const { data: connections } = useSWR("/api/connections/", (url) =>
-    fetch(url).then((res) => res.json())
-  );
-  const { data: connectionsReceived } = useSWR(
-    "/api/connections/received",
-    (url) => fetch(url).then((res) => res.json())
-  );
-  const { data: connectionsSent } = useSWR("/api/connections/sent", (url) =>
-    fetch(url).then((res) => res.json())
-  );
 
   const [activeTab, setActiveTab] = useState<string>("profile");
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
@@ -160,53 +123,10 @@ function Profile() {
   const [jobApplicationStatusCount, setJobApplicationStatusCount] = useState<
     JobApplicationStatus[]
   >([]);
-  const [pendingRequests, setPendingRequests] = useState<Set<string>>(
-    new Set()
-  );
 
   const userRole = data?.user?.userRole;
   const userSkills = data?.user?.skills || [];
   const userData = data || [];
-
-  const sendConnectionRequest = async (receiverId: string) => {
-    const connectionStatus = users.find(
-      (user: User) => user.id === receiverId
-    )?.connectionStatus;
-
-    if (connectionStatus === "NONE") {
-      try {
-        const response = await fetch("/api/connections", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ receiverId }),
-        });
-
-        if (response.ok) {
-          mutate("/api/connections/sent");
-          mutate("/api/users");
-          toast.success("Connection sent successfully!");
-        } else {
-          console.error("Failed to send connection request");
-          toast.error("Failed to send connection request.");
-        }
-      } catch (error) {
-        console.error("Error sending connection request:", error);
-        toast.error("Error sending connection request.");
-      } finally {
-        setTimeout(() => {
-          setPendingRequests((prev) => {
-            const updated = new Set(prev);
-            updated.delete(receiverId);
-            return updated;
-          });
-        }, 3000);
-      }
-    } else {
-      toast.info("You have already interacted with this user.");
-    }
-  };
 
   useEffect(() => {
     async function fetchJobPostings() {
@@ -338,54 +258,6 @@ function Profile() {
         : []
     )
   );
-
-  const rejectConnectionRequest = async (connectionId: string) => {
-    try {
-      const response = await fetch("/api/connections/reject", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ connectionId }),
-      });
-
-      if (response.ok) {
-        mutate("/api/connections/received");
-        mutate("/api/connections/sent");
-        mutate("/api/users");
-        toast.success("Connection rejected successfully!");
-      } else {
-        toast.error("Failed to reject connection request.");
-      }
-    } catch (error) {
-      console.error("Error rejecting connection:", error);
-      toast.error("Error rejecting connection request.");
-    }
-  };
-
-  const acceptConnectionRequest = async (connectionId: string) => {
-    try {
-      const response = await fetch("/api/connections/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ connectionId }),
-      });
-
-      if (response.ok) {
-        mutate("/api/connections/received");
-        mutate("/api/connections/sent");
-        mutate("/api/connections");
-        toast.success("Connection accepted successfully!");
-      } else {
-        toast.error("Failed to accept connection request.");
-      }
-    } catch (error) {
-      console.error("Error accepting connection:", error);
-      toast.error("Error accepting connection request.");
-    }
-  };
 
   const loadingUserData = !userData || userDataLoading;
   const loadingUserSkills = !userSkills || userDataLoading;
@@ -590,33 +462,6 @@ function Profile() {
                 </li>
               </ul>
             </div>
-            {activeTab === "connections" && (
-              <Suspense
-                fallback={
-                  <ConnectionsCard
-                    users={[]}
-                    connections={[]}
-                    connectionsReceived={[]}
-                    connectionsSent={[]}
-                    sendConnectionRequest={sendConnectionRequest}
-                    pendingRequests={pendingRequests}
-                    acceptConnectionRequest={acceptConnectionRequest}
-                    rejectionConnectionRequest={rejectConnectionRequest}
-                  />
-                }
-              >
-                <ConnectionsCard
-                  users={users}
-                  connections={connections}
-                  connectionsReceived={connectionsReceived}
-                  connectionsSent={connectionsSent}
-                  sendConnectionRequest={sendConnectionRequest}
-                  pendingRequests={pendingRequests}
-                  acceptConnectionRequest={acceptConnectionRequest}
-                  rejectionConnectionRequest={rejectConnectionRequest}
-                />
-              </Suspense>
-            )}
             <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
               {activeTab === "profile" && (
                 <Suspense fallback={<ProfileCard userData={[]} />}>
@@ -829,33 +674,6 @@ function Profile() {
                 ) : (
                   <div>Loading Profile...</div>
                 )}
-              </Suspense>
-            )}
-            {activeTab === "connections" && (
-              <Suspense
-                fallback={
-                  <ConnectionsCard
-                    users={[]}
-                    connections={[]}
-                    connectionsReceived={[]}
-                    connectionsSent={[]}
-                    sendConnectionRequest={sendConnectionRequest}
-                    pendingRequests={pendingRequests}
-                    acceptConnectionRequest={acceptConnectionRequest}
-                    rejectionConnectionRequest={rejectConnectionRequest}
-                  />
-                }
-              >
-                <ConnectionsCard
-                  users={users}
-                  connections={connections}
-                  connectionsReceived={connectionsReceived}
-                  connectionsSent={connectionsSent}
-                  sendConnectionRequest={sendConnectionRequest}
-                  pendingRequests={pendingRequests}
-                  acceptConnectionRequest={acceptConnectionRequest}
-                  rejectionConnectionRequest={rejectConnectionRequest}
-                />
               </Suspense>
             )}
           </div>
