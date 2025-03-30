@@ -91,7 +91,7 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
       {jobOffers.map((offer) => (
         <div
           key={offer.id}
-          className="bg-zinc-800 p-6 rounded-lg shadow-md w-full"
+          className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80"
         >
           <div className="flex justify-between items-center mb-2">
             <div>

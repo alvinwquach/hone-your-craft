@@ -50,6 +50,7 @@ export async function getRejections(): Promise<RejectionGroup> {
         },
       },
     },
+    orderBy: { createdAt: "desc" },
   });
 
   return rejections.reduce((acc, rejection) => {
