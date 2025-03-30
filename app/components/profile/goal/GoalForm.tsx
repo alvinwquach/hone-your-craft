@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
@@ -11,6 +11,7 @@ import { MdAdd, MdRemove } from "react-icons/md";
 import { FaMinus } from "react-icons/fa";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { isSameDay, isToday } from "date-fns";
+import updateGoalData from "../../../actions/updateGoalData";
 
 const schema = z.object({
   jobsAppliedToDaysPerWeekGoal: z
@@ -61,7 +62,6 @@ type DayOfWeek =
   | "Friday"
   | "Saturday";
 
-
 interface WeeklyApplicationDayTrackerData {
   applicationPresence: [DayOfWeek, boolean][];
 }
@@ -80,8 +80,8 @@ interface MonthlyInterviewGoalTrackerData {
 
 interface GoalFormProps {
   currentGoalData: {
-    jobsAppliedToDaysPerWeekGoal: number;
-    jobsAppliedToWeeklyGoalMin: number;
+    jobsAppliedToDaysPerWeekGoal?: number | undefined;
+    jobsAppliedToWeeklyGoalMin?: number | undefined;
     jobsAppliedToWeeklyGoalMax: number;
     monthlyInterviewGoal: number;
     candidateGoal: string;
@@ -305,7 +305,7 @@ const GoalForm = ({
     handleDates();
   }, [currentGoalData, setValue]);
 
-  const handleSave: SubmitHandler<FormData> = async (data) => {
+  const handleSave = async (data: FormData) => {
     try {
       let offerReceivedByDateGoal: Date | null = null;
       let offerReceivedByDateGoalStart: Date | null = null;
@@ -314,19 +314,18 @@ const GoalForm = ({
       if (selectedDates.length === 1) {
         offerReceivedByDateGoal = selectedDates[0]?.toDate();
       }
-
       if (selectedDates.length === 2) {
         offerReceivedByDateGoalStart = selectedDates[0]?.toDate();
         offerReceivedByDateGoalEnd =
           selectedDates[selectedDates.length - 1]?.toDate();
       }
 
-      function formatCamelCase(str: string) {
+      const formatCamelCase = (str: string): string => {
         return str
           .replace(/([a-z])([A-Z])/g, "$1 $2")
           .toLowerCase()
           .replace(/^./, (match) => match.toUpperCase());
-      }
+      };
 
       let offerGoalMessage = "";
       if (offerReceivedByDateGoal) {
@@ -335,48 +334,52 @@ const GoalForm = ({
         offerGoalMessage = `Your goal is to get an offer between ${offerReceivedByDateGoalStart.toLocaleDateString()} and ${offerReceivedByDateGoalEnd.toLocaleDateString()}`;
       }
 
-      const response = await fetch("/api/weekly-application-goal", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jobsAppliedToDaysPerWeekGoal: data.jobsAppliedToDaysPerWeekGoal,
-          jobsAppliedToWeeklyGoalMin: data.jobsAppliedToWeeklyGoalMin,
-          jobsAppliedToWeeklyGoalMax: data.jobsAppliedToWeeklyGoalMax,
-          monthlyInterviewGoal: data.monthlyInterviewGoal,
-          candidateGoal: data.candidateGoal,
-          offerReceivedByDateGoal: offerReceivedByDateGoal || undefined,
-          offerReceivedByDateGoalStart:
-            offerReceivedByDateGoalStart || undefined,
-          offerReceivedByDateGoalEnd: offerReceivedByDateGoalEnd || undefined,
-        }),
-      });
+      const response = await updateGoalData(data);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(errorData.message || "An error occurred.");
+      if (response.errors) {
+        Object.entries(response.errors).forEach(([field, error]) => {
+          toast.error(error[0]);
+        });
         return;
       }
 
-      const result = await response.json();
-      const isPlural = result.jobsAppliedToDaysPerWeekGoal > 1;
-      toast.success(
-        `Your weekly goal is to apply to ${
-          result.jobsAppliedToWeeklyGoalMin
-        } - ${result.jobsAppliedToWeeklyGoalMax} jobs and apply ${
-          result.jobsAppliedToDaysPerWeekGoal
-        } ${isPlural ? "days" : "day"} per week. Your monthly goal is to have ${
-          result.monthlyInterviewGoal
-        } interviews. Your goal: ${formatCamelCase(
-          result.candidateGoal
-        )}. ${offerGoalMessage}`
-      );
+      const isPlural = data.jobsAppliedToDaysPerWeekGoal ?? 1 > 1;
+      const successMessage = `
+        Your weekly goal is to apply to ${data.jobsAppliedToWeeklyGoalMin} - ${
+        data.jobsAppliedToWeeklyGoalMax
+      } jobs
+        and apply ${data.jobsAppliedToDaysPerWeekGoal ?? 0} ${
+        isPlural ? "days" : "day"
+      } per week.
+        Your monthly goal is to have ${
+          data.monthlyInterviewGoal ?? 0
+        } interviews.
+        Your goal: ${formatCamelCase(data.candidateGoal ?? "NotSureYet")}.
+        ${offerGoalMessage}
+      `;
 
-      mutate("/api/weekly-application-goal");
+      toast.success(successMessage, {
+        toastId: "goalUpdateSuccess",
+        position: "top-right",
+        autoClose: 8000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
       reset();
+      mutate("/api/weekly-application-goal");
     } catch (error) {
-      toast.error("An error occurred while saving your application target.");
+      toast.error("An error occurred while saving your application target.", {
+        toastId: "goalUpdateError",
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
