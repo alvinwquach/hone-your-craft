@@ -1,16 +1,16 @@
-import { format } from "date-fns";
-import { RejectionInitiator } from "@prisma/client";
-import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { useState } from "react";
+import { RejectionInitiator } from "@prisma/client";
 
 interface Job {
+  id: string;
   company: string;
   title: string;
+  postUrl: string;
 }
 
 interface JobRejection {
-  job: Job;
   id: string;
+  job: Job;
   date: Date;
   initiatedBy: RejectionInitiator;
   notes: string;
@@ -67,13 +67,18 @@ function JobRejections({
               </h3>
             </div>
             <div className="text-sm text-gray-300">
-              {format(new Date(rejection.date), "MM/dd/yy @ h:mm a")}
+              {rejection.date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "numeric",
+              })}
             </div>
           </div>
           <p className="text-sm text-gray-300 mb-2">{rejection.job.title}</p>
           <div className="text-sm text-gray-300 mb-4">
-            <strong>Initiated By:</strong>{" "}
-            {convertToSentenceCase(rejection.initiatedBy)}
+            <strong>Initiated By:</strong> {rejection.initiatedBy.toLowerCase()}
           </div>
           <div className="mb-4">
             <strong>Notes:</strong>
@@ -88,7 +93,7 @@ function JobRejections({
             <button
               type="button"
               onClick={() => onDeleteRejection(rejection.id)}
-              className="px-4 py-2 border border-gray-300 text-white rounded-md "
+              className="px-4 py-2 border border-gray-300 text-white rounded-md"
             >
               Delete Rejection
             </button>

@@ -1,7 +1,29 @@
+import { deleteRejection } from "@/app/actions/deleteRejection";
+import { editRejection } from "@/app/actions/editRejection";
 import { getRejections } from "@/app/actions/getRejections";
+import JobRejections from "@/app/components/profile/rejections/JobRejections";
+import { revalidatePath } from "next/cache";
 
 export default async function Rejections() {
   const groupedRejections = await getRejections();
+
+  const handleEditRejection = async (id: string, notes: string) => {
+    try {
+      await editRejection(id, notes);
+      revalidatePath("/profile/rejections", "page");
+    } catch (err) {
+    } finally {
+    }
+  };
+
+  const handleDeleteRejection = async (id: string) => {
+    try {
+      await deleteRejection(id);
+      revalidatePath("/profile/rejections", "page");
+    } catch (err) {
+    } finally {
+    }
+  };
 
   return (
     <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
@@ -21,38 +43,11 @@ export default async function Rejections() {
                         day: "numeric",
                       })}
                 </h2>
-                {rejections.map((rejection) => (
-                  <div
-                    key={rejection.id}
-                    className="p-4 mb-4 rounded-lg border border-gray-600 bg-zinc-800 shadow-md hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <span className="text-sm text-gray-300">
-                          {rejection.date
-                            ? new Date(rejection.date).toLocaleString()
-                            : "Date TBD"}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-200">
-                          {rejection.job?.title || "Unknown Job"}
-                        </h3>
-                        <p className="text-sm text-gray-400">
-                          {rejection.job?.company || "Unknown Company"}
-                        </p>
-                        <p className="text-sm text-gray-400 capitalize">
-                          Initiated by: {rejection.initiatedBy.toLowerCase()}
-                        </p>
-                        {rejection.notes && (
-                          <p className="text-sm text-gray-400 mt-1">
-                            Notes: {rejection.notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                <JobRejections
+                  jobRejections={rejections}
+                  onEditRejection={handleEditRejection}
+                  onDeleteRejection={handleDeleteRejection}
+                />
               </div>
             ))
           ) : (
