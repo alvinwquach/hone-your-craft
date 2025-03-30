@@ -955,20 +955,6 @@ function Profile() {
                   </div>
                 </div>
               )}
-              {/* {activeTab === "goal" && (
-                <GoalForm
-                  currentGoalData={currentGoalData}
-                  weeklyApplicationDayTrackerData={
-                    weeklyApplicationDayTrackerData
-                  }
-                  weeklyApplicationGoalTrackerData={
-                    weeklyApplicationGoalTrackerData
-                  }
-                  monthlyInterviewGoalTrackerData={
-                    monthlyInterviewGoalTrackerData
-                  }
-                />
-              )} */}
               {activeTab === "resume" && (
                 <Suspense fallback={<ResumeUpload resumeData={resumeData} />}>
                   <ResumeUpload resumeData={resumeData} />
