@@ -5,6 +5,7 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { ApplicationStatus } from "@prisma/client";
+import { redirect } from "next/navigation";
 
 type DayOfWeek =
   | "Sunday"
@@ -18,12 +19,16 @@ type DayOfWeek =
 export async function getGoalData() {
   const currentUser = await getCurrentUser();
 
+  if (!currentUser) {
+    return redirect("/login");
+  }
+
   const now = new Date();
   const timeZone = "America/Los_Angeles";
   const currentPSTTime = toZonedTime(now, timeZone);
 
   const user = await prisma.user.findUnique({
-    where: { id: currentUser?.id },
+    where: { id: currentUser.id },
     select: {
       jobsAppliedToDaysPerWeekGoal: true,
       jobsAppliedToWeeklyGoalMin: true,
@@ -47,7 +52,7 @@ export async function getGoalData() {
 
   const userJobs = await prisma.job.findMany({
     where: {
-      userId: currentUser?.id,
+      userId: currentUser.id,
       status: {
         in: [ApplicationStatus.APPLIED, ApplicationStatus.INTERVIEW],
       },
@@ -95,7 +100,7 @@ export async function getGoalData() {
 
   const userInterviews = await prisma.interview.findMany({
     where: {
-      userId: currentUser?.id,
+      userId: currentUser.id,
       interviewDate: {
         gte: currentMonthStart,
         lte: currentMonthEnd,
