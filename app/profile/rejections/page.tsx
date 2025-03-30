@@ -2,28 +2,10 @@ import { deleteRejection } from "@/app/actions/deleteRejection";
 import { editRejection } from "@/app/actions/editRejection";
 import { getRejections } from "@/app/actions/getRejections";
 import JobRejections from "@/app/components/profile/rejections/JobRejections";
-import { revalidatePath } from "next/cache";
+import { Suspense } from "react";
 
 export default async function Rejections() {
   const groupedRejections = await getRejections();
-
-  const handleEditRejection = async (id: string, notes: string) => {
-    try {
-      await editRejection(id, notes);
-      revalidatePath("/profile/rejections", "page");
-    } catch (err) {
-    } finally {
-    }
-  };
-
-  const handleDeleteRejection = async (id: string) => {
-    try {
-      await deleteRejection(id);
-      revalidatePath("/profile/rejections", "page");
-    } catch (err) {
-    } finally {
-    }
-  };
 
   return (
     <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
@@ -43,11 +25,13 @@ export default async function Rejections() {
                         day: "numeric",
                       })}
                 </h2>
-                <JobRejections
-                  jobRejections={rejections}
-                  onEditRejection={handleEditRejection}
-                  onDeleteRejection={handleDeleteRejection}
-                />
+                <Suspense fallback={<div>Loading Rejections...</div>}>
+                  <JobRejections
+                    groupedRejections={groupedRejections}
+                    onEditRejection={editRejection}
+                    onDeleteRejection={deleteRejection}
+                  />
+                </Suspense>
               </div>
             ))
           ) : (
