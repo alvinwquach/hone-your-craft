@@ -7,6 +7,7 @@ import {
 } from "@/app/actions/getUpcomingInterviews";
 import { getInterviewConversionRate } from "@/app/actions/getInterviewConversionRate";
 import { FaCalendarDay } from "react-icons/fa";
+import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 
 interface InterviewGroup {
   [date: string]: InterviewWithJob[];
@@ -18,6 +19,7 @@ export default async function Interviews() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+      <ProfileNavigation />
       <div className="container mx-auto p-4">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900 sr-only">

@@ -1,5 +1,6 @@
 import { getAchievements } from "@/app/actions/getAchievements";
 import AwardsTabs from "@/app/components/awards/AwardsTabs";
+import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 import { BsBriefcase, BsLock } from "react-icons/bs";
 import { FaFlagUsa, FaUserTie, FaCheck } from "react-icons/fa";
 import { GiPartyPopper, GiPumpkinMask } from "react-icons/gi";
@@ -160,12 +161,15 @@ export default async function Awards() {
     achievementsData;
 
   return (
-    <div className="container mx-auto p-4">
-      <AwardsTabs
-        jobAchievements={jobAchievements}
-        interviewAchievements={interviewAchievements}
-        holidayAchievements={holidayAchievements}
-      />
-    </div>
+    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+      <ProfileNavigation />
+      <div className="container mx-auto p-4">
+        <AwardsTabs
+          jobAchievements={jobAchievements}
+          interviewAchievements={interviewAchievements}
+          holidayAchievements={holidayAchievements}
+        />
+      </div>
+    </section>
   );
 }
