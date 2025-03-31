@@ -34,14 +34,14 @@ export default async function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div className="w-full">
           <SkillsTable
-            skills={skillsData.sortedSkills}
-            frequencies={skillsData.sortedFrequencies}
+            skills={skillsData.skills}
+            frequencies={skillsData.frequencies}
           />
         </div>
         <div className="w-full">
           <MissingSkillsTable
-            missingSkills={missingSkillsData.sortedMissingSkills}
-            missingSkillsFrequency={missingSkillsData.sortedMissingFrequencies}
+            missingSkills={missingSkillsData.missingSkills}
+            missingSkillsFrequency={missingSkillsData.missingSkillsFrequency}
           />
         </div>
         <div className="w-full">
