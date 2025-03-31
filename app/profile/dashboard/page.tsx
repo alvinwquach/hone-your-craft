@@ -11,10 +11,12 @@ import JobApplicationStatusChart from "@/app/components/profile/dashboard/JobApp
 import JobPostingSourceCountChart from "@/app/components/profile/dashboard/JobPostingSourceCountChart";
 import MissingSkillsTable from "@/app/components/profile/dashboard/MissingSkillsTable";
 import SkillsTable from "@/app/components/profile/dashboard/SkillsTable";
+import { getUserTopTenJobSkillsAndFrequency } from "@/app/actions/getUserTopTenJobSkillsAndFrequency";
+import { getUserTopTenMissingJobSkillsAndFrequency } from "@/app/actions/getUserTopTenMissingJobSkillsAndFrequency";
 
 export default async function Dashboard() {
-  const skillsData = await getUserJobSkillsAndFrequency();
-  const missingSkillsData = await getUserJobMissingSkillsAndFrequency();
+  const skillsData = await getUserTopTenJobSkillsAndFrequency();
+  const missingSkillsData = await getUserTopTenMissingJobSkillsAndFrequency();
   const [
     applicationStatusData,
     interviewFrequencyData,
