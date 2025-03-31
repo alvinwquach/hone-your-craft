@@ -1,17 +1,30 @@
-"use client";
+"use server";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSession } from "next-auth/react";
-import useSWR from "swr";
-import getUserJobPostings from "../actions/getUserJobPostings";
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import getCurrentUser from "@/app/actions/getCurrentUser";
+import { getUserByEmail } from "@/app/actions/getUserByEmail";
+import getUserJobPostings from "@/app/actions/getUserJobPostings";
 import ProfileCard from "../components/profile/profile/ProfileCard";
 import SkillsCard from "../components/profile/profile/SkillsCard";
 import SuggestedSkillsCard from "../components/profile/profile/SuggestedSkillsCard";
 import EducationList from "../components/profile/profile/EducationList";
-import "react-toastify/dist/ReactToastify.css";
 import RolesCard from "../components/profile/profile/RolesCard";
 import ProfileNavigation from "../components/profile/ui/ProfileNavigation";
-import { gsap } from "gsap";
+
+interface User {
+  id: number;
+  name: string;
+  image: string;
+  headline: string;
+  bio: string;
+  role: string;
+  yearsOfExperience: number;
+  openToRoles: string[];
+  skills: string[];
+  userRole: string;
+  createdAt: Date;
+}
 
 interface JobPosting {
   title: string;
@@ -20,124 +33,53 @@ interface JobPosting {
   skills: string[];
 }
 
-const fetcher = async (url: string, options: RequestInit) => {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
-};
-
-function Profile() {
-  const { data: session } = useSession();
-  const { data, isLoading: userDataLoading } = useSWR(
-    session ? `/api/user/${session?.user?.email}` : null,
-    (url) => fetcher(url, { method: "GET" }),
-    { refreshInterval: 1000 }
-  );
-  const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
-  const userRole = data?.user?.userRole;
-  const userSkills = data?.user?.skills || [];
-  const userData = data || [];
-
-  useEffect(() => {
-    async function fetchJobPostings() {
-      try {
-        const userJobPostings = await getUserJobPostings();
-        setJobPostings(userJobPostings);
-      } catch (error) {
-        console.error("Error fetching user job postings:", error);
-      }
-    }
-    fetchJobPostings();
-  }, []);
+export default async function Profile() {
+  const currentUser = await getCurrentUser();
+  const userData = await getUserByEmail(currentUser?.email ?? "");
+  const jobPostings = await getUserJobPostings();
 
   const suggestedSkills = Array.from(
     new Set(
       jobPostings
-        ? jobPostings
-            .flatMap((job) => job.skills)
-            .filter((skill) => !userSkills?.user?.skills.includes(skill))
-        : []
+        .flatMap((job) => job.skills)
+        .filter((skill) => !userData.user?.skills.includes(skill))
     )
   );
 
-  const loadingUserData = !userData || userDataLoading;
-  const loadingUserSkills = !userSkills || userDataLoading;
-
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      {userRole === "CANDIDATE" ? (
+      {userData.user?.userRole === "CANDIDATE" ? (
         <>
-          <div>
-            <ProfileNavigation />
-            <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
-              <Suspense fallback={<ProfileCard userData={[]} />}>
-                {!loadingUserData ? (
-                  <ProfileCard userData={userData} />
-                ) : (
-                  <div>Loading Profile...</div>
-                )}
-                <div className="my-4 border-t border-gray-600" />
-                {loadingUserSkills ? (
-                  <div className="mt-4">
-                    <Suspense fallback={<SkillsCard userSkills={[]} />}>
-                      <SkillsCard userSkills={[]} />
-                    </Suspense>
-                  </div>
-                ) : (
-                  <Suspense fallback={<SkillsCard userSkills={[]} />}>
-                    <SkillsCard userSkills={userSkills} />
-                  </Suspense>
-                )}
-                <div className="my-4 border-t border-gray-600" />
-                {loadingUserSkills ? (
-                  <div className="mt-4">
-                    <Suspense
-                      fallback={
-                        <SuggestedSkillsCard
-                          userSkills={[]}
-                          suggestedSkills={[]}
-                        />
-                      }
-                    >
-                      <SuggestedSkillsCard
-                        userSkills={[]}
-                        suggestedSkills={[]}
-                      />
-                    </Suspense>
-                  </div>
-                ) : (
-                  <Suspense
-                    fallback={
-                      <SuggestedSkillsCard
-                        userSkills={[]}
-                        suggestedSkills={[]}
-                      />
-                    }
-                  >
-                    <SuggestedSkillsCard
-                      userSkills={userSkills}
-                      suggestedSkills={suggestedSkills}
-                    />
-                  </Suspense>
-                )}
-                <div className="my-4 border-t border-gray-600" />
-                <EducationList />
-              </Suspense>
-            </div>
+          <ProfileNavigation />
+          <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
+            <Suspense fallback={<ProfileCard userData={[]} />}>
+              <ProfileCard userData={userData} />
+            </Suspense>
+            <div className="my-4 border-t border-gray-600" />
+            <Suspense fallback={<SkillsCard userSkills={[]} />}>
+              <SkillsCard userSkills={userData.user?.skills || []} />
+            </Suspense>
+            <div className="my-4 border-t border-gray-600" />
+            <Suspense
+              fallback={
+                <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
+              }
+            >
+              <SuggestedSkillsCard
+                userSkills={userData.user?.skills || []}
+                suggestedSkills={suggestedSkills}
+              />
+            </Suspense>
+            <div className="my-4 border-t border-gray-600" />
+            <EducationList />
           </div>
         </>
-      ) : userRole === "CLIENT" ? (
+      ) : userData.user?.userRole === "CLIENT" ? (
         <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
           <ProfileNavigation />
           <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
-            <Suspense fallback={<RolesCard userData={[]} />}>
-              {!loadingUserData ? (
-                <RolesCard userData={userData} />
-              ) : (
-                <div>Loading Profile...</div>
-              )}
+            <Suspense fallback={<RolesCard userData={userData.user} />}>
+              <RolesCard userData={userData.user} />
             </Suspense>
           </div>
         </section>
@@ -145,5 +87,3 @@ function Profile() {
     </section>
   );
 }
-
-export default Profile;
