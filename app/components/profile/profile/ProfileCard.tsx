@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, Suspense, useMemo } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
