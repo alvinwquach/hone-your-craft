@@ -13,6 +13,7 @@ import MissingSkillsTable from "@/app/components/profile/dashboard/MissingSkills
 import SkillsTable from "@/app/components/profile/dashboard/SkillsTable";
 import { getUserTopTenJobSkillsAndFrequency } from "@/app/actions/getUserTopTenJobSkillsAndFrequency";
 import { getUserTopTenMissingJobSkillsAndFrequency } from "@/app/actions/getUserTopTenMissingJobSkillsAndFrequency";
+import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 
 export default async function Dashboard() {
   const skillsData = await getUserTopTenJobSkillsAndFrequency();
@@ -31,6 +32,7 @@ export default async function Dashboard() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+      <ProfileNavigation />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div className="w-full">
           <SkillsTable

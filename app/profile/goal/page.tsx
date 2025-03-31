@@ -1,14 +1,18 @@
 import { getGoalData } from "@/app/actions/getGoalData";
 import GoalForm from "@/app/components/profile/goal/GoalForm";
+import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 
 export default async function Goal() {
   const data = await getGoalData();
   return (
-    <GoalForm
-      currentGoalData={data.currentGoalData}
-      weeklyApplicationDayTrackerData={data.weeklyApplicationDayTrackerData}
-      weeklyApplicationGoalTrackerData={data.weeklyApplicationGoalTrackerData}
-      monthlyInterviewGoalTrackerData={data.monthlyInterviewGoalTrackerData}
-    />
+    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+      <ProfileNavigation />
+      <GoalForm
+        currentGoalData={data.currentGoalData}
+        weeklyApplicationDayTrackerData={data.weeklyApplicationDayTrackerData}
+        weeklyApplicationGoalTrackerData={data.weeklyApplicationGoalTrackerData}
+        monthlyInterviewGoalTrackerData={data.monthlyInterviewGoalTrackerData}
+      />
+    </section>
   );
 }

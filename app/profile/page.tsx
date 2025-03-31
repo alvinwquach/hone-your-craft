@@ -9,53 +9,15 @@ import SkillsCard from "../components/profile/profile/SkillsCard";
 import SuggestedSkillsCard from "../components/profile/profile/SuggestedSkillsCard";
 import EducationList from "../components/profile/profile/EducationList";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  FaUser,
-  FaCalendarAlt,
-  FaMoneyCheckAlt,
-  FaFileAlt,
-  FaBan,
-  FaAward,
-} from "react-icons/fa";
-import { SiBaremetrics } from "react-icons/si";
 import RolesCard from "../components/profile/profile/RolesCard";
-import { GiTargeting, GiThreeFriends } from "react-icons/gi";
-import { GoGoal } from "react-icons/go";
-import { MdMeetingRoom } from "react-icons/md";
+import ProfileNavigation from "../components/profile/ui/ProfileNavigation";
 import { gsap } from "gsap";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role?: string;
-  userRole?: string;
-  image?: string;
-  headline?: string;
-  connectionStatus?: string;
-}
 
 interface JobPosting {
   title: string;
   company: string;
   postUrl: string;
   skills: string[];
-}
-
-interface JobMatchPosting {
-  id: string;
-  title: string;
-  company: string;
-  postUrl: string;
-  source: string;
-  matchingSkills: string[];
-  missingSkills: string[];
-  matchPercentage: number;
-}
-
-interface JobApplicationStatus {
-  status: string;
-  count: number;
 }
 
 const fetcher = async (url: string, options: RequestInit) => {
@@ -73,7 +35,6 @@ function Profile() {
     (url) => fetcher(url, { method: "GET" }),
     { refreshInterval: 1000 }
   );
-  const [activeTab, setActiveTab] = useState<string>("profile");
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
   const userRole = data?.user?.userRole;
   const userSkills = data?.user?.skills || [];
@@ -109,239 +70,29 @@ function Profile() {
       {userRole === "CANDIDATE" ? (
         <>
           <div>
-            <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
-              <ul className="flex flex-wrap -mb-px justify-start">
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("profile")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "profile"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <FaUser
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "profile" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Profile
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("match")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "match"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <GiTargeting
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "match" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Match
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("connections")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "connections"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <GiThreeFriends
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "connections" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Connections
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("awards")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "awards"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <FaAward
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "awards" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Awards
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("goal")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "goal"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                    aria-current={activeTab === "goal" ? "page" : undefined}
-                  >
-                    <GoGoal
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "goal" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Goal
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("dashboard")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "dashboard"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                    aria-current={
-                      activeTab === "dashboard" ? "page" : undefined
-                    }
-                  >
-                    <SiBaremetrics
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "dashboard" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Dashboard
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("resume")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "resume"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <FaFileAlt
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "resume" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Resume
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("meetings")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "meetings"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <MdMeetingRoom
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "meetings" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Meetings
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("interviews")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "interviews"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <FaCalendarAlt
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "interviews" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Interviews
-                  </button>
-                </li>
-                <li className="me-2">
-                  <button
-                    onClick={() => setActiveTab("offers")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "offers"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <FaMoneyCheckAlt
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "offers" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Offers
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => setActiveTab("rejections")}
-                    className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                      activeTab === "rejections"
-                        ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                        : ""
-                    }`}
-                  >
-                    <FaBan
-                      className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                        activeTab === "rejections" ? "text-blue-600" : ""
-                      }`}
-                    />
-                    Rejections
-                  </button>
-                </li>
-              </ul>
-            </div>
+            <ProfileNavigation />
             <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
-              {activeTab === "profile" && (
-                <Suspense fallback={<ProfileCard userData={[]} />}>
-                  {!loadingUserData ? (
-                    <ProfileCard userData={userData} />
-                  ) : (
-                    <div>Loading Profile...</div>
-                  )}
-                  <div className="my-4 border-t border-gray-600" />
-                  {loadingUserSkills ? (
-                    <div className="mt-4">
-                      <Suspense fallback={<SkillsCard userSkills={[]} />}>
-                        <SkillsCard userSkills={[]} />
-                      </Suspense>
-                    </div>
-                  ) : (
+              <Suspense fallback={<ProfileCard userData={[]} />}>
+                {!loadingUserData ? (
+                  <ProfileCard userData={userData} />
+                ) : (
+                  <div>Loading Profile...</div>
+                )}
+                <div className="my-4 border-t border-gray-600" />
+                {loadingUserSkills ? (
+                  <div className="mt-4">
                     <Suspense fallback={<SkillsCard userSkills={[]} />}>
-                      <SkillsCard userSkills={userSkills} />
+                      <SkillsCard userSkills={[]} />
                     </Suspense>
-                  )}
-                  <div className="my-4 border-t border-gray-600" />
-                  {loadingUserSkills ? (
-                    <div className="mt-4">
-                      <Suspense
-                        fallback={
-                          <SuggestedSkillsCard
-                            userSkills={[]}
-                            suggestedSkills={[]}
-                          />
-                        }
-                      >
-                        <SuggestedSkillsCard
-                          userSkills={[]}
-                          suggestedSkills={[]}
-                        />
-                      </Suspense>
-                    </div>
-                  ) : (
+                  </div>
+                ) : (
+                  <Suspense fallback={<SkillsCard userSkills={[]} />}>
+                    <SkillsCard userSkills={userSkills} />
+                  </Suspense>
+                )}
+                <div className="my-4 border-t border-gray-600" />
+                {loadingUserSkills ? (
+                  <div className="mt-4">
                     <Suspense
                       fallback={
                         <SuggestedSkillsCard
@@ -351,120 +102,43 @@ function Profile() {
                       }
                     >
                       <SuggestedSkillsCard
-                        userSkills={userSkills}
-                        suggestedSkills={suggestedSkills}
+                        userSkills={[]}
+                        suggestedSkills={[]}
                       />
                     </Suspense>
-                  )}
-                  <div className="my-4 border-t border-gray-600" />
-                  <EducationList />
-                </Suspense>
-              )}
+                  </div>
+                ) : (
+                  <Suspense
+                    fallback={
+                      <SuggestedSkillsCard
+                        userSkills={[]}
+                        suggestedSkills={[]}
+                      />
+                    }
+                  >
+                    <SuggestedSkillsCard
+                      userSkills={userSkills}
+                      suggestedSkills={suggestedSkills}
+                    />
+                  </Suspense>
+                )}
+                <div className="my-4 border-t border-gray-600" />
+                <EducationList />
+              </Suspense>
             </div>
           </div>
         </>
       ) : userRole === "CLIENT" ? (
         <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-          <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
-            <ul className="flex flex-wrap -mb-px justify-start">
-              <li className="me-2">
-                <button
-                  onClick={() => setActiveTab("profile")}
-                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                    activeTab === "profile"
-                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                      : ""
-                  }`}
-                >
-                  <FaUser
-                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                      activeTab === "profile" ? "text-blue-600" : ""
-                    }`}
-                  />
-                  Profile
-                </button>
-              </li>
-              <li className="me-2">
-                <button
-                  onClick={() => setActiveTab("connections")}
-                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                    activeTab === "connections"
-                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                      : ""
-                  }`}
-                >
-                  <GiThreeFriends
-                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                      activeTab === "connections" ? "text-blue-600" : ""
-                    }`}
-                  />
-                  Connections
-                </button>
-              </li>
-              <li className="me-2">
-                <button
-                  onClick={() => setActiveTab("dashboard")}
-                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                    activeTab === "dashboard"
-                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                      : ""
-                  }`}
-                  aria-current={activeTab === "dashboard" ? "page" : undefined}
-                >
-                  <SiBaremetrics
-                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                      activeTab === "dashboard" ? "text-blue-600" : ""
-                    }`}
-                  />
-                  Dashboard
-                </button>
-              </li>
-              <li className="me-2">
-                <button
-                  onClick={() => setActiveTab("interviews")}
-                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                    activeTab === "interviews"
-                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                      : ""
-                  }`}
-                >
-                  <FaCalendarAlt
-                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                      activeTab === "interviews" ? "text-blue-600" : ""
-                    }`}
-                  />
-                  Interviews
-                </button>
-              </li>
-              <li className="me-2">
-                <button
-                  onClick={() => setActiveTab("meetings")}
-                  className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                    activeTab === "meetings"
-                      ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                      : ""
-                  }`}
-                >
-                  <MdMeetingRoom
-                    className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                      activeTab === "meetings" ? "text-blue-600" : ""
-                    }`}
-                  />
-                  Meetings
-                </button>
-              </li>
-            </ul>
-          </div>
+          <ProfileNavigation />
           <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
-            {activeTab === "profile" && (
-              <Suspense fallback={<RolesCard userData={[]} />}>
-                {!loadingUserData ? (
-                  <RolesCard userData={userData} />
-                ) : (
-                  <div>Loading Profile...</div>
-                )}
-              </Suspense>
-            )}
+            <Suspense fallback={<RolesCard userData={[]} />}>
+              {!loadingUserData ? (
+                <RolesCard userData={userData} />
+              ) : (
+                <div>Loading Profile...</div>
+              )}
+            </Suspense>
           </div>
         </section>
       ) : null}
