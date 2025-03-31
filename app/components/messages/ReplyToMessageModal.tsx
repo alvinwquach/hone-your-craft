@@ -128,8 +128,10 @@ const ReplyToMessageModal = ({
                 />
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                   <Image
-                    src={originalMessage.lastMessage.sender.image || defaultPfp}
-                    alt={originalMessage.lastMessage.sender.name}
+                    src={
+                      originalMessage.lastMessage?.sender.image || defaultPfp
+                    }
+                    alt={originalMessage.lastMessage?.sender.name}
                     width={32}
                     height={32}
                     className="rounded-full"

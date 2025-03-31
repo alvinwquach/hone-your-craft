@@ -22,45 +22,50 @@ import { z } from "zod";
 import ReplyToMessageModal from "./ReplyToMessageModal";
 import { useSession } from "next-auth/react";
 import defaultPfp from "../../../public/images/icons/default_pfp.jpeg";
+import { UserRole } from "@prisma/client";
 
-interface Mention {
+interface User {
   id: string;
-  subject: string;
-  content: string;
-  createdAt: string;
-  conversationId: string;
-  sender: {
-    id: string;
-    image: string | null;
-    name: string;
-    email: string;
-  };
+  name: string | null;
+  image: string | null;
+  createdAt: Date;
+}
+
+interface UserData {
+  user: User;
 }
 
 interface Sender {
   id: string;
-  name: string;
-  email: string;
-  image: string;
-  createdAt: string;
-  subject: string;
-  content: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
 }
 
 interface Reply {
   id: string;
-  content: string;
   senderId: string;
+  content: string;
   createdAt: string;
-  threadId: string | null;
-  replyToId: string;
-  subject: string;
+  subject: string | null;
+  messageType: string;
+  isReadByRecipient: boolean;
+  isDeletedBySender: boolean;
+  isDeletedByRecipient: boolean;
   sender: Sender;
+}
+
+interface ReceivedConversation {
+  id: string;
+  messages: (Message | Reply)[];
+  createdAt?: Date;
+  updatedAt?: Date;
+  participants?: string[];
 }
 
 interface MessagesResponse {
   message: string;
-  data: Message[];
+  data: ReceivedConversation[];
   unreadMessageCount: number;
 }
 
@@ -131,21 +136,79 @@ interface Message {
   };
 }
 
-interface User {
-  user: {
+interface Mention {
+  id: string;
+  subject: string | null;
+  content: string;
+  createdAt: string;
+  conversationId: string;
+  sender: {
     id: string;
-    name: string;
-    image: string;
-    createdAt: Date;
+    name: string | null;
+    email: string | null;
+    image: string | null;
   };
+}
+
+interface TrashedMessage {
+  id: string;
+  subject: string | null;
+  content: string;
+  messageType: string;
+  isDeletedBySender: boolean;
+  createdAt: string;
+  mentionedUserIds: string[];
+  recipientId: string[];
+  recipients: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  }[];
+}
+
+interface SentMessage {
+  id: string;
+  senderId: string;
+  content: string;
+  createdAt: string;
+  subject: string | null;
+  messageType: string;
+  isReadByRecipient: boolean;
+  isDeletedBySender: boolean;
+  isDeletedByRecipient: boolean;
+}
+
+interface Receiver {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+}
+
+interface SentConversation {
+  conversationId: string;
+  receiverIds: string[];
+  sentMessages: SentMessage[];
+  receivers: Receiver[];
 }
 
 interface MessagesCardProps {
   receivedMessages: MessagesResponse;
-  sentMessages: { message: string; data: Message[] } | undefined;
-  trashedSentMessages: { message: string; data: Message[] } | undefined;
-  userData: User;
-  mentionedInMessages: any;
+  sentMessages: { message: string; data: SentConversation[] } | undefined;
+  trashedSentMessages: { message: string; data: TrashedMessage[] } | undefined;
+  userData: UserData;
+  mentionedInMessages: { message: string; data: Mention[] } | undefined;
+  users: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    headline: string | null;
+    role: string | undefined;
+    userRole: UserRole | undefined;
+    connectionStatus: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED";
+  }[];
 }
 
 const schema = z.object({
@@ -165,7 +228,9 @@ const MessagesCard = ({
     Map<string, boolean>
   >(new Map());
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [messageToReply, setMessageToReply] = useState<Message | null>(null);
+  const [messageToReply, setMessageToReply] = useState<Message | Reply | null>(
+    null
+  );
   const { data: session, status } = useSession();
   const currentUser = session?.user;
 
@@ -211,7 +276,7 @@ const MessagesCard = ({
     }
   };
 
-  const openReplyModal = (message: Message) => {
+  const openReplyModal = (message: Message | Reply) => {
     setMessageToReply(message);
     setIsModalOpen(true);
   };
@@ -656,7 +721,9 @@ const MessagesCard = ({
                       {conversation.messages.length > 0 && (
                         <button
                           className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out mt-4"
-                          onClick={() => openReplyModal(conversation)}
+                          onClick={() =>
+                            openReplyModal(conversation.messages[0])
+                          }
                         >
                           <FaReply className="w-4 h-4 mr-2" /> Reply
                         </button>
@@ -731,7 +798,6 @@ const MessagesCard = ({
             )
           ) : null}
         </div>
-
         <div>
           <div>
             {status === "authenticated" && activeTab === "sent" ? (
@@ -757,14 +823,14 @@ const MessagesCard = ({
                             Recipients:
                           </h4>
                           <div className="space-y-4 mt-2">
-                            {conversation?.receivers?.map((recipient) => (
+                            {conversation.receivers.map((recipient) => (
                               <div
                                 key={recipient.id}
                                 className="flex items-center space-x-2"
                               >
                                 <Image
                                   src={recipient.image || defaultPfp}
-                                  alt={recipient.name}
+                                  alt={recipient.name || ""}
                                   width={32}
                                   height={32}
                                   className="rounded-full"
@@ -782,30 +848,28 @@ const MessagesCard = ({
                           </div>
                         </div>
                         <div className="mt-4 space-y-2">
-                          {conversation.sentMessages.map(
-                            (sentMessage: Message) => (
-                              <div
-                                key={sentMessage.id}
-                                className="p-4 bg-zinc-700 text-zinc-300 rounded-lg"
-                              >
-                                <p>{sentMessage.content}</p>
-                                <p className="text-xs text-zinc-500 mt-2">
-                                  Sent on{" "}
-                                  {formatMessageDate(sentMessage.createdAt)}
-                                </p>
-                                <div className="flex justify-end">
-                                  <button
-                                    onClick={() =>
-                                      handleSentMessageToTrash(sentMessage.id)
-                                    }
-                                    className=" px-3 py-2 bg-zinc-600 hover:bg-zinc-500 rounded-full shadow-md transition-all duration-200 ease-in-out"
-                                  >
-                                    <FaTrash className="w-4 h-4" />
-                                  </button>
-                                </div>
+                          {conversation.sentMessages.map((sentMessage) => (
+                            <div
+                              key={sentMessage.id}
+                              className="p-4 bg-zinc-700 text-zinc-300 rounded-lg"
+                            >
+                              <p>{sentMessage.content}</p>
+                              <p className="text-xs text-zinc-500 mt-2">
+                                Sent on{" "}
+                                {formatMessageDate(sentMessage.createdAt)}
+                              </p>
+                              <div className="flex justify-end">
+                                <button
+                                  onClick={() =>
+                                    handleSentMessageToTrash(sentMessage.id)
+                                  }
+                                  className="px-3 py-2 bg-zinc-600 hover:bg-zinc-500 rounded-full shadow-md transition-all duration-200 ease-in-out"
+                                >
+                                  <FaTrash className="w-4 h-4" />
+                                </button>
                               </div>
-                            )
-                          )}
+                            </div>
+                          ))}
                         </div>
 
                         <div className="flex justify-between items-center mt-4">
@@ -813,7 +877,7 @@ const MessagesCard = ({
                             Sent
                           </span>
                           <button
-                            onClick={() => openReplyModal(conversation)}
+                            onClick={() => openReplyModal}
                             className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
                           >
                             <FaReply className="w-4 h-4 mr-2" /> Reply
@@ -869,8 +933,8 @@ const MessagesCard = ({
                         className="flex items-center space-x-2"
                       >
                         <Image
-                          src={recipient.image}
-                          alt={recipient.name}
+                          src={recipient.image ?? ""}
+                          alt={recipient.name ?? ""}
                           width={32}
                           height={32}
                           className="rounded-full"
