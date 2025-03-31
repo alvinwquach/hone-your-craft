@@ -4,23 +4,10 @@ import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import getUserJobPostings from "../actions/getUserJobPostings";
-import { getUserJobSkillsAndFrequency } from "@/app/actions/getUserJobSkillsAndFrequency";
-import { getUserJobMissingSkillsAndFrequency } from "@/app/actions/getUserJobMissingSkillsAndFrequency";
-import { getJobsByApplicationStatus } from "@/app/actions/getJobsByApplicationStatus";
-import { getCandidateJobInterviewFrequency } from "@/app/actions/getCandidateJobInterviewFrequency";
-import { getCandidateJobPostingSourceCount } from "@/app/actions/getCandidateJobPostingSourceCount";
-import { getCandidateApplicationStatus } from "../actions/getCandidateApplicationStatus";
 import ProfileCard from "../components/profile/profile/ProfileCard";
 import SkillsCard from "../components/profile/profile/SkillsCard";
 import SuggestedSkillsCard from "../components/profile/profile/SuggestedSkillsCard";
 import EducationList from "../components/profile/profile/EducationList";
-import SkillsTable from "../components/profile/dashboard/SkillsTable";
-import MissingSkillsTable from "../components/profile/dashboard/MissingSkillsTable";
-import JobPostingSourceCountChart from "../components/profile/dashboard/JobPostingSourceCountChart";
-import ApplicationStatusChart from "../components/profile/dashboard/ApplicationStatusChart";
-import InterviewFrequencyChart from "../components/profile/dashboard/InterviewFrequencyChart";
-import JobApplicationStatusChart from "../components/profile/dashboard/JobApplicationStatusChart";
-import ResumeUpload from "../components/profile/resume/ResumeUpload";
 import "react-toastify/dist/ReactToastify.css";
 import {
   FaUser,
@@ -79,14 +66,6 @@ const fetcher = async (url: string, options: RequestInit) => {
   return response.json();
 };
 
-const fetchDocument = async () => {
-  const response = await fetch("/api/documents/current", { method: "GET" });
-  if (!response.ok) {
-    throw new Error("Failed to fetch document.");
-  }
-  return response.json();
-};
-
 function Profile() {
   const { data: session } = useSession();
   const { data, isLoading: userDataLoading } = useSWR(
@@ -94,36 +73,8 @@ function Profile() {
     (url) => fetcher(url, { method: "GET" }),
     { refreshInterval: 1000 }
   );
-  const { data: resumeData } = useSWR("/api/documents/current", fetchDocument, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
-
   const [activeTab, setActiveTab] = useState<string>("profile");
   const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
-  const [skills, setSkills] = useState<string[]>([]);
-  const [frequencies, setFrequencies] = useState<number[]>([]);
-  const [currentPageSkills, setCurrentPageSkills] = useState(1);
-  const [totalPagesSkills, setTotalPagesSkills] = useState(1);
-  const [missingSkills, setMissingSkills] = useState<string[]>([]);
-  const [missingSkillsFrequency, setMissingSkillsFrequency] = useState<
-    number[]
-  >([]);
-  const [currentPageMissingSkills, setCurrentPageMissingSkills] = useState(1);
-  const [totalPagesMissingSkills, setTotalPagesMissingSkills] = useState(1);
-  const [statusPercentages, setStatusPercentages] = useState<
-    Map<string, number>
-  >(new Map());
-  const [interviewTypeFrequency, setInterviewTypeFrequency] = useState<
-    Record<string, number>
-  >({});
-  const [jobPostingSourceCount, setJobPostingSourceCount] = useState<
-    Record<string, number>
-  >({});
-  const [jobApplicationStatusCount, setJobApplicationStatusCount] = useState<
-    JobApplicationStatus[]
-  >([]);
-
   const userRole = data?.user?.userRole;
   const userSkills = data?.user?.skills || [];
   const userData = data || [];
@@ -138,115 +89,6 @@ function Profile() {
       }
     }
     fetchJobPostings();
-  }, []);
-
-  useEffect(() => {
-    async function fetchSkillsData() {
-      try {
-        const { sortedSkills, sortedFrequencies, totalPages } =
-          await getUserJobSkillsAndFrequency(currentPageSkills);
-        setSkills(sortedSkills);
-        setFrequencies(sortedFrequencies);
-        setTotalPagesSkills(totalPages);
-      } catch (error) {
-        console.error("Error fetching user skills:", error);
-      }
-    }
-    fetchSkillsData();
-  }, [currentPageSkills]);
-
-  useEffect(() => {
-    async function fetchMissingSkillsData() {
-      try {
-        const { sortedMissingSkills, sortedMissingFrequencies, totalPages } =
-          await getUserJobMissingSkillsAndFrequency(currentPageMissingSkills);
-        setMissingSkills(sortedMissingSkills);
-        setMissingSkillsFrequency(sortedMissingFrequencies);
-        setTotalPagesMissingSkills(totalPages);
-      } catch (error) {
-        console.error("Error fetching missing skills:", error);
-      }
-    }
-    fetchMissingSkillsData();
-  }, [currentPageMissingSkills]);
-
-  const goToFirstPageSkills = () => {
-    setCurrentPageSkills(1);
-  };
-
-  const goToLastPageSkills = () => {
-    setCurrentPageSkills(totalPagesSkills);
-  };
-
-  const goToPreviousPageSkills = () => {
-    if (currentPageSkills > 1) {
-      setCurrentPageSkills(currentPageSkills - 1);
-    }
-  };
-
-  const goToNextPageSkills = () => {
-    if (currentPageSkills < totalPagesSkills) {
-      setCurrentPageSkills(currentPageSkills + 1);
-    }
-  };
-
-  const goToFirstPageMissingSkills = () => setCurrentPageMissingSkills(1);
-  const goToLastPageMissingSkills = () =>
-    setCurrentPageMissingSkills(totalPagesMissingSkills);
-  const goToPreviousPageMissingSkills = () =>
-    setCurrentPageMissingSkills((prev) => Math.max(prev - 1, 1));
-  const goToNextPageMissingSkills = () =>
-    setCurrentPageMissingSkills((prev) =>
-      Math.min(prev + 1, totalPagesMissingSkills)
-    );
-  useEffect(() => {
-    async function fetchApplicationStatusData() {
-      try {
-        const { percentages } = await getJobsByApplicationStatus();
-        setStatusPercentages(percentages);
-      } catch (error) {
-        console.error("Error fetching application status:", error);
-      }
-    }
-    fetchApplicationStatusData();
-  }, []);
-
-  useEffect(() => {
-    const fetchCandidateJobInterviews = async () => {
-      try {
-        const { interviewTypeFrequency } =
-          await getCandidateJobInterviewFrequency();
-        setInterviewTypeFrequency(interviewTypeFrequency);
-      } catch (error) {
-        console.error("Error fetching user job interviews:", error);
-      }
-    };
-    fetchCandidateJobInterviews();
-  }, []);
-
-  useEffect(() => {
-    async function fetchJobPostingSourceCount() {
-      try {
-        const sourceCount = await getCandidateJobPostingSourceCount();
-        setJobPostingSourceCount(sourceCount);
-      } catch (error) {
-        console.error("Error fetching job posting source count:", error);
-      }
-    }
-    fetchJobPostingSourceCount();
-  }, []);
-
-  useEffect(() => {
-    const fetchCandidateApplicationStatusCount = async () => {
-      try {
-        const result = await getCandidateApplicationStatus();
-        setJobApplicationStatusCount(result.statusData);
-      } catch (error) {
-        console.error("Failed to fetch pie chart data", error);
-      }
-    };
-
-    fetchCandidateApplicationStatusCount();
   }, []);
 
   const suggestedSkills = Array.from(
@@ -518,60 +360,7 @@ function Profile() {
                   <EducationList />
                 </Suspense>
               )}
-              {activeTab === "resume" && (
-                <Suspense fallback={<ResumeUpload resumeData={resumeData} />}>
-                  <ResumeUpload resumeData={resumeData} />
-                </Suspense>
-              )}
             </div>
-            {activeTab === "dashboard" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                <div className="w-full">
-                  <SkillsTable
-                    skills={skills}
-                    frequencies={frequencies}
-                    currentPage={currentPageSkills}
-                    totalPages={totalPagesSkills}
-                    goToFirstPage={goToFirstPageSkills}
-                    goToPreviousPage={goToPreviousPageSkills}
-                    goToNextPage={goToNextPageSkills}
-                    goToLastPage={goToLastPageSkills}
-                  />
-                </div>
-                <div className="w-full">
-                  <MissingSkillsTable
-                    missingSkills={missingSkills}
-                    missingSkillsFrequency={missingSkillsFrequency}
-                    currentPage={currentPageMissingSkills}
-                    totalPages={totalPagesMissingSkills}
-                    goToFirstPage={goToFirstPageMissingSkills}
-                    goToPreviousPage={goToPreviousPageMissingSkills}
-                    goToNextPage={goToNextPageMissingSkills}
-                    goToLastPage={goToLastPageMissingSkills}
-                  />
-                </div>
-                <div className="w-full">
-                  <JobPostingSourceCountChart
-                    jobPostingSourceCount={jobPostingSourceCount}
-                  />
-                </div>
-                <div className="w-full">
-                  <ApplicationStatusChart
-                    statusPercentages={statusPercentages}
-                  />
-                </div>
-                <div className="w-full">
-                  <InterviewFrequencyChart
-                    interviewFrequencies={interviewTypeFrequency}
-                  />
-                </div>
-                <div className="w-full">
-                  <JobApplicationStatusChart
-                    jobApplicationStatus={jobApplicationStatusCount}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </>
       ) : userRole === "CLIENT" ? (

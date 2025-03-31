@@ -3,12 +3,12 @@
 interface MissingSkillsTableProps {
   missingSkills: string[];
   missingSkillsFrequency: number[];
-  currentPage: number;
-  totalPages: number;
-  goToFirstPage: () => void;
-  goToPreviousPage: () => void;
-  goToNextPage: () => void;
-  goToLastPage: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  goToFirstPage?: () => void;
+  goToPreviousPage?: () => void;
+  goToNextPage?: () => void;
+  goToLastPage?: () => void;
 }
 
 function MissingSkillsTable({
@@ -52,7 +52,7 @@ function MissingSkillsTable({
           </tbody>
         </table>
       </div>
-      <div className="mt-4 flex justify-center space-x-4">
+      {/* <div className="mt-4 flex justify-center space-x-4">
         <button
           onClick={goToFirstPage}
           disabled={currentPage <= 1}
@@ -84,7 +84,7 @@ function MissingSkillsTable({
         >
           Last
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

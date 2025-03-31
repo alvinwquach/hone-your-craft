@@ -1,24 +1,24 @@
 interface SkillsTableProps {
   skills: string[];
   frequencies: number[];
-  currentPage: number;
-  totalPages: number;
-  goToPreviousPage: () => void;
-  goToNextPage: () => void;
-  goToFirstPage: () => void;
-  goToLastPage: () => void;
+  // currentPage: number;
+  // totalPages: number;
+  // goToPreviousPage: () => void;
+  // goToNextPage: () => void;
+  // goToFirstPage: () => void;
+  // goToLastPage: () => void;
 }
 
 function SkillsTable({
   skills,
   frequencies,
-  currentPage,
-  totalPages,
-  goToPreviousPage,
-  goToNextPage,
-  goToFirstPage,
-  goToLastPage,
-}: SkillsTableProps) {
+}: // currentPage,
+// totalPages,
+// goToPreviousPage,
+// goToNextPage,
+// goToFirstPage,
+// goToLastPage,
+SkillsTableProps) {
   return (
     <div>
       <div className="relative overflow-x-auto max-h-[400px] overflow-y-auto border border-gray-700 rounded-lg shadow-lg bg-zinc-800">
@@ -50,7 +50,7 @@ function SkillsTable({
           </tbody>
         </table>
       </div>
-      <div className="mt-4 flex justify-center space-x-4">
+      {/* <div className="mt-4 flex justify-center space-x-4">
         <button
           onClick={goToFirstPage}
           disabled={currentPage <= 1}
@@ -83,7 +83,7 @@ function SkillsTable({
         >
           Last
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }
