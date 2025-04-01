@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { FaPaperPlane, FaTimes, FaTrashAlt } from "react-icons/fa";
@@ -7,6 +9,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { sendMessage } from "@/app/actions/sendMessage";
 
 const schema = z.object({
   selectedUsers: z
@@ -113,109 +116,44 @@ const MessageModal = ({ closeModal, users }: MessageModalProps) => {
 
       const receiverEmails = data.selectedUsers
         .map((userId) => users.find((user) => user.id === userId)?.email)
-        .filter(Boolean);
+        .filter(Boolean) as string[];
 
       const mentionedUserIds = selectedUsers
         .filter((user) => data.message.includes(`@${user.name}`))
         .map((user) => user.id);
 
       if (receiverEmails.length === 0) {
-        toast.error("Please select valid recipients.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error("Please select valid recipients.");
         setLoading(false);
         return;
       }
 
-      const response = await fetch("/api/message/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          receiverEmails,
-          mentionedUserIds,
-          subject: data.subject,
-          content: data.message,
-          messageType: "TEXT",
-        }),
+      const result = await sendMessage({
+        receiverEmails,
+        mentionedUserIds,
+        subject: data.subject,
+        content: data.message,
+        messageType: "TEXT",
       });
 
-      if (response.ok) {
-        const { data, message } = await response.json();
-        toast.success(message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-
-        const mentionedUsers = selectedUsers.filter((user) =>
-          mentionedUserIds.includes(user.id)
-        );
-
-        if (mentionedUsers.length > 0) {
-          mentionedUsers.forEach((user) => {
-            toast.info(`You were mentioned in a message: ${user.name}`, {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-            });
+      if (result.success) {
+        toast.success(result.data.message.content);
+        const { conversationId, recipients } = result.data;
+        if (recipients) {
+          recipients.forEach((user: any) => {
+            toast.info(
+              `Conversation #${conversationId} created with (ID: ${user.id}, Name: ${user.name}, Email: ${user.email})`
+            );
           });
         }
-
-        const { conversationId, recipients } = data;
-        if (recipients) {
-          recipients.forEach(
-            (user: { id: string; email: string; name: string }) => {
-              toast.info(
-                `Conversation #${conversationId} created with (ID: ${user.id}, Name, ${user.name} Email: ${user.email})`,
-                {
-                  position: "top-right",
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: true,
-                }
-              );
-            }
-          );
-        }
-
         closeModal();
       } else {
-        toast.error("Failed to send the message. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error(result.error?.message || "Failed to send the message.");
       }
-
-      setLoading(false);
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("An error occurred. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("An error occurred. Please try again.");
+    } finally {
       setLoading(false);
     }
   };

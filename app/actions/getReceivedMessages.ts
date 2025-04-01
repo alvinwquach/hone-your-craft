@@ -25,7 +25,7 @@ const getCachedConversations = unstable_cache(
       },
       include: {
         messages: {
-          orderBy: { createdAt: "asc" },
+          orderBy: { createdAt: "desc" },
           select: {
             id: true,
             senderId: true,
