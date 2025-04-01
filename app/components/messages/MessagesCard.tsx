@@ -371,7 +371,6 @@ const MessagesCard = ({
                         <span className="text-sm text-zinc-400">
                           {mention.sender.email}
                         </span>
-                        DON'T MISS OUT!
                       </div>
                     </div>
                     <p>{mention.content}</p>
