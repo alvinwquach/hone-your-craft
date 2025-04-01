@@ -145,7 +145,7 @@ const MessagesCard = ({
     receivedMessages?.data && receivedMessages.data.length > 0;
 
   return (
-    <div className="mt-4 md:flex bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80 rounded-lg overflow-hidden">
+    <div className="mt-4 md:flex bg-zinc-900 rounded-lg overflow-hidden">
       <div className="md:w-1/4 w-full border-gray-700">
         <ul className="flex flex-col space-y-4 p-4">
           <li>
@@ -219,272 +219,261 @@ const MessagesCard = ({
         </ul>
       </div>
       <div className="md:w-3/4 w-full p-4 text-white flex-grow">
-        {
-          activeTab === "inbox" && hasReceivedMessages ? (
-            <div className="rounded-lg h-full space-y-6">
-              {receivedMessages.data.map((conversation: any) => {
-                if (conversation.messages.length === 0) return null;
-                return (
-                  <div
-                    key={conversation.id}
-                    className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-                  >
-                    <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
-                      {conversation.messages[0]?.subject?.trim() ||
-                        "No Subject"}
-                    </h3>
-                    <div className="mt-4 border-t border-zinc-700 pt-4">
-                      <h4 className="text-sm font-medium text-zinc-500">
-                        Conversation:
-                      </h4>
-                      <div className="space-y-4 mt-2">
-                        {[...conversation.messages]
-                          .sort(
-                            (a: any, b: any) =>
-                              new Date(a.createdAt).getTime() -
-                              new Date(b.createdAt).getTime()
-                          )
-                          .map((message: any) => (
-                            <div
-                              key={message.id}
-                              className={`flex ${
-                                message.sender.id === userData.user.id
-                                  ? "justify-end"
-                                  : "justify-start"
-                              }`}
-                            >
-                              <div
-                                className={`${
-                                  message.sender.id === userData.user.id
-                                    ? "bg-zinc-700 text-right"
-                                    : "bg-zinc-900 text-left"
-                                } p-4 rounded-xl max-w-xs`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <Image
-                                    src={message.sender.image || defaultPfp}
-                                    alt={
-                                      message.sender.name || "Unknown Sender"
-                                    }
-                                    width={32}
-                                    height={32}
-                                    className="rounded-full border-2 border-zinc-600"
-                                  />
-                                  <div className="flex flex-col">
-                                    <span className="font-semibold text-white">
-                                      {message.sender.name}
-                                    </span>
-                                    <span className="text-sm text-zinc-400">
-                                      {message.sender.email}
-                                    </span>
-                                  </div>
-                                </div>
-                                <p className="text-zinc-300 mt-2">
-                                  {message.content}
-                                </p>
-                                <p className="text-xs text-zinc-500 mt-2">
-                                  {formatMessageDate(message.createdAt)}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center mt-4">
-                      <span
-                        className={`text-xs mt-1 font-medium ${
-                          messageReadStatus.get(conversation.id)
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {messageReadStatus.get(conversation.id)
-                          ? "Read"
-                          : "Unread"}
-                      </span>
-                      {conversation.messages.length > 0 && (
-                        <button
-                          onClick={() =>
-                            toggleMessageReadStatus(
-                              conversation.id,
-                              messageReadStatus.get(conversation.id) ?? false
-                            )
-                          }
-                          className="flex items-center space-x-2 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition-all duration-200 ease-in-out"
-                        >
-                          {messageReadStatus.get(conversation.id) ? (
-                            <RiMailUnreadLine className="w-5 h-5" />
-                          ) : (
-                            <LuMailOpen className="w-5 h-5" />
-                          )}
-                          <span className="text-sm font-semibold">
-                            {messageReadStatus.get(conversation.id)
-                              ? "Mark as Unread"
-                              : "Mark as Read"}
-                          </span>
-                        </button>
-                      )}
-                    </div>
-                    {conversation.messages.length > 0 && (
-                      <button
-                        className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out mt-4"
-                        onClick={() => openReplyModal(conversation.messages[0])}
-                      >
-                        <FaReply className="w-4 h-4 mr-2" /> Reply
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : activeTab === "inbox" ? (
-            <div className="rounded-lg h-full">
-              <p className="text-center text-zinc-500 mt-2">
-                No Conversations Found
-              </p>
-            </div>
-          ) : null;
-        }
-
-        {
-          activeTab === "mentions" && mentionedInMessages?.data?.length ? (
-            <div className="rounded-lg h-full space-y-6">
-              {mentionedInMessages.data.map((mention: any) => (
+        {activeTab === "inbox" && hasReceivedMessages ? (
+          <div className="rounded-lg h-full space-y-6">
+            {receivedMessages.data.map((conversation: any) => {
+              if (conversation.messages.length === 0) return null;
+              return (
                 <div
-                  key={mention.id}
+                  key={conversation.id}
                   className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
                 >
-                  <div className="text-sm font-medium text-zinc-500">
-                    <p className="text-zinc-300">
-                      Mentioned in Subject:{" "}
-                      <span className="text-zinc-400">{mention.subject}</span>
-                    </p>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <div className="p-4 bg-zinc-700 text-zinc-300 rounded-lg">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Image
-                          src={mention.sender.image || defaultPfp}
-                          alt={mention.sender.name || "Unknown Sender"}
-                          width={32}
-                          height={32}
-                          className="rounded-full border-2 border-zinc-600"
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-white">
-                            {mention.sender.name}
-                          </span>
-                          <span className="text-sm text-zinc-400">
-                            {mention.sender.email}
-                          </span>
-                          DON'T MISS OUT!
-                        </div>
-                      </div>
-                      <p>{mention.content}</p>
-                      <p className="text-xs text-zinc-500 mt-2">
-                        Mentioned on {formatMessageDate(mention.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : activeTab === "mentions" ? (
-            <div className="rounded-lg h-full">
-              <p className="text-center text-zinc-500 mt-2">
-                No Mentions Found
-              </p>
-            </div>
-          ) : null;
-        }
-
-        {
-          activeTab === "sent" && sentMessages?.data?.length ? (
-            <div className="rounded-lg h-full space-y-6">
-              {sentMessages.data.map((conversation: any) => {
-                if (conversation.sentMessages.length === 0) return null;
-                return (
-                  <div
-                    key={conversation.conversationId}
-                    className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-                  >
-                    <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
-                      {conversation.sentMessages[0]?.subject?.trim() ||
-                        "No Subject"}
-                    </h3>
-                    <div className="mt-4 border-t border-zinc-700 pt-4">
-                      <h4 className="text-sm font-medium text-zinc-500">
-                        Recipients:
-                      </h4>
-                      <div className="space-y-4 mt-2">
-                        {conversation.receivers.map((recipient: any) => (
+                  <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
+                    {conversation.messages[0]?.subject?.trim() || "No Subject"}
+                  </h3>
+                  <div className="mt-4 border-t border-zinc-700 pt-4">
+                    <h4 className="text-sm font-medium text-zinc-500">
+                      Conversation:
+                    </h4>
+                    <div className="space-y-4 mt-2">
+                      {[...conversation.messages]
+                        .sort(
+                          (a: any, b: any) =>
+                            new Date(a.createdAt).getTime() -
+                            new Date(b.createdAt).getTime()
+                        )
+                        .map((message: any) => (
                           <div
-                            key={recipient.id}
-                            className="flex items-center space-x-2"
+                            key={message.id}
+                            className={`flex ${
+                              message.sender.id === userData.user.id
+                                ? "justify-end"
+                                : "justify-start"
+                            }`}
                           >
-                            <Image
-                              src={recipient.image || defaultPfp}
-                              alt={recipient.name || ""}
-                              width={32}
-                              height={32}
-                              className="rounded-full"
-                            />
-                            <div className="text-sm">
-                              <p className="text-zinc-300">{recipient.name}</p>
-                              <p className="text-zinc-400">{recipient.email}</p>
+                            <div
+                              className={`${
+                                message.sender.id === userData.user.id
+                                  ? "bg-zinc-700 text-right"
+                                  : "bg-zinc-900 text-left"
+                              } p-4 rounded-xl max-w-xs`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Image
+                                  src={message.sender.image || defaultPfp}
+                                  alt={message.sender.name || "Unknown Sender"}
+                                  width={32}
+                                  height={32}
+                                  className="rounded-full border-2 border-zinc-600"
+                                />
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-white">
+                                    {message.sender.name}
+                                  </span>
+                                  <span className="text-sm text-zinc-400">
+                                    {message.sender.email}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-zinc-300 mt-2">
+                                {message.content}
+                              </p>
+                              <p className="text-xs text-zinc-500 mt-2">
+                                {formatMessageDate(message.createdAt)}
+                              </p>
                             </div>
                           </div>
                         ))}
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center mt-4">
+                    <span
+                      className={`text-xs mt-1 font-medium ${
+                        messageReadStatus.get(conversation.id)
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {messageReadStatus.get(conversation.id)
+                        ? "Read"
+                        : "Unread"}
+                    </span>
+                    {conversation.messages.length > 0 && (
+                      <button
+                        onClick={() =>
+                          toggleMessageReadStatus(
+                            conversation.id,
+                            messageReadStatus.get(conversation.id) ?? false
+                          )
+                        }
+                        className="flex items-center space-x-2 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full transition-all duration-200 ease-in-out"
+                      >
+                        {messageReadStatus.get(conversation.id) ? (
+                          <RiMailUnreadLine className="w-5 h-5" />
+                        ) : (
+                          <LuMailOpen className="w-5 h-5" />
+                        )}
+                        <span className="text-sm font-semibold">
+                          {messageReadStatus.get(conversation.id)
+                            ? "Mark as Unread"
+                            : "Mark as Read"}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                  {conversation.messages.length > 0 && (
+                    <button
+                      className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out mt-4"
+                      onClick={() => openReplyModal(conversation.messages[0])}
+                    >
+                      <FaReply className="w-4 h-4 mr-2" /> Reply
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : activeTab === "inbox" ? (
+          <div className="rounded-lg h-full">
+            <p className="text-center text-zinc-500 mt-2">
+              No Conversations Found
+            </p>
+          </div>
+        ) : null}
+
+        {activeTab === "mentions" && mentionedInMessages?.data?.length ? (
+          <div className="rounded-lg h-full space-y-6">
+            {mentionedInMessages.data.map((mention: any) => (
+              <div
+                key={mention.id}
+                className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+              >
+                <div className="text-sm font-medium text-zinc-500">
+                  <p className="text-zinc-300">
+                    Mentioned in Subject:{" "}
+                    <span className="text-zinc-400">{mention.subject}</span>
+                  </p>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <div className="p-4 bg-zinc-700 text-zinc-300 rounded-lg">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Image
+                        src={mention.sender.image || defaultPfp}
+                        alt={mention.sender.name || "Unknown Sender"}
+                        width={32}
+                        height={32}
+                        className="rounded-full border-2 border-zinc-600"
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-white">
+                          {mention.sender.name}
+                        </span>
+                        <span className="text-sm text-zinc-400">
+                          {mention.sender.email}
+                        </span>
+                        DON'T MISS OUT!
                       </div>
                     </div>
-                    <div className="mt-4 space-y-2">
-                      {conversation.sentMessages.map((sentMessage: any) => (
+                    <p>{mention.content}</p>
+                    <p className="text-xs text-zinc-500 mt-2">
+                      Mentioned on {formatMessageDate(mention.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : activeTab === "mentions" ? (
+          <div className="rounded-lg h-full">
+            <p className="text-center text-zinc-500 mt-2">No Mentions Found</p>
+          </div>
+        ) : null}
+
+        {activeTab === "sent" && sentMessages?.data?.length ? (
+          <div className="rounded-lg h-full space-y-6">
+            {sentMessages.data.map((conversation: any) => {
+              if (conversation.sentMessages.length === 0) return null;
+              return (
+                <div
+                  key={conversation.conversationId}
+                  className="p-6 bg-zinc-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                >
+                  <h3 className="text-xl font-semibold text-zinc-300 hover:text-zinc-100 transition-colors duration-200">
+                    {conversation.sentMessages[0]?.subject?.trim() ||
+                      "No Subject"}
+                  </h3>
+                  <div className="mt-4 border-t border-zinc-700 pt-4">
+                    <h4 className="text-sm font-medium text-zinc-500">
+                      Recipients:
+                    </h4>
+                    <div className="space-y-4 mt-2">
+                      {conversation.receivers.map((recipient: any) => (
                         <div
-                          key={sentMessage.id}
-                          className="p-4 bg-zinc-700 text-zinc-300 rounded-lg"
+                          key={recipient.id}
+                          className="flex items-center space-x-2"
                         >
-                          <p>{sentMessage.content}</p>
-                          <p className="text-xs text-zinc-500 mt-2">
-                            Sent on {formatMessageDate(sentMessage.createdAt)}
-                          </p>
-                          <div className="flex justify-end">
-                            <button
-                              onClick={() =>
-                                handleSentMessageToTrash(sentMessage.id)
-                              }
-                              className="px-3 py-2 bg-zinc-600 hover:bg-zinc-500 rounded-full shadow-md transition-all duration-200 ease-in-out"
-                            >
-                              <FaTrash className="w-4 h-4" />
-                            </button>
+                          <Image
+                            src={recipient.image || defaultPfp}
+                            alt={recipient.name || ""}
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                          />
+                          <div className="text-sm">
+                            <p className="text-zinc-300">{recipient.name}</p>
+                            <p className="text-zinc-400">{recipient.email}</p>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="text-xs mt-1 font-medium text-green-500">
-                        Sent
-                      </span>
-                      <button
-                        onClick={() =>
-                          openReplyModal(conversation.sentMessages[0])
-                        }
-                        className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
-                      >
-                        <FaReply className="w-4 h-4 mr-2" /> Reply
-                      </button>
-                    </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : activeTab === "sent" ? (
-            <div className="rounded-lg h-full">
-              <p className="text-center text-zinc-500 mt-2">
-                No Sent Messages Found
-              </p>
-            </div>
-          ) : null;
-        }
+                  <div className="mt-4 space-y-2">
+                    {conversation.sentMessages.map((sentMessage: any) => (
+                      <div
+                        key={sentMessage.id}
+                        className="p-4 bg-zinc-700 text-zinc-300 rounded-lg"
+                      >
+                        <p>{sentMessage.content}</p>
+                        <p className="text-xs text-zinc-500 mt-2">
+                          Sent on {formatMessageDate(sentMessage.createdAt)}
+                        </p>
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() =>
+                              handleSentMessageToTrash(sentMessage.id)
+                            }
+                            className="px-3 py-2 bg-zinc-600 hover:bg-zinc-500 rounded-full shadow-md transition-all duration-200 ease-in-out"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center mt-4">
+                    <span className="text-xs mt-1 font-medium text-green-500">
+                      Sent
+                    </span>
+                    <button
+                      onClick={() =>
+                        openReplyModal(conversation.sentMessages[0])
+                      }
+                      className="flex items-center px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+                    >
+                      <FaReply className="w-4 h-4 mr-2" /> Reply
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : activeTab === "sent" ? (
+          <div className="rounded-lg h-full">
+            <p className="text-center text-zinc-500 mt-2">
+              No Sent Messages Found
+            </p>
+          </div>
+        ) : null}
 
         {activeTab === "interviews" && (
           <div className="rounded-lg h-full">
