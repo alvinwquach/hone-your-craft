@@ -4,8 +4,8 @@ import { getReceivedMessages } from "@/app/actions/getReceivedMessages";
 import { getSentMessages } from "@/app/actions/getSentMessages";
 import { getTrashedSentMessages } from "@/app/actions/getTrashedSentMessages";
 import { getMentions } from "@/app/actions/getMentions";
-import MessagesCard from "../components/messages/MessagesCard";
-import getCurrentUser from "../actions/getCurrentUser";
+import getCurrentUser from "@/app/actions/getCurrentUser";
+import MessagesClient from "../components/messages/MessagesClient";
 
 export default async function MessagesPage() {
   const currentUser = await getCurrentUser();
@@ -18,7 +18,7 @@ export default async function MessagesPage() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen text-white">
-      <MessagesCard
+      <MessagesClient
         userData={userData}
         sentMessages={sentMessages}
         receivedMessages={receivedMessages}
