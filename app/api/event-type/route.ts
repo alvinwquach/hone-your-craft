@@ -1,61 +1,97 @@
+"use server";
+
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { revalidatePath } from "next/cache";
-import { NextResponse } from "next/server";
+import { DayOfWeek } from "@prisma/client";
 
-export async function POST(request: Request) {
-  try {
-    const currentUser = await getCurrentUser();
+const dayOfWeekMap: Record<string, DayOfWeek> = {
+  SUNDAY: "SUNDAY",
+  MONDAY: "MONDAY",
+  TUESDAY: "TUESDAY",
+  WEDNESDAY: "WEDNESDAY",
+  THURSDAY: "THURSDAY",
+  FRIDAY: "FRIDAY",
+  SATURDAY: "SATURDAY",
+};
 
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "User is not authenticated" },
-        { status: 401 }
-      );
-    }
+export async function createEventType({
+  title,
+  length,
+  availabilityData,
+}: {
+  title: string;
+  length: number;
+  availabilityData: {
+    dayOfWeek: string;
+    isRecurring: boolean;
+    startTime: string;
+    endTime: string;
+  }[];
+}) {
+  const currentUser = await getCurrentUser();
 
-    const body = await request.json();
-    const { title, length } = body;
-
-    if (!title || !length) {
-      return NextResponse.json(
-        { error: "Missing or incorrect required fields" },
-        { status: 400 }
-      );
-    }
-
-    const event = await prisma.eventType.create({
-      data: {
-        userId: currentUser.id,
-        title,
-        length,
-      },
-    });
-
-    const availabilities = await prisma.interviewAvailability.findMany({
-      where: { userId: currentUser.id },
-    });
-
-    for (const availability of availabilities) {
-      await prisma.eventTypeAvailability.create({
-        data: {
-          eventTypeId: event.id,
-          availabilityId: availability.id,
-        },
-      });
-    }
-
-    revalidatePath("/calendar", "page");
-
-    return NextResponse.json(
-      { message: "Event type created successfully", event },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Error creating event type:", error);
-    return NextResponse.json(
-      { error: "An error occurred while creating the event type" },
-      { status: 500 }
-    );
+  if (!currentUser) {
+    throw new Error("User is not authenticated");
   }
+
+  if (!title || !length) {
+    throw new Error("Missing or incorrect required fields");
+  }
+
+  const event = await prisma.eventType.create({
+    data: {
+      userId: currentUser.id,
+      title,
+      length,
+    },
+  });
+
+  if (availabilityData && availabilityData.length > 0) {
+    const availabilityPromises = availabilityData.map(async (availability) => {
+      const normalizedDay = availability.dayOfWeek.toUpperCase();
+      const fullDayOfWeek = dayOfWeekMap[normalizedDay];
+      if (!fullDayOfWeek) {
+        throw new Error(`Invalid dayOfWeek value: ${availability.dayOfWeek}`);
+      }
+
+      const existingAvailability = await prisma.interviewAvailability.findFirst(
+        {
+          where: {
+            userId: currentUser.id,
+            dayOfWeek: fullDayOfWeek,
+            startTime: new Date(availability.startTime),
+            endTime: new Date(availability.endTime),
+            isRecurring: availability.isRecurring,
+          },
+        }
+      );
+
+      if (!existingAvailability) {
+        return prisma.interviewAvailability.create({
+          data: {
+            userId: currentUser.id,
+            dayOfWeek: fullDayOfWeek,
+            isRecurring: availability.isRecurring,
+            startTime: new Date(availability.startTime),
+            endTime: new Date(availability.endTime),
+          },
+        });
+      }
+      return existingAvailability;
+    });
+
+    const availabilities = await Promise.all(availabilityPromises);
+
+    await prisma.eventTypeAvailability.createMany({
+      data: availabilities.map((availability) => ({
+        eventTypeId: event.id,
+        availabilityId: availability!.id,
+      })),
+    });
+  }
+
+  revalidatePath("/calendar");
+
+  return { message: "Event type created successfully", event };
 }

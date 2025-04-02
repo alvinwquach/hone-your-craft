@@ -322,7 +322,7 @@ model InterviewAvailability {
 model EventTypeAvailability {
   id                  String               @id @default(auto()) @map("_id") @db.ObjectId
   eventTypeId         String               @db.ObjectId
-  eventType           EventType            @relation("EventTypeToAvailability", fields: [eventTypeId], references: [id])
+  eventType   EventType @relation("EventTypeToAvailability", fields: [eventTypeId], references: [id], onDelete: Cascade)
   availabilityId      String               @db.ObjectId
   availability        InterviewAvailability @relation("AvailabilityToEventType", fields: [availabilityId], references: [id])
   
