@@ -8,10 +8,10 @@ import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { format } from "date-fns";
 import { Interview } from "@prisma/client";
-import DeleteInterviewContext from "../../../context/DeleteInterviewContext";
 import EditInterviewModal from "./EditInterviewModal";
 import InterviewDetailsModal from "./InterviewDetailsModal";
-import { clientInterviewTypes } from "@/app/lib/clientInterviewTypes"; 
+import { clientInterviewTypes } from "@/app/lib/clientInterviewTypes";
+import { deleteInterview } from "@/app/actions/deleteInterview";
 
 interface Event {
   id: string;
@@ -41,7 +41,6 @@ interface InterviewCalendarProps {
 }
 
 function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
-  const deleteInterview = useContext(DeleteInterviewContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -140,9 +139,13 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
     setShowOptionsMenu(false);
   };
 
-  const handleDeleteInterview = () => {
+  const handleDeleteInterview = async () => {
     if (selectedInterview) {
-      deleteInterview(selectedInterview.id);
+      try {
+        await deleteInterview(selectedInterview.id);
+      } catch (error) {
+        console.error("Failed to delete interview:", error);
+      }
     }
     setShowOptionsMenu(false);
     setSelectedInterview(null);
