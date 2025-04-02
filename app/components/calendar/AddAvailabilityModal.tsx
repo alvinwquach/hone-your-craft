@@ -13,7 +13,7 @@ import {
 import { HiPlus, HiX } from "react-icons/hi";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { toast } from "react-toastify";
-import { mutate } from "swr";
+import { addInterviewAvailability } from "@/app/actions/addInterviewAvailability";
 
 interface TimeRange {
   startTime: string;
@@ -106,6 +106,7 @@ function AddAvailabilityModal({
 
     if (selectedDates.length > 0) {
       setDates(selectedDates);
+      datesToSubmit = selectedDates;
     }
 
     if (selectedDate && selectedDates.length === 0) {
@@ -115,7 +116,6 @@ function AddAvailabilityModal({
     if (isRecurring && selectedDate) {
       const dayOfWeek = getDay(selectedDate);
       const recurringDates: Date[] = [];
-
       const startDate = startOfMonth(selectedDate);
       const endDate = addMonths(startDate, 12);
 
@@ -126,39 +126,27 @@ function AddAvailabilityModal({
         }
         currentDay = addDays(currentDay, 1);
       }
-
       datesToSubmit = recurringDates;
     }
 
-    const body = {
-      dates: datesToSubmit.map((date) => date.toISOString()),
-      timeRanges: timeRanges.map((range) => ({
-        startTime: range.startTime,
-        endTime: range.endTime,
-      })),
-      isRecurring: isRecurring,
-    };
+    const result = await addInterviewAvailability(
+      datesToSubmit.map((date) => date.toISOString()),
+      timeRanges,
+      isRecurring
+    );
 
-    try {
-      const response = await fetch("/api/interview-availability", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add availability");
-      }
-
+    if (result.success) {
       onSubmit(datesToSubmit, timeRanges);
-      toast.success("Availability added successfully");
+      toast.success(result.message);
       closeModal();
-      mutate("/api/interview-availability");
-    } catch (error) {
-      toast.error("Your availability cannot overlap with other time slots");
-      console.error("Error submitting availability:", error);
+      // mutate("/api/interview-availability");
+    } else {
+      toast.error(
+        result.error === "An overlapping time range already exists for this day"
+          ? "Your availability cannot overlap with other time slots"
+          : "Failed to add availability"
+      );
+      console.error("Error submitting availability:", result.error);
     }
   };
 

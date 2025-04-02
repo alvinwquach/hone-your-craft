@@ -1,7 +1,6 @@
 "use server";
 
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { getUserByEmail } from "@/app/actions/getUserByEmail";
 import getUserJobPostings from "@/app/actions/getUserJobPostings";
@@ -11,27 +10,6 @@ import SuggestedSkillsCard from "../components/profile/profile/SuggestedSkillsCa
 import EducationList from "../components/profile/profile/EducationList";
 import RolesCard from "../components/profile/profile/RolesCard";
 import ProfileNavigation from "../components/profile/ui/ProfileNavigation";
-
-interface User {
-  id: number;
-  name: string;
-  image: string;
-  headline: string;
-  bio: string;
-  role: string;
-  yearsOfExperience: number;
-  openToRoles: string[];
-  skills: string[];
-  userRole: string;
-  createdAt: Date;
-}
-
-interface JobPosting {
-  title: string;
-  company: string;
-  postUrl: string;
-  skills: string[];
-}
 
 export default async function Profile() {
   const currentUser = await getCurrentUser();
