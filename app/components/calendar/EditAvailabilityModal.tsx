@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useMemo } from "react";
 import {
   format,
@@ -14,6 +15,7 @@ import {
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
+import { updateInterviewAvailability } from "@/app/actions/updateInterviewAvailability";
 
 interface TimeRange {
   startTime: string;
@@ -145,7 +147,7 @@ function EditAvailabilityModal({
           isRecurring: event.isRecurring,
         };
       })
-      .filter(Boolean);
+      .filter((event): event is NonNullable<typeof event> => event !== null); // Type guard to remove null
 
     if (updatedEvents.length === 0) {
       toast.error("No valid events to update");
@@ -153,25 +155,15 @@ function EditAvailabilityModal({
     }
 
     try {
-      const response = await fetch("/api/interview-availability", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ events: updatedEvents, editAllRecurring }),
+      const result = await updateInterviewAvailability({
+        events: updatedEvents,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update availability");
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      onSubmit(
-        updatedEvents as {
-          id: string;
-          startTime: string;
-          endTime: string;
-          isRecurring: boolean;
-        }[],
-        editAllRecurring
-      );
+      onSubmit(updatedEvents, editAllRecurring);
       toast.success("Availability updated successfully");
       closeModal();
       mutate("/api/interview-availability");
