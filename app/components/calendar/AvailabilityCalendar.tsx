@@ -111,17 +111,13 @@ function AvailabilityCalendar({
 
   const handleDateClick = (arg: any) => {
     const clickedDate = startOfDay(arg.date);
-    const today = startOfDay(new Date());
 
-    if (clickedDate < today) return;
-
-    setSelectedDate(arg.date);
-    setSelectedDates([arg.date]);
-    setIsRecurring(false);
+    setSelectedDate(clickedDate);
+    setSelectedDates([clickedDate]);
     setShowOptionsMenu(true);
-
     setEventContext({});
   };
+
   const handleEventClick = (arg: any) => {
     const eventId = arg.event.id;
     const availabilityItem = interviewAvailability.find(
@@ -328,7 +324,7 @@ function AvailabilityCalendar({
           minWidth: 1280,
           view: "dayGridMonth",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
           },
@@ -337,7 +333,7 @@ function AvailabilityCalendar({
           minWidth: 1024,
           view: "dayGridMonth",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
           },
@@ -346,7 +342,7 @@ function AvailabilityCalendar({
           minWidth: 640,
           view: "timeGridWeek",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "timeGridWeek,timeGridDay,listWeek",
           },
@@ -355,7 +351,7 @@ function AvailabilityCalendar({
           minWidth: 0,
           view: "timeGridDay",
           toolbar: {
-            left: currentMonth ? "next today" : "prev next today",
+            left: "prev,next today",
             center: "title",
             right: "timeGridDay,listWeek",
           },
