@@ -10,6 +10,7 @@ import useSWR, { mutate } from "swr";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { DayOfWeek } from "@prisma/client";
+import { createEventType } from "@/app/actions/createEventType";
 
 interface Availability {
   weekly: {
@@ -22,12 +23,6 @@ interface Availability {
     dayOfWeek: DayOfWeek;
   }[];
 }
-
-type ClientAvailabilityItem = {
-  startTime: string;
-  endTime: string;
-  isRecurring: boolean;
-};
 
 interface SidesheetProps {
   onClose: () => void;
@@ -178,7 +173,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
         })),
       });
     }
-  }, [availability, interviewAvailability, interviewAvailabilityLoading]); 
+  }, [availability, interviewAvailability, interviewAvailabilityLoading]);
   const renderTimeSlotInputs = (day: string) => {
     return availability.weekly[day].map((slot, index) => (
       <div
@@ -409,20 +404,9 @@ function Sidesheet({ onClose }: SidesheetProps) {
       };
 
       try {
-        const response = await fetch("/api/event-type", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(dataToSend),
-        });
+        const { event } = await createEventType(dataToSend);
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const data = await response.json();
-        mutate(`/api/event-type/${data.event.id}`);
+        mutate(`/api/event-type/${event.id}`);
         mutate("/api/event-types");
 
         toast.success("Event type created successfully!");
