@@ -12,6 +12,7 @@ import { format, getDay, startOfDay, isSameDay } from "date-fns";
 import { toast } from "react-toastify";
 import { mutate } from "swr";
 import { GrPowerReset } from "react-icons/gr";
+import { resetInterviewAvailability } from "@/app/actions/resetInterviewAvailability";
 
 interface HeaderToolbar {
   left: string;
@@ -380,14 +381,11 @@ function AvailabilityCalendar({
 
   const handleResetAvailability = async (date: Date | null) => {
     try {
-      const response = await fetch("/api/interview-availability", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date }),
-      });
-      if (!response.ok) throw new Error("Failed to reset availability");
+      const result = await resetInterviewAvailability(date);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
       toast.success("Availability removed successfully");
-      mutate("/api/interview-availability");
       setShowOptionsMenu(false);
     } catch (error) {
       console.error("Error resetting availability:", error);
