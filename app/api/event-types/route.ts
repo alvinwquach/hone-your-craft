@@ -1,19 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
-import { unstable_cache } from "next/cache";
-
-const getCachedEventTypes = unstable_cache(
-  async (userId: string) => {
-    return await prisma.eventType.findMany({
-      where: {
-        userId: userId,
-      },
-    });
-  },
-  ["event_types"],
-  { tags: ["event_types"] }
-);
 
 export async function GET(request: Request) {
   try {
@@ -25,7 +12,9 @@ export async function GET(request: Request) {
       );
     }
 
-    const eventTypes = await getCachedEventTypes(currentUser.id);
+    const eventTypes = await prisma.eventType.findMany({
+      where: { userId: currentUser.id },
+    });
 
     return NextResponse.json({ eventTypes }, { status: 200 });
   } catch (error) {
@@ -36,3 +25,4 @@ export async function GET(request: Request) {
     );
   }
 }
+        
