@@ -54,9 +54,13 @@ const InterviewFrequencyChart = ({
   interviewFrequencies,
 }: InterviewFrequencyChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
+  const [windowWidth, setWindowWidth] = useState<number>(0);
+  const [windowHeight, setWindowHeight] = useState<number>(0);
 
-  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState<number>(window.innerHeight);
+  useEffect(() => {
+    setWindowWidth(window.innerWidth);
+    setWindowHeight(window.innerHeight);
+  }, []); 
 
   useWindowResize((width, height) => {
     setWindowWidth(width);
@@ -148,7 +152,7 @@ const InterviewFrequencyChart = ({
 
       svg
         .append("g")
-        .call(d3.axisLeft(y).tickFormat((d) => interviewLabels[d as string])) // Use the mapping for the labels
+        .call(d3.axisLeft(y).tickFormat((d) => interviewLabels[d as string]))
         .selectAll("text")
         .style("fill", "white");
 

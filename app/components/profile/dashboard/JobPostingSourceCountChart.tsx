@@ -12,8 +12,13 @@ const JobPostingSourceCountChart = ({
   jobPostingSourceCount,
 }: JobPostingSourceCountChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
-  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState<number>(window.innerHeight);
+  const [windowWidth, setWindowWidth] = useState<number>(0);
+  const [windowHeight, setWindowHeight] = useState<number>(0);
+
+  useEffect(() => {
+    setWindowWidth(window.innerWidth);
+    setWindowHeight(window.innerHeight);
+  }, []);
 
   useWindowResize((width, height) => {
     setWindowWidth(width);

@@ -17,9 +17,13 @@ const JobApplicationStatusChart = ({
   jobApplicationStatus,
 }: JobApplicationStatusChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const [windowWidth, setWindowWidth] = useState<number>(0);
+  const [windowHeight, setWindowHeight] = useState<number>(0);
 
-  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth);
-  const [windowHeight, setWindowHeight] = useState<number>(window.innerHeight);
+  useEffect(() => {
+    setWindowWidth(window.innerWidth);
+    setWindowHeight(window.innerHeight);
+  }, []); 
 
   useWindowResize((width, height) => {
     setWindowWidth(width);
