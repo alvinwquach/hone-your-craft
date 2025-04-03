@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
 import {
   format,
@@ -139,7 +141,6 @@ function AddAvailabilityModal({
       onSubmit(datesToSubmit, timeRanges);
       toast.success(result.message);
       closeModal();
-      // mutate("/api/interview-availability");
     } else {
       toast.error(
         result.error === "An overlapping time range already exists for this day"
