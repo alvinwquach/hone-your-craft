@@ -1,5 +1,4 @@
 "use client";
-
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -23,7 +22,6 @@ interface NavigationItem {
   text: string;
   icon: IconType;
 }
-
 interface NavigationConfig {
   [key: string]: NavigationItem[];
 }
@@ -119,7 +117,7 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
       <Menu as="div" className="relative">
         <div>
           <Menu.Button
-            className="flex text-sm  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-full focus:ring-4 focus:ring-gray-600 hover:bg-zinc-800 transition-colors duration-200"
+            className="flex text-sm bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-full focus:ring-4 focus:ring-gray-600 hover:bg-zinc-800 transition-colors duration-200"
             aria-expanded="false"
           >
             <div className="flex items-center">
@@ -141,6 +139,7 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
             </div>
           </Menu.Button>
         </div>
+
         <Transition
           as={Fragment}
           enter="transition ease-out duration-100"
@@ -211,22 +210,22 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
   );
 }
 
-interface NavigationItem {
-  href: string;
-  text: string;
-  icon: IconType;
-}
-
-interface BottomNavigationProps {
-  navigation: NavigationItem[];
-}
-
-function BottomNavigation({ navigation }: BottomNavigationProps) {
+function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
   const pathname = usePathname();
 
+  const gridCols = Math.min(navigation.length, 6);
+
   return (
-    <div className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80 rounded-full bottom-4 left-1/2">
-      <div className="grid h-full max-w-xl grid-cols-6 mx-auto">
+    <div
+      className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80 rounded-full bottom-4 left-1/2"
+      style={{ "--grid-cols": gridCols } as React.CSSProperties}
+    >
+      <div
+        className="grid h-full max-w-xl mx-auto"
+        style={{
+          gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+        }}
+      >
         {navigation.map((item, index) => {
           const isActive = pathname === item.href;
           const isFirstItem = index === 0;
@@ -282,7 +281,7 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <nav className="fixed top-0 right-0 z-50 w-full border-b  bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80">
+      <nav className="fixed top-0 right-0 z-50 w-full border-b bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80">
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start">
@@ -296,6 +295,7 @@ export default function CustomNavigation() {
           </div>
         </div>
       </nav>
+
       {isAuthenticated && (
         <Fragment>
           {/* <Sidebar navigation={navigation} /> */}
