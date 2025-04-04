@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { FaCalendarAlt, FaTimes } from "react-icons/fa";
-import { AiOutlinePlus } from "react-icons/ai";
 import { HiClock } from "react-icons/hi";
 import { ImLoop } from "react-icons/im";
 import { useSession } from "next-auth/react";
-import useSWR, { mutate } from "swr";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { DayOfWeek } from "@prisma/client";
 import { createEventType } from "@/app/actions/createEventType";
+import { getInterviewAvailability } from "@/app/actions/getInterviewAvailability";
 
 interface Availability {
   weekly: {
@@ -27,14 +26,6 @@ interface Availability {
 interface SidesheetProps {
   onClose: () => void;
 }
-
-const fetcher = async (url: string, options: RequestInit) => {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  return response.json();
-};
 
 function Sidesheet({ onClose }: SidesheetProps) {
   const [eventName, setEventName] = useState("");
@@ -55,21 +46,9 @@ function Sidesheet({ onClose }: SidesheetProps) {
     },
     dateSpecific: [],
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   const { data: session } = useSession();
-
-  const { data, isLoading: userDataLoading } = useSWR(
-    session ? `/api/user/${session?.user?.email}` : null,
-    (url) => fetcher(url, { method: "GET" }),
-    { refreshInterval: 1000 }
-  );
-
-  const {
-    data: interviewAvailability,
-    isLoading: interviewAvailabilityLoading,
-  } = useSWR(session ? `/api/interview-availability` : null, fetcher, {
-    refreshInterval: 1000,
-  });
 
   const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEventName(e.target.value);
@@ -96,134 +75,57 @@ function Sidesheet({ onClose }: SidesheetProps) {
         minute: "2-digit",
         hour12: true,
       })
-      .replace(/(AM|PM)/, (match) => match.toLowerCase());
+      .replace(/\s*(AM|PM)\s*/gi, (_, match) => match.toLowerCase())
+      .replace(/\s*-\s*/, "-");
   };
 
-  const timeOptions = useMemo(() => {
-    const times: string[] = [];
-    let currentTime = new Date();
-    currentTime.setHours(0, 0, 0, 0);
-
-    for (let i = 0; i < 96; i++) {
-      const time = format(currentTime, "hh:mm a");
-      times.push(time);
-      currentTime.setMinutes(currentTime.getMinutes() + 15);
+  const loadAvailability = async () => {
+    if (session) {
+      try {
+        setIsLoading(true);
+        const interviewAvailability = await getInterviewAvailability();
+        if (interviewAvailability) {
+          const newAvailability = { ...availability };
+          Object.keys(newAvailability.weekly).forEach((day) => {
+            const recurringSlots = interviewAvailability
+              .filter(
+                (avail: any) =>
+                  new Date(avail.startTime)
+                    .toLocaleString("en-US", { weekday: "short" })
+                    .toLowerCase() === day && avail.isRecurring
+              )
+              .map((avail: any) => ({
+                start: format(new Date(avail.startTime), "hh:mm a"),
+                end: format(new Date(avail.endTime), "hh:mm a"),
+              }));
+            newAvailability.weekly[day] =
+              recurringSlots.length > 0 ? [recurringSlots[0]] : [];
+          });
+          setAvailability({
+            ...newAvailability,
+            dateSpecific: interviewAvailability.map((avail: any) => ({
+              startTime: avail.startTime,
+              endTime: avail.endTime,
+              isRecurring: avail.isRecurring,
+              dayOfWeek: new Date(avail.startTime)
+                .toLocaleString("en-US", { weekday: "long" })
+                .toUpperCase() as DayOfWeek,
+            })),
+          });
+        }
+      } catch (error) {
+        console.error("Error loading availability:", error);
+        toast.error("Failed to load availability");
+      } finally {
+        setIsLoading(false);
+      }
     }
-    return times;
-  }, []);
-
-  const handleAddTimeSlot = (day: string) => {
-    setAvailability((prev) => ({
-      ...prev,
-      weekly: {
-        ...prev.weekly,
-        [day]: [...prev.weekly[day], { start: "09:00 AM", end: "10:00 AM" }],
-      },
-    }));
   };
 
-  const handleRemoveTimeSlot = (day: string, index: number) => {
-    const updatedSlots = [...availability.weekly[day]];
-    updatedSlots.splice(index, 1);
-    setAvailability((prev) => ({
-      ...prev,
-      weekly: { ...prev.weekly, [day]: updatedSlots },
-    }));
-  };
-
-  const handleTimeChange = (
-    day: string,
-    index: number,
-    field: "start" | "end",
-    value: string
-  ) => {
-    const updatedSlots = [...availability.weekly[day]];
-    updatedSlots[index][field] = value;
-    setAvailability((prev) => ({
-      ...prev,
-      weekly: { ...prev.weekly, [day]: updatedSlots },
-    }));
-  };
-
+  // Use the function in useEffect
   useEffect(() => {
-    if (interviewAvailability && !interviewAvailabilityLoading) {
-      const newAvailability = { ...availability };
-      Object.keys(newAvailability.weekly).forEach((day) => {
-        newAvailability.weekly[day] = interviewAvailability
-          .filter(
-            (avail: any) =>
-              new Date(avail.startTime)
-                .toLocaleString("en-US", { weekday: "short" })
-                .toLowerCase() === day && avail.isRecurring
-          )
-          .map((avail: any) => ({
-            start: format(new Date(avail.startTime), "hh:mm a"),
-            end: format(new Date(avail.endTime), "hh:mm a"),
-          }));
-      });
-      setAvailability({
-        ...newAvailability,
-        dateSpecific: interviewAvailability.map((avail: any) => ({
-          startTime: avail.startTime,
-          endTime: avail.endTime,
-          isRecurring: avail.isRecurring,
-          dayOfWeek: new Date(avail.startTime)
-            .toLocaleString("en-US", { weekday: "long" })
-            .toUpperCase() as DayOfWeek,
-        })),
-      });
-    }
-  }, [availability, interviewAvailability, interviewAvailabilityLoading]);
-  const renderTimeSlotInputs = (day: string) => {
-    return availability.weekly[day].map((slot, index) => (
-      <div
-        key={index}
-        className={`flex items-center space-x-2 ${index > 0 ? "mt-4" : ""}`}
-      >
-        <select
-          value={slot.start}
-          onChange={(e) =>
-            handleTimeChange(day, index, "start", e.target.value)
-          }
-          className="px-4 py-1 border border-gray-300 rounded-md text-black"
-        >
-          {timeOptions.map((time) => (
-            <option key={time} value={time}>
-              {time}
-            </option>
-          ))}
-        </select>
-        <span className="text-black">-</span>
-        <select
-          value={slot.end}
-          onChange={(e) => handleTimeChange(day, index, "end", e.target.value)}
-          className="px-4 py-1 border border-gray-300 rounded-md text-black"
-        >
-          {timeOptions.map((time) => (
-            <option key={time} value={time}>
-              {time}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          onClick={() => handleRemoveTimeSlot(day, index)}
-          className="text-red-500 hover:text-red-700 ml-2"
-        >
-          <FaTimes />
-        </button>
-        {index === 0 && (
-          <button
-            type="button"
-            onClick={() => handleAddTimeSlot(day)}
-            className="ml-4 text-blue-500 hover:text-blue-700"
-          >
-            <AiOutlinePlus />
-          </button>
-        )}
-      </div>
-    ));
-  };
+    loadAvailability();
+  }, [session]);
 
   const renderWeeklyAvailability = () => {
     const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -234,18 +136,17 @@ function Sidesheet({ onClose }: SidesheetProps) {
         </div>
         <div className="flex flex-col space-y-2">
           {availability.weekly[day].length > 0 ? (
-            renderTimeSlotInputs(day)
-          ) : (
-            <div className="text-gray-500 italic">
-              Unavailable
-              <button
-                type="button"
-                onClick={() => handleAddTimeSlot(day)}
-                className="ml-2 text-blue-500 hover:text-blue-700 inline-flex items-center"
-              >
-                <AiOutlinePlus />
-              </button>
+            <div className="flex items-center space-x-1">
+              <span className="text-black">
+                {availability.weekly[day][0].start}
+              </span>
+              <span className="text-black">-</span>
+              <span className="text-black">
+                {availability.weekly[day][0].end}
+              </span>
             </div>
+          ) : (
+            <div className="text-gray-500 italic">Unavailable</div>
           )}
         </div>
       </div>
@@ -341,19 +242,15 @@ function Sidesheet({ onClose }: SidesheetProps) {
       minute: "2-digit",
       hour12: true,
     };
-
     const formattedTime = date.toLocaleTimeString("en-US", options);
-
-    return formattedTime.replace(/(AM|PM)/, (match) => match.toLowerCase());
+    return formattedTime
+      .replace(/\s*(AM|PM)\s*/gi, (_, match) => match.toLowerCase())
+      .replace(/\s*-\s*/, "-");
   };
-
-  const userData = data || [];
-  const loadingUserData = !userData || userDataLoading;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!interviewAvailabilityLoading && interviewAvailability) {
+    if (!isLoading) {
       let durationInMinutes: number | undefined;
 
       if (duration === "custom") {
@@ -387,11 +284,9 @@ function Sidesheet({ onClose }: SidesheetProps) {
             endTime: new Date(`2000-01-01T${slot.end}`).toISOString(),
           }))
         ),
-        ...interviewAvailability.map((avail: any) => ({
-          dayOfWeek: new Date(avail.startTime)
-            .toLocaleString("en-US", { weekday: "long" })
-            .toUpperCase() as DayOfWeek,
-          isRecurring: false,
+        ...availability.dateSpecific.map((avail) => ({
+          dayOfWeek: avail.dayOfWeek,
+          isRecurring: avail.isRecurring,
           startTime: new Date(avail.startTime).toISOString(),
           endTime: new Date(avail.endTime).toISOString(),
         })),
@@ -404,11 +299,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
       };
 
       try {
-        const { event } = await createEventType(dataToSend);
-
-        mutate(`/api/event-type/${event.id}`);
-        mutate("/api/event-types");
-
+        await createEventType(dataToSend);
         toast.success("Event type created successfully!");
         onClose();
       } catch (error) {
@@ -426,7 +317,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div className="absolute right-0 top-0 w-full lg:w-1/3 bg-white h-full shadow-lg overflow-y-auto rounded-l-lg transition-transform transform ease-in-out duration-300">
+      <div className="absolute right-0 top-0 w-full lg:w-[30%] bg-white h-full shadow-lg overflow-y-auto rounded-l-lg transition-transform transform ease-in-out duration-300">
         <div className="flex justify-end items-center p-4 border-gray-200">
           <button
             onClick={onClose}
@@ -499,63 +390,49 @@ function Sidesheet({ onClose }: SidesheetProps) {
                 <ImLoop className="text-blue-500" />
                 <span>Weekly hours</span>
               </h3>
-              <p className="text-xs text-gray-500">
-                Set when you are available for meetings
-              </p>
               <div className="mt-4">{renderWeeklyAvailability()}</div>
-              <div className="flex justify-between items-center relative">
+              <div className="flex items-center relative">
                 <h3 className="text-sm text-gray-700 flex items-center space-x-2">
                   <FaCalendarAlt className="text-blue-500" />
                   <span>Date-specific hours</span>
                 </h3>
-                <button className="absolute right-0 -top-1 mt-2 mr-4 px-3 py-1 border border-gray-300 rounded-full text-blue-500 hover:text-blue-700 flex items-center">
-                  <span>+ Hours</span>
-                </button>
               </div>
-              <p className="text-xs text-gray-500">
-                Adjust hours for specific days
-              </p>
               <p className="text-sm text-gray-500 mt-2">
                 {new Date().getFullYear()}
               </p>
-              {interviewAvailabilityLoading ? (
+              {isLoading ? (
                 <p className="text-sm text-gray-500">
                   Loading client availability...
                 </p>
               ) : (
-                groupByDateRange(interviewAvailability)?.map((group, index) => {
-                  return (
-                    <div key={index} className="mt-4 rounded-lg shadow-sm">
-                      <div className="flex flex-col space-y-2">
-                        <div className="flex items-center bg-gray-200 p-3 rounded-md w-full">
-                          <div className="text-sm text-gray-700 font-semibold w-32">
-                            {formatDateRange(group.startTime, group.endTime)}
-                          </div>
-
-                          <div className="flex-1 text-center text-sm text-gray-500">
-                            <span>
+                groupByDateRange(availability.dateSpecific)?.map(
+                  (group, index) => {
+                    return (
+                      <div key={index} className="mt-4 rounded-lg">
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex flex-col items-start bg-transparent p-3 rounded-md w-full">
+                            <div className="text-sm text-gray-700 font-semibold w-32">
+                              {formatDateRange(group.startTime, group.endTime)}
+                            </div>
+                            <div className="text-sm text-gray-500">
                               {formatTime(group.slots[0].start)} -{" "}
                               {formatTime(
                                 group.slots[group.slots.length - 1].end
                               )}
-                            </span>
+                            </div>
                           </div>
-
-                          <button className="text-gray-500 hover:text-gray-700">
-                            <FaTimes />
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
+                    );
+                  }
+                )
               )}
             </div>
             <p className="text-sm font-semibold text-gray-500">Host</p>
             <div className="border-gray-200 pt-4 flex items-center space-x-4">
-              {userData?.user?.image && (
+              {session?.user?.image && (
                 <Image
-                  src={userData?.user?.image ?? ""}
+                  src={session.user.image}
                   alt="User Image"
                   width={24}
                   height={24}
@@ -564,7 +441,7 @@ function Sidesheet({ onClose }: SidesheetProps) {
               )}
               <div className="flex items-center space-x-2">
                 <p className="text-sm font-semibold text-gray-700">
-                  {userData?.user?.name || "Host Name"}
+                  {session?.user?.name || "Host Name"}
                 </p>
                 <p className="text-sm text-gray-500">(you)</p>
               </div>
