@@ -24,6 +24,8 @@ export default async function Profile() {
     )
   );
 
+  const educationListContent = await EducationList();
+
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userData.user?.userRole === "CANDIDATE" ? (
@@ -49,7 +51,7 @@ export default async function Profile() {
               />
             </Suspense>
             <div className="my-4 border-t border-gray-200" />
-            <EducationList />
+            {educationListContent}
           </div>
         </>
       ) : userData.user?.userRole === "CLIENT" ? (

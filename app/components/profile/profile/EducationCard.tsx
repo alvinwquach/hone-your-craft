@@ -1,16 +1,33 @@
 import { MdOutlineModeEditOutline } from "react-icons/md";
 
+const getMonthName = (month: number | null) => {
+  if (!month) return "";
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "July",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  return months[month - 1] || "";
+};
+
 interface EducationCardProps {
   education: any;
   openEditModal: (education: any) => void;
-  getMonthName: (month: number) => string;
   isLastCard: boolean;
 }
 
 function EducationCard({
   education,
   openEditModal,
-  getMonthName,
   isLastCard,
 }: EducationCardProps) {
   return (
