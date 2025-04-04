@@ -4,7 +4,7 @@ import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "./getCurrentUser";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-export async function addUserSkill(skill: string) {
+export async function addSkill(skill: string) {
   const currentUser = await getCurrentUser();
   if (!currentUser?.id || !currentUser.email) {
     throw new Error("User not authenticated");
@@ -22,7 +22,7 @@ export async function addUserSkill(skill: string) {
         skills: true,
       },
     });
-
+    revalidateTag("user-skills");
     revalidateTag("suggested-skills");
     revalidateTag("user-profile");
     revalidatePath("/profile");
