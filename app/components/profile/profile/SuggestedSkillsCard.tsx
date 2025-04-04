@@ -1,45 +1,38 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { addUserSkill } from "@/app/actions/addUserSkill";
 import { toast } from "react-toastify";
-import { mutate } from "swr";
 
 interface SuggestedSkillsCardProps {
   suggestedSkills: string[];
-  userSkills?: string[];
+  userSkills: string[];
 }
 
-function SuggestedSkillsCard({
-  suggestedSkills,
-  userSkills = [],
+export default function SuggestedSkillsCard({
+  suggestedSkills: initialSuggestedSkills,
+  userSkills: initialUserSkills,
 }: SuggestedSkillsCardProps) {
-  const { data: session } = useSession();
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(userSkills);
+  const [userSkills, setUserSkills] = useState(initialUserSkills);
+  const [suggestedSkills, setSuggestedSkills] = useState(
+    initialSuggestedSkills
+  );
 
-  const missingSkills = suggestedSkills
-    .filter((skill) => !selectedSkills.includes(skill))
-    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  const missingSkills = suggestedSkills.filter(
+    (skill) => !userSkills.includes(skill)
+  );
 
   const handleSkillAdd = async (skill: string) => {
-    if (selectedSkills.includes(skill)) return;
-    try {
-      const response = await fetch(`/api/user/${session?.user?.email}/skills`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ skills: [skill] }),
-      });
+    setUserSkills((prev) => [...prev, skill]);
+    setSuggestedSkills((prev) => prev.filter((s) => s !== skill));
 
-      if (!response.ok) {
-        throw new Error("Failed to add skill");
-      }
-      setSelectedSkills((prevSkills) => [...prevSkills, skill]);
-      mutate(`/api/user/${session?.user?.email}/skills`);
+    const result = await addUserSkill(skill);
+    if (result.success) {
       toast.success("Skill Added");
-    } catch (error) {
-      console.error("Error adding skill:", error);
+    } else {
+      setUserSkills((prev) => prev.filter((s) => s !== skill));
+      setSuggestedSkills((prev) => [...prev, skill]);
+      toast.error("Failed to add skill");
     }
   };
 
@@ -60,7 +53,7 @@ function SuggestedSkillsCard({
           {missingSkills.map((missingSkill) => (
             <span
               key={missingSkill}
-              className="bg-zinc-700 text-white px-3 py-1 text-sm cursor-pointer hover:bg-zinc-600 hover:text-blue-400"
+              className="bg-gray-200 text-gray-900 px-3 py-1 text-sm cursor-pointer hover:bg-gray-300 hover:text-blue-400"
               onClick={() => handleSkillAdd(missingSkill)}
             >
               {missingSkill}
@@ -71,5 +64,3 @@ function SuggestedSkillsCard({
     </div>
   );
 }
-
-export default SuggestedSkillsCard;

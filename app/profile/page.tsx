@@ -3,26 +3,18 @@
 import { Suspense } from "react";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { getUserByEmail } from "@/app/actions/getUserByEmail";
-import getUserJobPostings from "@/app/actions/getUserJobPostings";
 import ProfileCard from "../components/profile/profile/ProfileCard";
 import SkillsCard from "../components/profile/profile/SkillsCard";
 import SuggestedSkillsCard from "../components/profile/profile/SuggestedSkillsCard";
 import EducationList from "../components/profile/profile/EducationList";
 import RolesCard from "../components/profile/profile/RolesCard";
 import ProfileNavigation from "../components/profile/ui/ProfileNavigation";
+import { getSuggestedSkills } from "../actions/getSuggestedSkills";
 
 export default async function Profile() {
   const currentUser = await getCurrentUser();
   const userData = await getUserByEmail(currentUser?.email ?? "");
-  const jobPostings = await getUserJobPostings();
-
-  const suggestedSkills = Array.from(
-    new Set(
-      jobPostings
-        .flatMap((job) => job.skills)
-        .filter((skill) => !userData.user?.skills.includes(skill))
-    )
-  );
+  const suggestedSkills = await getSuggestedSkills();
 
   const educationListContent = await EducationList();
 
