@@ -1,57 +1,37 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useState, useEffect, useMemo } from "react";
-import { mutate } from "swr";
+import { useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import { skillKeywords } from "@/app/lib/skillKeywords";
 import { Combobox } from "@headlessui/react";
+import { addSkill } from "@/app/actions/addSkill";
+import { removeSkill } from "@/app/actions/removeSkill";
 
 interface SkillsCardProps {
-  userSkills?: string[];
+  userSkills: string[];
 }
 
-function SkillsCard({ userSkills = [] }: SkillsCardProps) {
-  const { data: session } = useSession();
-  const [skillsList, setSkillsList] = useState<string[]>(userSkills);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+export default function SkillsCard({ userSkills }: SkillsCardProps) {
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(userSkills);
   const [query, setQuery] = useState("");
 
   const uniqueSkillKeywords = [...new Set(skillKeywords)];
-
   const alphabeticalSkillKeywords = uniqueSkillKeywords.sort((a, b) =>
     a.toLowerCase().localeCompare(b.toLowerCase())
   );
-
-  useEffect(() => {
-    setSkillsList(userSkills);
-    setSelectedSkills(userSkills);
-  }, [userSkills]);
 
   const handleSkillAdd = async (skill: string) => {
     if (selectedSkills.includes(skill)) return;
 
     try {
-      const response = await fetch(`/api/user/${session?.user?.email}/skills`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ skills: [skill] }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add skill");
+      const result = await addSkill(skill);
+      if (result.success) {
+        setSelectedSkills((prev) => [...prev, skill]);
+        toast.success("Skill Added");
+        setQuery("");
+      } else {
+        throw new Error(result.error || "Failed to add skill");
       }
-
-      const updatedSkillsList = [...skillsList, skill];
-      setSkillsList(updatedSkillsList);
-      setSelectedSkills(updatedSkillsList);
-
-      mutate(`/api/user/${session?.user?.email}`);
-      toast.success("Skill Added");
-
-      setQuery("");
     } catch (error) {
       console.error("Error adding skill:", error);
       toast.error("Failed to add skill");
@@ -60,24 +40,13 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
 
   const handleSkillRemove = async (skill: string) => {
     try {
-      const response = await fetch(`/api/user/${session?.user?.email}/skills`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ skills: [skill] }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to remove skill");
+      const result = await removeSkill(skill);
+      if (result.success) {
+        setSelectedSkills((prev) => prev.filter((s) => s !== skill));
+        toast.success("Skill Removed");
+      } else {
+        throw new Error(result.error || "Failed to remove skill");
       }
-
-      const updatedSkillsList = skillsList.filter((s) => s !== skill);
-      setSkillsList(updatedSkillsList);
-      setSelectedSkills(updatedSkillsList);
-
-      mutate(`/api/user/${session?.user?.email}/skills`);
-      toast.success("Skill Removed");
     } catch (error) {
       console.error("Error removing skill:", error);
       toast.error("Failed to remove skill");
@@ -94,7 +63,7 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
             skill.toLowerCase().includes(query.toLowerCase()) &&
             !selectedSkills.includes(skill)
         );
-  }, [query, alphabeticalSkillKeywords, selectedSkills]);
+  }, [query, selectedSkills]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
@@ -120,7 +89,7 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
                   onClick={() => handleSkillRemove(skill)}
                   className="ml-2 text-red-500 hover:text-red-300"
                 >
-                  &times;
+                  ×
                 </button>
               </div>
             ))}
@@ -138,7 +107,7 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
                     key={skill}
                     value={skill}
                     as="div"
-                    className="cursor-pointer px-3 py-1 hover:bg-zinc-600 rounded-lg w-full"
+                    className="cursor-pointer px-3 py-1 hover:bg-zinc-200 rounded-lg w-full"
                     onClick={() => handleSkillAdd(skill)}
                   >
                     {skill}
@@ -152,5 +121,3 @@ function SkillsCard({ userSkills = [] }: SkillsCardProps) {
     </div>
   );
 }
-
-export default SkillsCard;

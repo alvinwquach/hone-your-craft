@@ -313,12 +313,12 @@ function ProfileCard({ userData }: ProfileCardProps) {
           <div className="flex flex-wrap gap-2 mb-4">
             {selectedRoles.map((role, index) => (
               <div
-                key={`${role}-${index}`} // Use role + index to handle duplicates
+                key={`${role}-${index}`}
                 className="bg-gray-200 text-gray-900 px-3 py-1 text-sm inline-flex items-center gap-2"
               >
                 {role}
                 <button
-                  type="button" // Prevent form submission
+                  type="button"
                   onClick={(e) => handleOpenToRoleRemove(role, e)}
                   className="ml-2 text-red-500 hover:text-red-300"
                 >

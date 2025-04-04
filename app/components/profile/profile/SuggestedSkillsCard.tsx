@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addUserSkill } from "@/app/actions/addUserSkill";
+import { addSkill } from "@/app/actions/addSkill";
 import { toast } from "react-toastify";
 
 interface SuggestedSkillsCardProps {
@@ -26,7 +26,7 @@ export default function SuggestedSkillsCard({
     setUserSkills((prev) => [...prev, skill]);
     setSuggestedSkills((prev) => prev.filter((s) => s !== skill));
 
-    const result = await addUserSkill(skill);
+    const result = await addSkill(skill);
     if (result.success) {
       toast.success("Skill Added");
     } else {
