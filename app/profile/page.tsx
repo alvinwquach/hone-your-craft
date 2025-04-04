@@ -29,15 +29,15 @@ export default async function Profile() {
       {userData.user?.userRole === "CANDIDATE" ? (
         <>
           <ProfileNavigation />
-          <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
+          <div className="mt-6 bg-white border-2 border-gray-200 rounded-lg">
             <Suspense fallback={<ProfileCard userData={[]} />}>
               <ProfileCard userData={userData} />
             </Suspense>
-            <div className="my-4 border-t border-gray-600" />
+            <div className="my-4 border-t border-gray-200" />
             <Suspense fallback={<SkillsCard userSkills={[]} />}>
               <SkillsCard userSkills={userData.user?.skills || []} />
             </Suspense>
-            <div className="my-4 border-t border-gray-600" />
+            <div className="my-4 border-t border-gray-200" />
             <Suspense
               fallback={
                 <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
@@ -48,18 +48,16 @@ export default async function Profile() {
                 suggestedSkills={suggestedSkills}
               />
             </Suspense>
-            <div className="my-4 border-t border-gray-600" />
+            <div className="my-4 border-t border-gray-200" />
             <EducationList />
           </div>
         </>
       ) : userData.user?.userRole === "CLIENT" ? (
         <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
           <ProfileNavigation />
-          <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg">
-            <Suspense fallback={<RolesCard userData={userData.user} />}>
-              <RolesCard userData={userData.user} />
-            </Suspense>
-          </div>
+          <Suspense fallback={<RolesCard userData={userData.user} />}>
+            <RolesCard userData={userData.user} />
+          </Suspense>
         </section>
       ) : null}
     </section>

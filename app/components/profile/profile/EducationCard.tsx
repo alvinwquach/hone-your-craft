@@ -16,24 +16,26 @@ function EducationCard({
   return (
     <div className="ml-4 p-4 rounded-lg">
       <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold">{education.school}</h3>
+        <h3 className="text-lg text-gray-900 font-semibold">
+          {education.school}
+        </h3>
         <div className="flex space-x-2">
           <button
             onClick={() => openEditModal(education)}
-            className="mr-2 p-2 bg-zinc-900 text-white flex items-center justify-center rounded transition-all duration-300 hover:bg-zinc-800  hover:rounded-full"
+            className="mr-2 p-2 bg-white text-white flex items-center justify-center rounded transition-all duration-300 hover:bg-zinc-200  hover:rounded-full"
           >
-            <MdOutlineModeEditOutline className="transition-all duration-300 text-zinc-400 hover:text-zinc-400 h-6 w-6" />
+            <MdOutlineModeEditOutline className="transition-all duration-300 text-zinc-700 hover:text-zinc-700 h-6 w-6" />
           </button>
         </div>
       </div>
       <div className="mb-2">
-        <p className="text-lg font-medium text-white">
+        <p className="text-sm font-medium text-gray-700">
           {education.majors.join(", ")}
         </p>
         <p className="text-md text-zinc-300">{education.minor}</p>
       </div>
       <div className="mb-2">
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-zinc-500">
           {getMonthName(education.startDateMonth)} {education.startDateYear} -{" "}
           {getMonthName(education.endDateMonth)} {education.endDateYear}
         </p>
