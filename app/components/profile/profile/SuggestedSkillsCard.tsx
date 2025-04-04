@@ -46,10 +46,10 @@ function SuggestedSkillsCard({
   return (
     <div className="flex flex-col lg:flex-row justify-center gap-2 p-6 sm:p-8 mt-4 sm:mt-0">
       <div className="w-full lg:w-1/3">
-        <h2 className="text-base font-semibold text-white mb-2">
+        <h2 className="text-base font-semibold text-gray-900 mb-2">
           Suggested Skills
         </h2>
-        <p className="text-gray-400 text-sm">
+        <p className="text-gray-500 text-sm">
           {missingSkills.length === 0
             ? "As you begin to apply to roles, we'll suggest skills to add."
             : "To further hone your craft, here are some skills you might consider adding to your growing skillset:"}

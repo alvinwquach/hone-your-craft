@@ -114,13 +114,15 @@ function EducationList() {
 
   return (
     <div>
-      <div className="mt-6 bg-zinc-900 border-gray-700 rounded-lg p-4 flex justify-between items-center">
+      <div className="mt-6 border-gray-700 rounded-lg p-4 flex justify-between items-center">
         <div className="text-white flex items-center space-x-2">
-          <span className="ml-4 text-xl font-semibold">Education</span>
+          <span className="ml-4 text-xl text-black font-semibold">
+            Education
+          </span>
         </div>
         <button
           onClick={openModal}
-          className="mr-2 bg-zinc-700 hover:bg-zinc-600 text-white p-2 rounded-full flex items-center"
+          className="mr-2 hover:bg-zinc-200 text-zinc-700 p-2 rounded-full flex items-center"
         >
           <FaPlus />
         </button>

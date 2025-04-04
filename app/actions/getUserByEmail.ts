@@ -19,6 +19,7 @@ export async function getUserByEmail(email: string) {
       headline: true,
       bio: true,
       role: true,
+      primaryRole: true,
       yearsOfExperience: true,
       openToRoles: true,
       skills: true,

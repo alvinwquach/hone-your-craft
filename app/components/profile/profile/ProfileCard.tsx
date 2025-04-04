@@ -5,18 +5,23 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { FiUser } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
-import { mutate } from "swr";
 import defaultPfp from "../../../../public/images/icons/default_pfp.jpeg";
 import { YearsOfExperience } from "@prisma/client";
 import { Combobox } from "@headlessui/react";
 import { jobRoles } from "@/app/lib/jobRoles";
+import { addOpenToRole } from "@/app/actions/addOpenToRole";
+import { removeOpenToRole } from "@/app/actions/removeOpenToRole";
+import { updateBio } from "@/app/actions/updateBio";
+import { updateHeadline } from "@/app/actions/updateHeadline";
+import { updateProfileRole } from "@/app/actions/updateProfileRole";
 
 const schema = z.object({
-  role: z.string().min(1, "Role is required"),
-  yearsOfExperience: z.string().min(1, "Years of experience is required"),
+  primaryRole: z.string().min(1, "Role is required"),
+  yearsOfExperience: z.nativeEnum(YearsOfExperience, {
+    errorMap: () => ({ message: "Years of experience is required" }),
+  }),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -60,110 +65,87 @@ function ProfileCard({ userData }: ProfileCardProps) {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      role: userData?.user?.role || "",
-      yearsOfExperience: userData?.user?.yearsOfExperience || "",
+      primaryRole: userData?.user?.primaryRole || "",
+      yearsOfExperience:
+        userData?.user?.yearsOfExperience || YearsOfExperience.LESS_THAN_1_YEAR,
     },
   });
 
-  const selectedRole = watch("role");
+  const selectedRole = watch("primaryRole");
   const selectedExperience = watch("yearsOfExperience");
 
   const handleOpenToRoleAdd = async (role: string) => {
     if (selectedRoles.includes(role)) return;
-    try {
-      const response = await fetch(`/api/user/${session?.user?.email}/role`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ openToRoles: [role] }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to add role");
-      }
+
+    const result = await addOpenToRole(role);
+    if (result.success) {
       setSelectedRoles((prev) => [...prev, role]);
-      mutate(`/api/user/${session?.user?.email}/role`);
       toast.success("Open to Role Added");
       setQuery("");
-    } catch (error) {
-      console.error("Error adding role:", error);
-      toast.error("Failed to add role");
+    } else {
+      toast.error(result.error);
     }
   };
 
-  const handleOpenToRoleRemove = async (role: string) => {
-    try {
-      const response = await fetch(`/api/user/${session?.user?.email}/role`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ openToRoles: [role] }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to remove role");
-      }
-      const updatedRolesList = selectedRoles.filter((r) => r !== role);
-      setSelectedRoles(updatedRolesList);
-      mutate(`/api/user/${session?.user?.email}/role`);
+  const handleOpenToRoleRemove = async (
+    role: string,
+    event?: React.MouseEvent
+  ) => {
+    event?.stopPropagation(); 
+
+    const result = await removeOpenToRole(role);
+    if (result.success) {
+      setSelectedRoles((prev) => prev.filter((r) => r !== role));
       toast.success("Open to Role Removed");
-    } catch (error) {
-      console.error("Error removing role:", error);
-      toast.error("Failed to remove role");
+    } else {
+      toast.error(result.error);
     }
   };
 
   const updateProfile = async (data: FormData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
-    try {
-      const response = await fetch(`/api/user/${session?.user?.email}/role`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          role: data.role,
-          yearsOfExperience: data.yearsOfExperience,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to update role and experience");
-      }
-      mutate(
-        `/api/user/${session?.user?.email}/role`,
-        {
-          ...userData,
-          user: {
-            ...userData.user,
-            role: data.role,
-            yearsOfExperience: data.yearsOfExperience,
-          },
-        },
-        false
-      );
-      if (data.role !== userData?.user?.role) {
+
+    const result = await updateProfileRole({
+      primaryRole: data.primaryRole,
+      yearsOfExperience: data.yearsOfExperience,
+    });
+
+    if (result.success) {
+      if (data.primaryRole !== userData?.user?.primaryRole) {
         toast.success("Role Updated");
       }
       if (data.yearsOfExperience !== userData?.user?.yearsOfExperience) {
         toast.success("Experience Updated");
       }
-    } catch (error) {
-      toast.error("Failed to update role and experience");
-    } finally {
-      setIsSubmitting(false);
+      setSelectedRoles(result?.user?.openToRoles || []);
+    } else {
+      toast.error(result.error);
     }
+    setIsSubmitting(false);
   };
 
   const handleExperienceChange = async (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const newExperience = e.target.value;
+    const newExperience = e.target.value as YearsOfExperience;
     setValue("yearsOfExperience", newExperience);
     await updateProfile({
-      role: selectedRole,
-      yearsOfExperience: selectedExperience,
+      primaryRole: selectedRole,
+      yearsOfExperience: newExperience,
     });
+  };
+
+  const handleRoleKeyDown = async (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); 
+      await updateProfile({
+        primaryRole: selectedRole,
+        yearsOfExperience: selectedExperience,
+      });
+    }
   };
 
   const cancelEditBio = () => {
@@ -178,22 +160,13 @@ function ProfileCard({ userData }: ProfileCardProps) {
 
   const saveBio = async () => {
     if (!bio || bio === userData?.user?.bio) return;
-    try {
-      const response = await fetch(`/api/user/${session?.user?.email}/bio`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ bio }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to update bio");
-      }
-      mutate(`/api/user/${session?.user?.email}/bio`, { bio }, false);
+
+    const result = await updateBio(bio);
+    if (result.success) {
       toast.success("Bio updated successfully");
       setIsEditingBio(false);
-    } catch (error) {
-      toast.error("Failed to update bio");
+    } else {
+      toast.error(result.error);
     }
   };
 
@@ -203,28 +176,11 @@ function ProfileCard({ userData }: ProfileCardProps) {
 
   const handleHeadlineKeyDown = async (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && headline !== userData?.user?.headline) {
-      try {
-        const response = await fetch(
-          `/api/user/${session?.user?.email}/headline`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ headline }),
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Failed to update headline");
-        }
-        mutate(
-          `/api/user/${session?.user?.email}/headline`,
-          { headline },
-          false
-        );
+      const result = await updateHeadline(headline);
+      if (result.success) {
         toast.success("Headline updated successfully");
-      } catch (error) {
-        toast.error("Failed to update headline");
+      } else {
+        toast.error(result.error);
       }
     }
   };
@@ -250,18 +206,21 @@ function ProfileCard({ userData }: ProfileCardProps) {
   return (
     <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0">
       <div className="w-full lg:w-1/3">
-        <h2 className="text-base font-semibold text-white mb-2">About</h2>
-        <p className="text-gray-400 text-sm">Tell us about yourself.</p>
+        <h2 className="text-base font-semibold text-gray-900 mb-2">About</h2>
+        <p className="text-gray-500 text-sm">Tell us about yourself.</p>
       </div>
-      <div className="w-full lg:w-2/3 rounded-lg shadow mx-auto">
+      <div className="w-full lg:w-2/3 rounded-lg mx-auto">
         <div className="mb-6">
-          <label htmlFor="name" className="text-base font-semibold text-white">
+          <label
+            htmlFor="name"
+            className="text-base font-semibold text-gray-900"
+          >
             Your name
           </label>
           <div className="relative mt-2 w-full">
             <input
               type="text"
-              className="block w-full p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+              className="block w-full p-3 text-sm border-2 rounded-lg bg-white text-black focus:ring-blue-500 focus:border-blue-500 border-gray-200 placeholder-gray-400"
               readOnly
               value={userData?.user?.name || ""}
             />
@@ -282,13 +241,13 @@ function ProfileCard({ userData }: ProfileCardProps) {
         <div className="relative w-full">
           <label
             htmlFor="headline"
-            className="text-base font-semibold text-white"
+            className="text-base font-semibold text-gray-900"
           >
             Headline
           </label>
           <input
             type="text"
-            className="mt-2 block w-full p-4 text-sm border rounded-lg bg-zinc-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600 placeholder-gray-400"
+            className="mt-2 block w-full p-3 text-sm border-2 rounded-lg bg-white text-black focus:ring-blue-500 focus:border-blue-500 border-gray-200 placeholder-gray-400"
             value={headline}
             onChange={handleHeadlineChange}
             onKeyDown={handleHeadlineKeyDown}
@@ -299,24 +258,22 @@ function ProfileCard({ userData }: ProfileCardProps) {
             <div className="relative w-full lg:w-3/4">
               <label
                 htmlFor="role"
-                className="text-base font-semibold text-white mb-2 block"
+                className="text-base font-semibold text-gray-900 mb-2 block"
               >
                 Provide your primary role
               </label>
               <div className="relative w-full">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <FiUser className="h-5 w-5 text-white" />
-                </div>
                 <input
                   type="text"
                   id="role"
-                  {...register("role")}
-                  className="block w-full p-4 pl-10 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
+                  {...register("primaryRole")}
+                  onKeyDown={handleRoleKeyDown}
+                  className="block w-full text-black placeholder-gray-400 p-3 text-sm border-2 rounded-lg bg-white border-gray-200 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
                   placeholder="Enter your role"
                 />
-                {errors.role?.message && (
+                {errors.primaryRole?.message && (
                   <span className="text-red-500 mt-1 ml-2 absolute top-full left-0">
-                    {String(errors.role?.message)}
+                    {String(errors.primaryRole?.message)}
                   </span>
                 )}
               </div>
@@ -324,7 +281,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
             <div className="relative w-full lg:w-1/4 ml-auto">
               <label
                 htmlFor="yearsOfExperience"
-                className="text-base font-semibold text-white mb-2 block"
+                className="text-base font-semibold text-gray-900 mb-2 block"
               >
                 Years of experience*
               </label>
@@ -332,14 +289,10 @@ function ProfileCard({ userData }: ProfileCardProps) {
                 id="yearsOfExperience"
                 {...register("yearsOfExperience")}
                 onChange={handleExperienceChange}
-                className="block w-full p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400 max-h-[200px] overflow-y-auto"
+                className="block w-full p-3 text-sm text-black border-2 rounded-lg bg-white border-gray-200 focus:ring-0 focus:border-gray-600 placeholder-gray-400 max-h-[200px] overflow-y-auto"
               >
                 {Object.values(YearsOfExperience).map((experience) => (
-                  <option
-                    key={experience}
-                    value={experience}
-                    className="overflow-y-auto"
-                  >
+                  <option key={experience} value={experience}>
                     {experienceLabels[experience]}
                   </option>
                 ))}
@@ -353,19 +306,20 @@ function ProfileCard({ userData }: ProfileCardProps) {
           </div>
           <label
             htmlFor="openToRoles"
-            className="text-base font-semibold text-white my-2 block"
+            className="text-base font-semibold text-gray-900 my-2 block"
           >
             Open to the following roles
           </label>
           <div className="flex flex-wrap gap-2 mb-4">
-            {selectedRoles.map((role) => (
+            {selectedRoles.map((role, index) => (
               <div
-                key={role}
-                className="bg-zinc-700 text-white px-3 py-1 text-sm inline-flex items-center gap-2"
+                key={`${role}-${index}`} // Use role + index to handle duplicates
+                className="bg-gray-200 text-gray-900 px-3 py-1 text-sm inline-flex items-center gap-2"
               >
                 {role}
                 <button
-                  onClick={() => handleOpenToRoleRemove(role)}
+                  type="button" // Prevent form submission
+                  onClick={(e) => handleOpenToRoleRemove(role, e)}
                   className="ml-2 text-red-500 hover:text-red-300"
                 >
                   ×
@@ -376,18 +330,18 @@ function ProfileCard({ userData }: ProfileCardProps) {
           <Combobox as="div" value={query} onChange={setQuery}>
             <Combobox.Input
               onChange={(e) => setQuery(e.target.value)}
-              className="block w-full p-4 text-sm text-white border rounded-lg bg-zinc-700 border-gray-600 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
+              className="block w-full p-3 text-sm text-black border-2 rounded-lg bg-white border-gray-200 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
               placeholder="Select role"
               value={query}
             />
             {filteredRoles.length > 0 && (
-              <Combobox.Options className="mt-2 bg-zinc-800 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
+              <Combobox.Options className="mt-2 bg-white text-gray-900 rounded-lg max-h-48 border-2 border-gray-200 overflow-y-auto p-2 w-full">
                 {filteredRoles.map((role) => (
                   <Combobox.Option
                     key={role}
                     value={role}
                     as="div"
-                    className="cursor-pointer px-3 py-1 hover:bg-zinc-600 rounded-lg w-full"
+                    className="cursor-pointer px-3 py-1 hover:bg-zinc-200 rounded-lg w-full"
                     onClick={() => handleOpenToRoleAdd(role)}
                   >
                     {role}
@@ -398,23 +352,28 @@ function ProfileCard({ userData }: ProfileCardProps) {
           </Combobox>
           <label
             htmlFor="bio"
-            className="text-base font-semibold text-white mt-4 mb-2 block"
+            className="text-base font-semibold text-gray-900 mt-4 mb-2 block"
           >
             Your bio
           </label>
           <textarea
             value={bio}
             onChange={handleBioChange}
-            className="mt-2 p-3 rounded-md bg-zinc-700 w-full text-white border border-gray-600 focus:ring-0 focus:border-gray-600"
+            className="mt-2 p-3 rounded-md bg-white w-full text-gray-900 border-2 border-gray-200 focus:ring-0 focus:border-gray-600 placeholder-gray-400"
             placeholder="Please tell us a bit about yourself."
             rows={6}
           />
           {isEditingBio && (
             <div className="flex justify-end gap-6 mt-4">
-              <button onClick={cancelEditBio} className="text-white">
+              <button
+                type="button"
+                onClick={cancelEditBio}
+                className="text-gray-900"
+              >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={saveBio}
                 className="bg-zinc-700 text-white px-4 py-2 rounded-lg hover:bg-zinc-600"
               >
