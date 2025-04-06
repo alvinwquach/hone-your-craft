@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { IoCalendarSharp, IoCalendarClearSharp } from "react-icons/io5";
 import { MdRefresh } from "react-icons/md";
@@ -7,7 +6,7 @@ import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { cancelEvent } from "@/app/actions/cancelEvent";
-import { rescheduleEvent } from "@/app/actions/rescheduleEvent";
+import { getUpcomingEvents } from "@/app/actions/getUpcomingEvents";
 
 interface Event {
   id: string;
@@ -32,18 +31,27 @@ export default function MeetingTabs({
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const router = useRouter();
 
-  const handleRescheduleEvent = async (event: Event) => {
-    try {
-      await rescheduleEvent(
-        event.id,
-        event.startTime.toISOString(),
-        event.endTime.toISOString()
+  const handleRescheduleEvent = (eventId: string) => {
+    const event = groupedUpcomingEvents[
+      Object.keys(groupedUpcomingEvents)[0]
+    ]?.find((event) => event.id === eventId);
+
+    if (event) {
+      const eventTypeId = event.eventType?.id;
+      const startTime = event.startTime;
+      const endTime = event.endTime;
+
+      if (!eventTypeId) {
+        console.error("Event type ID not found for event:", eventId);
+        toast.error("Unable to reschedule: Event type not found");
+        return;
+      }
+
+      router.push(
+        `/reschedule/${eventTypeId}?eventId=${eventId}&start=${startTime}&end=${endTime}`
       );
-      toast.success("Event rescheduled successfully");
-      router.refresh();
-    } catch (error) {
-      console.error("Error rescheduling event:", error);
-      toast.error("Failed to reschedule event");
+    } else {
+      toast.error("Event not found for rescheduling");
     }
   };
 
@@ -66,7 +74,7 @@ export default function MeetingTabs({
       {activeTab === "upcoming" && (
         <div className="absolute top-2 right-2 flex flex-col gap-2 md:absolute md:top-2 md:right-2 lg:static lg:self-start lg:mb-4">
           <button
-            onClick={() => handleRescheduleEvent(event)}
+            onClick={() => handleRescheduleEvent(event.id)}
             className="flex items-center justify-center w-28 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
           >
             <div className="flex items-center gap-2">
