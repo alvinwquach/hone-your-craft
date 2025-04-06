@@ -5,10 +5,8 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import { revalidatePath } from "next/cache";
 
 export async function acceptApplication(id: string) {
-  // Retrieve the current user from the session
   const currentUser = await getCurrentUser();
 
-  // Validate user exists and has client role
   if (!currentUser || currentUser.userRole !== "CLIENT") {
     return {
       error: "Unauthorized: Must be a client user to accept applications",
@@ -17,13 +15,11 @@ export async function acceptApplication(id: string) {
   }
 
   try {
-    // Find the application by ID
     const application = await prisma.application.findUnique({
       where: { id },
       include: { jobPosting: true },
     });
 
-    // Validate application exists and user owns it
     if (!application) {
       return { error: "Application not found", status: 404 };
     }
@@ -36,7 +32,6 @@ export async function acceptApplication(id: string) {
       };
     }
 
-    // Check if the application is already accepted
     if (application.status === "ACCEPTED") {
       return {
         error: "Application has already been accepted",
@@ -44,7 +39,6 @@ export async function acceptApplication(id: string) {
       };
     }
 
-    // Update the application status
     const acceptedApplication = await prisma.application.update({
       where: { id: application.id },
       data: {
@@ -53,7 +47,6 @@ export async function acceptApplication(id: string) {
       },
     });
 
-    // Revalidate cache
     revalidatePath("/jobs", "page");
 
     return {
