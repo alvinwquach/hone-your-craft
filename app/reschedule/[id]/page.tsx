@@ -288,15 +288,14 @@ function ReschedulePage({ params }: ReschedulePageProps) {
   const isFormerTime = (time: string): boolean => {
     if (!selectedDate || !originalStart) return false;
 
-    const isSameDayAsOriginal = isSameDay(
-      parseISO(originalStart),
-      selectedDate
-    );
+    const originalDate = new Date(originalStart);
+    const originalStartTime = originalDate
+      .toISOString()
+      .split("T")[1]
+      .slice(0, 8);
+    const formattedOriginalStart = format(originalDate, "h:mma").toLowerCase();
 
-    const formattedOriginalStart = format(
-      parseISO(originalStart),
-      "h:mma"
-    ).toLowerCase();
+    const isSameDayAsOriginal = isSameDay(originalDate, selectedDate);
 
     return isSameDayAsOriginal && time === formattedOriginalStart;
   };
@@ -433,10 +432,12 @@ function ReschedulePage({ params }: ReschedulePageProps) {
                                   : ""
                               }`}
                             >
-                              <span>{time}</span>
-                              {selectedDate && time && isFormerTime(time) && (
-                                <span className="text-xs">Former Time</span>
-                              )}
+                              <div className="flex flex-col">
+                                <span>{time}</span>
+                                {selectedDate && time && isFormerTime(time) && (
+                                  <span className="text-xs">Former Time</span>
+                                )}
+                              </div>
                             </button>
                             {selectedTime === time && (
                               <button
