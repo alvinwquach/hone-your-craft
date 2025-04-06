@@ -6,10 +6,10 @@ import ApplicationStatusChart from "@/app/components/profile/dashboard/Applicati
 import InterviewFrequencyChart from "@/app/components/profile/dashboard/InterviewFrequencyChart";
 import JobApplicationStatusChart from "@/app/components/profile/dashboard/JobApplicationStatusChart";
 import JobPostingSourceCountChart from "@/app/components/profile/dashboard/JobPostingSourceCountChart";
-import MissingSkillsTable from "@/app/components/profile/dashboard/MissingSkillsTable";
-import SkillsTable from "@/app/components/profile/dashboard/SkillsTable";
 import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 import getCurrentUser from "@/app/actions/getCurrentUser";
+import SkillsChart from "@/app/components/profile/dashboard/SkillsChart";
+import MissingSkillsChart from "@/app/components/profile/dashboard/MissingSkillsChart";
 
 async function getUserData(userId: string) {
   console.time("Fetch User Data");
@@ -41,7 +41,7 @@ async function getUserData(userId: string) {
   return { jobs, interviews, applications };
 }
 
-function processSkillsData(jobs: any[], userSkills: string[]) {
+async function processSkillsData(jobs: any[], userSkills: string[]) {
   console.time("Process Skills Data");
 
   const skillFrequencyMap = new Map<string, number>();
@@ -62,13 +62,11 @@ function processSkillsData(jobs: any[], userSkills: string[]) {
 
   const skillsArray = Array.from(skillFrequencyMap.entries())
     .map(([skill, frequency]) => ({ skill, frequency }))
-    .sort((a, b) => b.frequency - a.frequency)
-    .slice(0, 10);
+    .sort((a, b) => b.frequency - a.frequency);
 
   const missingSkillsArray = Array.from(missingSkillsFrequencyMap.entries())
     .map(([skill, frequency]) => ({ skill, frequency }))
-    .sort((a, b) => b.frequency - a.frequency)
-    .slice(0, 10);
+    .sort((a, b) => b.frequency - a.frequency);
 
   console.timeEnd("Process Skills Data");
 
@@ -183,7 +181,7 @@ export default async function Dashboard() {
 
   const { jobs, interviews, applications } = await getUserData(currentUser.id);
 
-  const { skills, missingSkills } = processSkillsData(
+  const { skills, missingSkills } = await processSkillsData(
     jobs,
     currentUser.skills || []
   );
@@ -198,13 +196,13 @@ export default async function Dashboard() {
       <ProfileNavigation />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div className="w-full">
-          <SkillsTable
+          <SkillsChart
             skills={skills.skills}
             frequencies={skills.frequencies}
           />
         </div>
         <div className="w-full">
-          <MissingSkillsTable
+          <MissingSkillsChart
             missingSkills={missingSkills.missingSkills}
             missingSkillsFrequency={missingSkills.missingSkillsFrequency}
           />
