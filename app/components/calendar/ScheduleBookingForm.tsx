@@ -19,19 +19,19 @@ interface Event {
   user: User;
 }
 
-interface BookingFormProps {
+interface ScheduleBookingFormProps {
   event: Event;
   selectedDate: Date;
   selectedTime: string;
   onBack: () => void;
 }
 
-export default function BookingForm({
+export default function ScheduleBookingForm({
   event,
   selectedDate,
   selectedTime,
   onBack,
-}: BookingFormProps) {
+}: ScheduleBookingFormProps) {
   const formatEventLength = (length: number) => {
     if (length < 60) return `${length} min`;
     const hours = Math.floor(length / 60);
