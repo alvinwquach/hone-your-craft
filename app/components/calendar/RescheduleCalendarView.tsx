@@ -3,18 +3,9 @@
 import { useState, useEffect } from "react";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { format, isSameDay, parseISO, isToday } from "date-fns";
-import ScheduleBookingForm from "./ScheduleBookingForm";
+import RescheduleBookingForm from "./RescheduleBookingForm";
 
-interface BookingTime {
-  start: string;
-  end: string;
-}
-
-interface Availability {
-  id: string;
-  startTime: string;
-  endTime: string;
-}
+type BookingTime = { start: string; end: string };
 
 interface User {
   name: string;
@@ -22,22 +13,59 @@ interface User {
   email: string;
 }
 
-interface CalendarViewProps {
+interface AvailabilitySlot {
+  id: string;
+  userId: string;
+  dayOfWeek: string;
+  isRecurring: boolean;
+  startTime: string;
+  endTime: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface BookedSlotEvent {
+  id: string;
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  creator: User;
+  participant: User;
+}
+
+interface BookedSlot {
+  id: string;
+  eventId: string;
+  startTime: string;
+  endTime: string;
+  isBooked: boolean;
+  bookedBy: string;
+  event: BookedSlotEvent;
+}
+
+interface RescheduleCalendarViewProps {
   event: {
     id: string;
     userId: string;
     title: string;
     length: number;
-    availabilities: Availability[];
+    createdAt: string;
+    updatedAt: string;
+    availabilities: AvailabilitySlot[];
     user: User;
   };
-  bookedSlots: Availability[];
+  bookedSlots: BookedSlot[];
+  eventId: string;
+  originalStart?: string;
 }
 
-export default function CalendarView({
+export default function RescheduleCalendarView({
   event,
   bookedSlots,
-}: CalendarViewProps) {
+  eventId,
+  originalStart,
+}: RescheduleCalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
@@ -60,12 +88,9 @@ export default function CalendarView({
       let current = start;
 
       const bookedSlotsOnDate = selectedDate
-        ? bookedSlots
-            .filter((slot) => isSameDay(parseISO(slot.startTime), selectedDate))
-            .map((slot) => ({
-              start: parseISO(slot.startTime),
-              end: parseISO(slot.endTime),
-            }))
+        ? bookedSlots.filter((slot) =>
+            isSameDay(parseISO(slot.startTime), selectedDate)
+          )
         : [];
 
       while (current < end) {
@@ -74,15 +99,35 @@ export default function CalendarView({
         if (nextSlot <= end) {
           const slotStart = current;
           const slotEnd = nextSlot;
+          const formattedStart = format(slotStart, "h:mma").toLowerCase();
+
           const isBooked = bookedSlotsOnDate.some(
-            (booked) => slotStart < booked.end && slotEnd > booked.start
+            (booked) =>
+              slotStart < parseISO(booked.endTime) &&
+              slotEnd > parseISO(booked.startTime)
           );
+
           if (!isBooked) {
-            slots.push(format(slotStart, "h:mma").toLowerCase());
+            slots.push(formattedStart);
           }
         }
         current = nextSlot;
       }
+
+      if (
+        originalStart &&
+        selectedDate &&
+        isSameDay(parseISO(originalStart), selectedDate)
+      ) {
+        const originalTime = format(
+          parseISO(originalStart),
+          "h:mma"
+        ).toLowerCase();
+        if (!slots.includes(originalTime)) {
+          slots.unshift(originalTime);
+        }
+      }
+
       return slots;
     };
 
@@ -94,18 +139,35 @@ export default function CalendarView({
     } else {
       setTimeSlots([]);
     }
-  }, [selectedDate, event.length, event.availabilities, bookedSlots]);
+  }, [
+    selectedDate,
+    event.length,
+    event.availabilities,
+    bookedSlots,
+    originalStart,
+  ]);
 
   const handleNext = () => {
     if (selectedTime) setShowForm(true);
   };
 
+  const isFormerTime = (time: string): boolean => {
+    if (!selectedDate || !originalStart) return false;
+
+    const originalDate = new Date(originalStart);
+    const formattedOriginalStart = format(originalDate, "h:mma").toLowerCase();
+
+    const isSameDayAsOriginal = isSameDay(originalDate, selectedDate);
+    return isSameDayAsOriginal && time === formattedOriginalStart;
+  };
+
   if (showForm && selectedDate && selectedTime) {
     return (
-      <ScheduleBookingForm
+      <RescheduleBookingForm
         event={event}
         selectedDate={selectedDate}
         selectedTime={selectedTime}
+        eventId={eventId}
         onBack={() => setShowForm(false)}
       />
     );
@@ -184,7 +246,14 @@ export default function CalendarView({
                       selectedTime === time ? "bg-gray-500 text-white" : ""
                     }`}
                   >
-                    {time}
+                    <div className="flex flex-col items-start">
+                      <span>{time}</span>
+                      {selectedDate && time && isFormerTime(time) && (
+                        <span className="text-xs text-gray-400">
+                          Former Time
+                        </span>
+                      )}
+                    </div>
                   </button>
                   {selectedTime === time && (
                     <button
