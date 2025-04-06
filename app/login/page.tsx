@@ -28,20 +28,6 @@ export default function Login() {
           </p>
           <div className="space-y-4">
             <button
-              onClick={() => signIn("google")}
-              className="py-3 px-6 text-white hover:text-black font-semibold rounded-md shadow hover:bg-white border border-white flex items-center justify-center w-3/5"
-            >
-              <div className="mr-2">
-                <Image
-                  src="/images/icons/google.svg"
-                  alt="Google Icon"
-                  width={24}
-                  height={24}
-                />
-              </div>
-              <span>Log in with Google</span>
-            </button>
-            <button
               onClick={() => signIn("github")}
               className="w-full group relative flex items-center justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               style={{
