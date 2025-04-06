@@ -1,3 +1,5 @@
+"use client";
+
 import {
   FaCoins,
   FaCalendarAlt,
@@ -85,19 +87,50 @@ const workLocationLabels = {
   ONSITE: "On-site",
 };
 
+interface SkillWithMatch {
+  id: string;
+  skill: { name: string };
+  yearsOfExperience: number;
+  isMatched: boolean;
+}
+
 type CandidateJobPostingCardProps = {
-  job: any;
+  job: {
+    id: string;
+    title: string;
+    company: string;
+    jobType: string;
+    views: number;
+    salary: any;
+    paymentType: string;
+    requiredDegree: any[];
+    deadline?: string;
+    requiredSkillsMatched: SkillWithMatch[];
+    bonusSkillsMatched: SkillWithMatch[];
+    experienceLevels: string[];
+    yearsOfExperience: string;
+    companySize: string;
+    industry: string[];
+    location: string;
+    workLocation: string;
+    createdAt: string;
+    url: string;
+  };
   applyToJob: (jobPostingId: string) => Promise<void>;
-  getSalaryDisplay: (salary: Salary) => string | null;
-  getApplicationStatus: (jobPostingId: string) => string;
-  getSortedRequiredSkills: (skills: any[], matchCondition: boolean) => any[];
-  getSortedBonusSkills: (skills: any[], matchCondition: boolean) => any[];
+  getApplicationStatus: (jobPostingId: string) => string | null;
+  getSortedRequiredSkills: (
+    skills: SkillWithMatch[],
+    matchCondition: boolean
+  ) => SkillWithMatch[];
+  getSortedBonusSkills: (
+    skills: SkillWithMatch[],
+    matchCondition: boolean
+  ) => SkillWithMatch[];
 };
 
 function CandidateJobPostingCard({
   job,
   applyToJob,
-  getSalaryDisplay,
   getApplicationStatus,
   getSortedRequiredSkills,
   getSortedBonusSkills,
@@ -132,12 +165,45 @@ function CandidateJobPostingCard({
 
   const { buttonClass, buttonText, showIcon } = getButtonDetails(job.id);
 
-  const renderRequiredSkill = (skill: any, isMatched: boolean) => {
+  const getSalaryDisplay = (salary: any) => {
+    if (!salary) return null;
+
+    const numberFormatter = new Intl.NumberFormat();
+    let displayText = "";
+
+    if (salary.salaryType === "STARTING_AT" && salary.amount) {
+      displayText += `Starting at $${numberFormatter.format(salary.amount)}`;
+    } else if (salary.salaryType === "UP_TO" && salary.amount) {
+      displayText += `Up to $${numberFormatter.format(salary.amount)}`;
+    } else if (
+      salary.salaryType === "RANGE" &&
+      salary.rangeMin &&
+      salary.rangeMax
+    ) {
+      displayText += `$${numberFormatter.format(
+        salary.rangeMin
+      )} - ${numberFormatter.format(salary.rangeMax)}`;
+    } else if (salary.salaryType === "EXACT" && salary.amount) {
+      displayText += `$${numberFormatter.format(salary.amount)}`;
+    }
+
+    if (salary.frequency) {
+      displayText += ` ${
+        salary.frequency === "PER_YEAR"
+          ? "per year"
+          : salary.frequency.replace("_", " ").toLowerCase()
+      }`;
+    }
+
+    return displayText;
+  };
+
+  const renderRequiredSkill = (skill: SkillWithMatch) => {
     return (
       <div key={skill.id} className="flex items-center">
         <span
           className={`inline-block ${
-            isMatched
+            skill.isMatched
               ? "bg-green-500 bg-opacity-20 text-green-300 border border-green-500/30"
               : "bg-gray-700 text-gray-300"
           } text-xs font-medium px-2.5 py-1 rounded-full`}
@@ -154,12 +220,12 @@ function CandidateJobPostingCard({
     );
   };
 
-  const renderBonusSkill = (skill: any, isMatched: boolean) => {
+  const renderBonusSkill = (skill: SkillWithMatch) => {
     return (
       <div key={skill.id} className="flex items-center">
         <span
           className={`inline-block ${
-            isMatched
+            skill.isMatched
               ? "bg-green-500 bg-opacity-20 text-green-300 border border-green-500/30"
               : "bg-gray-700 text-gray-300"
           } text-xs font-medium px-2.5 py-1 rounded-full`}
@@ -171,10 +237,7 @@ function CandidateJobPostingCard({
   };
 
   return (
-    <div
-      key={job.id}
-      className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300 my-6"
-    >
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 bg-opacity-80 p-6 shadow-lg rounded-lg border-2 border-zinc-700 hover:shadow-xl transition duration-300 my-6">
       <div className="lg:flex space-y-4 lg:space-y-0 lg:space-x-8">
         <div className="flex-1 space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start mb-4 space-y-2 sm:space-y-0">
@@ -261,12 +324,12 @@ function CandidateJobPostingCard({
             <FaToolbox className="mr-2 text-white" />
             <h4 className="font-semibold text-gray-400">Required Skills:</h4>
           </div>
-          <div className="max-h-40 flex flex-wrap gap-2 ">
-            {getSortedRequiredSkills(job.requiredSkills, true).map(
-              (skill: any) => renderRequiredSkill(skill, true)
+          <div className="max-h-40 flex flex-wrap gap-2">
+            {getSortedRequiredSkills(job.requiredSkillsMatched, true).map(
+              renderRequiredSkill
             )}
-            {getSortedRequiredSkills(job.requiredSkills, false).map(
-              (skill: any) => renderRequiredSkill(skill, false)
+            {getSortedRequiredSkills(job.requiredSkillsMatched, false).map(
+              renderRequiredSkill
             )}
           </div>
           <div className="flex items-center text-gray-500 mb-4">
@@ -274,11 +337,11 @@ function CandidateJobPostingCard({
             <h4 className="font-semibold text-gray-400">Bonus Skills:</h4>
           </div>
           <div className="max-h-40 flex flex-wrap gap-2">
-            {getSortedBonusSkills(job.bonusSkills, true).map((skill: any) =>
-              renderBonusSkill(skill, true)
+            {getSortedBonusSkills(job.bonusSkillsMatched, true).map(
+              renderBonusSkill
             )}
-            {getSortedBonusSkills(job.bonusSkills, false).map((skill: any) =>
-              renderBonusSkill(skill, false)
+            {getSortedBonusSkills(job.bonusSkillsMatched, false).map(
+              renderBonusSkill
             )}
           </div>
           <div className="flex items-center text-gray-600 mb-2">
@@ -287,7 +350,7 @@ function CandidateJobPostingCard({
               {job.experienceLevels?.length > 0
                 ? job.experienceLevels
                     .map(
-                      (level: any) =>
+                      (level) =>
                         experienceLevelLabels[
                           level as keyof typeof experienceLevelLabels
                         ] || level
@@ -347,7 +410,7 @@ function CandidateJobPostingCard({
           onClick={() => applyToJob(job.id)}
           className={`inline-flex items-center ${buttonClass} text-white font-semibold py-2 px-4 rounded-full transition duration-200`}
           disabled={["PENDING", "REJECTED", "ACCEPTED"].includes(
-            getApplicationStatus(job.id)
+            getApplicationStatus(job.id) || ""
           )}
           aria-label={`Apply to job posting for ${job.title}`}
         >
