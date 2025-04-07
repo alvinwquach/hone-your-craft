@@ -147,6 +147,8 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
     select: { createdAt: true },
   });
 
+  console.log(`Jobs this week for user ${userId}: ${jobsThisWeek.length}`);
+
   const distinctDaysApplied = trackApplicationDays(jobsThisWeek);
   const goalMet =
     distinctDaysApplied >= (target.jobsAppliedToDaysPerWeekGoal ?? 0);
@@ -173,6 +175,8 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
       where: { id: userId },
       data: { weeklyStreak: newStreak, lastStreakUpdate: currentWeekStart },
     });
+
+    console.log(`Updated streak for user ${userId}: ${newStreak}`);
 
     const streakWeeks = newStreak;
     const achievements = [
@@ -219,6 +223,9 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
           },
         },
       });
+      console.log(
+        `Awarded streak achievement: ${achievement.name} for user ${userId}`
+      );
     }
   }
 
@@ -241,47 +248,66 @@ const calculateAchievements = async (
 
   const awardedAchievements: HolidayAchievement[] = [];
   const lockedAchievements: HolidayAchievement[] = [];
-  const jobMilestonesMap = new Map<number, Date>();
-  const interviewMilestonesMap = new Map<number, Date>();
   let appliedJobsCount = 0;
   let interviewsCount = 0;
 
-  const processedAppliedJobs = appliedJobs.map((job) => ({
-    ...job,
-    createdAt: new Date(job.createdAt),
-  }));
+  const processedAppliedJobs = appliedJobs
+    .map((job) => ({
+      ...job,
+      createdAt: new Date(job.createdAt),
+    }))
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
-  const processedInterviews = interviews.map((interview) => ({
-    ...interview,
-    acceptedDate: new Date(interview.acceptedDate),
-  }));
+  const processedInterviews = interviews
+    .map((interview) => ({
+      ...interview,
+      acceptedDate: new Date(interview.acceptedDate),
+    }))
+    .sort((a, b) => a.acceptedDate.getTime() - b.acceptedDate.getTime());
 
-  processedAppliedJobs
-    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-    .forEach((job) => {
-      appliedJobsCount++;
-      if (jobMilestones.includes(appliedJobsCount))
-        jobMilestonesMap.set(appliedJobsCount, job.createdAt);
-    });
+  console.log(
+    `Processing ${processedAppliedJobs.length} jobs for user ${userId}`
+  );
+  console.log(
+    `Processing ${processedInterviews.length} interviews for user ${userId}`
+  );
 
-  processedInterviews
-    .sort((a, b) => a.acceptedDate.getTime() - b.acceptedDate.getTime())
-    .forEach((interview) => {
-      interviewsCount++;
-      if (interviewMilestones.includes(interviewsCount))
-        interviewMilestonesMap.set(interviewsCount, interview.acceptedDate);
-    });
-
-  jobMilestones.forEach((milestone) => {
-    const achievedDate = jobMilestonesMap.get(milestone);
-    if (achievedDate) {
+  processedAppliedJobs.forEach((job) => {
+    appliedJobsCount++;
+    if (jobMilestones.includes(appliedJobsCount)) {
+      console.log(
+        `Milestone ${appliedJobsCount} reached on ${job.createdAt} for user ${userId}`
+      );
       awardedAchievements.push({
-        id: `${userId}-job-${milestone}`,
-        name: `Applied to ${milestone} Jobs`,
-        description: `Awarded for applying to ${milestone} jobs on ${achievedDate.toLocaleDateString()}.`,
+        id: `${userId}-job-${appliedJobsCount}`,
+        name: `Applied to ${appliedJobsCount} Jobs`,
+        description: `Awarded for applying to ${appliedJobsCount} jobs on ${job.createdAt.toLocaleDateString()}.`,
         unlocked: true,
       });
-    } else {
+    }
+  });
+
+  processedInterviews.forEach((interview) => {
+    interviewsCount++;
+    if (interviewMilestones.includes(interviewsCount)) {
+      console.log(
+        `Interview milestone ${interviewsCount} reached on ${interview.acceptedDate} for user ${userId}`
+      );
+      awardedAchievements.push({
+        id: `${userId}-interview-${interviewsCount}`,
+        name: `Attended ${interviewsCount} Interviews`,
+        description: `Awarded for attending ${interviewsCount} interviews by ${interview.acceptedDate.toLocaleDateString()}.`,
+        unlocked: true,
+      });
+    }
+  });
+
+  jobMilestones.forEach((milestone) => {
+    if (
+      !awardedAchievements.some(
+        (a) => a.name === `Applied to ${milestone} Jobs`
+      )
+    ) {
       lockedAchievements.push({
         id: `${userId}-job-${milestone}`,
         name: `Applied to ${milestone} Jobs`,
@@ -292,15 +318,11 @@ const calculateAchievements = async (
   });
 
   interviewMilestones.forEach((milestone) => {
-    const achievedDate = interviewMilestonesMap.get(milestone);
-    if (achievedDate) {
-      awardedAchievements.push({
-        id: `${userId}-interview-${milestone}`,
-        name: `Attended ${milestone} Interviews`,
-        description: `Awarded for attending ${milestone} interviews by ${achievedDate.toLocaleDateString()}.`,
-        unlocked: true,
-      });
-    } else {
+    if (
+      !awardedAchievements.some(
+        (a) => a.name === `Attended ${milestone} Interviews`
+      )
+    ) {
       lockedAchievements.push({
         id: `${userId}-interview-${milestone}`,
         name: `Attended ${milestone} Interviews`,
@@ -311,51 +333,83 @@ const calculateAchievements = async (
   });
 
   for (const achievement of awardedAchievements) {
-    await prisma.userAchievement.create({
-      data: {
-        user: { connect: { id: userId } },
-        achievement: {
-          connectOrCreate: {
-            where: { name: achievement.name },
-            create: {
-              name: achievement.name,
-              description: achievement.description,
+    try {
+      await prisma.userAchievement.create({
+        data: {
+          user: { connect: { id: userId } },
+          achievement: {
+            connectOrCreate: {
+              where: { name: achievement.name },
+              create: {
+                name: achievement.name,
+                description: achievement.description,
+              },
             },
           },
         },
-      },
-    });
+      });
+      console.log(`Saved achievement: ${achievement.name} for user ${userId}`);
+    } catch (err) {
+      console.error(
+        `Failed to save achievement ${achievement.name} for user ${userId}:`,
+        err
+      );
+    }
   }
+
+  console.log(
+    `Awarded ${awardedAchievements.length} achievements for user ${userId}`
+  );
+  console.log(
+    `Locked ${lockedAchievements.length} achievements for user ${userId}`
+  );
 
   return { awardedAchievements, lockedAchievements };
 };
 
-const getUserJobs = unstable_cache(
-  async (userId: string) =>
-    prisma.job.findMany({
-      where: { userId, status: { not: "SAVED" } },
-      select: { id: true, createdAt: true, status: true, holidayApplied: true },
-    }),
-  ["user_jobs"],
-  { tags: ["user_data"], revalidate: 3600 }
-);
+const getUserJobs = (userId: string) =>
+  unstable_cache(
+    async (id: string) => {
+      const jobs = await prisma.job.findMany({
+        where: { userId: id, status: { not: "SAVED" } },
+        select: {
+          id: true,
+          createdAt: true,
+          status: true,
+          holidayApplied: true,
+        },
+      });
+      console.log(`Fetched ${jobs.length} jobs for user ${id}`);
+      return jobs;
+    },
+    ["user_jobs", `user_jobs_${userId}`],
+    { tags: ["user_data"], revalidate: 60 }
+  )(userId);
 
 const getUserInterviews = unstable_cache(
-  async (userId: string) =>
-    prisma.interview.findMany({
+  async (userId: string) => {
+    const interviews = await prisma.interview.findMany({
       where: { userId, interviewDate: { not: null } },
       select: { id: true, acceptedDate: true, interviewDate: true },
-    }),
+    });
+    console.log(`Fetched ${interviews.length} interviews for user ${userId}`);
+    return interviews;
+  },
   ["user_interviews"],
   { tags: ["user_data"], revalidate: 3600 }
 );
 
 const getUserAchievements = unstable_cache(
-  async (userId: string) =>
-    prisma.userAchievement.findMany({
+  async (userId: string) => {
+    const achievements = await prisma.userAchievement.findMany({
       where: { userId },
       select: { achievement: { select: { id: true, description: true } } },
-    }),
+    });
+    console.log(
+      `Fetched ${achievements.length} existing achievements for user ${userId}`
+    );
+    return achievements;
+  },
   ["user_achievements"],
   { tags: ["user_data"], revalidate: 3600 }
 );
@@ -388,8 +442,10 @@ const sortAchievements = (a: HolidayAchievement, b: HolidayAchievement) => {
 export async function getAchievements() {
   try {
     const currentUser = await getCurrentUser();
+    console.log(`Current user ID: ${currentUser?.id}`);
 
     if (!currentUser) {
+      console.log("No current user, redirecting to login");
       return redirect("/login");
     }
 
@@ -398,6 +454,14 @@ export async function getAchievements() {
       getUserInterviews(currentUser.id),
       getUserAchievements(currentUser.id),
     ]);
+
+    console.log(`Jobs fetched for user ${currentUser.id}: ${userJobs.length}`);
+    console.log(
+      `Interviews fetched for user ${currentUser.id}: ${userInterviews.length}`
+    );
+    console.log(
+      `Existing achievements for user ${currentUser.id}: ${userAchievements.length}`
+    );
 
     const [achievementsResult, weeklyResult] = await Promise.all([
       cachedCalculateAchievements(currentUser.id, userJobs, userInterviews),
@@ -426,6 +490,9 @@ export async function getAchievements() {
           ).getFullYear()}.`,
           unlocked: true,
         });
+        console.log(
+          `Added holiday achievement: Applied on ${holiday} for user ${currentUser.id}`
+        );
       }
     });
 
@@ -454,6 +521,31 @@ export async function getAchievements() {
         ...lockedHolidayAchievements,
       ].sort(sortAchievements),
     };
+
+    console.log(
+      `Job achievements for user ${currentUser.id}:`,
+      organizedAchievements.jobAchievements.map(
+        (a) => `${a.name} (unlocked: ${a.unlocked})`
+      )
+    );
+    console.log(
+      `Interview achievements for user ${currentUser.id}:`,
+      organizedAchievements.interviewAchievements.map(
+        (a) => `${a.name} (unlocked: ${a.unlocked})`
+      )
+    );
+    console.log(
+      `Holiday achievements for user ${currentUser.id}:`,
+      organizedAchievements.holidayAchievements.map(
+        (a) => `${a.name} (unlocked: ${a.unlocked})`
+      )
+    );
+    console.log(
+      `Weekly streak for user ${currentUser.id}: ${weeklyResult.streak}`
+    );
+    console.log(
+      `Applied days this week for user ${currentUser.id}: ${weeklyResult.appliedDaysCount}`
+    );
 
     return {
       ...organizedAchievements,

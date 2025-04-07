@@ -35,69 +35,78 @@ export default function AwardsTabs({
         <div className="flex flex-wrap -mb-px justify-start">
           <button
             onClick={() => setActiveAchievementTab("all")}
-            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "all"
-                ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                : ""
+                ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-indigo-600"
+                : "hover:bg-gray-50 text-gray-700 hover:border-gray-300"
             }`}
           >
             <IoMedal
-              className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                activeAchievementTab === "all" ? "text-blue-600" : ""
+              className={`w-4 h-4 me-2 transition-all duration-300 ${
+                activeAchievementTab === "all"
+                  ? "text-white scale-110"
+                  : "text-gray-400 hover:text-indigo-600"
               }`}
             />
             All
           </button>
+
           <button
             onClick={() => setActiveAchievementTab("jobs")}
-            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "jobs"
-                ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                : ""
+                ? "bg-gradient-to-r from-blue-600 to-teal-600 text-white border-blue-600"
+                : "hover:bg-gray-50 text-gray-700 hover:border-gray-300"
             }`}
           >
             <FaBriefcase
-              className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                activeAchievementTab === "jobs" ? "text-blue-600" : ""
+              className={`w-4 h-4 me-2 transition-all duration-300 ${
+                activeAchievementTab === "jobs"
+                  ? "text-white scale-110"
+                  : "text-gray-400 hover:text-blue-600"
               }`}
             />
             Jobs
           </button>
+
           <button
             onClick={() => setActiveAchievementTab("interviews")}
-            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "interviews"
-                ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                : ""
+                ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white border-green-600"
+                : "hover:bg-gray-50 text-gray-700 hover:border-gray-300"
             }`}
           >
             <IoCalendarNumberSharp
-              className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                activeAchievementTab === "interviews" ? "text-blue-600" : ""
+              className={`w-4 h-4 me-2 transition-all duration-300 ${
+                activeAchievementTab === "interviews"
+                  ? "text-white scale-110"
+                  : "text-gray-400 hover:text-green-600"
               }`}
             />
             Interviews
           </button>
+
           <button
             onClick={() => setActiveAchievementTab("holidays")}
-            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
+            className={`inline-flex items-center p-4 border-b-2 border-transparent rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "holidays"
-                ? "text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500"
-                : ""
+                ? "bg-gradient-to-r from-red-600 to-orange-600 text-white border-red-600"
+                : "hover:bg-gray-50 text-gray-700 hover:border-gray-300"
             }`}
           >
             <FaFlagUsa
-              className={`w-4 h-4 me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300 ${
-                activeAchievementTab === "holidays" ? "text-blue-600" : ""
+              className={`w-4 h-4 me-2 transition-all duration-300 ${
+                activeAchievementTab === "holidays"
+                  ? "text-white scale-110"
+                  : "text-gray-400 hover:text-red-600"
               }`}
             />
             Holidays
           </button>
         </div>
       </div>
-
       <h2 className="text-2xl font-bold my-4">Achievements</h2>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {activeAchievementTab === "all" && (
           <>
@@ -242,9 +251,9 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       : null;
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-zinc-800 opacity-80 rounded-lg shadow-md">
+    <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80 rounded-lg shadow-md">
       <div
-        className={`relative bg-zinc-700 ${selectedBorderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
+        className={`relative bg-zinc-400 ${selectedBorderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
         style={cardStyle}
       >
         {selectedIcon}
@@ -258,8 +267,10 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
         </div>
         {lockIcon}
       </div>
-      <h3 className="text-lg font-bold text-center">{name}</h3>
-      {dateStr && <p className="text-xs text-center">{dateStr}</p>}
+      <h3 className="text-lg font-bold text-center text-white mb-2">{name}</h3>
+      {dateStr && (
+        <p className="text-xs text-center text-gray-400">{dateStr}</p>
+      )}
     </div>
   );
 }
