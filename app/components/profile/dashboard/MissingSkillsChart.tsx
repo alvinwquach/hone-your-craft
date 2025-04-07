@@ -18,23 +18,25 @@ export default function MissingSkillsChart({
   missingSkillsFrequency,
 }: MissingSkillsChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const totalPages = Math.ceil(missingSkills.length / pageSize);
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !containerRef.current) return;
 
+    const containerWidth = containerRef.current.getBoundingClientRect().width;
     const margin = { top: 20, right: 30, bottom: 40, left: 90 };
-    const width = 600 - margin.left - margin.right;
+    const width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
     d3.select(svgRef.current).selectAll("*").remove();
 
     const svg = d3
       .select(svgRef.current)
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("viewBox", `0 0 ${containerWidth} 400`)
+      .attr("preserveAspectRatio", "xMinYMin meet")
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -59,6 +61,18 @@ export default function MissingSkillsChart({
       .range([0, height])
       .padding(0.1);
 
+    const tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("position", "absolute")
+      .style("background", "rgba(0, 0, 0, 0.8)")
+      .style("color", "white")
+      .style("padding", "5px")
+      .style("border-radius", "3px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+
     svg
       .selectAll(".bar")
       .data<SkillData>(data)
@@ -82,7 +96,6 @@ export default function MissingSkillsChart({
 
     svg
       .append("g")
-      .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x))
       .selectAll("text")
@@ -90,22 +103,9 @@ export default function MissingSkillsChart({
 
     svg
       .append("g")
-      .attr("class", "y-axis")
       .call(d3.axisLeft(y))
       .selectAll("text")
       .attr("fill", "white");
-
-    const tooltip = d3
-      .select("body")
-      .append("div")
-      .attr("class", "tooltip")
-      .style("position", "absolute")
-      .style("background", "rgba(0, 0, 0, 0.8)")
-      .style("color", "white")
-      .style("padding", "5px")
-      .style("border-radius", "3px")
-      .style("pointer-events", "none")
-      .style("opacity", 0);
 
     return () => {
       tooltip.remove();
@@ -120,7 +120,9 @@ export default function MissingSkillsChart({
 
   return (
     <div className="bg-gray-900 p-4 rounded-md">
-      <svg ref={svgRef}></svg>
+      <div ref={containerRef} className="w-full overflow-x-auto">
+        <svg ref={svgRef} className="w-full h-auto"></svg>
+      </div>
       <div className="mt-4 flex justify-center space-x-4">
         <button
           onClick={() => goToPage(1)}
