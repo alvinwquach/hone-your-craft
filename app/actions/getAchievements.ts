@@ -396,7 +396,7 @@ const getUserInterviews = unstable_cache(
     return interviews;
   },
   ["user_interviews"],
-  { tags: ["user_data"], revalidate: 3600 }
+  { tags: ["user_data"], revalidate: 60 }
 );
 
 const getUserAchievements = unstable_cache(
