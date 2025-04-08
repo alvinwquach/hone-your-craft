@@ -8,6 +8,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { RejectionInitiator } from "@prisma/client";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
+import { createRejection } from "@/app/actions/createRejection";
 
 const schema = z.object({
   rejection: z.object({
@@ -25,7 +26,6 @@ const schema = z.object({
     notes: z.string().optional(),
   }),
 });
-
 
 type FormData = z.infer<typeof schema>;
 
@@ -48,7 +48,7 @@ function LogRejectionModal({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormData) => {
     try {
       if (data.rejection) {
         const rejectionData = {
@@ -56,39 +56,20 @@ function LogRejectionModal({
           jobId: job.id,
           company: job.company,
           title: job.title,
-          date: new Date().toISOString(),
+          date: data.rejection.date.toISOString(),
           initiatedBy: data.rejection.initiatedBy,
           notes: data.rejection.notes,
         };
-        if (job.rejection) {
-          const response = await fetch(`/api/rejection/${job.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(rejectionData),
-          });
 
-          if (!response.ok) {
-            throw new Error("Failed to update rejection.");
-          }
-        } else {
-          const response = await fetch(`/api/rejection/${job.id}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(rejectionData),
-          });
+        const result = await createRejection(rejectionData);
 
-          if (!response.ok) {
-            throw new Error("Failed to create rejection.");
-          }
+        if (!result.success) {
+          throw new Error(result.message || "Failed to log rejection");
         }
-      }
 
-      closeModal();
-      toast.success("Rejection Logged");
+        closeModal();
+        toast.success("Rejection Logged");
+      }
     } catch (error) {
       console.error("Error submitting rejection data:", error);
       toast.error("Failed To Log Rejection");
@@ -188,7 +169,6 @@ function LogRejectionModal({
                       rows={4}
                       {...register("rejection.notes")}
                       className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      required
                     />
                     {errors.rejection?.notes && (
                       <p className="text-red-500 text-sm">

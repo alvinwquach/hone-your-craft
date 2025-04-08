@@ -8,6 +8,7 @@ import { InterviewType } from "@prisma/client";
 import React, { useState } from "react";
 import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
+import { createInterview } from "../.././actions/createInterview";
 
 const schema = z.object({
   interviewDate: z
@@ -85,56 +86,32 @@ function LogInterviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedType, setSelectedType] = useState<InterviewType | "">("");
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
       if (data.interviews && data.interviews.length > 0) {
-        const interviewDate = new Date(data.interviewDate);
-        const isoDate = interviewDate.toISOString();
-
         const interviewData = {
           userId: job.userId,
           jobId: job.id,
-          interviewDate: isoDate,
+          interviewDate: data.interviewDate.toISOString(),
           interviewType: data.interviews[0].type,
           acceptedDate: new Date().toISOString(),
-          videoUrl: data.interviews[0].videoUrl || undefined,
-          meetingId: data.interviews[0].meetingId || undefined,
-          passcode: data.interviews[0].passcode || undefined,
+          videoUrl: data.interviews[0].videoUrl,
+          meetingId: data.interviews[0].meetingId,
+          passcode: data.interviews[0].passcode,
         };
 
-        if (data.interviews[0].id) {
-          const response = await fetch(
-            `/api/interview/${data.interviews[0].id}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(interviewData),
-            }
-          );
+        const result = await createInterview(interviewData);
 
-          if (!response.ok) {
-            throw new Error("Failed to update interview.");
-          }
-        } else {
-          const response = await fetch(`/api/interview/${data.id}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(interviewData),
-          });
-          if (!response.ok) {
-            throw new Error("Failed to create interview.");
-          }
+        if (!result.success) {
+          throw new Error(result.message || "Failed to create interview");
         }
+
         closeModal();
         toast.success("Interview Added To Calendar");
       }
     } catch (error) {
-      console.error("Error updating and creating interview:", error);
+      console.error("Error creating interview:", error);
       toast.error("Failed To Add Interview");
     } finally {
       setIsSubmitting(false);
@@ -227,7 +204,7 @@ function LogInterviewModal({
                     </select>
                     {errors.interviews?.[0]?.type && (
                       <p className="text-red-500 text-sm">
-                        {errors.interviews[0].message}
+                        Please select an interview type.
                       </p>
                     )}
                   </div>
@@ -282,15 +259,17 @@ function LogInterviewModal({
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
+                    disabled={isSubmitting}
+                    className="text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300 disabled:opacity-50"
                   >
                     Discard
                   </button>
                   <button
                     type="submit"
-                    className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ml-2"
+                    disabled={isSubmitting}
+                    className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ml-2 disabled:opacity-50"
                   >
-                    Save
+                    {isSubmitting ? "Saving..." : "Save"}
                   </button>
                 </div>
               </div>

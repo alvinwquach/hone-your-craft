@@ -7,13 +7,13 @@ import { z } from "zod";
 import { Dialog, Transition } from "@headlessui/react";
 import Confetti from "react-confetti";
 import { toast } from "react-toastify";
-import { mutate } from "swr";
+import { createOffer } from "@/app/actions/createOffer";
 
 const schema = z.object({
   offerDate: z
     .string()
     .refine((dateStr) => !isNaN(new Date(dateStr).getTime()), {
-      message: "Interview date is required",
+      message: "Offer date is required",
     })
     .transform((dateStr) => new Date(dateStr)),
   offerDeadline: z
@@ -27,10 +27,10 @@ const schema = z.object({
     .transform((dateStr) =>
       typeof dateStr === "string" ? new Date(dateStr) : dateStr
     ),
-
   offerSalary: z.string().min(1, "Salary is required"),
 });
 
+type FormData = z.infer<typeof schema>;
 
 type LogOfferModalProps = {
   isOpen: boolean;
@@ -38,17 +38,22 @@ type LogOfferModalProps = {
   job: Job;
 };
 
+interface Job {
+  id: string;
+  company: string;
+  title: string;
+}
+
 function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
-  } = useForm({
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -59,46 +64,24 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
     }
   }, [isOpen]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
       const salaryWithoutFormatting = data.offerSalary.replace(/[^\d.-]/g, "");
 
       const offerData = {
-        userId: job.userId,
         jobId: job.id,
-        offerDate: new Date(data.offerDate).toISOString(),
-        offerDeadline: data.offerDeadline,
+        offerDate: data.offerDate.toISOString(),
+        offerDeadline: data.offerDeadline?.toISOString(),
         salary: salaryWithoutFormatting,
       };
 
-      if (job.offer) {
-        const response = await fetch(`/api/offer/${job.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(offerData),
-        });
+      const result = await createOffer(offerData);
 
-        if (!response.ok) {
-          throw new Error("Failed to update offer.");
-        }
-      } else {
-        const response = await fetch(`/api/offer/${job.id}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(offerData),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to create offer.");
-        }
+      if (!result.success) {
+        throw new Error(result.message || "Failed to create offer");
       }
 
-      mutate("api/jobs");
       closeModal();
       toast.success("Offer Added");
     } catch (error) {
@@ -159,7 +142,6 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
           >
             <Dialog.Overlay className="fixed inset-0 bg-black opacity-25" />
           </Transition.Child>
-
           <Transition.Child
             as={React.Fragment}
             enter="transition ease-out duration-300 transform"
@@ -212,12 +194,12 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                       {...register("offerDeadline")}
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 outline-none"
                     />
+                    {errors.offerDeadline && (
+                      <p className="text-red-500 text-sm mt-1">
+                        Please provide a valid date.
+                      </p>
+                    )}
                   </div>
-                  {errors.offerDeadline && (
-                    <p className="text-red-500 text-sm mt-1">
-                      Please provide a date.
-                    </p>
-                  )}
                   <div>
                     <label
                       htmlFor="offerSalary"
@@ -245,15 +227,17 @@ function LogOfferModal({ isOpen, closeModal, job }: LogOfferModalProps) {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300"
+                    disabled={isSubmitting}
+                    className="text-gray-600 font-medium text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-4 focus:outline-none focus:ring-slate-300 disabled:opacity-50"
                   >
                     Discard
                   </button>
                   <button
                     type="submit"
-                    className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ml-2"
+                    disabled={isSubmitting}
+                    className="text-white inline-flex items-center bg-slate-700 hover:bg-slate-800 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ml-2 disabled:opacity-50"
                   >
-                    Save
+                    {isSubmitting ? "Saving..." : "Save"}
                   </button>
                 </div>
               </div>
