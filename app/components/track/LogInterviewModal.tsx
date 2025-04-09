@@ -1,14 +1,14 @@
 "use client";
 
+import { useState, useRef, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, Transition } from "@headlessui/react";
 import { InterviewType } from "@prisma/client";
-import React, { useState } from "react";
-import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
 import { toast } from "react-toastify";
-import { createInterview } from "../.././actions/createInterview";
+import { convertToSentenceCase } from "@/app/lib/convertToSentenceCase";
+import { createInterview } from "../../actions/createInterview";
 
 const schema = z.object({
   interviewDate: z
@@ -85,6 +85,26 @@ function LogInterviewModal({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedType, setSelectedType] = useState<InterviewType | "">("");
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node) &&
+        !isSubmitting
+      ) {
+        closeModal();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isOpen, closeModal, isSubmitting]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -102,13 +122,12 @@ function LogInterviewModal({
         };
 
         const result = await createInterview(interviewData);
-
         if (!result.success) {
           throw new Error(result.message || "Failed to create interview");
         }
 
-        closeModal();
         toast.success("Interview Added To Calendar");
+        closeModal();
       }
     } catch (error) {
       console.error("Error creating interview:", error);
@@ -119,21 +138,16 @@ function LogInterviewModal({
   };
 
   return (
-    <Transition appear show={isOpen}>
+    <Transition appear show={isOpen} as={Fragment}>
       <Dialog
         as="form"
         className="fixed inset-0 z-50 overflow-y-auto"
-        onClose={() => {
-          if (!isSubmitting) {
-            closeModal();
-          }
-        }}
+        onClose={() => {}}
         onSubmit={handleSubmit(onSubmit)}
-        static
       >
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-screen">
           <Transition.Child
-            as="div"
+            as={Fragment}
             enter="transition-opacity ease-out duration-300"
             enterFrom="opacity-0"
             enterTo="opacity-100"
@@ -143,9 +157,8 @@ function LogInterviewModal({
           >
             <Dialog.Overlay className="fixed inset-0 bg-black opacity-25" />
           </Transition.Child>
-
           <Transition.Child
-            as={React.Fragment}
+            as={Fragment}
             enter="transition ease-out duration-300 transform"
             enterFrom="opacity-0 scale-95"
             enterTo="opacity-100 scale-100"
@@ -154,7 +167,10 @@ function LogInterviewModal({
             leaveTo="opacity-0 scale-95"
           >
             <div className="fixed inset-0 flex items-center justify-center">
-              <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+              <div
+                className="bg-white rounded-lg shadow-xl w-full max-w-md p-6"
+                ref={modalRef}
+              >
                 <Dialog.Title className="text-lg font-medium text-center text-gray-900 pb-2">
                   Log Interview
                 </Dialog.Title>
@@ -177,7 +193,7 @@ function LogInterviewModal({
                       Please provide a date.
                     </p>
                   )}
-                  <div className="">
+                  <div>
                     <label
                       htmlFor="interviewType"
                       className="block mb-2 text-sm font-medium text-gray-900"
@@ -225,7 +241,7 @@ function LogInterviewModal({
                       />
                       {errors.interviews?.[0]?.videoUrl && (
                         <p className="text-red-500 text-sm">
-                          {errors.interviews?.[0]?.videoUrl.message}
+                          {errors.interviews[0].videoUrl.message}
                         </p>
                       )}
                       <label
