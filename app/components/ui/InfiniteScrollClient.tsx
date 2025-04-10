@@ -101,15 +101,16 @@ export default function InfiniteScrollClient({
 
   return (
     <>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-3">
         {jobs.map((job) => (
           <JobMatchCard key={job.id} job={job} />
         ))}
       </div>
       {page <= totalPages && (
-        <div ref={loaderRef} className="grid gap-6 lg:grid-cols-2 mt-6">
-          <JobMatchCardSkeleton />
-          <JobMatchCardSkeleton />
+        <div ref={loaderRef} className="grid gap-6 lg:grid-cols-3 mt-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+            <JobMatchCardSkeleton key={`skeleton-${i}`} />
+          ))}
         </div>
       )}
     </>
