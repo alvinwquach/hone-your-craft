@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HiPlusCircle } from "react-icons/hi";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 import { ApplicationStatus } from "@prisma/client";
@@ -31,11 +31,29 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
   ]);
 
   const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const openAddJobModal = () => {
     setIsAddJobModalOpen(true);
   };
 
   const hasNoTrackedJobs = jobs.length === 0;
+
+  const SkeletonLoader = () => (
+    <div className="space-y-4 p-2">
+      <div className="h-14 bg-blue-800 rounded animate-pulse" />
+      <div className="space-y-2">
+        {[...Array(jobs.length)].map((_, i) => (
+          <div key={i} className="h-18 bg-gray-800 rounded animate-pulse" />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <Draggable draggableId={id} index={index} key={id}>
@@ -51,10 +69,6 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 className={`p-2 rounded-2xl shadow-md ${
-                  hasNoTrackedJobs
-                    ? "min-h-[60px]"
-                    : "min-h-[calc(100vh-250px)]"
-                } ${
                   snapshot.isDraggingOver ? "bg-gray-800" : "bg-gray-900"
                 } transition-all duration-300`}
               >
@@ -74,56 +88,62 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                         ).length}
                   </span>
                 </h2>
-                <div className="flex justify-center mt-4">
-                  <button
-                    onClick={openAddJobModal}
-                    className="group relative py-2 px-4 mb-2 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 hover:bg-gradient-to-br hover:from-blue-700 hover:via-blue-600 hover:to-blue-700 w-full max-w-xs text-center rounded-lg text-white transition-all duration-300"
-                  >
-                    <HiPlusCircle className="h-10 w-10 inline-block text-white group-hover:scale-110 transition-transform" />
-                  </button>
-                </div>
-                {!hasNoTrackedJobs && (
-                  <div className="overflow-y-auto overflow-x-hidden h-[calc(100vh-250px)] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                    {jobs.map((job, index) => {
-                      if (
-                        (titleSearchString &&
-                          !job.title
-                            .toLowerCase()
-                            .includes(titleSearchString)) ||
-                        (companySearchString &&
-                          !job.company
-                            .toLowerCase()
-                            .includes(companySearchString))
-                      ) {
-                        return null;
-                      }
-                      return (
-                        <Draggable
-                          key={job.id}
-                          index={index}
-                          draggableId={job.id}
-                        >
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
+                {isLoading && jobs.length > 1 ? (
+                  <SkeletonLoader />
+                ) : (
+                  <>
+                    <div className="flex justify-center mt-4">
+                      <button
+                        onClick={openAddJobModal}
+                        className="group relative py-2 px-4 mb-2 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 hover:bg-gradient-to-br hover:from-blue-700 hover:via-blue-600 hover:to-blue-700 w-full max-w-xs text-center rounded-lg text-white transition-all duration-300"
+                      >
+                        <HiPlusCircle className="h-10 w-10 inline-block text-white group-hover:scale-110 transition-transform" />
+                      </button>
+                    </div>
+                    {!hasNoTrackedJobs && (
+                      <div className="space-y-2 max-h-[calc(100vh-250px)] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                        {jobs.map((job, index) => {
+                          if (
+                            (titleSearchString &&
+                              !job.title
+                                .toLowerCase()
+                                .includes(titleSearchString)) ||
+                            (companySearchString &&
+                              !job.company
+                                .toLowerCase()
+                                .includes(companySearchString))
+                          ) {
+                            return null;
+                          }
+                          return (
+                            <Draggable
+                              key={job.id}
+                              index={index}
+                              draggableId={job.id}
                             >
-                              <JobCard
-                                job={job}
-                                index={index}
-                                id={id}
-                                innerRef={provided.innerRef}
-                                draggableProps={provided.draggableProps}
-                                draghandleProps={provided.dragHandleProps}
-                                onDeleteJob={onDeleteJob}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      );
-                    })}
-                  </div>
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                >
+                                  <JobCard
+                                    job={job}
+                                    index={index}
+                                    id={id}
+                                    innerRef={provided.innerRef}
+                                    draggableProps={provided.draggableProps}
+                                    draghandleProps={provided.dragHandleProps}
+                                    onDeleteJob={onDeleteJob}
+                                  />
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
                 {isAddJobModalOpen && (
                   <AddJobModal
@@ -133,7 +153,6 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                     onJobAdded={onJobAdded}
                   />
                 )}
-                {/* Placeholder for dropped job cards */}
                 {provided.placeholder}
               </div>
             )}
