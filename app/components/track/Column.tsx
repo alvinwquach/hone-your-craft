@@ -31,10 +31,11 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
   ]);
 
   const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
-
   const openAddJobModal = () => {
     setIsAddJobModalOpen(true);
   };
+
+  const hasNoTrackedJobs = jobs.length === 0;
 
   return (
     <Draggable draggableId={id} index={index} key={id}>
@@ -50,8 +51,12 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 className={`p-2 rounded-2xl shadow-md ${
-                  snapshot.isDraggingOver ? "bg-zinc-900" : "bg-black"
-                }`}
+                  hasNoTrackedJobs
+                    ? "min-h-[60px]"
+                    : "min-h-[calc(100vh-250px)]"
+                } ${
+                  snapshot.isDraggingOver ? "bg-gray-800" : "bg-gray-900"
+                } transition-all duration-300`}
               >
                 <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 bg-black rounded-t-2xl">
                   {iDToColumnText[id]}
@@ -69,61 +74,65 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                         ).length}
                   </span>
                 </h2>
-                <div className="flex justify-center">
+                <div className="flex justify-center mt-4">
                   <button
-                    className="py-2 px-4 my-2 bg-zinc-800 hover:bg-zinc-700 w-full text-center rounded-lg text-white"
                     onClick={openAddJobModal}
+                    className="group relative py-2 px-4 mb-2 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 hover:bg-gradient-to-br hover:from-blue-700 hover:via-blue-600 hover:to-blue-700 w-full max-w-xs text-center rounded-lg text-white transition-all duration-300"
                   >
-                    <HiPlusCircle className="h-10 w-10 inline-block" />
+                    <HiPlusCircle className="h-10 w-10 inline-block text-white group-hover:scale-110 transition-transform" />
                   </button>
-                  {isAddJobModalOpen && (
-                    <AddJobModal
-                      isOpen={isAddJobModalOpen}
-                      closeModal={() => setIsAddJobModalOpen(false)}
-                      selectedCategory={id}
-                      onJobAdded={onJobAdded}
-                    />
-                  )}
                 </div>
-                <div className="overflow-y-auto overflow-x-hidden max-h-[500px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-                  {jobs.map((job, index) => {
-                    if (
-                      (titleSearchString &&
-                        !job.title.toLowerCase().includes(titleSearchString)) ||
-                      (companySearchString &&
-                        !job.company
-                          .toLowerCase()
-                          .includes(companySearchString))
-                    ) {
-                      return null;
-                    }
-                    return (
-                      <Draggable
-                        key={job.id}
-                        index={index}
-                        draggableId={job.id}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <JobCard
-                              job={job}
-                              index={index}
-                              id={id}
-                              innerRef={provided.innerRef}
-                              draggableProps={provided.draggableProps}
-                              draghandleProps={provided.dragHandleProps}
-                              onDeleteJob={onDeleteJob}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    );
-                  })}
-                </div>
+                {!hasNoTrackedJobs && (
+                  <div className="overflow-y-auto overflow-x-hidden h-[calc(100vh-250px)] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                    {jobs.map((job, index) => {
+                      if (
+                        (titleSearchString &&
+                          !job.title
+                            .toLowerCase()
+                            .includes(titleSearchString)) ||
+                        (companySearchString &&
+                          !job.company
+                            .toLowerCase()
+                            .includes(companySearchString))
+                      ) {
+                        return null;
+                      }
+                      return (
+                        <Draggable
+                          key={job.id}
+                          index={index}
+                          draggableId={job.id}
+                        >
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              <JobCard
+                                job={job}
+                                index={index}
+                                id={id}
+                                innerRef={provided.innerRef}
+                                draggableProps={provided.draggableProps}
+                                draghandleProps={provided.dragHandleProps}
+                                onDeleteJob={onDeleteJob}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                  </div>
+                )}
+                {isAddJobModalOpen && (
+                  <AddJobModal
+                    isOpen={isAddJobModalOpen}
+                    closeModal={() => setIsAddJobModalOpen(false)}
+                    selectedCategory={id}
+                    onJobAdded={onJobAdded}
+                  />
+                )}
                 {/* Placeholder for dropped job cards */}
                 {provided.placeholder}
               </div>
