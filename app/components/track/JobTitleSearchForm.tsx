@@ -23,12 +23,12 @@ function JobTitleSearchForm({
       </label>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <MdPersonOutline className="w-5 h-5 text-gray-300" />
+          <MdPersonOutline className="w-5 h-5 text-slate-400" />
         </div>
         <input
           type="search"
           id="job-title-search"
-          className="block w-full p-4 pl-10 text-xs lg:text-sm text-gray-200 border rounded-lg bg-zinc-700 border-zinc-600 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+          className="block w-full p-4 pl-10 text-slate-700 border rounded-lg bg-[#f2f8ff] border-slate-200 placeholder-slate-400 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
           placeholder="Search a job title"
           value={titleSearchString}
           onChange={handleInputChange}
