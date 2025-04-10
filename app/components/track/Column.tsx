@@ -45,13 +45,21 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
   const hasNoTrackedJobs = jobs.length === 0;
 
   const SkeletonLoader = () => (
-    <div className="space-y-4 p-2">
-      <div className="h-14 bg-blue-800 rounded animate-pulse" />
-      <div className="space-y-2">
-        {[...Array(jobs.length)].map((_, i) => (
-          <div key={i} className="h-18 bg-gray-800 rounded animate-pulse" />
-        ))}
+    <div className="p-2">
+      <div className="flex justify-center mt-4">
+        <div className="h-14 w-full bg-blue-800 rounded animate-pulse" />
       </div>
+
+      {jobs.length > 0 && (
+        <div className="space-y-2 mt-2 max-h-[calc(100vh-250px)] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+          {[...Array(jobs.length)].map((_, i) => (
+            <div key={i} className="bg-gray-800 rounded animate-pulse p-4">
+              <div className="h-2 w-3/4 mb-2 bg-gray-700 rounded animate-pulse" />
+              <div className="h-2 w-2/4 mb-3 bg-gray-700 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
@@ -72,7 +80,7 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                   snapshot.isDraggingOver ? "bg-gray-800" : "bg-gray-900"
                 } transition-all duration-300`}
               >
-                <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 bg-black rounded-t-2xl">
+                <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 rounded-t-2xl">
                   {iDToColumnText[id]}
                   <span className="bg-gray-500 text-white text-sm font-normal rounded-full px-2 py-1">
                     {!titleSearchString && !companySearchString
@@ -153,6 +161,7 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                     onJobAdded={onJobAdded}
                   />
                 )}
+
                 {provided.placeholder}
               </div>
             )}
