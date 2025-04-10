@@ -19,7 +19,7 @@ const SOURCE_MAPPINGS: Record<string, string> = {
   adzuna: "Adzuna",
 };
 
-const ITEMS_PER_PAGE = 4;
+const ITEMS_PER_PAGE = 9;
 
 const getSourceFromUrl = (postUrl: string): string => {
   const lowercaseUrl = postUrl.toLowerCase();

@@ -23,10 +23,79 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
   };
 
   const percentage = job.matchPercentage;
-  const circleColorClass = getPercentageColor(percentage);
-  const circumference = 2 * Math.PI * 50;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-  const needleAngle = (percentage / 100) * 270 - 135;
+
+  const generateTicks = () => {
+    const ticks = [];
+    const labels = [];
+    const centerX = 100;
+    const centerY = 100;
+    const radius = 70;
+    const innerRadius = 62;
+    const labelRadius = 50;
+
+    for (let i = 0; i <= 100; i += 10) {
+      const angleDeg = (i / 100) * 180;
+      const angleRad = (angleDeg * Math.PI) / 180;
+
+      const x1 = centerX + radius * Math.cos(Math.PI - angleRad);
+      const y1 = centerY - radius * Math.sin(Math.PI - angleRad);
+      const x2 = centerX + innerRadius * Math.cos(Math.PI - angleRad);
+      const y2 = centerY - innerRadius * Math.sin(Math.PI - angleRad);
+
+      const labelX = centerX + labelRadius * Math.cos(Math.PI - angleRad);
+      const labelY = centerY - labelRadius * Math.sin(Math.PI - angleRad);
+
+      ticks.push(
+        <line
+          key={`tick-${i}`}
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
+          stroke="#9CA3AF"
+          strokeWidth={i % 20 === 0 ? 2 : 1}
+        />
+      );
+
+      labels.push(
+        <text
+          key={`label-${i}`}
+          x={labelX}
+          y={labelY + 4}
+          textAnchor="middle"
+          fontSize="8"
+          fill="#9CA3AF"
+        >
+          {i}
+        </text>
+      );
+    }
+
+    return [...ticks, ...labels];
+  };
+
+  const generateNeedle = () => {
+    const centerX = 100;
+    const centerY = 100;
+    const length = 50;
+    const angleDeg = (percentage / 100) * 180;
+    const angleRad = (angleDeg * Math.PI) / 180;
+
+    const x = centerX + length * Math.cos(Math.PI - angleRad);
+    const y = centerY - length * Math.sin(Math.PI - angleRad);
+
+    return (
+      <line
+        x1={centerX}
+        y1={centerY}
+        x2={x}
+        y2={y}
+        stroke="#EF4444"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    );
+  };
 
   return (
     <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80">
@@ -47,89 +116,50 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
           </a>
         </div>
         <div className="relative flex items-center justify-center">
-          <svg className="w-32 h-32" viewBox="0 0 140 140">
+          <svg className="w-36 h-36" viewBox="0 0 200 120">
             <path
-              d="M 35,105 A 50,50 0 1,1 105,35"
+              d="M 30 100 A 70 70 0 0 1 170 100"
               fill="none"
               stroke="#374151"
-              strokeWidth="16"
-              className="opacity-30"
+              strokeWidth="14"
+              className="opacity-40"
             />
             <path
-              d="M 35,105 A 50,50 0 1,1 105,35"
+              d="M 30 100 A 70 70 0 0 1 170 100"
               fill="none"
               stroke="url(#gradient)"
-              strokeWidth="16"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-1500 ease-out"
+              strokeWidth="14"
+              strokeDasharray={Math.PI * 70}
+              strokeDashoffset={(1 - percentage / 100) * Math.PI * 70}
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
             />
+            {generateTicks()}
+            {generateNeedle()}
             <defs>
               <linearGradient id="gradient" x1="0%" y1="100%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#dc2626" />
-                <stop offset="25%" stopColor="#ef4444" />
-                <stop offset="50%" stopColor="#f97316" />
-                <stop offset="60%" stopColor="#f59e0b" />
-                <stop offset="70%" stopColor="#bef264" />
-                <stop offset="80%" stopColor="#5eead4" />
-                <stop offset="90%" stopColor="#4ade80" />
+                <stop offset="25%" stopColor="#f97316" />
+                <stop offset="50%" stopColor="#facc15" />
+                <stop offset="75%" stopColor="#4ade80" />
                 <stop offset="100%" stopColor="#16a34a" />
               </linearGradient>
             </defs>
-            <g transform="translate(70, 70)">
-              {Array.from({ length: 28 }, (_, i) => {
-                const angle = (i / 27) * 270 - 135;
-                const isMajor = i % 3 === 0;
-                return (
-                  <g key={i} transform={`rotate(${angle})`}>
-                    <line
-                      x1="0"
-                      y1={isMajor ? "-55" : "-52"}
-                      x2="0"
-                      y2="-45"
-                      stroke="#ffffff"
-                      strokeWidth={isMajor ? "2" : "1"}
-                      className="opacity-70"
-                    />
-                    {isMajor && (
-                      <text
-                        x="0"
-                        y="-60"
-                        textAnchor="middle"
-                        fill="#ffffff"
-                        fontSize="10"
-                        className="font-sans"
-                        transform={`rotate(${-angle})`}
-                      >
-                        {i * 10}
-                      </text>
-                    )}
-                  </g>
-                );
-              })}
-            </g>
-            <polygon
-              points="0,-40 -5,0 5,0"
-              fill="#ffffff"
-              transform={`rotate(${needleAngle})`}
-              className="transition-all duration-1500 ease-out"
-            />
             <circle
-              cx="70"
-              cy="70"
-              r="30"
-              fill="#ffffff"
+              cx="100"
+              cy="100"
+              r="24"
+              fill="#fff"
               stroke="#374151"
               strokeWidth="2"
             />
             <text
-              x="70"
-              y="75"
+              x="100"
+              y="106"
               textAnchor="middle"
-              fill="#1f2937"
-              fontSize="24"
+              fontSize="18"
               fontWeight="bold"
-              className={`font-sans ${circleColorClass}`}
+              className={`${getPercentageColor(percentage)} font-sans`}
             >
               {percentage}
             </text>
