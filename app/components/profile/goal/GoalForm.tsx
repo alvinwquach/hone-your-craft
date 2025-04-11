@@ -189,7 +189,7 @@ const WeeklyApplicationGoalTracker = ({
           <Hexagon className={`${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}>
             <span className="text-lg text-white">{dayAbbreviation}</span>
           </Hexagon>
-          <div className="text-xs mt-2 text-white">{applicationCount}</div>
+          <div className="text-xs mt-2 text-gray-900">{applicationCount}</div>
         </div>
       );
     })}
@@ -574,13 +574,13 @@ const GoalForm = ({
 
   return (
     <div>
-      <div className="rounded-lg p-6 shadow-lg relative">
+      <div className="rounded-lg p-6 shadow-lg bg-white relative">
         <div className="mt-6 text-white">
-          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
             What is your goal? (optional)
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="ReceiveAnOffer"
@@ -590,7 +590,7 @@ const GoalForm = ({
               />
               Receive an Offer
             </label>
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="ChangeMyCareer"
@@ -600,7 +600,7 @@ const GoalForm = ({
               />
               Change My Career
             </label>
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="LookingForANewJob"
@@ -610,7 +610,7 @@ const GoalForm = ({
               />
               Looking for a New Job
             </label>
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="ExploreNewOpportunities"
@@ -620,7 +620,7 @@ const GoalForm = ({
               />
               Explore New Opportunities
             </label>
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="ImproveSkillset"
@@ -630,7 +630,7 @@ const GoalForm = ({
               />
               Improve Skillset
             </label>
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="GrowInMyExistingRole"
@@ -640,7 +640,7 @@ const GoalForm = ({
               />
               Grow In My Existing Role
             </label>
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="BuildAPortfolio"
@@ -650,7 +650,7 @@ const GoalForm = ({
               />
               Build A Portfolio
             </label>
-            <label className="text-sm text-white flex items-center">
+            <label className="text-sm text-gray-900 flex items-center">
               <input
                 type="radio"
                 value="NotSureYet"
@@ -662,7 +662,7 @@ const GoalForm = ({
             </label>
           </div>
         </div>
-        <h3 className="text-lg sm:text-xl font-semibold my-4 text-white">
+        <h3 className="text-lg sm:text-xl font-semibold my-4 text-gray-900">
           How many days a week do you plan on applying? (optional)
         </h3>
         <WeeklyGoalHexagons
@@ -671,18 +671,20 @@ const GoalForm = ({
         />
         <form onSubmit={handleSubmit(handleSave)} className="mt-8">
           <div>
-            <p className="text-white mb-4">{jobsAppliedToWeeklyGoalMessage}</p>
+            <p className="text-gray-900 mb-4">
+              {jobsAppliedToWeeklyGoalMessage}
+            </p>
             <WeeklyApplicationDayTracker
               weeklyApplicationDayTrackerData={weeklyApplicationDayTrackerData}
               weeklyDayTargetMap={weeklyDayTargetMap}
             />
-            <div className="text-lg sm:text-xl font-semibold my-4 text-white">
+            <div className="text-lg sm:text-xl font-semibold my-4 text-gray-900">
               <span className="text-2xl font-bold">{appliedDaysCount}</span> /{" "}
               <span>{currentGoalData?.jobsAppliedToDaysPerWeekGoal}</span> days
             </div>
           </div>
           <div className="mt-6 text-white">
-            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
               How many jobs do you plan on applying to each week? (optional)
             </h4>
             <div className="flex max-w-sm justify-between">
@@ -697,28 +699,28 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMinDecrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                    className="bg-white border-gray-300 rounded-s-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdRemove className="w-3 h-3  text-white" />
+                    <MdRemove className="w-3 h-3 text-gray-900" />
                   </button>
                   <input
                     type="number"
                     id="jobsAppliedToWeeklyGoalMin"
                     value={goalMin}
                     onChange={handleMinChange}
-                    className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                    className="bg-white border border-gray-300 border-x-0 h-11 text-center text-sm block w-full py-2.5 placeholder-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <button
                     type="button"
                     onClick={handleMinIncrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                    className="bg-white border-gray-300 rounded-e-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdAdd className="w-3 h-3 text-white" />
+                    <MdAdd className="w-3 h-3 text-gray-900" />
                   </button>
                 </div>
               </div>
               <span className="flex items-center">
-                <FaMinus className="h-6 w-6" />
+                <FaMinus className="h-6 w-6 text-gray-900" />
               </span>
               <div className="flex flex-col">
                 <label
@@ -731,33 +733,33 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMaxDecrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                    className="bg-white border-gray-300 rounded-s-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdRemove className="w-3 h-3 text-gray-900 dark:text-white" />
+                    <MdRemove className="w-3 h-3 text-gray-900" />
                   </button>
                   <input
                     type="number"
                     id="jobsAppliedToWeeklyGoalMax"
                     value={goalMax}
                     onChange={handleMaxChange}
-                    className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                    className="bg-white border border-gray-300 border-x-0 h-11 text-center text-sm block w-full py-2.5 placeholder-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <button
                     type="button"
                     onClick={handleMaxIncrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-gray-700 focus:ring-2 focus:outline-none"
+                    className="bg-white border-gray-300 rounded-e-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdAdd className="w-3 h-3 text-white" />
+                    <MdAdd className="w-3 h-3 text-gray-900" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
           <div className="">
-            <div className="text-white mt-4">
+            <div className="text-gray-900 mt-4">
               <p>{jobsAppliedToWeeklyGoalMessage}</p>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 text-gray-900">
               <span>{distanceToMaxGoalMessage}</span>
             </div>
             <WeeklyApplicationGoalTracker
@@ -767,8 +769,8 @@ const GoalForm = ({
               weeklyDayTargetMap={weeklyDayTargetMap}
             />
           </div>
-          <div className="mt-6 text-white">
-            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+          <div className="mt-6 text-gray-900">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
               How many interviews are you aiming to have each month? (optional)
             </h4>
             <div className="flex flex-col">
@@ -777,15 +779,15 @@ const GoalForm = ({
                 id="monthlyInterviewGoal"
                 value={monthlyInterviewsGoal}
                 onChange={handleMonthlyInterviewsGoalChange}
-                className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
+                className="bg-white border border-gray-300  h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-gray-600 placeholder-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
                 min={0}
               />
             </div>
           </div>
           <div className="mt-5">{monthlyInterviewGoalTrackerData?.message}</div>
           {candidateGoal === "ReceiveAnOffer" && (
-            <div className="mt-6 text-white z-10">
-              <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
+            <div className="mt-6 text-gray-900 z-10">
+              <h5 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
                 When would you like to receive an offer by? (optional)
               </h5>
               <div className="flex flex-col relative z-10">
@@ -853,7 +855,7 @@ const GoalForm = ({
           <div className="flex justify-start mt-6">
             <button
               type="submit"
-              className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+              className="flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
             >
               Save goal settings
             </button>
