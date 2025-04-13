@@ -96,7 +96,7 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                         ).length}
                   </span>
                 </h2>
-                {isLoading && jobs.length > 1 ? (
+                {isLoading && jobs.length > 0 ? (
                   <SkeletonLoader />
                 ) : (
                   <>

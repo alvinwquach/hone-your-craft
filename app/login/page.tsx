@@ -38,7 +38,7 @@ export default function Login() {
                 size={20}
                 className="mr-3 text-gray-600 transition-colors group-hover:text-blue-600"
               />
-              <span className="text-gray-700">Continue with GitHub</span>
+              <span className="text-gray-700">Continue with Google</span>
             </button>
             <button
               onClick={() => signIn("github")}
