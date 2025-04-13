@@ -7,6 +7,16 @@ import { toZonedTime } from "date-fns-tz";
 import { ApplicationStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 
+export type CandidateGoal =
+  | "ChangeMyCareer"
+  | "GrowInMyExistingRole"
+  | "BuildAPortfolio"
+  | "ExploreNewOpportunities"
+  | "ImproveSkillset"
+  | "LookingForANewJob"
+  | "ReceiveAnOffer"
+  | "NotSureYet";
+
 type DayOfWeek =
   | "Sunday"
   | "Monday"
@@ -44,6 +54,23 @@ export async function getGoalData() {
   if (!user) {
     throw new Error("User not found");
   }
+
+  const validCandidateGoals: CandidateGoal[] = [
+    "ChangeMyCareer",
+    "GrowInMyExistingRole",
+    "BuildAPortfolio",
+    "ExploreNewOpportunities",
+    "ImproveSkillset",
+    "LookingForANewJob",
+    "ReceiveAnOffer",
+    "NotSureYet",
+  ];
+
+  const candidateGoal: CandidateGoal | undefined = validCandidateGoals.includes(
+    user.candidateGoal as CandidateGoal
+  )
+    ? (user.candidateGoal as CandidateGoal)
+    : undefined;
 
   const startOfCurrentWeek = startOfWeek(currentPSTTime, { weekStartsOn: 0 });
   const endOfCurrentWeek = endOfWeek(currentPSTTime, { weekStartsOn: 0 });
@@ -118,28 +145,26 @@ export async function getGoalData() {
       jobsAppliedToWeeklyGoalMin: user.jobsAppliedToWeeklyGoalMin ?? 1,
       jobsAppliedToWeeklyGoalMax: user.jobsAppliedToWeeklyGoalMax ?? 2,
       monthlyInterviewGoal: monthlyGoal,
-      candidateGoal: user.candidateGoal ?? "NotSureYet",
-      offerReceivedByDateGoal: user.offerReceivedByDateGoal ?? null,
-      offerReceivedByDateGoalStart: user.offerReceivedByDateGoalStart ?? null,
-      offerReceivedByDateGoalEnd: user.offerReceivedByDateGoalEnd ?? null,
+      candidateGoal,
+      offerReceivedByDateGoal: user.offerReceivedByDateGoal,
+      offerReceivedByDateGoalStart: user.offerReceivedByDateGoalStart,
+      offerReceivedByDateGoalEnd: user.offerReceivedByDateGoalEnd,
     },
     weeklyApplicationDayTrackerData: {
-      applicationPresence: filteredApplicationPresence.map(([day, data]) => [
-        day,
-        data.presence,
-      ]) as [DayOfWeek, boolean][],
+      applicationPresence: filteredApplicationPresence,
     },
     weeklyApplicationGoalTrackerData: {
-      applicationPresence: filteredApplicationPresence,
+      applicationPresence: Array.from(applicationPresence.entries()),
       totalApplications,
     },
     monthlyInterviewGoalTrackerData: {
       currentMonthInterviews: numberOfInterviewsThisMonth,
       targetInterviewsPerMonth: monthlyGoal,
       remainingInterviews,
-      message: `You need to schedule ${remainingInterviews} more interview${
-        remainingInterviews !== 1 ? "s" : ""
-      } this month to meet your goal of ${monthlyGoal} interviews.`,
+      message:
+        remainingInterviews > 0
+          ? `You need ${remainingInterviews} more interviews to meet your goal.`
+          : "You've met your interview goal!",
     },
   };
 }

@@ -12,6 +12,8 @@ import { FaMinus } from "react-icons/fa";
 import { Calendar, DateObject } from "react-multi-date-picker";
 import { isSameDay, isToday } from "date-fns";
 import updateGoalData from "../../../actions/updateGoalData";
+import { CandidateGoal } from "@prisma/client";
+import { Skeleton } from "../ui/Skeleton";
 
 const schema = z.object({
   jobsAppliedToDaysPerWeekGoal: z
@@ -63,7 +65,7 @@ type DayOfWeek =
   | "Saturday";
 
 interface WeeklyApplicationDayTrackerData {
-  applicationPresence: [DayOfWeek, boolean][];
+  applicationPresence: [DayOfWeek, { presence: boolean; count: number }][];
 }
 
 interface WeeklyApplicationGoalTrackerData {
@@ -84,7 +86,7 @@ interface GoalFormProps {
     jobsAppliedToWeeklyGoalMin?: number | undefined;
     jobsAppliedToWeeklyGoalMax: number;
     monthlyInterviewGoal: number;
-    candidateGoal: string;
+    candidateGoal: CandidateGoal | undefined;
     offerReceivedByDateGoal: Date | null;
     offerReceivedByDateGoalStart: Date | null;
     offerReceivedByDateGoalEnd: Date | null;
@@ -130,7 +132,7 @@ const WeeklyGoalHexagons = ({
           key={day}
           onClick={() => onHexagonClick(day)}
           className={`text-white ${
-            (selectedGoal ?? 0) >= day ? "bg-blue-600" : "bg-blue-200"
+            (selectedGoal ?? 0) >= day ? "bg-gray-600" : "bg-gray-500"
           }`}
         />
       ))}
@@ -148,17 +150,17 @@ const WeeklyApplicationDayTracker = ({
   <div className="flex gap-6 justify-start">
     {[...weeklyDayTargetMap.keys()].map((day, index) => {
       const dayAbbreviation = weeklyDayTargetMap.get(day);
-      const wasApplied =
-        weeklyApplicationDayTrackerData?.applicationPresence.find(
-          ([dayKey]: [DayOfWeek, boolean]) => dayKey === day
-        )?.[1] || false;
+      const dayData = weeklyApplicationDayTrackerData?.applicationPresence.find(
+        ([dayKey]) => dayKey === day
+      );
+      const wasApplied = dayData ? dayData[1].presence : false;
 
       return (
         <Hexagon
           key={index}
-          className={`${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
+          className={`${wasApplied ? "bg-gray-600" : "bg-gray-400"}`}
         >
-          <span className="text-sm">{dayAbbreviation}</span>
+          <span className="text-sm text-white">{dayAbbreviation}</span>
         </Hexagon>
       );
     })}
@@ -186,13 +188,87 @@ const WeeklyApplicationGoalTracker = ({
 
       return (
         <div key={index} className="flex flex-col items-center">
-          <Hexagon className={`${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}>
+          <Hexagon className={`${wasApplied ? "bg-gray-600" : "bg-gray-400"}`}>
             <span className="text-lg text-white">{dayAbbreviation}</span>
           </Hexagon>
-          <div className="text-xs mt-2 text-gray-900">{applicationCount}</div>
+          <div className="text-xs mt-2 text-white">{applicationCount}</div>
         </div>
       );
     })}
+  </div>
+);
+
+const GoalFormSkeleton = () => (
+  <div className="rounded-lg p-6 shadow-lg bg-gray-800 relative">
+    <Skeleton className="h-6 w-1/3 mb-4" />
+    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      {[...Array(8)].map((_, i) => (
+        <Skeleton key={i} className="h-5 w-3/4" />
+      ))}
+    </div>
+    <Skeleton className="h-6 w-1/2 my-4" />
+    <div className="flex gap-6 justify-start">
+      {[...Array(7)].map((_, i) => (
+        <div
+          key={i}
+          className="w-6 h-6 sm:w-12 sm:h-12 bg-gray-700 animate-pulse transform rotate-30"
+          style={{
+            clipPath:
+              "polygon(50% 0%, 100% 25%, 100% 75 тендэ, 50% 100%, 0% 75%, 0% 25%)",
+          }}
+        />
+      ))}
+    </div>
+    <div className="mt-4">
+      <div className="flex gap-6 justify-start">
+        {[...Array(7)].map((_, i) => (
+          <div
+            key={i}
+            className="w-6 h-6 sm:w-12 sm:h-12 bg-gray-700 animate-pulse transform rotate-30"
+            style={{
+              clipPath:
+                "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+            }}
+          />
+        ))}
+      </div>
+      <div className="flex items-center gap-2 mt-4">
+        <Skeleton className="h-6 w-12" />
+        <span className="text-white">/</span>
+        <Skeleton className="h-6 w-12" />
+        <span className="text-white">days</span>
+      </div>
+    </div>
+    <Skeleton className="h-6 w-1/2 mt-6 mb-4" />
+    <div className="flex max-w-sm justify-between">
+      <Skeleton className="h-11 w-24" />
+      <Skeleton className="h-6 w-6" />
+      <Skeleton className="h-11 w-24" />
+    </div>
+    <div className="mt-4">
+      <Skeleton className="h-4 w-3/4 mb-4" />
+      <Skeleton className="h-4 w-1/2 mb-4" />
+      <div className="flex gap-6 justify-start">
+        {[...Array(7)].map((_, i) => (
+          <div key={i} className="flex flex-col items-center">
+            <div
+              className="w-6 h-6 sm:w-12 sm:h-12 bg-gray-700 animate-pulse transform rotate-30"
+              style={{
+                clipPath:
+                  "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+              }}
+            />
+            <Skeleton className="h-4 w-8 mt-2" />
+          </div>
+        ))}
+      </div>
+    </div>
+    <Skeleton className="h-6 w-1/2 mt-6 mb-4" />
+    <Skeleton className="h-11 w-1/2" />
+    <Skeleton className="h-4 w-3/4 mt-5" />
+    <Skeleton className="h-6 w-1/2 mt-6 mb-4" />
+    <Skeleton className="h-64 w-full" />
+    <Skeleton className="h-12 w-40 mt-6" />
   </div>
 );
 
@@ -202,108 +278,60 @@ const GoalForm = ({
   weeklyApplicationGoalTrackerData,
   monthlyInterviewGoalTrackerData,
 }: GoalFormProps) => {
-  const {
-    reset,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<FormData>({
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
+
+  const { reset, handleSubmit, setValue } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       jobsAppliedToDaysPerWeekGoal:
-        currentGoalData?.jobsAppliedToDaysPerWeekGoal || 1,
+        currentGoalData?.jobsAppliedToDaysPerWeekGoal ?? 1,
       jobsAppliedToWeeklyGoalMin:
-        currentGoalData?.jobsAppliedToWeeklyGoalMin || 1,
+        currentGoalData?.jobsAppliedToWeeklyGoalMin ?? 1,
       jobsAppliedToWeeklyGoalMax:
-        currentGoalData?.jobsAppliedToWeeklyGoalMax || 1,
-      monthlyInterviewGoal: currentGoalData?.monthlyInterviewGoal || 0,
-      candidateGoal: "NotSureYet",
-      offerReceivedByDateGoal: currentGoalData?.offerReceivedByDateGoal || null,
+        currentGoalData?.jobsAppliedToWeeklyGoalMax ?? 2,
+      monthlyInterviewGoal: currentGoalData?.monthlyInterviewGoal ?? 0,
+      candidateGoal: currentGoalData?.candidateGoal ?? "NotSureYet",
+      offerReceivedByDateGoal: currentGoalData?.offerReceivedByDateGoal ?? null,
       offerReceivedByDateGoalStart:
-        currentGoalData?.offerReceivedByDateGoalStart || null,
+        currentGoalData?.offerReceivedByDateGoalStart ?? null,
       offerReceivedByDateGoalEnd:
-        currentGoalData?.offerReceivedByDateGoalEnd || null,
+        currentGoalData?.offerReceivedByDateGoalEnd ?? null,
     },
   });
 
-  const [selectedGoal, setSelectedGoal] = useState<number | null>(1);
-  const [goalMin, setGoalMin] = useState<number>(1);
-  const [goalMax, setGoalMax] = useState<number>(2);
-  const [monthlyInterviewsGoal, setMonthlyInterviewsGoal] = useState<number>(0);
-  const [candidateGoal, setCandidateGoal] = useState<string>("NotSureYet");
-  const [selectedDates, setSelectedDates] = useState<DateObject[]>([]);
-
-  useEffect(() => {
-    if (!currentGoalData) return;
-
-    const goalMappings: {
-      [key: string]: {
-        stateSetter: (value: any) => void;
-        formField: keyof FormData;
-        transform?: (value: any) => any;
-      };
-    } = {
-      jobsAppliedToDaysPerWeekGoal: {
-        stateSetter: setSelectedGoal,
-        formField: "jobsAppliedToDaysPerWeekGoal",
-        transform: Number,
-      },
-      jobsAppliedToWeeklyGoalMin: {
-        stateSetter: setGoalMin,
-        formField: "jobsAppliedToWeeklyGoalMin",
-        transform: Number,
-      },
-      jobsAppliedToWeeklyGoalMax: {
-        stateSetter: setGoalMax,
-        formField: "jobsAppliedToWeeklyGoalMax",
-        transform: Number,
-      },
-      monthlyInterviewGoal: {
-        stateSetter: setMonthlyInterviewsGoal,
-        formField: "monthlyInterviewGoal",
-      },
-      candidateGoal: {
-        stateSetter: setCandidateGoal,
-        formField: "candidateGoal",
-      },
-    };
-
-    Object.entries(goalMappings).forEach(
-      ([key, { stateSetter, formField, transform }]) => {
-        const value = currentGoalData[key as keyof typeof currentGoalData];
-        if (value !== undefined && value !== null) {
-          const transformedValue = transform ? transform(value) : value;
-          stateSetter(transformedValue);
-          setValue(formField, transformedValue);
-        }
-      }
-    );
-
-    const handleDates = () => {
-      if (
-        currentGoalData.offerReceivedByDateGoalStart &&
-        currentGoalData.offerReceivedByDateGoalEnd
-      ) {
-        const start = new Date(currentGoalData.offerReceivedByDateGoalStart);
-        const end = new Date(currentGoalData.offerReceivedByDateGoalEnd);
-        setValue("offerReceivedByDateGoalStart", start);
-        setValue("offerReceivedByDateGoalEnd", end);
-        setSelectedDates([new DateObject(start), new DateObject(end)]);
-      } else if (
-        currentGoalData.offerReceivedByDateGoalStart === null &&
-        currentGoalData.offerReceivedByDateGoalEnd === null
-      ) {
-        const date = currentGoalData.offerReceivedByDateGoal;
-        setSelectedDates(date ? [new DateObject(new Date(date))] : []);
-      } else if (currentGoalData.offerReceivedByDateGoal) {
-        const date = new Date(currentGoalData.offerReceivedByDateGoal);
-        setValue("offerReceivedByDateGoal", date);
-        setSelectedDates([new DateObject(date)]);
-      }
-    };
-
-    handleDates();
-  }, [currentGoalData, setValue]);
+  const [selectedGoal, setSelectedGoal] = useState<number | null>(
+    currentGoalData?.jobsAppliedToDaysPerWeekGoal ?? 1
+  );
+  const [goalMin, setGoalMin] = useState<number>(
+    currentGoalData?.jobsAppliedToWeeklyGoalMin ?? 1
+  );
+  const [goalMax, setGoalMax] = useState<number>(
+    currentGoalData?.jobsAppliedToWeeklyGoalMax ?? 2
+  );
+  const [monthlyInterviewsGoal, setMonthlyInterviewsGoal] = useState<number>(
+    currentGoalData?.monthlyInterviewGoal ?? 0
+  );
+  const [candidateGoal, setCandidateGoal] = useState<CandidateGoal | undefined>(
+    currentGoalData?.candidateGoal ?? "NotSureYet"
+  );
+  const [selectedDates, setSelectedDates] = useState<DateObject[]>(() => {
+    if (
+      currentGoalData?.offerReceivedByDateGoalStart &&
+      currentGoalData?.offerReceivedByDateGoalEnd
+    ) {
+      return [
+        new DateObject(currentGoalData.offerReceivedByDateGoalStart),
+        new DateObject(currentGoalData.offerReceivedByDateGoalEnd),
+      ];
+    } else if (currentGoalData?.offerReceivedByDateGoal) {
+      return [new DateObject(currentGoalData.offerReceivedByDateGoal)];
+    }
+    return [];
+  });
 
   const handleSave = async (data: FormData) => {
     try {
@@ -466,16 +494,22 @@ const GoalForm = ({
   const handleCandidateGoalChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const value = e.target.value as
-      | "ChangeMyCareer"
-      | "GrowInMyExistingRole"
-      | "ExploreNewOpportunities"
-      | "ImproveSkillset"
-      | "LookingForANewJob"
-      | "ReceiveAnOffer"
-      | "NotSureYet";
-    setCandidateGoal(value);
-    setValue("candidateGoal", value);
+    const value = e.target.value;
+    if (
+      [
+        "ChangeMyCareer",
+        "GrowInMyExistingRole",
+        "BuildAPortfolio",
+        "ExploreNewOpportunities",
+        "ImproveSkillset",
+        "LookingForANewJob",
+        "ReceiveAnOffer",
+        "NotSureYet",
+      ].includes(value)
+    ) {
+      setCandidateGoal(value as CandidateGoal);
+      setValue("candidateGoal", value as CandidateGoal);
+    }
   };
 
   const today = new Date();
@@ -492,7 +526,7 @@ const GoalForm = ({
 
   const appliedDaysCount: number =
     weeklyApplicationDayTrackerData?.applicationPresence?.filter(
-      ([_, applied]) => applied
+      ([_, { presence }]) => presence
     ).length || 0;
 
   const totalApplications =
@@ -572,97 +606,101 @@ const GoalForm = ({
     currentGoalData?.jobsAppliedToWeeklyGoalMax
   );
 
+  if (isLoading) {
+    return <GoalFormSkeleton />;
+  }
+
   return (
     <div>
-      <div className="rounded-lg p-6 shadow-lg bg-white relative">
+      <div className="rounded-lg p-6 shadow-lg bg-gray-800 relative">
         <div className="mt-6 text-white">
-          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
             What is your goal? (optional)
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="ReceiveAnOffer"
                 checked={candidateGoal === "ReceiveAnOffer"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Receive an Offer
             </label>
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="ChangeMyCareer"
                 checked={candidateGoal === "ChangeMyCareer"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Change My Career
             </label>
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="LookingForANewJob"
                 checked={candidateGoal === "LookingForANewJob"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Looking for a New Job
             </label>
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="ExploreNewOpportunities"
                 checked={candidateGoal === "ExploreNewOpportunities"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Explore New Opportunities
             </label>
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="ImproveSkillset"
                 checked={candidateGoal === "ImproveSkillset"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Improve Skillset
             </label>
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="GrowInMyExistingRole"
                 checked={candidateGoal === "GrowInMyExistingRole"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Grow In My Existing Role
             </label>
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="BuildAPortfolio"
                 checked={candidateGoal === "BuildAPortfolio"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Build A Portfolio
             </label>
-            <label className="text-sm text-gray-900 flex items-center">
+            <label className="text-sm text-white flex items-center">
               <input
                 type="radio"
                 value="NotSureYet"
                 checked={candidateGoal === "NotSureYet"}
                 onChange={handleCandidateGoalChange}
-                className="mr-2"
+                className="mr-2 accent-gray-600"
               />
               Not Sure Yet
             </label>
           </div>
         </div>
-        <h3 className="text-lg sm:text-xl font-semibold my-4 text-gray-900">
+        <h3 className="text-lg sm:text-xl font-semibold my-4 text-white">
           How many days a week do you plan on applying? (optional)
         </h3>
         <WeeklyGoalHexagons
@@ -671,20 +709,19 @@ const GoalForm = ({
         />
         <form onSubmit={handleSubmit(handleSave)} className="mt-8">
           <div>
-            <p className="text-gray-900 mb-4">
-              {jobsAppliedToWeeklyGoalMessage}
-            </p>
+            <p className="text-white mb-4">{jobsAppliedToWeeklyGoalMessage}</p>
             <WeeklyApplicationDayTracker
               weeklyApplicationDayTrackerData={weeklyApplicationDayTrackerData}
               weeklyDayTargetMap={weeklyDayTargetMap}
             />
-            <div className="text-lg sm:text-xl font-semibold my-4 text-gray-900">
+            <div className="text-lg sm:text-xl font-semibold my-4 text-white">
               <span className="text-2xl font-bold">{appliedDaysCount}</span> /{" "}
-              <span>{currentGoalData?.jobsAppliedToDaysPerWeekGoal}</span> days
+              <span>{currentGoalData?.jobsAppliedToDaysPerWeekGoal ?? 1}</span>{" "}
+              days
             </div>
           </div>
           <div className="mt-6 text-white">
-            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many jobs do you plan on applying to each week? (optional)
             </h4>
             <div className="flex max-w-sm justify-between">
@@ -699,28 +736,28 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMinDecrement}
-                    className="bg-white border-gray-300 rounded-s-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
+                    className="bg-gray-700 border-gray-600 rounded-s-lg p-3 h-11 border focus:ring-gray-500 focus:border-gray-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdRemove className="w-3 h-3 text-gray-900" />
+                    <MdRemove className="w-3 h-3 text-white" />
                   </button>
                   <input
                     type="number"
                     id="jobsAppliedToWeeklyGoalMin"
                     value={goalMin}
                     onChange={handleMinChange}
-                    className="bg-white border border-gray-300 border-x-0 h-11 text-center text-sm block w-full py-2.5 placeholder-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                    className="bg-gray-700 border border-gray-600 border-x-0 h-11 text-center text-sm block w-full py-2.5 placeholder-gray-400 text-white focus:ring-gray-500 focus:border-gray-500"
                   />
                   <button
                     type="button"
                     onClick={handleMinIncrement}
-                    className="bg-white border-gray-300 rounded-e-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
+                    className="bg-gray-700 border-gray-600 rounded-e-lg p-3 h-11 border focus:ring-gray-500 focus:border-gray-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdAdd className="w-3 h-3 text-gray-900" />
+                    <MdAdd className="w-3 h-3 text-white" />
                   </button>
                 </div>
               </div>
               <span className="flex items-center">
-                <FaMinus className="h-6 w-6 text-gray-900" />
+                <FaMinus className="h-6 w-6 text-white" />
               </span>
               <div className="flex flex-col">
                 <label
@@ -733,34 +770,34 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMaxDecrement}
-                    className="bg-white border-gray-300 rounded-s-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
+                    className="bg-gray-700 border-gray-600 rounded-s-lg p-3 h-11 border focus:ring-gray-500 focus:border-gray-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdRemove className="w-3 h-3 text-gray-900" />
+                    <MdRemove className="w-3 h-3 text-white" />
                   </button>
                   <input
                     type="number"
                     id="jobsAppliedToWeeklyGoalMax"
                     value={goalMax}
                     onChange={handleMaxChange}
-                    className="bg-white border border-gray-300 border-x-0 h-11 text-center text-sm block w-full py-2.5 placeholder-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                    className="bg-gray-700 border border-gray-600 border-x-0 h-11 text-center text-sm block w-full py-2.5 placeholder-gray-400 text-white focus:ring-gray-500 focus:border-gray-500"
                   />
                   <button
                     type="button"
                     onClick={handleMaxIncrement}
-                    className="bg-white border-gray-300 rounded-e-lg p-3 h-11 border focus:ring-blue-500 focus:border-blue-500 focus:ring-2 focus:outline-none"
+                    className="bg-gray-700 border-gray-600 rounded-e-lg p-3 h-11 border focus:ring-gray-500 focus:border-gray-500 focus:ring-2 focus:outline-none"
                   >
-                    <MdAdd className="w-3 h-3 text-gray-900" />
+                    <MdAdd className="w-3 h-3 text-white" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
           <div className="">
-            <div className="text-gray-900 mt-4">
+            <div className="text-white mt-4">
               <p>{jobsAppliedToWeeklyGoalMessage}</p>
             </div>
-            <div className="mt-4 text-gray-900">
-              <span>{distanceToMaxGoalMessage}</span>
+            <div className="text-white mt-4">
+              <p>{distanceToMaxGoalMessage}</p>
             </div>
             <WeeklyApplicationGoalTracker
               weeklyApplicationGoalTrackerData={
@@ -769,8 +806,8 @@ const GoalForm = ({
               weeklyDayTargetMap={weeklyDayTargetMap}
             />
           </div>
-          <div className="mt-6 text-gray-900">
-            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+          <div className="mt-6 text-white">
+            <h4 className="text-lg sm:text-xl font-semibold mb-4 text-white">
               How many interviews are you aiming to have each month? (optional)
             </h4>
             <div className="flex flex-col">
@@ -779,15 +816,17 @@ const GoalForm = ({
                 id="monthlyInterviewGoal"
                 value={monthlyInterviewsGoal}
                 onChange={handleMonthlyInterviewsGoalChange}
-                className="bg-white border border-gray-300  h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-gray-600 placeholder-gray-400 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
+                className="bg-gray-700 border border-gray-600 h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 placeholder-gray-400 text-white focus:ring-gray-500 focus:border-gray-500"
                 min={0}
               />
             </div>
           </div>
-          <div className="mt-5">{monthlyInterviewGoalTrackerData?.message}</div>
+          <div className="mt-5 text-white">
+            {monthlyInterviewGoalTrackerData?.message}
+          </div>
           {candidateGoal === "ReceiveAnOffer" && (
-            <div className="mt-6 text-gray-900 z-10">
-              <h5 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900">
+            <div className="mt-6 text-white z-10">
+              <h5 className="text-lg sm:text-xl font-semibold mb-4 text-white">
                 When would you like to receive an offer by? (optional)
               </h5>
               <div className="flex flex-col relative z-10">
@@ -811,18 +850,18 @@ const GoalForm = ({
                       selectedDates[selectedDates.length - 1].toDate() >=
                         date.toDate();
 
-                    let dayClasses = "cursor-pointer";
+                    let dayClasses = "cursor-pointer bg-gray-800 text-white";
 
                     if (isBeforeToday) {
-                      dayClasses = "text-gray-400";
+                      dayClasses = "text-gray-400 bg-gray-800";
                     } else if (isSelected) {
-                      dayClasses = "bg-blue-700 text-white";
+                      dayClasses = "bg-gray-700 text-white";
                     } else if (isTodayDate) {
-                      dayClasses = "bg-transparent text-blue-700";
+                      dayClasses = "bg-gray-800 text-gray-300";
                     } else if (isInRange) {
-                      dayClasses = "bg-blue-300 text-white";
+                      dayClasses = "bg-gray-600 text-white";
                     } else {
-                      dayClasses = "bg-blue-100 text-blue-700 font-bold";
+                      dayClasses = "bg-gray-800 text-white";
                     }
 
                     return {
@@ -855,7 +894,7 @@ const GoalForm = ({
           <div className="flex justify-start mt-6">
             <button
               type="submit"
-              className="flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+              className="flex items-center px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
             >
               Save goal settings
             </button>
