@@ -4,11 +4,10 @@ import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 
 export default async function Awards() {
   const achievementsData = await getAchievements();
-
   if (!achievementsData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse  p-4 rounded-lg">
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="animate-pulse p-4 rounded-lg bg-gray-800 text-white">
           Unable to load achievements
         </div>
       </div>
@@ -19,13 +18,15 @@ export default async function Awards() {
     achievementsData;
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)] bg-gray-900">
       <ProfileNavigation />
       <div className="container mx-auto p-4">
         <AwardsTabs
-          jobAchievements={jobAchievements}
-          interviewAchievements={interviewAchievements}
-          holidayAchievements={holidayAchievements}
+          initialData={{
+            jobAchievements,
+            interviewAchievements,
+            holidayAchievements,
+          }}
         />
       </div>
     </section>
