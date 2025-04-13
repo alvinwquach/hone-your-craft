@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import JobFilterAndList from "./ClientJobFilterAndList";
-import ClientJobStatistics from "./ClientJobStatistics";
+import JobFilterAndList, {
+  JobFilterAndListSkeleton,
+} from "../../components/jobs/ClientJobFilterAndList";
+import ClientJobStatistics, {
+  ClientJobStatisticsSkeleton,
+} from "./ClientJobStatistics";
 import { rejectApplication } from "@/app/actions/rejectApplication";
 import { deleteJobPosting } from "@/app/actions/deleteJobPosting";
 import { acceptApplication } from "@/app/actions/acceptApplication";
@@ -25,6 +29,12 @@ export default function ClientJobDashboard({
   const [filteredJobPostings, setFilteredJobPostings] = useState<
     "all" | "drafts" | "posted" | "pending" | "accepted" | "rejected"
   >("all");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data readiness (props are from server)
+    setIsLoading(false);
+  }, []);
 
   const handleAcceptApplication = async (id: string) => {
     try {
@@ -89,19 +99,28 @@ export default function ClientJobDashboard({
 
   return (
     <>
-      <ClientJobStatistics
-        postedJobsCount={postedJobsCount}
-        draftJobsCount={draftJobsCount}
-      />
-      <JobFilterAndList
-        filter={filteredJobPostings}
-        filteredJobs={filteredJobs}
-        onFilterChange={handleFilterChange}
-        handleDeleteJobPosting={handleDeleteJobPosting}
-        handleAcceptApplication={handleAcceptApplication}
-        handleRejectApplication={handleRejectApplication}
-        getApplicationStatusDetails={getApplicationStatusDetails}
-      />
+      {isLoading ? (
+        <>
+          <ClientJobStatisticsSkeleton />
+          <JobFilterAndListSkeleton jobsLength={3} />
+        </>
+      ) : (
+        <>
+          <ClientJobStatistics
+            postedJobsCount={postedJobsCount}
+            draftJobsCount={draftJobsCount}
+          />
+          <JobFilterAndList
+            filter={filteredJobPostings}
+            filteredJobs={filteredJobs}
+            onFilterChange={handleFilterChange}
+            handleDeleteJobPosting={handleDeleteJobPosting}
+            handleAcceptApplication={handleAcceptApplication}
+            handleRejectApplication={handleRejectApplication}
+            getApplicationStatusDetails={getApplicationStatusDetails}
+          />
+        </>
+      )}
     </>
   );
 }

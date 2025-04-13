@@ -1,9 +1,31 @@
+import { Skeleton } from "../profile/ui/Skeleton";
+
 interface ClientJobStatisticsProps {
   postedJobsCount: number;
   draftJobsCount: number;
 }
 
-function ClientJobStatistics({
+export function ClientJobStatisticsSkeleton() {
+  return (
+    <div className="w-full lg:w-1/4">
+      <div className="bg-zinc-900 p-6 rounded-lg shadow-lg border border-zinc-700">
+        <Skeleton className="h-6 w-1/4 mb-4 bg-zinc-700" />
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-5 w-1/3 bg-zinc-700" />
+            <Skeleton className="h-5 w-10 bg-zinc-700" />
+          </div>
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-5 w-1/3 bg-zinc-700" />
+            <Skeleton className="h-5 w-10 bg-zinc-700" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ClientJobStatistics({
   postedJobsCount,
   draftJobsCount,
 }: ClientJobStatisticsProps) {
@@ -25,5 +47,3 @@ function ClientJobStatistics({
     </div>
   );
 }
-
-export default ClientJobStatistics;
