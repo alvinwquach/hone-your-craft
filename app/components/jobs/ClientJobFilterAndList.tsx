@@ -1,8 +1,11 @@
-import { Fragment } from "react";
+"use client";
+
+import { Fragment, useState, useEffect } from "react";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { Menu, Transition } from "@headlessui/react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { Skeleton } from "../profile/ui/Skeleton";
 
 const workLocationLabels = {
   REMOTE: "Remote",
@@ -53,7 +56,76 @@ interface JobFilterAndListProps {
   };
 }
 
-function JobFilterAndList({
+export function JobFilterAndListSkeleton({
+  jobsLength,
+}: {
+  jobsLength: number;
+}) {
+  return (
+    <div className="w-full lg:w-1/2 rounded-lg shadow-lg border border-zinc-700">
+      <div className="bg-zinc-900 p-6">
+        <Skeleton className="h-6 w-24 mb-4 bg-zinc-700" />
+        <div className="flex flex-wrap justify-start items-center mt-4">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 w-full">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                className="h-8 w-full rounded-full bg-zinc-700"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+      {Array.from({ length: jobsLength }).map((_, index) => (
+        <div
+          key={index}
+          className={`bg-zinc-900 p-6 shadow-lg flex flex-col border-b border-zinc-700 ${
+            index === jobsLength - 1 ? "rounded-b-lg" : ""
+          }`}
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <Skeleton className="h-6 w-52 mb-2 bg-zinc-700" />
+              <Skeleton className="h-5 w-44 mb-2 bg-zinc-700" />
+              <Skeleton className="h-4 w-36 bg-zinc-700" />
+            </div>
+            <Skeleton className="h-10 w-10 rounded-full bg-zinc-700" />
+          </div>
+          <div className="flex justify-start items-center mt-2">
+            <div className="flex flex-col">
+              <Skeleton className="h-4 w-20 mb-2 bg-zinc-700" />
+              <Skeleton className="h-4 w-32 bg-zinc-700" />
+              {index === 0 && (
+                <Skeleton className="h-4 w-28 mt-2 bg-zinc-700" />
+              )}
+            </div>
+          </div>
+          <div className="mt-4">
+            <Skeleton className="h-6 w-24 mb-4 bg-zinc-700" />
+            <div className="bg-zinc-800 p-4 rounded-md shadow-md">
+              <div className="flex justify-between items-center">
+                <div>
+                  <Skeleton className="h-5 w-40 mb-2 bg-zinc-700" />
+                  <Skeleton className="h-4 w-48 bg-zinc-700" />
+                </div>
+                <Skeleton className="h-8 w-24 rounded-full bg-zinc-700" />
+              </div>
+              <div className="flex justify-between mt-2 items-center">
+                <Skeleton className="h-4 w-48 bg-zinc-700" />
+                <div className="space-x-2">
+                  <Skeleton className="h-10 w-20 rounded-md bg-zinc-700" />
+                  <Skeleton className="h-10 w-20 rounded-md bg-zinc-700" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function JobFilterAndList({
   filter,
   filteredJobs,
   onFilterChange,
@@ -62,6 +134,13 @@ function JobFilterAndList({
   handleRejectApplication,
   getApplicationStatusDetails,
 }: JobFilterAndListProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
+  if (isLoading) {
+    return <JobFilterAndListSkeleton jobsLength={filteredJobs.length || 3} />;
+  }
   return (
     <div className="w-full lg:w-1/2 rounded-lg shadow-lg border border-zinc-700">
       <div className="bg-zinc-900 p-6">
@@ -119,6 +198,7 @@ function JobFilterAndList({
           </div>
         </div>
       </div>
+
       {filteredJobs.length === 0 ? (
         <div className="bg-zinc-900 p-6 shadow-lg flex flex-col items-center border-b border-zinc-700">
           <h3 className="text-lg font-semibold text-white mb-2">
@@ -215,7 +295,7 @@ function JobFilterAndList({
                 {job.status === JobPostingStatus.DRAFT ? (
                   <>
                     <div className="flex items-center">
-                      <span className="rounded-full text-xs font-bold">
+                      <span className="text-xs font-bold text-blue-500">
                         Draft
                       </span>
                       <span className="text-xs text-gray-400 mx-2">
@@ -232,7 +312,9 @@ function JobFilterAndList({
                 ) : (
                   <>
                     <div className="flex items-center">
-                      <span className="text-xs font-bold">Posted</span>
+                      <span className="text-xs font-bold text-blue-500">
+                        Posted
+                      </span>
                       <span className="text-xs text-gray-400 mx-2">
                         • Created{" "}
                         {formatDistanceToNow(new Date(job.createdAt), {
@@ -336,5 +418,3 @@ function JobFilterAndList({
     </div>
   );
 }
-
-export default JobFilterAndList;
