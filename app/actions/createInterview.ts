@@ -42,6 +42,7 @@ export async function createInterview(data: InterviewData) {
 
     const interview = await prisma.interview.create({
       data: {
+        user: { connect: { id: currentUser.id } },
         job: { connect: { id: data.jobId } },
         acceptedDate: new Date(data.acceptedDate),
         interviewDate: new Date(data.interviewDate),
