@@ -32,7 +32,7 @@ export default function RootLayout({
         <body className={inter.className}>
           <SessionProvider>
             <Header />
-            <main className="bg-zinc-700">{children}</main>
+            <main className="bg-gray-100">{children}</main>
             <ToastContainer />
           </SessionProvider>
           {/* <Top10MissingSkillsTicker /> */}

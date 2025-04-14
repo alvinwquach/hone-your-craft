@@ -2,6 +2,7 @@ import { getPastEvents } from "@/app/actions/getPastEvents";
 import { getUpcomingEvents } from "@/app/actions/getUpcomingEvents";
 import MeetingCalendarDownloadButton from "@/app/components/profile/meetings/MeetingCalendarDownloadButton";
 import MeetingTabs from "@/app/components/profile/meetings/MeetingTabs";
+import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 
 interface Event {
   id: string;
@@ -33,8 +34,9 @@ export default async function Meetings() {
   return (
     <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
       <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-100">Meetings</h1>
+        <ProfileNavigation />
+        <div className="flex justify-evenly items-center my-6">
+          <h1 className="text-2xl font-bold text-gray-900">Meetings</h1>
           <MeetingCalendarDownloadButton />
         </div>
         <MeetingTabs
