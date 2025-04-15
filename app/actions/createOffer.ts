@@ -35,6 +35,7 @@ export async function createOffer(data: OfferData) {
 
     const offer = await prisma.offer.create({
       data: {
+        user: { connect: { id: currentUser.id } },
         job: { connect: { id: data.jobId } },
         offerDate: new Date(data.offerDate),
         offerDeadline: data.offerDeadline
@@ -44,7 +45,7 @@ export async function createOffer(data: OfferData) {
       },
     });
 
-    revalidatePath("/track", "page"); // Changed to /track to match rejection context
+    revalidatePath("/profile", "page"); 
 
     return {
       success: true,
