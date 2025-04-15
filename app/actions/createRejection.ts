@@ -38,6 +38,7 @@ export async function createRejection(data: RejectionData) {
 
     const rejection = await prisma.rejection.create({
       data: {
+        user: { connect: { id: currentUser.id } },
         job: { connect: { id: data.jobId } },
         date: new Date(data.date),
         initiatedBy: data.initiatedBy,
