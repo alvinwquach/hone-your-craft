@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "../../ui/InfiniteScrollClient";
 
 interface Job {
   company: string;
