@@ -11,7 +11,7 @@ export default async function Offers() {
   const jobOffers = await getOffers();
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-screen">
       <ProfileNavigation />
       <Suspense fallback={<div>Loading Offers...</div>}>
         <JobOffers
