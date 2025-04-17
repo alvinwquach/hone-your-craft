@@ -3,9 +3,15 @@
 import { Suspense } from "react";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { getUserByEmail } from "@/app/actions/getUserByEmail";
-import ProfileCard from "../components/profile/profile/ProfileCard";
-import SkillsCard from "../components/profile/profile/SkillsCard";
-import SuggestedSkillsCard from "../components/profile/profile/SuggestedSkillsCard";
+import ProfileCard, {
+  ProfileCardSkeleton,
+} from "../components/profile/profile/ProfileCard";
+import SkillsCard, {
+  SkillsCardSkeleton,
+} from "../components/profile/profile/SkillsCard";
+import SuggestedSkillsCard, {
+  SuggestedSkillsCardSkeleton,
+} from "../components/profile/profile/SuggestedSkillsCard";
 import EducationList from "../components/profile/profile/EducationList";
 import RolesCard from "../components/profile/profile/RolesCard";
 import ProfileNavigation from "../components/profile/ui/ProfileNavigation";
@@ -24,19 +30,15 @@ export default async function Profile() {
         <>
           <ProfileNavigation />
           <div className="mt-6 bg-white border-2 border-gray-200 rounded-lg">
-            <Suspense fallback={<ProfileCard userData={[]} />}>
+            <Suspense fallback={<ProfileCardSkeleton />}>
               <ProfileCard userData={userData} />
             </Suspense>
             <div className="my-4 border-t border-gray-200" />
-            <Suspense fallback={<SkillsCard userSkills={[]} />}>
+            <Suspense fallback={<SkillsCardSkeleton />}>
               <SkillsCard userSkills={userData.user?.skills || []} />
             </Suspense>
             <div className="my-4 border-t border-gray-200" />
-            <Suspense
-              fallback={
-                <SuggestedSkillsCard userSkills={[]} suggestedSkills={[]} />
-              }
-            >
+            <Suspense fallback={<SuggestedSkillsCardSkeleton />}>
               <SuggestedSkillsCard
                 userSkills={userData.user?.skills || []}
                 suggestedSkills={suggestedSkills}

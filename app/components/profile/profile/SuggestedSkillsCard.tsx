@@ -9,7 +9,7 @@ interface SuggestedSkillsCardProps {
   userSkills: string[];
 }
 
-export default function SuggestedSkillsCard({
+function SuggestedSkillsCard({
   suggestedSkills: initialSuggestedSkills,
   userSkills: initialUserSkills,
 }: SuggestedSkillsCardProps) {
@@ -64,3 +64,25 @@ export default function SuggestedSkillsCard({
     </div>
   );
 }
+
+export function SuggestedSkillsCardSkeleton() {
+  return (
+    <div className="flex flex-col lg:flex-row justify-center gap-2 p-6 sm:p-8 mt-4 sm:mt-0 animate-pulse">
+      <div className="w-full lg:w-1/3">
+        <div className="h-6 w-48 bg-gray-200 rounded mb-2"></div>
+        <div className="h-4 w-64 bg-gray-200 rounded mb-1"></div>
+        <div className="h-4 w-48 bg-gray-200 rounded"></div>
+      </div>
+      <div className="w-full lg:w-2/3">
+        <div className="flex flex-wrap gap-2 max-h-60 lg:pl-4">
+          <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+          <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+          <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+          <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default SuggestedSkillsCard;
