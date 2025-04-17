@@ -91,7 +91,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
     role: string,
     event?: React.MouseEvent
   ) => {
-    event?.stopPropagation(); 
+    event?.stopPropagation();
 
     const result = await removeOpenToRole(role);
     if (result.success) {
@@ -140,7 +140,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (e.key === "Enter") {
-      e.preventDefault(); 
+      e.preventDefault();
       await updateProfile({
         primaryRole: selectedRole,
         yearsOfExperience: selectedExperience,
@@ -227,7 +227,11 @@ function ProfileCard({ userData }: ProfileCardProps) {
           </div>
         </div>
         <div className="flex justify-start mb-6">
-          <Suspense fallback={<p>Loading user...</p>}>
+          <Suspense
+            fallback={
+              <div className="w-[70px] h-[70px] rounded-full bg-gray-200 animate-pulse"></div>
+            }
+          >
             <Image
               className="rounded-full shadow-lg"
               src={userData?.user?.image || defaultPfp}
@@ -382,6 +386,57 @@ function ProfileCard({ userData }: ProfileCardProps) {
             </div>
           )}
         </form>
+      </div>
+    </div>
+  );
+}
+
+export function ProfileCardSkeleton() {
+  return (
+    <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0 animate-pulse">
+      <div className="w-full lg:w-1/3">
+        <div className="h-6 w-24 bg-gray-200 rounded mb-2"></div>
+        <div className="h-4 w-48 bg-gray-200 rounded"></div>
+      </div>
+      <div className="w-full lg:w-2/3 rounded-lg mx-auto">
+        <div className="mb-6">
+          <div className="h-6 w-32 bg-gray-200 rounded mb-2"></div>
+          <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="flex justify-start mb-6">
+          <div className="w-[70px] h-[70px] rounded-full bg-gray-200"></div>
+        </div>
+        <div className="mb-6">
+          <div className="h-6 w-32 bg-gray-200 rounded mb-2"></div>
+          <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="flex flex-col lg:flex-row gap-6 mb-6">
+          <div className="w-full lg:w-3/4">
+            <div className="h-6 w-48 bg-gray-200 rounded mb-2"></div>
+            <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
+          </div>
+          <div className="w-full lg:w-1/4">
+            <div className="h-6 w-48 bg-gray-200 rounded mb-2"></div>
+            <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+        <div className="mb-6">
+          <div className="h-6 w-48 bg-gray-200 rounded mb-2"></div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+            <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+            <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+          </div>
+          <div className="h-10 w-full bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="mb-6">
+          <div className="h-6 w-32 bg-gray-200 rounded mb-2"></div>
+          <div className="h-32 w-full bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="flex justify-end gap-6">
+          <div className="h-10 w-24 bg-gray-200 rounded-lg"></div>
+          <div className="h-10 w-24 bg-gray-200 rounded-lg"></div>
+        </div>
       </div>
     </div>
   );

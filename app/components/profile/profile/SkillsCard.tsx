@@ -11,7 +11,7 @@ interface SkillsCardProps {
   userSkills: string[];
 }
 
-export default function SkillsCard({ userSkills }: SkillsCardProps) {
+function SkillsCard({ userSkills }: SkillsCardProps) {
   const [selectedSkills, setSelectedSkills] = useState<string[]>(userSkills);
   const [query, setQuery] = useState("");
 
@@ -121,3 +121,25 @@ export default function SkillsCard({ userSkills }: SkillsCardProps) {
     </div>
   );
 }
+
+export function SkillsCardSkeleton() {
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 p-6 sm:p-8 mt-4 sm:mt-0 animate-pulse">
+      <div className="w-full lg:w-1/3">
+        <div className="h-6 w-32 bg-gray-200 rounded mb-2"></div>
+        <div className="h-4 w-64 bg-gray-200 rounded mb-1"></div>
+        <div className="h-4 w-48 bg-gray-200 rounded"></div>
+      </div>
+      <div className="w-full lg:w-2/3">
+        <div className="flex flex-wrap gap-2 mb-4">
+          <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+          <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+          <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+        </div>
+        <div className="h-12 w-full bg-gray-200 rounded-lg"></div>
+      </div>
+    </div>
+  );
+}
+
+export default SkillsCard;
