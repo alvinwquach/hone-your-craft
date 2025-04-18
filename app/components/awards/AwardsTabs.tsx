@@ -26,11 +26,11 @@ interface AwardsTabsProps {
 
 function AchievementCardSkeleton() {
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl shadow-xl">
-      <Skeleton className="h-28 w-28 rounded-full mb-2 bg-gray-700" />
-      <Skeleton className="h-6 w-32 mb-2 bg-gray-700" />
-      <Skeleton className="h-4 w-24 bg-gray-700" />
-      <Skeleton className="h-8 w-8 rounded-full absolute top-5 right-5 bg-gray-700" />
+    <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-700 rounded-2xl shadow-xl">
+      <Skeleton className="h-28 w-28 rounded-full mb-2 bg-zinc-800" />
+      <Skeleton className="h-6 w-32 mb-2 bg-zinc-800" />
+      <Skeleton className="h-4 w-24 bg-zinc-800" />
+      <Skeleton className="h-8 w-8 rounded-full absolute top-5 right-5 bg-zinc-800" />
     </div>
   );
 }
@@ -50,17 +50,20 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   const isInterviewAchievement = numberInterviews !== null;
   const isStreakAchievement = description.includes("week in a row");
   const isHolidayAchievement = name.includes("Applied on");
+
   const holidayIconMap: Record<string, JSX.Element> = {
     "Memorial Day": <FaFlagUsa className="w-8 h-8 text-white" />,
     "New Year's Day": <GiPartyPopper className="w-8 h-8 text-white" />,
     Halloween: <GiPumpkinMask className="w-8 h-8 text-white" />,
     "Christmas Day": <TbChristmasTree className="w-8 h-8 text-white" />,
   };
+
   const createAchievement = (
     condition: boolean,
     icon: JSX.Element,
     borderColor: string
   ) => ({ condition, icon, borderColor });
+
   const achievementsMapping = {
     job: createAchievement(
       isJobAchievement,
@@ -85,6 +88,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       "border-zinc-500"
     ),
   };
+
   let selectedIcon: JSX.Element | null = null;
   let selectedBorderColor = "border-zinc-500";
   for (const key in achievementsMapping) {
@@ -96,11 +100,13 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       break;
     }
   }
+
   const lockIcon = unlocked ? (
     <FaCheck className="bg-zinc-900 p-2 rounded-full w-8 h-8 text-green-500 absolute top-1 right-1" />
   ) : (
     <BsLock className="bg-zinc-900 p-2 rounded-full w-8 h-8 text-white absolute top-1 right-1" />
   );
+
   function abbreviateNumber(num: number | null): string {
     if (num === null) {
       return "N";
@@ -121,13 +127,16 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       );
     }
   }
+
   const cardStyle = unlocked ? {} : { filter: "brightness(0.7)" };
+
   const achievementNumber =
     isJobAchievement || isInterviewAchievement
       ? abbreviateNumber(numberJobs ?? numberInterviews)
       : null;
+
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80">
+    <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80">
       <div
         className={`relative bg-zinc-400 ${selectedBorderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
         style={cardStyle}
@@ -162,7 +171,6 @@ export default function AwardsTabs({ initialData }: AwardsTabsProps) {
 
   const { jobAchievements, interviewAchievements, holidayAchievements } =
     initialData;
-
   const totalAchievements = [
     ...jobAchievements,
     ...interviewAchievements,
@@ -171,14 +179,14 @@ export default function AwardsTabs({ initialData }: AwardsTabsProps) {
 
   return (
     <>
-      <div className="text-sm font-medium text-center text-gray-400 border-b border-gray-700">
+      <div className="text-sm font-medium text-center text-gray-400 border-b border-zinc-700">
         <div className="flex flex-wrap -mb-px justify-start">
           <button
             onClick={() => setActiveAchievementTab("all")}
             className={`inline-flex items-center p-4 border-b-2 rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "all"
-                ? "bg-zinc-700 text-white border-zinc-500"
-                : "bg-gray-800 hover:bg-zinc-600 text-zinc-300 hover:border-zinc-600"
+                ? "bg-zinc-900 text-white border-zinc-500"
+                : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:border-zinc-600"
             }`}
           >
             <IoMedal
@@ -194,8 +202,8 @@ export default function AwardsTabs({ initialData }: AwardsTabsProps) {
             onClick={() => setActiveAchievementTab("jobs")}
             className={`inline-flex items-center p-4 border-b-2 rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "jobs"
-                ? "bg-zinc-700 text-white border-zinc-500"
-                : "bg-gray-800 hover:bg-zinc-600 text-zinc-300 hover:border-zinc-600"
+                ? "bg-zinc-900 text-white border-zinc-500"
+                : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:border-zinc-600"
             }`}
           >
             <FaBriefcase
@@ -211,8 +219,8 @@ export default function AwardsTabs({ initialData }: AwardsTabsProps) {
             onClick={() => setActiveAchievementTab("interviews")}
             className={`inline-flex items-center p-4 border-b-2 rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "interviews"
-                ? "bg-zinc-700 text-white border-zinc-500"
-                : "bg-gray-800 hover:bg-zinc-600 text-zinc-300 hover:border-zinc-600"
+                ? "bg-zinc-900 text-white border-zinc-500"
+                : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:border-zinc-600"
             }`}
           >
             <IoCalendarNumberSharp
@@ -228,8 +236,8 @@ export default function AwardsTabs({ initialData }: AwardsTabsProps) {
             onClick={() => setActiveAchievementTab("holidays")}
             className={`inline-flex items-center p-4 border-b-2 rounded-t-lg transition-all duration-300 hover:-translate-y-0.5 transform hover:shadow-lg ${
               activeAchievementTab === "holidays"
-                ? "bg-zinc-700 text-white border-zinc-500"
-                : "bg-gray-800 hover:bg-zinc-600 text-zinc-300 hover:border-zinc-600"
+                ? "bg-zinc-900 text-white border-zinc-500"
+                : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:border-zinc-600"
             }`}
           >
             <FaFlagUsa
@@ -243,7 +251,9 @@ export default function AwardsTabs({ initialData }: AwardsTabsProps) {
           </button>
         </div>
       </div>
+
       <h2 className="text-2xl font-bold my-4 text-white">Achievements</h2>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
           <>
