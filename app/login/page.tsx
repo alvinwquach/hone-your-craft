@@ -27,7 +27,7 @@ export default function Login() {
             Log in to continue exploring
           </p>
           <div className="space-y-4">
-            <button
+            {/* <button
               onClick={() => signIn("google")}
               className="w-full group relative flex items-center justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               style={{
@@ -39,7 +39,7 @@ export default function Login() {
                 className="mr-3 text-gray-600 transition-colors group-hover:text-blue-600"
               />
               <span className="text-gray-700">Continue with Google</span>
-            </button>
+            </button> */}
             <button
               onClick={() => signIn("github")}
               className="w-full group relative flex items-center justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
