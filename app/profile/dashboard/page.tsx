@@ -6,7 +6,6 @@ import ApplicationStatusChart from "@/app/components/profile/dashboard/Applicati
 import InterviewFrequencyChart from "@/app/components/profile/dashboard/InterviewFrequencyChart";
 import JobApplicationStatusChart from "@/app/components/profile/dashboard/JobApplicationStatusChart";
 import JobPostingSourceCountChart from "@/app/components/profile/dashboard/JobPostingSourceCountChart";
-import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import SkillsChart from "@/app/components/profile/dashboard/SkillsChart";
 import MissingSkillsChart from "@/app/components/profile/dashboard/MissingSkillsChart";
@@ -193,7 +192,6 @@ export default async function Dashboard() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      <ProfileNavigation />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div className="w-full">
           <SkillsChart

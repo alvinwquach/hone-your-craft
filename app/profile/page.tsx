@@ -14,7 +14,6 @@ import SuggestedSkillsCard, {
 } from "../components/profile/profile/SuggestedSkillsCard";
 import EducationList from "../components/profile/profile/EducationList";
 import RolesCard from "../components/profile/profile/RolesCard";
-import ProfileNavigation from "../components/profile/ui/ProfileNavigation";
 import { getSuggestedSkills } from "../actions/getSuggestedSkills";
 
 export default async function Profile() {
@@ -25,37 +24,37 @@ export default async function Profile() {
   const educationListContent = await EducationList();
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      {userData.user?.userRole === "CANDIDATE" ? (
-        <>
-          <ProfileNavigation />
-          <div className="mt-6 bg-white border-2 border-gray-200 rounded-lg">
-            <Suspense fallback={<ProfileCardSkeleton />}>
-              <ProfileCard userData={userData} />
+    <div className="flex">
+      <section className="flex-1 ml-16 md:ml-16 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+        {userData.user?.userRole === "CANDIDATE" ? (
+          <>
+            <div className="mt-6 bg-white border-2 border-gray-200 rounded-lg">
+              <Suspense fallback={<ProfileCardSkeleton />}>
+                <ProfileCard userData={userData} />
+              </Suspense>
+              <div className="my-4 border-t border-gray-200" />
+              <Suspense fallback={<SkillsCardSkeleton />}>
+                <SkillsCard userSkills={userData.user?.skills || []} />
+              </Suspense>
+              <div className="my-4 border-t border-gray-200" />
+              <Suspense fallback={<SuggestedSkillsCardSkeleton />}>
+                <SuggestedSkillsCard
+                  userSkills={userData.user?.skills || []}
+                  suggestedSkills={suggestedSkills}
+                />
+              </Suspense>
+              <div className="my-4 border-t border-gray-200" />
+              {educationListContent}
+            </div>
+          </>
+        ) : userData.user?.userRole === "CLIENT" ? (
+          <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+            <Suspense fallback={<RolesCard userData={userData.user} />}>
+              <RolesCard userData={userData.user} />
             </Suspense>
-            <div className="my-4 border-t border-gray-200" />
-            <Suspense fallback={<SkillsCardSkeleton />}>
-              <SkillsCard userSkills={userData.user?.skills || []} />
-            </Suspense>
-            <div className="my-4 border-t border-gray-200" />
-            <Suspense fallback={<SuggestedSkillsCardSkeleton />}>
-              <SuggestedSkillsCard
-                userSkills={userData.user?.skills || []}
-                suggestedSkills={suggestedSkills}
-              />
-            </Suspense>
-            <div className="my-4 border-t border-gray-200" />
-            {educationListContent}
-          </div>
-        </>
-      ) : userData.user?.userRole === "CLIENT" ? (
-        <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-          <ProfileNavigation />
-          <Suspense fallback={<RolesCard userData={userData.user} />}>
-            <RolesCard userData={userData.user} />
-          </Suspense>
-        </section>
-      ) : null}
-    </section>
+          </section>
+        ) : null}
+      </section>
+    </div>
   );
 }
