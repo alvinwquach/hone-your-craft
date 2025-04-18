@@ -26,7 +26,7 @@ interface AwardsTabsProps {
 
 function AchievementCardSkeleton() {
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-700 rounded-2xl shadow-xl">
+    <div className="flex flex-col items-center justify-center p-4 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-xl">
       <Skeleton className="h-28 w-28 rounded-full mb-2 bg-zinc-800" />
       <Skeleton className="h-6 w-32 mb-2 bg-zinc-800" />
       <Skeleton className="h-4 w-24 bg-zinc-800" />
@@ -136,7 +136,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       : null;
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80">
+    <div className="flex flex-col items-center justify-center p-4 bg-zinc-900 border border-gray-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
       <div
         className={`relative bg-zinc-400 ${selectedBorderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
         style={cardStyle}
