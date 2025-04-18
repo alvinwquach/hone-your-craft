@@ -252,8 +252,8 @@ function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
                 inline-flex flex-col items-center justify-center group relative
                 ${
                   isActive
-                    ? "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
-                    : "hover:bg-zinc-800 text-zinc-300 hover:text-zinc-100"
+                    ? "bg-zinc-700 text-zinc-100"
+                    : "hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100"
                 }
                 ${isFirstItem ? "rounded-l-full" : ""}
                 ${isLastItem ? "rounded-r-full" : ""}
