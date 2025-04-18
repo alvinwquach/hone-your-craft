@@ -25,7 +25,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
 
 export function JobMatchCardSkeleton() {
   return (
-    <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm bg-opacity-80">
+    <div className="relative bg-zinc-900 border border-gray-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <Skeleton className="h-7 w-[calc(100%-32px)] mb-2 transition-all duration-200 ease-in-out" />
