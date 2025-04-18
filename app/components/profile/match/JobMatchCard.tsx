@@ -37,6 +37,7 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
       const angleDeg = (i / 100) * 180;
       const angleRad = (angleDeg * Math.PI) / 180;
 
+      // Calculate positions for major and minor ticks
       const x1 = centerX + radius * Math.cos(Math.PI - angleRad);
       const y1 = centerY - radius * Math.sin(Math.PI - angleRad);
       const x2 = centerX + innerRadius * Math.cos(Math.PI - angleRad);
@@ -52,8 +53,9 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
           y1={y1}
           x2={x2}
           y2={y2}
-          stroke="#9CA3AF"
+          stroke="white"
           strokeWidth={i % 20 === 0 ? 2 : 1}
+          strokeOpacity={i % 20 === 0 ? 0.8 : 0.6}
         />
       );
 
@@ -64,7 +66,8 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
           y={labelY + 4}
           textAnchor="middle"
           fontSize="8"
-          fill="#9CA3AF"
+          fill="white"
+          opacity={0.9}
         >
           {i}
         </text>
@@ -98,7 +101,7 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
   };
 
   return (
-    <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 backdrop-blur-sm bg-opacity-80">
+    <div className="relative bg-zinc-900 border border-gray-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <h3 className="text-xl font-bold text-white tracking-tight">

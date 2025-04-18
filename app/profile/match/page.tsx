@@ -27,20 +27,22 @@ export default async function JobMatches() {
   }
 
   return (
-    <div className="mt-6">
-      {initialData.currentPage === 1 && initialData.totalPages === 1 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialData.jobs.slice(0, 9).map((job) => (
-            <JobMatchCard key={job.id} job={job} />
-          ))}
-        </div>
-      ) : (
-        <InfiniteScrollClient
-          initialJobs={initialData.jobs.slice(0, 9)}
-          initialPage={initialData.currentPage}
-          totalPages={initialData.totalPages}
-        />
-      )}
-    </div>
+    <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+      <div className="mt-6">
+        {initialData.currentPage === 1 && initialData.totalPages === 1 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {initialData.jobs.slice(0, 9).map((job) => (
+              <JobMatchCard key={job.id} job={job} />
+            ))}
+          </div>
+        ) : (
+          <InfiniteScrollClient
+            initialJobs={initialData.jobs.slice(0, 9)}
+            initialPage={initialData.currentPage}
+            totalPages={initialData.totalPages}
+          />
+        )}
+      </div>
+    </section>
   );
 }
