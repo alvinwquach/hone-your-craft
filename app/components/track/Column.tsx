@@ -53,9 +53,9 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
       {jobs.length > 0 && (
         <div className="space-y-2 mt-2 max-h-[calc(100vh-250px)] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
           {[...Array(jobs.length)].map((_, i) => (
-            <div key={i} className="bg-gray-800 rounded animate-pulse p-4">
-              <div className="h-2 w-3/4 mb-2 bg-gray-700 rounded animate-pulse" />
-              <div className="h-2 w-2/4 mb-3 bg-gray-700 rounded animate-pulse" />
+            <div key={i} className="bg-zinc-800 rounded animate-pulse p-4">
+              <div className="h-2 w-3/4 mb-2 bg-zinc-700 rounded animate-pulse" />
+              <div className="h-2 w-2/4 mb-3 bg-zinc-700 rounded animate-pulse" />
             </div>
           ))}
         </div>
@@ -76,13 +76,13 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className={`p-2 rounded-2xl shadow-md ${
-                  snapshot.isDraggingOver ? "bg-gray-800" : "bg-gray-900"
+                className={`p-2 rounded-2xl shadow-lg ${
+                  snapshot.isDraggingOver ? "bg-zinc-800" : "bg-zinc-900"
                 } transition-all duration-300`}
               >
-                <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 rounded-t-2xl">
+                <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 rounded-t-2xl border-zinc-700">
                   {iDToColumnText[id]}
-                  <span className="bg-gray-500 text-white text-sm font-normal rounded-full px-2 py-1">
+                  <span className="bg-zinc-500 text-white text-sm font-normal rounded-full px-2 py-1">
                     {!titleSearchString && !companySearchString
                       ? jobs.length
                       : jobs.filter(
@@ -103,7 +103,7 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                     <div className="flex justify-center mt-4">
                       <button
                         onClick={openAddJobModal}
-                        className="group relative py-2 px-4 mb-2 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 hover:bg-gradient-to-br hover:from-blue-700 hover:via-blue-600 hover:to-blue-700 w-full max-w-xs text-center rounded-lg text-white transition-all duration-300"
+                        className="group relative py-2 px-4 mb-2 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 hover:from-zinc-800 hover:via-zinc-700 hover:to-zinc-800 w-full max-w-xs text-white transition-all duration-300 rounded-lg shadow-lg active:scale-95"
                       >
                         <HiPlusCircle className="h-10 w-10 inline-block text-white group-hover:scale-110 transition-transform" />
                       </button>
