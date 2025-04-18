@@ -1,6 +1,5 @@
 import { getAchievements } from "@/app/actions/getAchievements";
 import AwardsTabs from "@/app/components/awards/AwardsTabs";
-import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 
 export default async function Awards() {
   const achievementsData = await getAchievements();
@@ -19,7 +18,6 @@ export default async function Awards() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)] bg-gray-900">
-      <ProfileNavigation />
       <div className="container mx-auto p-4">
         <AwardsTabs
           initialData={{

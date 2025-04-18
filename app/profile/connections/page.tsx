@@ -7,7 +7,6 @@ import { acceptConnectionRequest } from "@/app/actions/acceptConnectionRequest";
 import { rejectConnectionRequest } from "@/app/actions/rejectConnectionRequest";
 import ConnectionsCard from "@/app/components/profile/connections/ConnectionsCard";
 import { Suspense } from "react";
-import ProfileNavigation from "@/app/components/profile/ui/ProfileNavigation";
 
 export default async function Connections() {
   const [users, connections, connectionsReceived, connectionsSent] =
@@ -20,7 +19,6 @@ export default async function Connections() {
 
   return (
     <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
-      <ProfileNavigation />
       <Suspense
         fallback={
           <ConnectionsCard
