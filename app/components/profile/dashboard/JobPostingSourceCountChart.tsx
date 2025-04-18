@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
+import { Skeleton } from "../ui/Skeleton";
 
 interface JobPostingSourceCountChartProps {
   jobPostingSourceCount: Record<string, number>;
@@ -14,10 +15,17 @@ const JobPostingSourceCountChart = ({
   const chartRef = useRef<HTMLDivElement>(null);
   const [windowWidth, setWindowWidth] = useState<number>(0);
   const [windowHeight, setWindowHeight] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setWindowWidth(window.innerWidth);
     setWindowHeight(window.innerHeight);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useWindowResize((width, height) => {
@@ -47,12 +55,14 @@ const JobPostingSourceCountChart = ({
   );
 
   useEffect(() => {
+    if (isLoading) return;
+
     const renderChart = () => {
       if (!chartRef.current) return;
       const margin = { top: 20, right: 30, bottom: 80, left: 120 };
       const width = chartRef.current.offsetWidth - margin.left - margin.right;
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
-      d3.select(chartRef.current).html("");
+      d3.select(chartRef.current).selectAll("svg").remove();
 
       const svg = d3
         .select(chartRef.current)
@@ -89,7 +99,7 @@ const JobPostingSourceCountChart = ({
         .attr("y", (d) => y(d.source)!)
         .attr("width", (d) => x(d.count))
         .attr("height", y.bandwidth())
-        .attr("fill", (d) => d.color);
+        .attr("fill", "#a3e635");
 
       svg
         .append("g")
@@ -155,13 +165,31 @@ const JobPostingSourceCountChart = ({
     };
 
     renderChart();
-  }, [jobPostingSourceCount, windowWidth, windowHeight, sourceColors]);
+  }, [
+    jobPostingSourceCount,
+    windowWidth,
+    windowHeight,
+    sourceColors,
+    isLoading,
+  ]);
 
   return (
-    <div
-      className="bg-zinc-900 border-gray-700 rounded-lg w-full mt-2 p-4"
-      ref={chartRef}
-    />
+    <div className="bg-zinc-900 p-6 rounded-lg shadow-md">
+      <h2 className="text-white text-lg font-semibold mb-4">
+        Job Posting Sources
+      </h2>
+      {isLoading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton className="h-8 w-full rounded" />
+        </div>
+      ) : (
+        <div ref={chartRef} />
+      )}
+    </div>
   );
 };
 

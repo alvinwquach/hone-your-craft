@@ -191,7 +191,7 @@ export default async function Dashboard() {
     processCandidateApplicationStatus(applications);
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+    <section className="max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div className="w-full">
           <SkillsChart
