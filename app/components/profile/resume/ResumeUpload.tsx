@@ -17,19 +17,18 @@ interface ResumeData {
 
 interface ResumeUploadProps {
   resumeData: ResumeData | null;
+  isLoading: boolean;
 }
 
-const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
+const ResumeUpload = ({ resumeData, isLoading }: ResumeUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
-
     setIsUploading(true);
     setFile(selectedFile);
-
     try {
       if (resumeData?.id) {
         await handleFileUpdate(selectedFile);
@@ -46,17 +45,14 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
       toast.error("Document ID is missing. Unable to delete the document.");
       return;
     }
-
     setIsUploading(true);
     try {
       const response = await fetch(`/api/documents/${resumeData.id}`, {
         method: "DELETE",
       });
-
       if (!response.ok) {
         throw new Error(`Failed to delete document: ${response.statusText}`);
       }
-
       setFile(null);
       toast.success("Your resume has been removed successfully.");
     } catch (error) {
@@ -100,23 +96,19 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
           "Content-Type": "application/json",
         },
       });
-
       if (!response.ok) {
         throw new Error("Failed to get presigned URL");
       }
-
       const { url, fields } = await response.json();
       const formData = new FormData();
       Object.keys(fields).forEach((key) => {
         formData.append(key, fields[key]);
       });
       formData.append("file", selectedFile);
-
       const uploadResponse = await fetch(url, {
         method: "POST",
         body: formData,
       });
-
       if (uploadResponse.ok) {
         toast.success("Resume uploaded successfully!");
       } else {
@@ -136,21 +128,17 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
       toast.error("No resume found to update.");
       return;
     }
-
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-
       const response = await fetch(`/api/documents/${resumeData.id}`, {
         method: "PUT",
         body: formData,
       });
-
       if (!response.ok) {
         throw new Error("Failed to update resume.");
       }
-
       const responseData = await response.json();
       toast.success("Resume updated successfully!");
     } catch (error) {
@@ -171,12 +159,9 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
     e.preventDefault();
     e.stopPropagation();
     const droppedFile = e.dataTransfer.files[0];
-
     if (!droppedFile) return;
-
     setIsUploading(true);
     setFile(droppedFile);
-
     try {
       if (resumeData?.id) {
         await handleFileUpdate(droppedFile);
@@ -189,12 +174,12 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-start gap-8 p-6 sm:p-8 mt-4 sm:mt-0 bg-white border border-2 border-gray-300 rounded-lg">
+    <div className="flex flex-col lg:flex-row justify-start gap-8 p-6 sm:p-8 mt-4 sm:mt-0 bg-zinc-900 border-2 border-zinc-700 rounded-lg">
       <div>
-        <h2 className="text-base font-semibold text-black mb-2">
+        <h2 className="text-base font-semibold text-white mb-2">
           Upload your resume
         </h2>
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-300 text-sm">
           File types: PDF, DOCX, DOC, TXT (MAX. 10 MB)
         </p>
       </div>
@@ -203,9 +188,14 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        {resumeData?.name ? (
+        {isLoading ? (
+          <div className="w-full text-left mb-4 animate-pulse">
+            <div className="h-4 w-48 bg-zinc-700 rounded mb-2"></div>
+            <div className="h-4 w-24 bg-zinc-700 rounded"></div>
+          </div>
+        ) : resumeData?.name ? (
           <div className="w-full text-left mb-4">
-            <p className="text-sm font-medium text-black break-words">
+            <p className="text-sm font-medium text-white break-words">
               {resumeData?.name}
             </p>
             <div className="flex flex-col items-start space-y-2 mt-2">
@@ -223,7 +213,7 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
         ) : null}
         <label
           htmlFor="dropzone-file"
-          className={`flex flex-col items-center justify-center w-full h-36 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white transition-colors relative ${
+          className={`flex flex-col items-center justify-center w-full h-36 border-2 border-zinc-700 border-dashed rounded-lg cursor-pointer bg-zinc-800 transition-colors relative ${
             isUploading ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
@@ -243,7 +233,7 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
             <div className="flex flex-col items-center justify-center">
               {getFileIcon(file || { name: resumeData.name })}
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2">
-                <p className="text-sm text-black mr-1">{resumeData?.name}</p>
+                <p className="text-sm text-white mr-1">{resumeData?.name}</p>
                 <div className="flex items-center space-x-1">
                   <span className="text-sm text-gray-400">(</span>
                   <button
@@ -274,8 +264,8 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
           ) : (
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <TbFileCv className="w-12 h-12 mb-4 text-blue-600" />
-              <p className="mb-2 text-sm text-gray-500">
-                <span className="text-gray-500">Click to upload</span> or drag
+              <p className="mb-2 text-sm text-gray-400">
+                <span className="text-gray-400">Click to upload</span> or drag
                 and drop
               </p>
             </div>
@@ -289,10 +279,14 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
             disabled={isUploading}
           />
         </label>
-        {resumeData?.name && (
+        {isLoading ? (
+          <div className="mt-4 flex items-center w-full animate-pulse">
+            <div className="h-4 w-24 bg-zinc-700 rounded"></div>
+          </div>
+        ) : resumeData?.name ? (
           <div className="mt-4 flex items-center w-full">
             <button
-              className={`text-gray-00 text-sm ${
+              className={`text-white text-sm ${
                 isUploading ? "cursor-wait opacity-70" : ""
               }`}
               onClick={handleRemoveFile}
@@ -301,7 +295,7 @@ const ResumeUpload = ({ resumeData }: ResumeUploadProps) => {
               Remove your resume
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
