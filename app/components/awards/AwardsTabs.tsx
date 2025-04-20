@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { BsBriefcase, BsLock } from "react-icons/bs";
 import { FaFlagUsa, FaUserTie, FaCheck, FaBriefcase } from "react-icons/fa";
-import { GiPartyPopper, GiPumpkinMask } from "react-icons/gi";
+import { GiEasterEgg, GiPartyPopper, GiPumpkinMask } from "react-icons/gi";
 import { MdStairs } from "react-icons/md";
 import { TbChristmasTree } from "react-icons/tb";
 import { IoMedal, IoCalendarNumberSharp } from "react-icons/io5";
@@ -56,6 +56,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     "New Year's Day": <GiPartyPopper className="w-8 h-8 text-white" />,
     Halloween: <GiPumpkinMask className="w-8 h-8 text-white" />,
     "Christmas Day": <TbChristmasTree className="w-8 h-8 text-white" />,
+    Easter: <GiEasterEgg className="w-8 h-8 text-white" />,
   };
 
   const createAchievement = (

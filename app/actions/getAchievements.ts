@@ -28,6 +28,25 @@ const holidayTypeHandlers: { [key: string]: (year: number) => Date | null } = {
   second_monday_in_october: (year: number) => getNthMondayOfMonth(year, 10, 2),
   fourth_thursday_in_november: (year: number) =>
     getNthThursdayOfMonth(year, 11, 4),
+  easter: (year: number) => calculateEasterSunday(year),
+};
+
+const calculateEasterSunday = (year: number): Date | null => {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
 };
 
 const getHolidayDate = (holiday: Holiday, year: number): Date | null => {
@@ -88,6 +107,7 @@ const usHolidays: Holiday[] = [
   },
   { name: "Inauguration Day", date: "01-20", special: true },
   { name: "President's Day", weekday: { month: 2, n: 3, day: "monday" } },
+  { name: "Easter", type: "easter" },
   { name: "Memorial Day", weekday: { month: 5, n: -1, day: "monday" } },
   { name: "Juneteenth", date: "06-19" },
   { name: "Independence Day", date: "07-04" },
