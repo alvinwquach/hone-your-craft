@@ -31,32 +31,33 @@ function EducationCard({
   isLastCard,
 }: EducationCardProps) {
   return (
-    <div className="ml-4 p-4 rounded-lg">
+    <div className="p-4 border border-zinc-700 bg-zinc-900">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg text-gray-900 font-semibold">
-          {education.school}
-        </h3>
+        <h3 className="text-lg text-white font-semibold">{education.school}</h3>
         <div className="flex space-x-2">
           <button
             onClick={() => openEditModal(education)}
-            className="mr-2 p-2 bg-white text-white flex items-center justify-center rounded transition-all duration-300 hover:bg-zinc-200  hover:rounded-full"
+            className="mr-2 p-2 rounded-full transition-all duration-300 hover:bg-zinc-600 hover:text-white"
           >
-            <MdOutlineModeEditOutline className="transition-all duration-300 text-zinc-700 hover:text-zinc-700 h-6 w-6" />
+            <MdOutlineModeEditOutline className="transition-all duration-300 text-zinc-700 hover:text-white h-6 w-6" />
           </button>
         </div>
       </div>
+
       <div className="mb-2">
-        <p className="text-sm font-medium text-gray-700">
+        <p className="text-sm font-medium text-zinc-400">
           {education.majors.join(", ")}
         </p>
         <p className="text-md text-zinc-300">{education.minor}</p>
       </div>
+
       <div className="mb-2">
         <p className="text-sm text-zinc-500">
           {getMonthName(education.startDateMonth)} {education.startDateYear} -{" "}
           {getMonthName(education.endDateMonth)} {education.endDateYear}
         </p>
       </div>
+
       {education.gpa && (
         <div className="mb-2">
           <p className="text-sm text-white">
@@ -65,6 +66,7 @@ function EducationCard({
           </p>
         </div>
       )}
+
       {education.activities && (
         <div className="mb-2">
           <p className="text-sm text-zinc-400">{education.activities}</p>
@@ -76,9 +78,8 @@ function EducationCard({
           <p className="text-sm text-zinc-400">{education.societies}</p>
         </div>
       )}
-      {!isLastCard && (
-        <hr className="border-t bg-zinc-900 border-gray-700 my-4" />
-      )}
+
+      {!isLastCard && <hr className="border-t border-zinc-700 my-4" />}
     </div>
   );
 }
