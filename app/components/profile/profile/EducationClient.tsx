@@ -105,15 +105,15 @@ export default function EducationClient({
 
   return (
     <>
-      <div className="mt-6 border-gray-700 rounded-lg p-4 flex justify-between items-center">
+      <div className="border-2 border-zinc-700 p-4 flex justify-between items-center bg-zinc-900">
         <div className="text-white flex items-center space-x-2">
-          <span className="ml-4 text-xl text-black font-semibold">
+          <span className="text-white text-xl text-black font-semibold">
             Education
           </span>
         </div>
         <button
           onClick={openModal}
-          className="mr-2 hover:bg-zinc-200 text-zinc-700 p-2 rounded-full flex items-center"
+          className="mr-2 hover:bg-zinc-600 text-zinc-700 hover:text-white p-2 rounded-full flex items-center"
         >
           <FaPlus />
         </button>
@@ -132,16 +132,14 @@ export default function EducationClient({
           updateEducation={handleUpdateEducation}
         />
       )}
-      <div className="mt-6 space-y-4">
-        {educationData.map((education, index) => (
-          <EducationCard
-            key={education.id}
-            education={education}
-            openEditModal={openEditModal}
-            isLastCard={index === educationData.length - 1}
-          />
-        ))}
-      </div>
+      {educationData.map((education, index) => (
+        <EducationCard
+          key={education.id}
+          education={education}
+          openEditModal={openEditModal}
+          isLastCard={index === educationData.length - 1}
+        />
+      ))}
     </>
   );
 }
