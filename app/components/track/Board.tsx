@@ -256,7 +256,7 @@ function Board({ userJobs, onDeleteJob }: any) {
             ref={provided.innerRef}
             className="grid grid-cols-1 md:grid-cols-5 gap-2 mx-auto justify-center mt-4 w-2/3 md:w-full"
           >
-            {board.columns.map((column: ColumnType, index: number) => (
+            {board.columns?.map((column: ColumnType, index: number) => (
               <Column
                 key={column.id}
                 id={column.id}
