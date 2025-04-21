@@ -108,8 +108,8 @@ function Track() {
             We're Building Something Great!
           </h2>
           <p className="text-center text-gray-500">
-            This page is currently in development. We can't wait to share it
-            with you! Please check back soon for updates.
+            This page is currently in development. We can&apos;t wait to share
+            it with you! Please check back soon for updates.
           </p>
         </section>
       ) : null}
