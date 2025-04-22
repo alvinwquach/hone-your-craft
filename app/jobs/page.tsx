@@ -7,27 +7,8 @@ import { unstable_cache } from "next/cache";
 import CandidateJobList from "../components/jobs/CandidateJobList";
 import ClientJobDashboard from "../components/jobs/ClientJobDashboard";
 import { Skeleton } from "../components/profile/ui/Skeleton";
+import { getCachedCandidateJobPostings } from "../actions/getCandidateJobPostings";
 
-async function getCachedCandidateJobPostings() {
-  const cacheKey = ["candidate-job-postings"];
-  return unstable_cache(
-    async () => {
-      return prisma.jobPosting.findMany({
-        where: { status: "OPEN" },
-        include: {
-          salary: true,
-          requiredSkills: { include: { skill: true } },
-          bonusSkills: { include: { skill: true } },
-          requiredDegree: true,
-          applications: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
-    },
-    cacheKey,
-    { revalidate: 300 }
-  )();
-}
 
 async function getCachedClientJobPostings(userId: string) {
   const cacheKey = [`client-jobs-${userId}`];
@@ -145,6 +126,7 @@ export default async function Jobs() {
       </div>
     );
   }
+
   const userData = await fetchUserData(currentUser.email);
   if (!userData) {
     return (
@@ -153,21 +135,30 @@ export default async function Jobs() {
       </div>
     );
   }
+
   if (userData.userRole === "CANDIDATE") {
-    const rawJobs = await getCachedCandidateJobPostings();
+    const jobData = await getCachedCandidateJobPostings(1, 10);
     const processedJobs = await processCandidateJobPostings(
-      rawJobs || [],
+      jobData.jobs || [],
       currentUser.id,
       userData.skills || []
     );
+
     return (
-      <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen bg-zinc-900">
+      <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
         <Suspense fallback={<CandidateJobListSkeleton />}>
-          <CandidateJobList jobs={processedJobs} userId={currentUser.id} />
+          <CandidateJobList
+            initialJobs={processedJobs}
+            userId={currentUser.id}
+            initialPage={jobData.currentPage}
+            totalPages={jobData.totalPages}
+            userSkills={userData.skills || []}
+          />
         </Suspense>
       </section>
     );
   }
+
   const clientJobs = await getCachedClientJobPostings(currentUser.id);
   const jobs = clientJobs || [];
   const postedJobsCount = jobs.filter(
@@ -176,6 +167,7 @@ export default async function Jobs() {
   const draftJobsCount = jobs.filter(
     (job: any) => job.status === "DRAFT"
   ).length;
+
   return (
     <section className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="max-w-screen-xl mx-auto flex flex-col lg:flex-row gap-6 mt-4">
@@ -212,4 +204,3 @@ export default async function Jobs() {
     </section>
   );
 }
-

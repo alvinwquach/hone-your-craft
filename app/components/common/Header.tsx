@@ -231,7 +231,7 @@ function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
 
   return (
     <div
-      className="fixed z-50 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-full bottom-4 left-1/2 lg:bottom-6"
+      className="fixed z-40 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-full bottom-4 left-1/2 lg:bottom-6"
       style={{ "--grid-cols": gridCols } as React.CSSProperties}
     >
       <div
@@ -313,7 +313,7 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <nav className="fixed top-0 right-0 z-50 w-full border-b bg-zinc-900 border border-zinc-700">
+      <nav className="fixed top-0 right-0 z-40 w-full border-b bg-zinc-900 border border-zinc-700">
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start"></div>
