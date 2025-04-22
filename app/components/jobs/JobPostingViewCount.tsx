@@ -38,5 +38,5 @@ export default function JobPostingViewCount({
     updateViews();
   }, [jobId]);
 
-  return <p>Total Views: {views}</p>;
+  return <p className="text-gray-400">Total Views: {views}</p>;
 }
