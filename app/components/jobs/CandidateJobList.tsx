@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { applyToJob } from "@/app/actions/applyToJob";
-import { getCachedCandidateJobPostings } from "@/app/jobs/page";
+import { getCachedCandidateJobPostings } from "@/app/actions/getCandidateJobPostings";
 import CandidateJobPostingCard from "./CandidateJobPostingCard";
 
 interface SkillWithMatch {
