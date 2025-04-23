@@ -26,21 +26,28 @@ async function groupEventsByDate(events: Event[]) {
 export default async function Meetings() {
   const upcomingEvents = await getUpcomingEvents();
   const pastEvents = await getPastEvents();
-
   const groupedUpcomingEvents = await groupEventsByDate(upcomingEvents);
   const groupedPastEvents = await groupEventsByDate(pastEvents);
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+    <section className="flex-1 ml-16 md:ml-16 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="container mx-auto p-4">
-        <div className="flex justify-evenly items-center my-6">
-          <h1 className="text-2xl font-bold text-gray-900">Meetings</h1>
-          <MeetingCalendarDownloadButton />
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 sr-only">
+            Upcoming Meetings
+          </h1>
         </div>
-        <MeetingTabs
-          groupedUpcomingEvents={groupedUpcomingEvents}
-          groupedPastEvents={groupedPastEvents}
-        />
+        <div className="fixed top-24 right-8 z-10">
+          {Object.entries(groupedUpcomingEvents).length > 0 && (
+            <MeetingCalendarDownloadButton />
+          )}
+        </div>
+        <div className="pt-16">
+          <MeetingTabs
+            groupedUpcomingEvents={groupedUpcomingEvents}
+            groupedPastEvents={groupedPastEvents}
+          />
+        </div>
       </div>
     </section>
   );
