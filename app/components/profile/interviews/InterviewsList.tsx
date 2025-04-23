@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { InterviewType } from "@prisma/client";
 import { format } from "date-fns";
@@ -35,26 +34,25 @@ export default function InterviewsList({
       (count, interviews) => count + interviews.length,
       0
     );
-
     setIsLoading(totalInterviews === 0);
   }, [upcomingInterviews]);
 
   const InterviewCardSkeleton = () => (
-    <div className="bg-white transition-all duration-200">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-gray-50">
+    <div className="bg-zinc-900 transition-all duration-200">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-zinc-800">
         <div className="flex flex-col flex-shrink-0 min-w-[150px]">
-          <Skeleton className="h-5 w-32 mb-2" />
-          <Skeleton className="h-5 w-32 mb-2" />
-          <Skeleton className="h-5 w-64" />
+          <Skeleton className="h-5 w-32 mb-2 bg-zinc-800" />
+          <Skeleton className="h-5 w-32 mb-2 bg-zinc-800" />
+          <Skeleton className="h-5 w-64 bg-zinc-800" />
         </div>
-        <div className="flex flex-col text-sm text-gray-600 min-w-[180px]">
+        <div className="flex flex-col text-sm text-gray-400 min-w-[180px]">
           <div className="flex items-center gap-2 mb-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-16 bg-zinc-800" />
+            <Skeleton className="h-4 w-20 bg-zinc-800" />
           </div>
           <div className="flex items-center gap-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-16 bg-zinc-800" />
+            <Skeleton className="h-4 w-20 bg-zinc-800" />
           </div>
         </div>
       </div>
@@ -63,9 +61,9 @@ export default function InterviewsList({
 
   const DateSectionSkeleton = () => (
     <div className="mb-8">
-      <div className="sticky top-0 z-10 bg-white pb-2 mb-4">
-        <Skeleton className="h-8 w-1/3 mx-4" />
-        <hr className="border-gray-200" />
+      <div className="sticky top-0 z-10 bg-zinc-900 pb-2 mb-4">
+        <Skeleton className="h-8 w-1/3 mx-4 bg-zinc-800" />
+        <hr className="border-zinc-800" />
       </div>
       <div className="space-y-4">
         {Array.from({
@@ -82,14 +80,14 @@ export default function InterviewsList({
 
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-zinc-900 rounded-xl shadow-lg overflow-hidden">
         <div className="p-6">
-          <div className="sticky top-0 z-10 bg-white pb-4 mb-4 border-b border-gray-200">
+          <div className="sticky top-0 z-10 bg-zinc-900 pb-4 mb-4 border-b border-zinc-800">
             <div className="flex items-center justify-between px-4 py-2">
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-white">
                 {conversionRate.message}
               </span>
-              <FaCalendarDay className="h-5 w-5 text-gray-500" />
+              <FaCalendarDay className="h-5 w-5 text-gray-400" />
             </div>
           </div>
 
@@ -110,8 +108,8 @@ export default function InterviewsList({
             <>
               {Object.entries(upcomingInterviews).map(([date, interviews]) => (
                 <div key={date} className="mb-8 last:mb-0">
-                  <div className="sticky top-0 z-10 bg-white pb-2 mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900 px-4 mb-2">
+                  <div className="sticky top-0 z-10 bg-zinc-900 pb-2 mb-4">
+                    <h2 className="text-xl font-semibold text-white px-4 mb-2">
                       {date === "No Date"
                         ? "No Date Specified"
                         : new Date(date).toLocaleDateString("en-US", {
@@ -121,17 +119,17 @@ export default function InterviewsList({
                             day: "numeric",
                           })}
                     </h2>
-                    <hr className="border-gray-200" />
+                    <hr className="border-zinc-800" />
                   </div>
                   <div className="space-y-4">
                     {interviews.map((interview) => (
                       <div
                         key={interview.id}
-                        className="relative p-4 mb-4 rounded-lg border border-gray-300 bg-white shadow-md hover:shadow-lg transition-shadow hover:scale-[1.01] active:scale-[0.99]"
+                        className="relative p-4 mb-4 rounded-lg border border-zinc-700 bg-zinc-900 shadow-md hover:shadow-lg transition-shadow hover:scale-[1.01] active:scale-[0.99]"
                       >
                         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                           <div className="flex items-center flex-shrink-0 mb-4 md:mb-0">
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-gray-400">
                               {interview.interviewDate
                                 ? format(
                                     new Date(interview.interviewDate),
@@ -141,13 +139,13 @@ export default function InterviewsList({
                             </span>
                           </div>
                           <div className="flex flex-col flex-1 ml-0 md:ml-4 mb-4 md:mb-0">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold text-white">
                               {convertToSentenceCase(interview.job.title)}
                             </h3>
-                            <p className="text-sm text-gray-700 mt-1">
+                            <p className="text-sm text-gray-400 mt-1">
                               {interview.job.company}
                             </p>
-                            <p className="text-sm text-gray-700 mt-1 capitalize">
+                            <p className="text-sm text-gray-400 mt-1 capitalize">
                               {convertToSentenceCase(interview.interviewType)}
                             </p>
                           </div>
