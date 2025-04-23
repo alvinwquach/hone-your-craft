@@ -100,25 +100,25 @@ export default function ProfileNavigation({
     navigationConfig[userRole] || navigationConfig.CANDIDATE;
 
   return (
-    <nav className="fixed top-0 left-0 h-screen w-12 z-50 bg-zinc-900 border-r border-zinc-800 lg:block hidden">
+    <nav className="fixed top-0 left-0 h-screen w-12 z-50 bg-zinc-900 border-r border-zinc-800 transition-transform duration-300">
       <ul className="py-4">
         {navigationItems.map((item, index) => (
           <li key={index} className="relative group">
             <Link
               href={item.href}
               className={`flex items-center justify-center px-4 py-3 text-sm transition-colors duration-200 rounded-full mx-2
-                ${
-                  pathname === item.href
-                    ? "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
-                    : "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-                }`}
+                  ${
+                    pathname === item.href
+                      ? "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
+                      : "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+                  }`}
             >
               <div className="flex-shrink-0">{item.icon}</div>
             </Link>
-            <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 hidden group-hover:block bg-zinc-800 text-zinc-100 text-sm font-medium rounded-md py-2 px-3 whitespace-nowrap z-10">
+            <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 hidden group-hover:block bg-black text-white text-sm font-medium rounded-md py-2 px-3 whitespace-nowrap z-10">
               {item.text}
               <div
-                className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-zinc-800"
+                className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-black"
                 data-popper-arrow
               />
             </div>

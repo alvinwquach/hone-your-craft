@@ -1,5 +1,4 @@
 "use client";
-
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -86,10 +85,17 @@ function SidebarItem({ href, text, icon: Icon }: SidebarItemProps) {
             `}
           />
         </div>
-        <span className="absolute left-full ml-3 whitespace-nowrap opacity-0 rounded-md bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-100 transition-opacity duration-200 group-hover:opacity-100">
+        <span
+          className={`
+          absolute left-full ml-3 whitespace-nowrap opacity-0 rounded-md
+          bg-black px-3 py-2 text-sm font-medium text-white
+          transition-opacity duration-200 group-hover:opacity-100
+        `}
+        >
           {text}
           <div
-            className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-zinc-800"
+            className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0
+                       border-t-4 border-b-4 border-r-4 border-transparent border-r-black"
             data-popper-arrow
           />
         </span>
@@ -150,7 +156,6 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
             </div>
           </Menu.Button>
         </div>
-
         <Transition
           as={Fragment}
           enter="transition ease-out duration-100"
@@ -177,11 +182,8 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
                     </span>
                   </div>
                 </Menu.Item>
-
                 <hr className="my-1 border-zinc-600 w-4/5 mx-auto" />
-
                 <div className="ml-6 mt-2 text-zinc-400 text-xs">Personal</div>
-
                 <Menu.Item>
                   {({ active }) => (
                     <Link
@@ -194,7 +196,6 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
                     </Link>
                   )}
                 </Menu.Item>
-
                 <Menu.Item>
                   {({ active }) => (
                     <button
@@ -231,7 +232,7 @@ function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
 
   return (
     <div
-      className="fixed z-40 w-full h-16 max-w-xl -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-full bottom-4 left-1/2 lg:bottom-6"
+      className="fixed z-40 w-full max-w-sm md:max-w-xl h-16 -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-full bottom-4 left-1/2 lg:bottom-6"
       style={{ "--grid-cols": gridCols } as React.CSSProperties}
     >
       <div
@@ -285,13 +286,14 @@ function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
               </Link>
               <div
                 className={`
-                  absolute bottom-full mb-2 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium text-zinc-100 transition-opacity duration-200 bg-zinc-800 rounded-lg shadow-xs opacity-0 group-hover:opacity-100 bg-zinc-800
+                  absolute bottom-full mb-2 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium
+                  bg-black rounded-lg shadow-xs opacity-0 group-hover:opacity-100
                   ${isActive ? "visible opacity-100" : ""}
                 `}
               >
                 {item.text}
                 <div
-                  className="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-800"
+                  className="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black"
                   data-popper-arrow
                 />
               </div>
@@ -323,7 +325,6 @@ export default function CustomNavigation() {
           </div>
         </div>
       </nav>
-
       {isAuthenticated && (
         <Fragment>
           {isProfilePage && <ProfileNavigation userRole={userRole} />}

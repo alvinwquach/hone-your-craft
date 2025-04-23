@@ -7,7 +7,6 @@ import SessionProvider from "./SessionProvider";
 import Header from "./components/common/Header";
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
-
 import Top10MissingSkillsTicker from "./components/common/Top10MissingSkillsTicker";
 
 const inter = Inter({ subsets: ["latin"] });
