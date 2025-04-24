@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { Skeleton } from "../../ui/InfiniteScrollClient";
 
 interface Job {
   company: string;
@@ -23,6 +22,33 @@ interface JobOffersProps {
   onEditOffer?: (offerId: string, updatedSalary: string) => void;
   onDeleteOffer?: (offerId: string) => void;
 }
+const Skeleton = ({ className }: { className: string }) => (
+  <div
+    className={`bg-zinc-800 motion-safe:animate-pulse rounded ${className}`}
+  />
+);
+
+const SkeletonJobCard = () => (
+  <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 shadow-sm">
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div className="flex-shrink-0">
+          <Skeleton className="h-5 w-32 mb-2" />
+          <Skeleton className="h-5 w-48" />
+        </div>
+        <div className="flex-1">
+          <Skeleton className="h-4 w-40 mb-2" />
+          <Skeleton className="h-4 w-48 mb-2" />
+          <Skeleton className="h-8 w-full" />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-10 w-24" />
+      </div>
+    </div>
+  </div>
+);
 
 function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
   const [editingOffer, setEditingOffer] = useState<Record<string, string>>({});
@@ -86,13 +112,11 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
 
   if (isLoading && jobOffers.length === 0) {
     return (
-      <div className="w-full max-w-7xl mx-auto mt-6">
-        <div>
-          <div className="space-y-4 p-6">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <SkeletonJobCard key={`loading-${index}`} />
-            ))}
-          </div>
+      <div className="w-full max-w-3xl mx-auto mt-6">
+        <div className="space-y-6 p-6">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonJobCard key={`loading-${index}`} />
+          ))}
         </div>
       </div>
     );
@@ -100,49 +124,39 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
 
   if (jobOffers.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
-        <h2>No Job Offers Found</h2>
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+        <svg
+          className="w-12 h-12 mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+        <p>No Job Offers Found</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-6">
-      <div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-          {jobOffers.map((offer) => (
-            <JobOfferCard
-              key={offer.id}
-              offer={offer}
-              editingOffer={editingOffer[offer.id]}
-              onEditOffer={(value) => handleOfferChange(offer.id, value)}
-              onSaveOffer={() => handleSaveOffer(offer.id)}
-              onDeleteOffer={() => handleDeleteOffer(offer.id)}
-              formatSalaryDisplay={formatSalaryDisplay}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SkeletonJobCard() {
-  return (
-    <div className="relative p-4 rounded-lg border border-gray-300 shadow-md hover:shadow-lg transition-shadow hover:scale-[1.01] active:scale-[0.99]">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="flex-shrink-0 mb-4 md:mb-0">
-          <Skeleton className="h-5 w-32 mb-2" />
-          <Skeleton className="h-5 w-32 mb-2" />
-          <Skeleton className="h-5 w-64" />
-        </div>
-        <div className="flex-1 ml-0 md:ml-4 mb-4 md:mb-0">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-[70%]" />
-            <Skeleton className="h-4 w-full" />
-          </div>
-        </div>
+    <div className="w-full max-w-3xl mx-auto mt-6">
+      <div className="space-y-6 p-6">
+        {jobOffers.map((offer) => (
+          <JobOfferCard
+            key={offer.id}
+            offer={offer}
+            editingOffer={editingOffer[offer.id]}
+            onEditOffer={(value) => handleOfferChange(offer.id, value)}
+            onSaveOffer={() => handleSaveOffer(offer.id)}
+            onDeleteOffer={() => handleDeleteOffer(offer.id)}
+            formatSalaryDisplay={formatSalaryDisplay}
+          />
+        ))}
       </div>
     </div>
   );
@@ -166,54 +180,52 @@ function JobOfferCard({
   formatSalaryDisplay,
 }: JobOfferCardProps) {
   return (
-    <div className="relative p-4 bg-white rounded-xl border shadow-sm border-gray-700">
+    <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 shadow-sm">
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-          <div className="flex-shrink-0 mb-4 md:mb-0">
-            <h3 className="text-lg font-semibold text-gray-900">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div className="flex-shrink-0">
+            <h3 className="text-lg font-semibold text-white">
               {offer.job.company}
             </h3>
-            <p className="text-sm text-gray-700 mt-1">{offer.job.title}</p>
+            <p className="text-sm text-gray-400 mt-1">{offer.job.title}</p>
           </div>
-          <div className="flex-1 ml-0 md:ml-4 mb-4 md:mb-0">
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
+          <div className="flex-1">
+            <div className="space-y-2 text-sm text-gray-400">
+              <p>
                 Offer Received: {format(offer.offerDate, "MM/dd/yy @ h:mm a")}
               </p>
-              <p className="text-sm text-gray-600">
+              <p>
                 Offer Deadline:{" "}
                 {offer.offerDeadline
                   ? format(offer.offerDeadline, "MM/dd/yy @ h:mm a")
                   : "No deadline set"}
               </p>
               <div className="mt-4">
-                <strong className="text-sm text-gray-700">Salary:</strong>
+                <label className="text-sm text-gray-400">Salary:</label>
                 <input
                   type="text"
                   value={editingOffer || formatSalaryDisplay(offer.salary)}
                   onChange={(e) => onEditOffer?.(e.target.value)}
-                  className="w-full mt-2 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full mt-2 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter salary"
                 />
               </div>
             </div>
           </div>
         </div>
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={onDeleteOffer}
-              className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-            >
-              Delete Offer
-            </button>
-            <button
-              onClick={onSaveOffer}
-              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-            >
-              Save Changes
-            </button>
-          </div>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onDeleteOffer}
+            className="px-4 py-2 text-sm font-medium text-red-400 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors border border-zinc-700"
+          >
+            Delete Offer
+          </button>
+          <button
+            onClick={onSaveOffer}
+            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          >
+            Save Changes
+          </button>
         </div>
       </div>
     </div>

@@ -10,14 +10,19 @@ export default async function Offers() {
   const jobOffers = await getOffers();
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-screen">
-      <Suspense fallback={<div>Loading Offers...</div>}>
-        <JobOffers
-          jobOffers={jobOffers}
-          onEditOffer={updateOffer}
-          onDeleteOffer={deleteOffer}
-        />
-      </Suspense>
+    <section className="flex-1 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold text-gray-900 sr-only">Job Offers</h1>
+        <Suspense
+          fallback={<div className="text-gray-400">Loading Offers...</div>}
+        >
+          <JobOffers
+            jobOffers={jobOffers}
+            onEditOffer={updateOffer}
+            onDeleteOffer={deleteOffer}
+          />
+        </Suspense>
+      </div>
     </section>
   );
 }
