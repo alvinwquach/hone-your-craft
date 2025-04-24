@@ -1,3 +1,5 @@
+"use server";
+
 import { deleteRejection } from "@/app/actions/deleteRejection";
 import { editRejection } from "@/app/actions/editRejection";
 import { getRejections } from "@/app/actions/getRejections";
@@ -9,28 +11,21 @@ export default async function Rejections() {
   const groupedRejections = await getRejections();
 
   return (
-    <section className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-screen">
+    <section className="flex-1 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <ProfileNavigation />
-      <div className="container mx-auto">
-        <div className="">
-          {Object.entries(groupedRejections).length > 0 ? (
-            Object.entries(groupedRejections).map(([date, rejections]) => (
-              <div key={date} className="w-full">
-                <Suspense fallback={<div>Loading Rejections...</div>}>
-                  <JobRejections
-                    groupedRejections={groupedRejections}
-                    onEditRejection={editRejection}
-                    onDeleteRejection={deleteRejection}
-                  />
-                </Suspense>
-              </div>
-            ))
-          ) : (
-            <div className="text-gray-400 text-center p-8">
-              No rejections found
-            </div>
-          )}
-        </div>
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold text-gray-900 sr-only">
+          Job Rejections
+        </h1>
+        <Suspense
+          fallback={<div className="text-gray-400">Loading Rejections...</div>}
+        >
+          <JobRejections
+            groupedRejections={groupedRejections}
+            onEditRejection={editRejection}
+            onDeleteRejection={deleteRejection}
+          />
+        </Suspense>
       </div>
     </section>
   );
