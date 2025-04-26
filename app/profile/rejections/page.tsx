@@ -11,7 +11,7 @@ export default async function Rejections() {
   const groupedRejections = await getRejections();
 
   return (
-    <section className="flex-1 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+    <section className="flex-1 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen ml-12">
       <ProfileNavigation />
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold text-gray-900 sr-only">
