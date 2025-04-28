@@ -3,6 +3,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { unstable_cache } from "next/cache";
+import { redirect } from "next/navigation";
 
 const getCachedInterviews = unstable_cache(
   async (userId: string) => {
@@ -24,7 +25,10 @@ const getCachedInterviews = unstable_cache(
 
 export async function getInterviews() {
   const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("Unauthorized");
+
+  if (!currentUser) {
+    return redirect("/login");
+  }
 
   return await getCachedInterviews(currentUser.id);
 }

@@ -3,6 +3,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { unstable_cache } from "next/cache";
+import { redirect } from "next/navigation";
 
 interface Event {
   id: string;
@@ -53,6 +54,8 @@ const getCachedEvents = unstable_cache(
 
 export async function getEvents(): Promise<Event[]> {
   const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("Unauthorized");
+  if (!currentUser) {
+    return redirect("/login");
+  }
   return await getCachedEvents(currentUser.id);
 }
