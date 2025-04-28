@@ -17,16 +17,25 @@ export default function SidesheetWrapper() {
       {isSidesheetOpen && <Sidesheet onClose={toggleSidesheet} />}
       <div className="p-4">
         <div className="flex flex-col items-center p-4 space-y-4">
-          <IoCalendarSharp className="h-24 w-24 rounded-full p-2 bg-white text-blue-700" />
-          <p className="text-gray-700 font-semibold text-xl">
-            Create scheduling links with event types
-          </p>
+          {/* Icon Container */}
+          <div className="flex items-center justify-center w-24 h-24 rounded-full bg-white p-2">
+            <IoCalendarSharp className="h-16 w-16 text-blue-600" />
+          </div>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-white">
+              Create Scheduling Links with Event Types
+            </h2>
+            <p className="text-sm text-zinc-400 mt-1">
+              Define event types to share scheduling links for one-on-one
+              meetings.
+            </p>
+          </div>
           <button
-            className="bg-blue-700 px-4 py-2 rounded-full"
+            className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded-full text-white hover:bg-blue-700 transition-colors"
             onClick={toggleSidesheet}
           >
-            <FaPlus className="h-4 w-4 inline mr-2 mb-1" />
-            <span className="text-white">New event type</span>
+            <FaPlus className="h-4 w-4 text-white mb-[2px]" />
+            <span>New event type</span>
           </button>
         </div>
       </div>
