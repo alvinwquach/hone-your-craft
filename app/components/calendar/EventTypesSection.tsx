@@ -38,32 +38,32 @@ export default function EventTypesSection({
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-zinc-900 min-h-screen">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {eventTypes.map((event) => (
           <div
             key={event.id}
-            className="p-6 border rounded-lg bg-white shadow-lg hover:shadow-xl transition-all duration-300"
+            className="p-6 border border-zinc-700 rounded-lg bg-zinc-800 shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            <div className="flex justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex justify-between items-start">
+              <h3 className="text-lg font-semibold text-white">
                 {event.title}
               </h3>
               <div className="relative">
                 <button
-                  className="text-gray-600 hover:text-gray-800"
+                  className="text-zinc-400 hover:text-zinc-200"
                   onClick={() =>
                     setShowOptionsMenu(
                       showOptionsMenu === event.id ? null : event.id
                     )
                   }
                 >
-                  <FaCog className="w-5 h-5 inline mr-2" />
+                  <FaCog className="w-5 h-5" />
                 </button>
                 {showOptionsMenu === event.id && (
-                  <div className="absolute right-0 w-40 bg-white shadow-md rounded-lg mt-2 py-1">
+                  <div className="absolute right-0 w-40 bg-zinc-800 border border-zinc-700 shadow-md rounded-lg mt-2 py-1 z-10">
                     <button
-                      className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                      className="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-zinc-700 hover:text-red-300 w-full text-left"
                       onClick={() => handleDelete(event.id)}
                     >
                       <FaTrash className="mr-2" /> Delete
@@ -72,22 +72,22 @@ export default function EventTypesSection({
                 )}
               </div>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-zinc-400">
               {formatEventLength(event.length || 0)}, One-on-One
             </p>
             <div className="mt-4">
               <div className="flex justify-between mb-2">
                 <Link
                   href={`/schedule/${event.id}`}
-                  className="flex items-center text-blue-600 hover:text-blue-800"
+                  className="flex items-center text-blue-400 hover:text-blue-300"
                 >
                   <FaLink className="mr-2" /> View booking page
                 </Link>
               </div>
-              <hr className="my-4 border-t border-gray-300 w-full mx-auto" />
+              <hr className="my-4 border-t border-zinc-700 w-full mx-auto" />
               <div className="flex justify-between mt-2">
                 <button
-                  className="flex items-center text-blue-600 hover:text-blue-800"
+                  className="flex items-center text-blue-400 hover:text-blue-300"
                   onClick={() => {
                     navigator.clipboard.writeText(
                       `${baseUrl}/schedule/${event.id}`
@@ -115,7 +115,7 @@ export default function EventTypesSection({
                     toast.info("Shared!");
                   }}
                 >
-                  <FaShare className="mr-2 h-4 w-4 text-white" /> Share
+                  <FaShare className="mr-2 h-4 w-4" /> Share
                 </button>
               </div>
             </div>
