@@ -14,7 +14,7 @@ function LegendItem({ color, label }: InterviewType) {
         style={{ backgroundColor: color }}
         className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 rounded-full opacity-75"
       />
-      <div className="text-xs lg:text-sm font-medium text-gray-700">
+      <div className="text-xs lg:text-sm font-medium text-gray-300">
         {label}
       </div>
     </div>
@@ -23,7 +23,7 @@ function LegendItem({ color, label }: InterviewType) {
 
 function Legend({ interviewTypes }: LegendProps) {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-lg max-w-md mx-auto">
+    <div className="bg-zinc-900 p-4 rounded-lg shadow-md max-w-md mx-auto border border-zinc-700">
       <div className="max-h-[1100px] overflow-y-auto md:overflow-auto">
         {interviewTypes.map((type) => (
           <LegendItem key={type.label} color={type.color} label={type.label} />

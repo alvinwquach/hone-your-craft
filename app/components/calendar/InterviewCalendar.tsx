@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, useRef, useContext } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -64,7 +63,6 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
       const color = interviewType
         ? interviewType.color.replace("bg-", "")
         : "gray-400";
-
       return {
         id: interview.id,
         start: interview.interviewDate
@@ -165,7 +163,6 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
   const eventContent = (arg: any) => {
     const { event } = arg;
     const isInterview = !!event.extendedProps.interviewData;
-
     if (isInterview) {
       const interview = event.extendedProps.interviewData;
       return (
@@ -208,7 +205,6 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
     const updateViewBasedOnScreenSize = () => {
       const calendarApi = calendarRef.current?.getApi();
       if (!calendarApi) return;
-
       const screenConfigs = [
         {
           minWidth: 1280,
@@ -247,26 +243,22 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
           },
         },
       ];
-
       const matchedConfig = screenConfigs.find(
         (config) => window.innerWidth >= config.minWidth
       );
-
       if (matchedConfig) {
         calendarApi.changeView(matchedConfig.view);
         setHeaderToolbar(matchedConfig.toolbar);
       }
     };
-
     window.addEventListener("resize", updateViewBasedOnScreenSize);
     updateViewBasedOnScreenSize();
-
     return () =>
       window.removeEventListener("resize", updateViewBasedOnScreenSize);
   }, [currentMonth]);
 
   return (
-    <div className="relative text-black interview-calendar">
+    <div className="relative interview-calendar">
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -279,15 +271,16 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
         eventDisplay="block"
         eventClassNames="event-container"
         datesSet={(dateInfo) => updateHeaderToolbar(dateInfo.view.currentStart)}
+        themeSystem="bootstrap5"
       />
       {showOptionsMenu && (selectedInterview || selectedEvent) && (
         <div
-          className="z-10 absolute top-12 right-0 bg-white border border-gray-300 shadow-lg rounded p-4"
+          className="z-10 absolute top-12 right-0 bg-zinc-800 border border-zinc-700 shadow-lg rounded p-4"
           ref={optionsMenuRef}
         >
           <button
             onClick={handleShowDetails}
-            className="block w-full py-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+            className="block w-full py-2 text-sm text-left text-zinc-300 hover:bg-zinc-700"
           >
             View Details
           </button>
@@ -295,13 +288,13 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
             <>
               <button
                 onClick={handleEditInterview}
-                className="block w-full py-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+                className="block w-full py-2 text-sm text-left text-zinc-300 hover:bg-zinc-700"
               >
                 Edit
               </button>
               <button
                 onClick={handleDeleteInterview}
-                className="block w-full py-2 text-sm text-left text-gray-700 hover:bg-gray-200"
+                className="block w-full py-2 text-sm text-left text-zinc-300 hover:bg-zinc-700"
               >
                 Delete
               </button>
