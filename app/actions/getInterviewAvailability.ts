@@ -3,6 +3,7 @@
 import prisma from "@/app/lib/db/prisma";
 import getCurrentUser from "@/app/actions/getCurrentUser";
 import { unstable_cache } from "next/cache";
+import { redirect } from "next/navigation";
 
 interface AvailabilityItem {
   id: string;
@@ -33,6 +34,10 @@ const getCachedAvailability = unstable_cache(
 
 export async function getInterviewAvailability(): Promise<AvailabilityItem[]> {
   const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("Unauthorized");
+
+  if (!currentUser) {
+    return redirect("/login");
+  }
+
   return await getCachedAvailability(currentUser.id);
 }
