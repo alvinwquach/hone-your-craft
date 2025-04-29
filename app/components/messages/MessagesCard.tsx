@@ -47,12 +47,13 @@ const MessagesCard = ({
   const [messageToReply, setMessageToReply] = useState<any | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
 
+  // Initialize message read status to avoid hydration issues
   useEffect(() => {
     if (receivedMessages?.data) {
       const initialStatus = new Map<string, boolean>();
       receivedMessages.data.forEach((conversation: any) => {
         if (conversation.messages.length > 0) {
-          initialStatus.set(conversation.id, false);
+          initialStatus.set(conversation.id, false); // Default to unread
         }
       });
       setMessageReadStatus(initialStatus);
@@ -177,7 +178,6 @@ const MessagesCard = ({
 
   return (
     <div className="flex bg-zinc-900 rounded-lg overflow-hidden h-screen">
-      {/* Sidebar */}
       <div className="w-1/6 border-r border-gray-700 p-4">
         <ul className="flex flex-col space-y-2">
           <li>
@@ -251,144 +251,136 @@ const MessagesCard = ({
         </ul>
       </div>
       <div className="w-2/6 border-r border-gray-700 p-4 overflow-y-auto">
-        {
-          activeTab === "inbox" && hasReceivedMessages ? (
-            <div className="space-y-2">
-              {receivedMessages.data.map((conversation: any) => {
-                if (conversation.messages.length === 0) return null;
-                const message = conversation.messages[0];
-                return (
-                  <div
-                    key={conversation.id}
-                    onClick={() => setSelectedMessage(conversation)}
-                    className={`p-4 rounded-lg cursor-pointer ${
-                      selectedMessage?.id === conversation.id
-                        ? "bg-zinc-800"
-                        : "hover:bg-zinc-800"
-                    } transition-colors duration-200`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-sm font-semibold text-white">
-                        {message.sender.name}
-                      </h3>
-                      <span className="text-xs text-gray-400">
-                        {formatMessageDate(message.createdAt)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-300 truncate">
-                      {message.subject || "No Subject"}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate">
-                      {message.content}
-                    </p>
-                    {message.tags && message.tags.length > 0 && (
-                      <div className="mt-1">
-                        {message.tags.map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded-full mr-1"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : activeTab === "inbox" ? (
-            <div className="rounded-lg h-full">
-              <p className="text-center text-gray-500 mt-2">
-                No Conversations Found
-              </p>
-            </div>
-          ) : null;
-        }
-        {
-          activeTab === "mentions" && mentionedInMessages?.data?.length ? (
-            <div className="space-y-2">
-              {mentionedInMessages.data.map((mention: any) => (
+        {activeTab === "inbox" && hasReceivedMessages ? (
+          <div className="space-y-2">
+            {receivedMessages.data.map((conversation: any) => {
+              if (conversation.messages.length === 0) return null;
+              const message = conversation.messages[0];
+              return (
                 <div
-                  key={mention.id}
-                  onClick={() => setSelectedMessage(mention)}
+                  key={conversation.id}
+                  onClick={() => setSelectedMessage(conversation)}
                   className={`p-4 rounded-lg cursor-pointer ${
-                    selectedMessage?.id === mention.id
+                    selectedMessage?.id === conversation.id
                       ? "bg-zinc-800"
                       : "hover:bg-zinc-800"
                   } transition-colors duration-200`}
                 >
                   <div className="flex justify-between items-center">
                     <h3 className="text-sm font-semibold text-white">
-                      {mention.sender.name}
+                      {message.sender.name}
                     </h3>
                     <span className="text-xs text-gray-400">
-                      {formatMessageDate(mention.createdAt)}
+                      {formatMessageDate(message.createdAt)}
                     </span>
                   </div>
                   <p className="text-sm text-gray-300 truncate">
-                    {mention.subject}
+                    {message.subject || "No Subject"}
                   </p>
                   <p className="text-xs text-gray-400 truncate">
-                    {mention.content}
+                    {message.content}
+                  </p>
+                  {message.tags && message.tags.length > 0 && (
+                    <div className="mt-1">
+                      {message.tags.map((tag: string) => (
+                        <span
+                          key={tag}
+                          className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded-full mr-1"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : activeTab === "inbox" ? (
+          <div className="rounded-lg h-full">
+            <p className="text-center text-gray-500 mt-2">
+              No Conversations Found
+            </p>
+          </div>
+        ) : null}
+        {activeTab === "mentions" && mentionedInMessages?.data?.length ? (
+          <div className="space-y-2">
+            {mentionedInMessages.data.map((mention: any) => (
+              <div
+                key={mention.id}
+                onClick={() => setSelectedMessage(mention)}
+                className={`p-4 rounded-lg cursor-pointer ${
+                  selectedMessage?.id === mention.id
+                    ? "bg-zinc-800"
+                    : "hover:bg-zinc-800"
+                } transition-colors duration-200`}
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-semibold text-white">
+                    {mention.sender.name}
+                  </h3>
+                  <span className="text-xs text-gray-400">
+                    {formatMessageDate(mention.createdAt)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-300 truncate">
+                  {mention.subject}
+                </p>
+                <p className="text-xs text-gray-400 truncate">
+                  {mention.content}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : activeTab === "mentions" ? (
+          <div className="rounded-lg h-full">
+            <p className="text-center text-gray-500 mt-2">No Mentions Found</p>
+          </div>
+        ) : null}
+        {activeTab === "sent" && sentMessages?.data?.length ? (
+          <div className="space-y-2">
+            {sentMessages.data.map((conversation: any) => {
+              if (conversation.sentMessages.length === 0) return null;
+              const message = conversation.sentMessages[0];
+              return (
+                <div
+                  key={conversation.conversationId}
+                  onClick={() => setSelectedMessage(conversation)}
+                  className={`p-4 rounded-lg cursor-pointer ${
+                    selectedMessage?.id === conversation.conversationId
+                      ? "bg-zinc-800"
+                      : "hover:bg-zinc-800"
+                  } transition-colors duration-200`}
+                >
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-semibold text-white">
+                      To:{" "}
+                      {conversation.receivers
+                        .map((r: any) => r.name)
+                        .join(", ")}
+                    </h3>
+                    <span className="text-xs text-gray-400">
+                      {formatMessageDate(message.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-300 truncate">
+                    {message.subject || "No Subject"}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {message.content}
                   </p>
                 </div>
-              ))}
-            </div>
-          ) : activeTab === "mentions" ? (
-            <div className="rounded-lg h-full">
-              <p className="text-center text-gray-500 mt-2">
-                No Mentions Found
-              </p>
-            </div>
-          ) : null;
-        }
+              );
+            })}
+          </div>
+        ) : activeTab === "sent" ? (
+          <div className="rounded-lg h-full">
+            <p className="text-center text-gray-500 mt-2">
+              No Sent Messages Found
+            </p>
+          </div>
+        ) : null}
 
-        {
-          activeTab === "sent" && sentMessages?.data?.length ? (
-            <div className="space-y-2">
-              {sentMessages.data.map((conversation: any) => {
-                if (conversation.sentMessages.length === 0) return null;
-                const message = conversation.sentMessages[0];
-                return (
-                  <div
-                    key={conversation.conversationId}
-                    onClick={() => setSelectedMessage(conversation)}
-                    className={`p-4 rounded-lg cursor-pointer ${
-                      selectedMessage?.id === conversation.conversationId
-                        ? "bg-zinc-800"
-                        : "hover:bg-zinc-800"
-                    } transition-colors duration-200`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-sm font-semibold text-white">
-                        To:{" "}
-                        {conversation.receivers
-                          .map((r: any) => r.name)
-                          .join(", ")}
-                      </h3>
-                      <span className="text-xs text-gray-400">
-                        {formatMessageDate(message.createdAt)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-300 truncate">
-                      {message.subject || "No Subject"}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate">
-                      {message.content}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          ) : activeTab === "sent" ? (
-            <div className="rounded-lg h-full">
-              <p className="text-center text-gray-500 mt-2">
-                No Sent Messages Found
-              </p>
-            </div>
-          ) : null;
-        }
         {activeTab === "interviews" && (
           <div className="rounded-lg h-full">
             <p className="text-center text-gray-500 mt-2">
@@ -545,7 +537,6 @@ const MessagesCard = ({
                   ))}
                 </div>
               )}
-
               {activeTab === "trash" && (
                 <div>
                   <p className="text-zinc-400">{selectedMessage.content}</p>
