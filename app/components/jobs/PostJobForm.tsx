@@ -401,43 +401,55 @@ const PostJobForm = () => {
   const customSelectStyles = {
     control: (styles: any) => ({
       ...styles,
-      backgroundColor: "#171717",
+      backgroundColor: "black",
       borderColor: "#333",
-      color: "#fff",
+      color: "white",
       borderRadius: "0.375rem",
-      padding: "0.5rem",
+      padding: "0.375rem",
+      border: "1px solid #333",
+      "&:focus": {
+        outline: "none",
+        border: "1px solid #4f46e5",
+        boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.5)",
+      },
     }),
     input: (styles: any) => ({
       ...styles,
-      color: "#fff",
+      color: "white",
+      padding: 0,
     }),
     placeholder: (styles: any) => ({
       ...styles,
-      color: "#bbb",
+      color: "#a3a3a3",
     }),
     option: (styles: any) => ({
       ...styles,
-      backgroundColor: "#2c2c2c",
-      color: "#eee",
+      backgroundColor: "#000",
+      color: "white",
       ":hover": {
-        backgroundColor: "#444",
+        backgroundColor: "#4f46e5",
       },
     }),
     multiValue: (styles: any) => ({
       ...styles,
-      backgroundColor: "#444",
-      color: "#fff",
+      backgroundColor: "#333",
+      color: "white",
+      borderRadius: "0.375rem",
     }),
     multiValueLabel: (styles: any) => ({
       ...styles,
-      color: "#fff",
+      color: "white",
+      paddingLeft: "0.5rem",
     }),
     multiValueRemove: (styles: any) => ({
       ...styles,
-      color: "#fff",
+      color: "white",
       ":hover": {
-        backgroundColor: "#e11d48",
+        backgroundColor: "#dc2626",
+        color: "white",
       },
+      padding: "0.25rem",
+      borderRadius: "0.25rem",
     }),
   };
 
@@ -489,13 +501,8 @@ const PostJobForm = () => {
               <input
                 {...field}
                 type="text"
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter job title"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
               />
             )}
           />
@@ -514,13 +521,8 @@ const PostJobForm = () => {
               <input
                 {...field}
                 type="text"
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter company name"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
               />
             )}
           />
@@ -540,12 +542,7 @@ const PostJobForm = () => {
             render={({ field }) => (
               <select
                 {...field}
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 {Object.values(CompanySize).map((size) => (
                   <option key={size} value={size}>
@@ -590,12 +587,7 @@ const PostJobForm = () => {
             render={({ field }) => (
               <select
                 {...field}
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 {Object.values(WorkLocation).map((location) => (
                   <option key={location} value={location}>
@@ -620,12 +612,7 @@ const PostJobForm = () => {
               <input
                 {...field}
                 type="text"
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter job location"
               />
             )}
@@ -644,12 +631,7 @@ const PostJobForm = () => {
               <input
                 {...field}
                 type="text"
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter job url"
               />
             )}
@@ -681,12 +663,7 @@ const PostJobForm = () => {
                 <input
                   {...field}
                   type="datetime-local"
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter application deadline"
                   value={formatDateForInput(field.value)}
                   onChange={(e) => field.onChange(new Date(e.target.value))}
@@ -710,12 +687,7 @@ const PostJobForm = () => {
             render={({ field }) => (
               <select
                 {...field}
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="">Select experience</option>
                 {Object.values(YearsOfExperience).map((experience) => (
@@ -727,11 +699,10 @@ const PostJobForm = () => {
             )}
           />
         </div>
-
         <div className="flex flex-col">
           <label
             htmlFor="experienceLevels"
-            className="text-sm font-semibold text-gray-300 mt-2 "
+            className="text-sm font-semibold text-gray-300 mb-2 "
           >
             Experience Levels
           </label>
@@ -762,12 +733,7 @@ const PostJobForm = () => {
             render={({ field }) => (
               <select
                 {...field}
-                className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 {Object.values(JobType).map((type) => (
                   <option key={type} value={type}>
@@ -781,7 +747,7 @@ const PostJobForm = () => {
         <div className="flex flex-col">
           <label
             htmlFor="paymentType"
-            className="text-sm font-semibold text-gray-300 mt-2"
+            className="text-sm font-semibold text-gray-300 mb-2"
           >
             Payment Type
           </label>
@@ -791,13 +757,8 @@ const PostJobForm = () => {
             render={({ field }) => (
               <select
                 {...field}
-                className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                className=" p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={field.value || ""}
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
               >
                 <option value="" disabled>
                   Select a payment type
@@ -825,14 +786,9 @@ const PostJobForm = () => {
           render={({ field }) => (
             <textarea
               {...field}
-              className="mt-2 p-3 border border-gray-300 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="Enter job description"
               rows={6}
-              style={{
-                backgroundColor: "#171717",
-                borderColor: "#333",
-                color: "#fff",
-              }}
             />
           )}
         />
@@ -927,13 +883,8 @@ const PostJobForm = () => {
                     <input
                       {...field}
                       type="number"
-                      className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                      className="p-3 border border-zinc-700 rounded-md bg-black text-white"
                       placeholder="Enter salary amount"
-                      style={{
-                        backgroundColor: "#171717",
-                        borderColor: "#333",
-                        color: "#fff",
-                      }}
                       value={field.value ?? ""}
                       onChange={(e) =>
                         handleSalaryAmountChange(parseFloat(e.target.value))
@@ -956,13 +907,8 @@ const PostJobForm = () => {
                     render={({ field }) => (
                       <select
                         {...field}
-                        className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         value={field.value ?? Frequency.PER_YEAR}
-                        style={{
-                          backgroundColor: "#171717",
-                          borderColor: "#333",
-                          color: "#fff",
-                        }}
                       >
                         {Object.values(Frequency).map((type) => (
                           <option key={type} value={type}>
@@ -992,14 +938,9 @@ const PostJobForm = () => {
                     <input
                       {...field}
                       type="number"
-                      className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                      className="p-3 border border-zinc-700 rounded-md bg-black text-white"
                       placeholder="Min salary range"
                       value={field.value ?? ""}
-                      style={{
-                        backgroundColor: "#171717",
-                        borderColor: "#333",
-                        color: "#fff",
-                      }}
                       onChange={(e) => {
                         const value = e.target.value
                           ? parseFloat(e.target.value)
@@ -1024,7 +965,7 @@ const PostJobForm = () => {
                     <input
                       {...field}
                       type="number"
-                      className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                      className="p-3 border border-zinc-700 rounded-md bg-black text-white"
                       placeholder="Max salary range"
                       value={field.value ?? ""}
                       onChange={(e) => {
@@ -1032,11 +973,6 @@ const PostJobForm = () => {
                           ? parseFloat(e.target.value)
                           : null;
                         setValue("salary.rangeMax", value);
-                      }}
-                      style={{
-                        backgroundColor: "#171717",
-                        borderColor: "#333",
-                        color: "#fff",
                       }}
                     />
                   )}
@@ -1056,13 +992,8 @@ const PostJobForm = () => {
                     render={({ field }) => (
                       <select
                         {...field}
-                        className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         value={field.value ?? Frequency.PER_YEAR}
-                        style={{
-                          backgroundColor: "#171717",
-                          borderColor: "#333",
-                          color: "#fff",
-                        }}
                       >
                         {Object.values(Frequency).map((type) => (
                           <option key={type} value={type}>
@@ -1109,7 +1040,7 @@ const PostJobForm = () => {
         </div>
       )}
       {isDegreeCardVisible && (
-        <div className="bg-zinc-700 bg-opacity-80 p-8 rounded-lg shadow-md relative">
+        <div className="border border-zinc-700 p-8 rounded-lg shadow-md relative">
           <button
             type="button"
             onClick={handleHideDegreeCard}
@@ -1137,7 +1068,6 @@ const PostJobForm = () => {
             </label>
             <div className="border-t border-gray-500 my-4 w-full"></div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <div className="flex flex-col">
               <label
@@ -1152,13 +1082,8 @@ const PostJobForm = () => {
                 render={({ field }) => (
                   <select
                     {...field}
-                    className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     value={field.value || ""}
-                    style={{
-                      backgroundColor: "#171717",
-                      borderColor: "#333",
-                      color: "#fff",
-                    }}
                   >
                     <option value="" disabled>
                       Select a degree
@@ -1205,7 +1130,7 @@ const PostJobForm = () => {
         return (
           <div
             key={index}
-            className="space-y-6 p-6 bg-zinc-700 bg-opacity-70 rounded-lg shadow-md relative"
+            className="space-y-6 p-6 border border-zinc-700  rounded-lg shadow-md relative"
           >
             <div className="flex justify-between items-center  w-full">
               <div className="flex flex-col">
@@ -1236,14 +1161,7 @@ const PostJobForm = () => {
                 >
                   Skill*
                 </label>
-                <div
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
-                  className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white"
-                >
+                <div className="p-3 border border-zinc-700 rounded-md bg-black text-white">
                   {item.skill}
                 </div>
               </div>
@@ -1263,12 +1181,7 @@ const PostJobForm = () => {
                         {...field}
                         type="number"
                         min="0"
-                        style={{
-                          backgroundColor: "#171717",
-                          borderColor: "#333",
-                          color: "#fff",
-                        }}
-                        className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Enter years of experience"
                         onChange={(e) =>
                           handleYearsOfExperienceChange(
@@ -1307,7 +1220,7 @@ const PostJobForm = () => {
       <div className="flex justify-end mt-6">
         <button
           type="submit"
-          className="bg-zinc-600 text-white p-3 rounded-full hover:bg-zinc-700 w-48"
+          className="bg-white text-zinc-600 p-3 rounded-full hover:bg-zinc-100 w-48 border border-zinc-200 shadow-sm"
         >
           Post Job
         </button>
