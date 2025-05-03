@@ -59,7 +59,6 @@ const JobApplicationStatusChart = ({
       .outerRadius(radius)
       .innerRadius(0);
 
-    // Updated color scale with #3b82f6
     const color = d3
       .scaleOrdinal<string>()
       .domain(jobApplicationStatus.map((d) => d.status))

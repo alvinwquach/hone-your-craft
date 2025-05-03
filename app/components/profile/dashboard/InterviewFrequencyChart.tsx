@@ -127,7 +127,7 @@ const InterviewFrequencyChart = ({
         .attr("y", (d) => y(d.interviewType)!)
         .attr("width", (d) => x(d.frequency))
         .attr("height", y.bandwidth())
-        .attr("fill", "#3b82f6") // Updated to ShadcN blue
+        .attr("fill", "#3b82f6")
         .on("mouseover", function (event: MouseEvent, d: unknown) {
           const interviewData = d as InterviewData;
           tooltip

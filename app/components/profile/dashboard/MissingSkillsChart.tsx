@@ -90,7 +90,7 @@ export default function MissingSkillsChart({
       .attr("y", (d) => y(d.skill) || 0)
       .attr("width", (d) => x(d.frequency))
       .attr("height", y.bandwidth())
-      .attr("fill", "#3b82f6") // Updated to ShadcN blue
+      .attr("fill", "#3b82f6")
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)

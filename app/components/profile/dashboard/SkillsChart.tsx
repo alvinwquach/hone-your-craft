@@ -78,7 +78,6 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
       .style("pointer-events", "none")
       .style("opacity", 0);
 
-    // Updated bar color to match ShadcN blue theme
     svg
       .selectAll(".bar")
       .data<SkillData>(data)
@@ -88,7 +87,7 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
       .attr("y", (d) => y(d.skill) || 0)
       .attr("width", (d) => x(d.frequency))
       .attr("height", y.bandwidth())
-      .attr("fill", "#3b82f6") // Primary blue from ShadcN
+      .attr("fill", "#3b82f6")
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)

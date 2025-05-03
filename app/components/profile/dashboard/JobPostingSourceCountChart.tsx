@@ -96,7 +96,7 @@ const JobPostingSourceCountChart = ({
         .attr("y", (d) => y(d.source)!)
         .attr("width", (d) => x(d.count))
         .attr("height", y.bandwidth())
-        .attr("fill", "#3b82f6") // Updated to ShadcN blue
+        .attr("fill", "#3b82f6")
         .attr("stroke", (d) => d.color)
         .attr("stroke-width", 1);
 
