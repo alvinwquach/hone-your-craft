@@ -528,7 +528,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-6 p-6 max-w-7xl mx-auto rounded-lg"
       >
-        {/* Job Title and Company */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -571,8 +570,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
-
-        {/* Company Size and Industry */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -618,8 +615,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
-
-        {/* Work Location and Location */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -712,8 +707,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
-
-        {/* Years of Experience and Experience Levels */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -760,8 +753,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
-
-        {/* Job Type and Payment Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -816,8 +807,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
-
-        {/* Job Description */}
         <div className="flex flex-col">
           <label
             htmlFor="description"
@@ -838,8 +827,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             )}
           />
         </div>
-
-        {/* Required Skills */}
         <div className="flex flex-col">
           <label
             htmlFor="requiredSkills"
@@ -859,8 +846,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             placeholder="Select skills"
           />
         </div>
-
-        {/* Bonus Skills */}
         <div className="flex flex-col">
           <label
             htmlFor="bonusSkills"
@@ -880,8 +865,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             placeholder="Select bonus skills"
           />
         </div>
-
-        {/* Salary Type */}
         <div className="flex flex-col space-y-4">
           <label
             htmlFor="salary.salaryType"
@@ -914,8 +897,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             )}
           />
         </div>
-
-        {/* Salary Inputs */}
         {paymentType !== PaymentType.ONE_TIME_PAYMENT && (
           <div>
             {(salaryType === SalaryType.EXACT ||
