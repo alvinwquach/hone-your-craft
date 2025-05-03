@@ -105,7 +105,7 @@ export default function EducationClient({
 
   return (
     <>
-      <div className="border-2 border-zinc-700 p-4 flex justify-between items-center ">
+      <div className="border border-zinc-700 p-4 flex justify-between items-center">
         <div className="text-white flex items-center space-x-2">
           <span className="text-white text-xl text-black font-semibold">
             Education
