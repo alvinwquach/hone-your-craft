@@ -197,12 +197,11 @@ function ProfileCard({ userData }: ProfileCardProps) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0 bg-zinc-900 border-2 border-zinc-700 rounded-t-lg">
+    <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700 rounded-t-lg">
       <div className="w-full lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">About</h2>
-        <p className="text-gray-300 text-sm">Tell us about yourself.</p>
+        <p className="text-gray-400 text-sm">Tell us about yourself.</p>
       </div>
-
       <div className="w-full lg:w-2/3 rounded-lg mx-auto">
         <div className="mb-6">
           <label
@@ -215,13 +214,12 @@ function ProfileCard({ userData }: ProfileCardProps) {
             <input
               type="text"
               id="name"
-              className="block w-full p-3 text-sm border-2 rounded-lg bg-zinc-800 text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
+              className="block w-full p-3 text-sm border rounded-lg bg-black text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
               readOnly
               value={userData?.user?.name || ""}
             />
           </div>
         </div>
-
         <div className="flex justify-start mb-6">
           <Suspense
             fallback={
@@ -238,7 +236,6 @@ function ProfileCard({ userData }: ProfileCardProps) {
             />
           </Suspense>
         </div>
-
         <div className="relative w-full">
           <label
             htmlFor="headline"
@@ -249,13 +246,12 @@ function ProfileCard({ userData }: ProfileCardProps) {
           <input
             type="text"
             id="headline"
-            className="mt-2 block w-full p-3 text-sm border-2 rounded-lg bg-zinc-800 text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
+            className="mt-2 block w-full p-3 text-sm border rounded-lg bg-black text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
             value={headline}
             onChange={handleHeadlineChange}
             onKeyDown={handleHeadlineKeyDown}
           />
         </div>
-
         <form onSubmit={handleSubmit(onSubmit)} className="w-full mt-4">
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="relative w-full lg:w-3/4">
@@ -271,7 +267,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
                   id="role"
                   {...register("primaryRole")}
                   onKeyDown={handleRoleKeyDown}
-                  className="block w-full text-white placeholder-gray-400 p-3 text-sm border-2 rounded-lg bg-zinc-800 border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
+                  className="block w-full text-white placeholder-gray-400 p-3 text-sm border rounded-lg bg-black border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
                   placeholder="Enter your role"
                 />
                 {errors.primaryRole?.message && (
@@ -281,7 +277,6 @@ function ProfileCard({ userData }: ProfileCardProps) {
                 )}
               </div>
             </div>
-
             <div className="relative w-full lg:w-1/4 ml-auto">
               <label
                 htmlFor="yearsOfExperience"
@@ -293,7 +288,7 @@ function ProfileCard({ userData }: ProfileCardProps) {
                 id="yearsOfExperience"
                 {...register("yearsOfExperience")}
                 onChange={handleExperienceChange}
-                className="block w-full p-3 text-sm text-white border-2 rounded-lg bg-zinc-800 border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400 max-h-[200px] overflow-y-auto"
+                className="block w-full p-3 text-sm text-white border rounded-lg bg-black border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400 max-h-[200px] overflow-y-auto"
               >
                 {Object.values(YearsOfExperience).map((experience) => (
                   <option key={experience} value={experience}>
@@ -308,14 +303,12 @@ function ProfileCard({ userData }: ProfileCardProps) {
               )}
             </div>
           </div>
-
           <label
             htmlFor="openToRoles"
             className="text-base font-semibold text-white my-2 block"
           >
             Open to the following roles
           </label>
-
           <div className="flex flex-wrap gap-2 mb-4">
             {selectedRoles.map((role, index) => (
               <div
@@ -333,17 +326,15 @@ function ProfileCard({ userData }: ProfileCardProps) {
               </div>
             ))}
           </div>
-
           <Combobox as="div" value={query} onChange={setQuery}>
             <Combobox.Input
               onChange={(e) => setQuery(e.target.value)}
-              className="block w-full p-3 text-sm text-white border-2 rounded-lg bg-zinc-800 border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
+              className="block w-full p-3 text-sm text-white border rounded-lg bg-black border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
               placeholder="Select role"
               value={query}
             />
-
             {filteredRoles.length > 0 && (
-              <Combobox.Options className="mt-2 bg-zinc-800 text-white rounded-lg max-h-48 border-2 border-zinc-700 overflow-y-auto p-2 w-full">
+              <Combobox.Options className="mt-2 bg-black text-white rounded-lg max-h-48 border border-zinc-700 overflow-y-auto p-2 w-full">
                 {filteredRoles.map((role) => (
                   <Combobox.Option
                     key={role}
@@ -358,23 +349,20 @@ function ProfileCard({ userData }: ProfileCardProps) {
               </Combobox.Options>
             )}
           </Combobox>
-
           <label
             htmlFor="bio"
             className="text-base font-semibold text-white mt-4 mb-2 block"
           >
             Your bio
           </label>
-
           <textarea
             id="bio"
             value={bio}
             onChange={handleBioChange}
-            className="mt-2 p-3 rounded-md bg-zinc-800 w-full text-white border-2 border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
+            className="mt-2 p-3 rounded-md bg-black w-full text-white border border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
             placeholder="Please tell us a bit about yourself."
             rows={6}
           />
-
           {isEditingBio && (
             <div className="flex justify-end gap-6 mt-4">
               <button
@@ -406,22 +394,18 @@ export function ProfileCardSkeleton() {
         <div className="h-6 w-24 bg-zinc-700 rounded mb-2"></div>
         <div className="h-4 w-48 bg-zinc-700 rounded"></div>
       </div>
-
       <div className="w-full lg:w-2/3 rounded-lg mx-auto">
         <div className="mb-6">
           <div className="h-6 w-32 bg-zinc-700 rounded mb-2"></div>
           <div className="h-10 w-full bg-zinc-700 rounded-lg"></div>
         </div>
-
         <div className="flex justify-start mb-6">
           <div className="w-[70px] h-[70px] rounded-full bg-zinc-700"></div>
         </div>
-
         <div className="mb-6">
           <div className="h-6 w-32 bg-zinc-700 rounded mb-2"></div>
           <div className="h-10 w-full bg-zinc-700 rounded-lg"></div>
         </div>
-
         <div className="flex flex-col lg:flex-row gap-6 mb-6">
           <div className="w-full lg:w-3/4">
             <div className="h-6 w-48 bg-zinc-700 rounded mb-2"></div>
@@ -432,7 +416,6 @@ export function ProfileCardSkeleton() {
             <div className="h-10 w-full bg-zinc-700 rounded-lg"></div>
           </div>
         </div>
-
         <div className="mb-6">
           <div className="h-6 w-48 bg-zinc-700 rounded mb-2"></div>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -442,12 +425,10 @@ export function ProfileCardSkeleton() {
           </div>
           <div className="h-10 w-full bg-zinc-700 rounded-lg"></div>
         </div>
-
         <div className="mb-6">
           <div className="h-6 w-32 bg-zinc-700 rounded mb-2"></div>
           <div className="h-32 w-full bg-zinc-700 rounded-lg"></div>
         </div>
-
         <div className="flex justify-end gap-6">
           <div className="h-10 w-24 bg-zinc-700 rounded-lg"></div>
           <div className="h-10 w-24 bg-zinc-700 rounded-lg"></div>

@@ -105,7 +105,7 @@ export default function EducationClient({
 
   return (
     <>
-      <div className="border-2 border-zinc-700 p-4 flex justify-between items-center bg-zinc-900">
+      <div className="border-2 border-zinc-700 p-4 flex justify-between items-center ">
         <div className="text-white flex items-center space-x-2">
           <span className="text-white text-xl text-black font-semibold">
             Education
@@ -113,9 +113,9 @@ export default function EducationClient({
         </div>
         <button
           onClick={openModal}
-          className="mr-2 hover:bg-zinc-600 text-zinc-700 hover:text-white p-2 rounded-full flex items-center"
+          className="mr-2 bg-zinc-600 hover:bg-zinc-700 text-white p-2 rounded-full flex items-center transition-all duration-200 shadow-sm hover:shadow-md"
         >
-          <FaPlus />
+          <FaPlus className="w-5 h-5" />
         </button>
       </div>
       <AddEducationModal
@@ -137,7 +137,6 @@ export default function EducationClient({
           key={education.id}
           education={education}
           openEditModal={openEditModal}
-          isLastCard={index === educationData.length - 1}
         />
       ))}
     </>

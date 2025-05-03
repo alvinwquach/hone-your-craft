@@ -64,7 +64,7 @@ function SkillsCard({ userSkills }: SkillsCardProps) {
   }, [query, selectedSkills]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 p-6 sm:p-8 mt-4 sm:mt-0 bg-zinc-900 border-2 border-zinc-700">
+    <div className="flex flex-col lg:flex-row gap-8 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700">
       <div className="w-full lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">Your Skills</h2>
         <p className="text-gray-300 text-sm mb-2">
@@ -93,11 +93,11 @@ function SkillsCard({ userSkills }: SkillsCardProps) {
           <Combobox as="div" value={query} onChange={setQuery}>
             <Combobox.Input
               onChange={(e) => setQuery(e.target.value)}
-              className="block w-full p-4 text-sm border-2 rounded-lg bg-zinc-800 text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
+              className="block w-full p-4 text-sm border rounded-lg bg-black text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
               placeholder="Select skill"
             />
             {filteredSkills.length > 0 && (
-              <Combobox.Options className="mt-2 bg-zinc-800 border-2 border-zinc-700 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
+              <Combobox.Options className="mt-2 bg-black border border-zinc-700 text-white rounded-lg max-h-48 overflow-y-auto p-2 w-full">
                 {filteredSkills.map((skill) => (
                   <Combobox.Option
                     key={skill}
