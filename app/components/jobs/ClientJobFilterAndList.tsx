@@ -143,7 +143,7 @@ export default function JobFilterAndList({
   }
   return (
     <div className="w-full lg:w-1/2 rounded-lg shadow-lg border border-zinc-700">
-      <div className="bg-zinc-900 p-6">
+      <div className="p-6">
         <div className="text-xl font-semibold text-blue-500">Posted Jobs</div>
         <div className="flex flex-wrap justify-start items-center mt-4">
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 w-full">
@@ -198,9 +198,8 @@ export default function JobFilterAndList({
           </div>
         </div>
       </div>
-
       {filteredJobs.length === 0 ? (
-        <div className="bg-zinc-900 p-6 shadow-lg flex flex-col items-center border-b border-zinc-700">
+        <div className="p-6 shadow-lg flex flex-col items-center border-b border-zinc-700">
           <h3 className="text-lg font-semibold text-white mb-2">
             No jobs under this category yet.
           </h3>
@@ -212,7 +211,7 @@ export default function JobFilterAndList({
         filteredJobs.map((job, index) => (
           <div
             key={job.id}
-            className={`bg-zinc-900 p-6 shadow-lg flex flex-col border-b border-zinc-700 ${
+            className={`p-6 shadow-lg flex flex-col border-b border-zinc-700 ${
               index === filteredJobs.length - 1 ? "rounded-b-lg" : ""
             }`}
           >
@@ -336,7 +335,7 @@ export default function JobFilterAndList({
                 job.applications.map((application) => (
                   <div
                     key={application.id}
-                    className="bg-zinc-800 p-4 mt-4 rounded-md shadow-md"
+                    className="p-4 mt-4 rounded-md shadow-md"
                   >
                     <div className="flex justify-between items-center">
                       <div>

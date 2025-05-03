@@ -255,7 +255,7 @@ function CandidateJobPostingCard({
   return (
     <>
       <div
-        className="flex flex-col gap-4 p-4 bg-zinc-900 border-2 border-zinc-700 rounded-lg cursor-pointer max-w-5xl mx-auto"
+        className="flex flex-col gap-4 p-4 border border-zinc-700 rounded-lg cursor-pointer max-w-5xl mx-auto"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="flex justify-between items-start">

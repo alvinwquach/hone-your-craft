@@ -9,7 +9,6 @@ import ClientJobDashboard from "../components/jobs/ClientJobDashboard";
 import { Skeleton } from "../components/profile/ui/Skeleton";
 import { getCachedCandidateJobPostings } from "../actions/getCandidateJobPostings";
 
-
 async function getCachedClientJobPostings(userId: string) {
   const cacheKey = [`client-jobs-${userId}`];
   return unstable_cache(
@@ -190,7 +189,7 @@ export default async function Jobs() {
             draftJobsCount={draftJobsCount}
           />
           <div className="w-full lg:w-1/4">
-            <div className="bg-zinc-900 p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
+            <div className="p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
               <Link href="/post-job">
                 <button className="bg-zinc-700 text-white px-4 py-2 rounded-full flex items-center justify-center w-full sm:w-auto">
                   <IoIosAddCircleOutline className="mr-2" size={20} />
