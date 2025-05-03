@@ -29,7 +29,7 @@ interface JobFormData {
     salaryType: "EXACT" | "RANGE" | "STARTING_AT" | "UP_TO";
     rangeMin: number | null;
     rangeMax: number | null;
-    frequency: "PER_YEAR" | "PER_MONTH" | "PER_HOUR";
+    frequency: "PER_YEAR" | "PER_MONTH" | "PER_HOUR" | null;
   };
   company: string;
   companySize: CompanySize;
@@ -173,39 +173,42 @@ const formatDateForInput = (date: Date | undefined): string => {
 
 const EditJobForm = ({ jobData, jobId }: any) => {
   const [isDegreeCardVisible, setIsDegreeCardVisible] = useState(true);
-
   const [selectedIndustries, setSelectedIndustries] = useState<
     IndustryOption[]
   >([]);
-
   const [selectedRequiredSkills, setSelectedRequiredSkills] = useState<
     SkillOption[]
   >([]);
-
   const [selectedBonusSkills, setSelectedBonusSkills] = useState<SkillOption[]>(
     []
   );
-
   const [selectedExperienceLevels, setSelectedExperienceLevels] = useState<
     ExperienceLevelOption[]
   >([]);
-
   const [hiddenSkills, setHiddenSkills] = useState<{ [key: number]: boolean }>(
     {}
   );
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams?.get("id");
 
   const { control, handleSubmit, reset, watch, setValue } =
     useForm<JobFormData>({
       defaultValues: {
         title: jobData?.title || "",
         description: jobData?.description || "",
-        salary: jobData?.salary?.amount || "",
+        salary: {
+          amount: jobData?.salary?.amount || null,
+          salaryType: jobData?.salary?.salaryType || SalaryType.EXACT,
+          rangeMin: jobData?.salary?.rangeMin || null,
+          rangeMax: jobData?.salary?.rangeMax || null,
+          frequency: jobData?.salary?.frequency || Frequency.PER_YEAR,
+        },
         company: jobData?.company || "",
-        companySize: jobData?.companySize || "",
+        companySize: jobData?.companySize || CompanySize.Tiny_1_10,
         location: jobData?.location || "",
-        workLocation: jobData?.workLocation || "",
+        workLocation: jobData?.workLocation || WorkLocation.ONSITE,
         experienceLevels: jobData?.experienceLevels || [],
         requiredSkills:
           jobData?.requiredSkills?.map((skill: any) => ({
@@ -219,22 +222,32 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             yearsOfExperience: skill.yearsOfExperience ?? null,
             isRequired: skill.isRequired ?? null,
           })) || [],
-        jobType: jobData?.jobType || "",
-        deadline: jobData?.deadline || "",
+        jobType: jobData?.jobType || JobType.FULL_TIME,
+        deadline: jobData?.deadline ? new Date(jobData.deadline) : undefined,
         url: jobData?.url || "",
         industry: jobData?.industry || [],
-        yearsOfExperience: jobData?.yearsOfExperience || "",
-        paymentType: jobData?.paymentType || "",
+        yearsOfExperience: jobData?.yearsOfExperience || undefined,
+        paymentType: jobData?.paymentType || undefined,
         requiredDegree: jobData?.requiredDegree?.[0] || {
-          degreeType: null,
+          degree: null,
           isRequired: false,
         },
       },
     });
 
+  const {
+    fields: requiredSkillFields,
+    append: appendRequiredSkill,
+    remove: removeRequiredSkill,
+  } = useFieldArray({
+    control,
+    name: "requiredSkills",
+  });
+
   const selectedDegree = watch("requiredDegree.degree");
-  const searchParams = useSearchParams();
-  const id = searchParams?.get("id");
+  const salaryType = watch("salary.salaryType");
+  const paymentType = watch("paymentType");
+
   const alphabeticalSkillKeywords = skillKeywords.sort((a, b) =>
     a.toLowerCase().localeCompare(b.toLowerCase())
   );
@@ -275,28 +288,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
     setValue("requiredDegree", { degree: null, isRequired: false });
   };
 
-  interface SkillField {
-    id: string;
-    skill: string;
-    yearsOfExperience: number;
-    isRequired: boolean;
-  }
-
-  const {
-    fields: requiredSkillFields,
-    append: appendRequiredSkill,
-    remove: removeRequiredSkill,
-  } = useFieldArray({
-    control,
-    name: "requiredSkills",
-  });
-
-  const updateRequiredSkill = (
-    index: number,
-    isRequired: boolean,
-    watch: any,
-    setValue: any
-  ) => {
+  const updateRequiredSkill = (index: number, isRequired: boolean) => {
     const updatedSkills = [...watch("requiredSkills")];
     updatedSkills[index].isRequired = isRequired;
     setValue("requiredSkills", updatedSkills);
@@ -304,15 +296,12 @@ const EditJobForm = ({ jobData, jobId }: any) => {
 
   const handleHideSkill = (index: number) => {
     const updatedSkills = [...watch("requiredSkills")];
-
     updatedSkills[index] = {
       ...updatedSkills[index],
       yearsOfExperience: 0,
       isRequired: null,
     };
-
     setValue("requiredSkills", updatedSkills);
-
     setHiddenSkills((prevState) => ({
       ...prevState,
       [index]: true,
@@ -321,7 +310,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
 
   const handleRequiredSkillChange = (selected: any) => {
     setSelectedRequiredSkills(selected || []);
-
     setValue(
       "requiredSkills",
       selected
@@ -336,13 +324,12 @@ const EditJobForm = ({ jobData, jobId }: any) => {
 
   const handleBonusSkillsChange = (selected: any) => {
     setSelectedBonusSkills(selected || []);
-
     setValue(
       "bonusSkills",
       selected
         ? selected.map((skill: any) => ({
             skill: skill.value,
-            yearsOfExperience: false,
+            yearsOfExperience: null,
             isRequired: null,
           }))
         : []
@@ -354,7 +341,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
       (skill) => skill.value
     );
     requiredSkillFields.forEach((field, index) => {
-      if (!selectedSkillValues.includes(field.skill as any)) {
+      if (!selectedSkillValues.includes(field.skill)) {
         removeRequiredSkill(index);
       }
     });
@@ -385,7 +372,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
         })
       );
       setSelectedExperienceLevels(selectedExperienceLevelOptions);
-      setValue("experienceLevels", selectedExperienceLevelOptions);
+      setValue("experienceLevels", jobData.experienceLevels);
     }
 
     if (jobData.requiredSkills) {
@@ -396,21 +383,28 @@ const EditJobForm = ({ jobData, jobId }: any) => {
         })
       );
       setSelectedRequiredSkills(requiredSkillsOptions);
-      setValue("requiredSkills", requiredSkillsOptions);
+      setValue(
+        "requiredSkills",
+        jobData.requiredSkills.map((skill: any) => ({
+          skill: skill.skill.name,
+          yearsOfExperience: skill.yearsOfExperience || 0,
+          isRequired: skill.isRequired || false,
+        }))
+      );
     }
 
     if (jobData.bonusSkills) {
-      const bonusSkillsOptions = jobData.bonusSkills.map((skill: string) => ({
-        value: skill,
-        label: skill,
+      const bonusSkillsOptions = jobData.bonusSkills.map((skill: any) => ({
+        value: skill.skill.name,
+        label: skill.skill.name,
       }));
       setSelectedBonusSkills(bonusSkillsOptions);
       setValue(
         "bonusSkills",
-        bonusSkillsOptions.map((skill: any) => ({
-          skill: skill.value,
-          yearsOfExperience: null,
-          isRequired: null,
+        jobData.bonusSkills.map((skill: any) => ({
+          skill: skill.skill.name,
+          yearsOfExperience: skill.yearsOfExperience ?? null,
+          isRequired: skill.isRequired ?? null,
         }))
       );
     }
@@ -431,50 +425,75 @@ const EditJobForm = ({ jobData, jobId }: any) => {
         })
       );
       setSelectedIndustries(selectedIndustryOptions);
-      setValue("industry", selectedIndustryOptions);
+      setValue("industry", jobData.industry);
     }
   }, [jobData, setValue]);
+
+  useEffect(() => {
+    if (salaryType !== SalaryType.RANGE) {
+      setValue("salary.rangeMin", null);
+      setValue("salary.rangeMax", null);
+    }
+  }, [salaryType, setValue]);
+
+  useEffect(() => {
+    if (paymentType === PaymentType.ONE_TIME_PAYMENT) {
+      setValue("salary.frequency", null);
+    }
+  }, [paymentType, setValue]);
 
   const customSelectStyles = {
     control: (styles: any) => ({
       ...styles,
-      backgroundColor: "#171717",
+      backgroundColor: "black",
       borderColor: "#333",
-      color: "#fff",
+      color: "white",
       borderRadius: "0.375rem",
-      padding: "0.5rem",
+      padding: "0.375rem",
+      border: "1px solid #333",
+      "&:focus": {
+        outline: "none",
+        border: "1px solid #4f46e5",
+        boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.5)",
+      },
     }),
     input: (styles: any) => ({
       ...styles,
-      color: "#fff",
+      color: "white",
+      padding: 0,
     }),
     placeholder: (styles: any) => ({
       ...styles,
-      color: "#bbb",
+      color: "#a3a3a3",
     }),
     option: (styles: any) => ({
       ...styles,
-      backgroundColor: "#2c2c2c",
-      color: "#eee",
+      backgroundColor: "#000",
+      color: "white",
       ":hover": {
-        backgroundColor: "#444",
+        backgroundColor: "#4f46e5",
       },
     }),
     multiValue: (styles: any) => ({
       ...styles,
-      backgroundColor: "#444",
-      color: "#fff",
+      backgroundColor: "#333",
+      color: "white",
+      borderRadius: "0.375rem",
     }),
     multiValueLabel: (styles: any) => ({
       ...styles,
-      color: "#fff",
+      color: "white",
+      paddingLeft: "0.5rem",
     }),
     multiValueRemove: (styles: any) => ({
       ...styles,
-      color: "#fff",
+      color: "white",
       ":hover": {
-        backgroundColor: "#e11d48",
+        backgroundColor: "#dc2626",
+        color: "white",
       },
+      padding: "0.25rem",
+      borderRadius: "0.25rem",
     }),
   };
 
@@ -489,20 +508,17 @@ const EditJobForm = ({ jobData, jobId }: any) => {
       });
 
       if (response.ok) {
-        const responseData = await response.json();
-
         toast.success("Job posting updated successfully!");
         setTimeout(() => {
           router.push("/jobs");
         }, 1500);
       } else {
         console.error("Error: ", response.statusText);
-
         toast.error(`Error: ${response.statusText}`);
       }
     } catch (error) {
       console.error("Request failed", error);
-      toast.error("Failed to post job. Please try again.");
+      toast.error("Failed to update job. Please try again.");
     }
   };
 
@@ -510,9 +526,9 @@ const EditJobForm = ({ jobData, jobId }: any) => {
     <section>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 p-6 max-w-7xl mx-auto  rounded-lg"
+        className="space-y-6 p-6 max-w-7xl mx-auto rounded-lg"
       >
-        {/* Job Title */}
+        {/* Job Title and Company */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -528,13 +544,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter job title"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
                 />
               )}
             />
@@ -553,18 +564,15 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter company name"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
                 />
               )}
             />
           </div>
         </div>
+
+        {/* Company Size and Industry */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -579,12 +587,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {Object.values(CompanySize).map((size) => (
                     <option key={size} value={size}>
@@ -615,6 +618,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
+
+        {/* Work Location and Location */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -629,12 +634,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {Object.values(WorkLocation).map((location) => (
                     <option key={location} value={location}>
@@ -659,12 +659,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter job location"
                 />
               )}
@@ -672,6 +667,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           </div>
         </div>
 
+        {/* Job URL and Deadline */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -687,49 +683,37 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter job url"
                 />
               )}
             />
           </div>
-
           <div className="flex flex-col">
             <label
               htmlFor="deadline"
-              className="text-sm font-semibold text-gray-300 "
+              className="text-sm font-semibold text-gray-300"
             >
               Application Deadline
             </label>
             <Controller
               control={control}
               name="deadline"
-              render={({ field }) => {
-                return (
-                  <input
-                    {...field}
-                    type="datetime-local"
-                    className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    style={{
-                      backgroundColor: "#171717",
-                      borderColor: "#333",
-                      color: "#fff",
-                    }}
-                    placeholder="Enter application deadline"
-                    value={formatDateForInput(field.value)}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
-                  />
-                );
-              }}
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="datetime-local"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter application deadline"
+                  value={formatDateForInput(field.value)}
+                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                />
+              )}
             />
           </div>
         </div>
 
+        {/* Years of Experience and Experience Levels */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -744,12 +728,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="">Select experience</option>
                   {Object.values(YearsOfExperience).map((experience) => (
@@ -761,11 +740,10 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               )}
             />
           </div>
-
           <div className="flex flex-col">
             <label
               htmlFor="experienceLevels"
-              className="text-sm font-semibold text-gray-300 "
+              className="text-sm font-semibold text-gray-300 mb-2"
             >
               Experience Levels
             </label>
@@ -782,6 +760,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
+
+        {/* Job Type and Payment Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label
@@ -796,12 +776,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {Object.values(JobType).map((type) => (
                     <option key={type} value={type}>
@@ -815,7 +790,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           <div className="flex flex-col">
             <label
               htmlFor="paymentType"
-              className="text-sm font-semibold text-gray-300 mt-2"
+              className="text-sm font-semibold text-gray-300"
             >
               Payment Type
             </label>
@@ -825,13 +800,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   value={field.value || ""}
-                  style={{
-                    backgroundColor: "#171717",
-                    borderColor: "#333",
-                    color: "#fff",
-                  }}
                 >
                   <option value="" disabled>
                     Select a payment type
@@ -846,6 +816,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             />
           </div>
         </div>
+
+        {/* Job Description */}
         <div className="flex flex-col">
           <label
             htmlFor="description"
@@ -859,19 +831,15 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             render={({ field }) => (
               <textarea
                 {...field}
-                className="mt-2 p-3 border border-gray-300 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter job description"
                 rows={6}
-                style={{
-                  backgroundColor: "#171717",
-                  borderColor: "#333",
-                  color: "#fff",
-                }}
               />
             )}
           />
         </div>
 
+        {/* Required Skills */}
         <div className="flex flex-col">
           <label
             htmlFor="requiredSkills"
@@ -891,6 +859,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             placeholder="Select skills"
           />
         </div>
+
+        {/* Bonus Skills */}
         <div className="flex flex-col">
           <label
             htmlFor="bonusSkills"
@@ -911,6 +881,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           />
         </div>
 
+        {/* Salary Type */}
         <div className="flex flex-col space-y-4">
           <label
             htmlFor="salary.salaryType"
@@ -944,11 +915,12 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           />
         </div>
 
-        {watch("paymentType") !== PaymentType.ONE_TIME_PAYMENT && (
+        {/* Salary Inputs */}
+        {paymentType !== PaymentType.ONE_TIME_PAYMENT && (
           <div>
-            {(watch("salary.salaryType") === SalaryType.EXACT ||
-              watch("salary.salaryType") === SalaryType.STARTING_AT ||
-              watch("salary.salaryType") === SalaryType.UP_TO) && (
+            {(salaryType === SalaryType.EXACT ||
+              salaryType === SalaryType.STARTING_AT ||
+              salaryType === SalaryType.UP_TO) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="flex flex-col">
                   <label
@@ -964,13 +936,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                       <input
                         {...field}
                         type="number"
-                        className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Enter salary amount"
-                        style={{
-                          backgroundColor: "#171717",
-                          borderColor: "#333",
-                          color: "#fff",
-                        }}
                         value={field.value ?? ""}
                         onChange={(e) =>
                           handleSalaryAmountChange(parseFloat(e.target.value))
@@ -979,41 +946,34 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                     )}
                   />
                 </div>
-                {watch("paymentType") !== PaymentType.ONE_TIME_PAYMENT && (
-                  <div className="flex flex-col">
-                    <label
-                      htmlFor="salary.frequency"
-                      className="text-sm font-semibold text-gray-300"
-                    >
-                      Frequency
-                    </label>
-                    <Controller
-                      control={control}
-                      name="salary.frequency"
-                      render={({ field }) => (
-                        <select
-                          {...field}
-                          className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          value={field.value ?? Frequency.PER_YEAR}
-                          style={{
-                            backgroundColor: "#171717",
-                            borderColor: "#333",
-                            color: "#fff",
-                          }}
-                        >
-                          {Object.values(Frequency).map((type) => (
-                            <option key={type} value={type}>
-                              {frequencyLabels[type]}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    />
-                  </div>
-                )}
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="salary.frequency"
+                    className="text-sm font-semibold text-gray-300"
+                  >
+                    Frequency
+                  </label>
+                  <Controller
+                    control={control}
+                    name="salary.frequency"
+                    render={({ field }) => (
+                      <select
+                        {...field}
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={field.value ?? Frequency.PER_YEAR}
+                      >
+                        {Object.values(Frequency).map((type) => (
+                          <option key={type} value={type}>
+                            {frequencyLabels[type]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                </div>
               </div>
             )}
-            {watch("salary.salaryType") === SalaryType.RANGE && (
+            {salaryType === SalaryType.RANGE && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="flex flex-col">
                   <label
@@ -1029,14 +989,9 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                       <input
                         {...field}
                         type="number"
-                        className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Min salary range"
                         value={field.value ?? ""}
-                        style={{
-                          backgroundColor: "#171717",
-                          borderColor: "#333",
-                          color: "#fff",
-                        }}
                         onChange={(e) => {
                           const value = e.target.value
                             ? parseFloat(e.target.value)
@@ -1061,7 +1016,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                       <input
                         {...field}
                         type="number"
-                        className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Max salary range"
                         value={field.value ?? ""}
                         onChange={(e) => {
@@ -1070,84 +1025,71 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                             : null;
                           setValue("salary.rangeMax", value);
                         }}
-                        style={{
-                          backgroundColor: "#171717",
-                          borderColor: "#333",
-                          color: "#fff",
-                        }}
                       />
                     )}
                   />
                 </div>
-                {watch("paymentType") !== PaymentType.ONE_TIME_PAYMENT && (
-                  <div className="flex flex-col">
-                    <label
-                      htmlFor="salary.frequency"
-                      className="text-sm font-semibold text-gray-300"
-                    >
-                      Frequency
-                    </label>
-                    <Controller
-                      control={control}
-                      name="salary.frequency"
-                      render={({ field }) => (
-                        <select
-                          {...field}
-                          className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          value={field.value ?? Frequency.PER_YEAR}
-                          style={{
-                            backgroundColor: "#171717",
-                            borderColor: "#333",
-                            color: "#fff",
-                          }}
-                        >
-                          {Object.values(Frequency).map((type) => (
-                            <option key={type} value={type}>
-                              {frequencyLabels[type]}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    />
-                  </div>
-                )}
+                <div className="flex flex-col">
+                  <label
+                    htmlFor="salary.frequency"
+                    className="text-sm font-semibold text-gray-300"
+                  >
+                    Frequency
+                  </label>
+                  <Controller
+                    control={control}
+                    name="salary.frequency"
+                    render={({ field }) => (
+                      <select
+                        {...field}
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={field.value ?? Frequency.PER_YEAR}
+                      >
+                        {Object.values(Frequency).map((type) => (
+                          <option key={type} value={type}>
+                            {frequencyLabels[type]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                </div>
               </div>
             )}
           </div>
         )}
-        {watch("paymentType") === PaymentType.ONE_TIME_PAYMENT && (
-          <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="flex flex-col">
-                <label
-                  htmlFor="salary.amount"
-                  className="text-sm font-semibold text-gray-300"
-                >
-                  Amount
-                </label>
-                <Controller
-                  control={control}
-                  name="salary.amount"
-                  render={({ field }) => (
-                    <input
-                      {...field}
-                      type="number"
-                      className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
-                      placeholder="Enter salary amount"
-                      value={field.value ?? ""}
-                      onChange={(e) =>
-                        handleSalaryAmountChange(parseFloat(e.target.value))
-                      }
-                    />
-                  )}
-                />
-              </div>
+        {paymentType === PaymentType.ONE_TIME_PAYMENT && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label
+                htmlFor="salary.amount"
+                className="text-sm font-semibold text-gray-300"
+              >
+                Amount
+              </label>
+              <Controller
+                control={control}
+                name="salary.amount"
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="number"
+                    className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Enter salary amount"
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      handleSalaryAmountChange(parseFloat(e.target.value))
+                    }
+                  />
+                )}
+              />
             </div>
           </div>
         )}
 
+        {/* Degree Requirement */}
         {isDegreeCardVisible && (
-          <div className="bg-zinc-700 bg-opacity-80 p-8 rounded-lg shadow-md relative">
+          <div className="border border-zinc-700 p-8 rounded-lg shadow-md relative">
             <button
               type="button"
               onClick={handleHideDegreeCard}
@@ -1157,18 +1099,16 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             </button>
             <div className="flex flex-col space-y-2">
               <label
-                htmlFor="requiredDegree.0.degreeType"
+                htmlFor="requiredDegree.degree"
                 className="text-sm font-semibold text-gray-300"
               >
                 Have you completed the following level of education:{" "}
-                <span>
-                  <span className="text-indigo-400">
-                    {selectedDegree
-                      ? degreeTypeLabels[selectedDegree]
-                      : "[Degree]"}
-                  </span>
+                <span className="text-indigo-400">
+                  {selectedDegree
+                    ? degreeTypeLabels[selectedDegree]
+                    : "[Degree]"}
                 </span>
-                ?
+                ?{" "}
                 <span className="bg-blue-500 ml-2 p-1 rounded-lg">
                   Recommended
                 </span>
@@ -1178,7 +1118,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               <div className="flex flex-col">
                 <label
-                  htmlFor="requiredDegree.0.degreeType"
+                  htmlFor="requiredDegree.degree"
                   className="text-sm font-semibold text-gray-300"
                 >
                   Degree
@@ -1189,13 +1129,8 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                   render={({ field }) => (
                     <select
                       {...field}
-                      className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       value={field.value || ""}
-                      style={{
-                        backgroundColor: "#171717",
-                        borderColor: "#333",
-                        color: "#fff",
-                      }}
                     >
                       <option value="" disabled>
                         Select a degree
@@ -1237,15 +1172,16 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             </div>
           </div>
         )}
+
+        {/* Required Skills Cards */}
         {requiredSkillFields.map((item, index) => {
           if (hiddenSkills[index]) return null;
-
           return (
             <div
-              key={index}
-              className="space-y-6 p-6 bg-zinc-700 bg-opacity-70 rounded-lg shadow-md relative"
+              key={item.id}
+              className="space-y-6 p-6 border border-zinc-700 rounded-lg shadow-md relative"
             >
-              <div className="flex justify-between items-center  w-full">
+              <div className="flex justify-between items-center w-full">
                 <div className="flex flex-col">
                   <label
                     htmlFor={`requiredSkills.${index}.yearsOfExperience`}
@@ -1274,14 +1210,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                   >
                     Skill*
                   </label>
-                  <div
-                    style={{
-                      backgroundColor: "#171717",
-                      borderColor: "#333",
-                      color: "#fff",
-                    }}
-                    className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white"
-                  >
+                  <div className="p-3 border border-zinc-700 rounded-md bg-black text-white">
                     {item.skill}
                   </div>
                 </div>
@@ -1301,12 +1230,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                           {...field}
                           type="number"
                           min="0"
-                          style={{
-                            backgroundColor: "#171717",
-                            borderColor: "#333",
-                            color: "#fff",
-                          }}
-                          className="p-3 border border-gray-700 rounded-md bg-neutral-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                           placeholder="Enter years of experience"
                           onChange={(e) =>
                             handleYearsOfExperienceChange(
@@ -1324,12 +1248,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                       id={`isRequired-${index}`}
                       checked={item.isRequired || false}
                       onChange={(e) =>
-                        updateRequiredSkill(
-                          index,
-                          e.target.checked,
-                          watch,
-                          setValue
-                        )
+                        updateRequiredSkill(index, e.target.checked)
                       }
                       className="h-5 w-5 text-indigo-600"
                     />
@@ -1342,10 +1261,12 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             </div>
           );
         })}
-        <div className="flex justify-end items-center">
+
+        {/* Submit Button */}
+        <div className="flex justify-end mt-6">
           <button
             type="submit"
-            className="bg-zinc-600 text-white p-3 rounded-full hover:bg-zinc-700 w-48"
+            className="bg-white text-zinc-600 p-3 rounded-full hover:bg-zinc-100 w-48 border border-zinc-200 shadow-sm"
           >
             Save Changes
           </button>
