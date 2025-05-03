@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
@@ -62,11 +61,9 @@ const InterviewFrequencyChart = ({
   useEffect(() => {
     setWindowWidth(window.innerWidth);
     setWindowHeight(window.innerHeight);
-
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -77,16 +74,13 @@ const InterviewFrequencyChart = ({
 
   useEffect(() => {
     if (isLoading) return;
-
     const renderChart = () => {
       if (!chartRef.current) return;
-
       const margin = { top: 20, right: 30, bottom: 60, left: 100 };
       const width = chartRef.current.offsetWidth - margin.left - margin.right;
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
 
       d3.select(chartRef.current).selectAll("svg").remove();
-
       const svg = d3
         .select(chartRef.current)
         .append("svg")
@@ -133,7 +127,7 @@ const InterviewFrequencyChart = ({
         .attr("y", (d) => y(d.interviewType)!)
         .attr("width", (d) => x(d.frequency))
         .attr("height", y.bandwidth())
-        .attr("fill", "#a3e635")
+        .attr("fill", "#3b82f6") // Updated to ShadcN blue
         .on("mouseover", function (event: MouseEvent, d: unknown) {
           const interviewData = d as InterviewData;
           tooltip
@@ -185,22 +179,36 @@ const InterviewFrequencyChart = ({
         .style("fill", "white")
         .text("Interview Type");
     };
-
     renderChart();
   }, [interviewFrequencies, windowWidth, windowHeight, isLoading]);
 
   return (
-    <div className="bg-zinc-900 p-6 rounded-lg shadow-md">
+    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">
         Interview Frequency
       </h2>
       {isLoading ? (
         <div className="space-y-3">
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
         </div>
       ) : (
         <div ref={chartRef} />

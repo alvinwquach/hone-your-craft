@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
@@ -25,11 +24,9 @@ const JobApplicationStatusChart = ({
   useEffect(() => {
     setWindowWidth(window.innerWidth);
     setWindowHeight(window.innerHeight);
-
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -56,17 +53,20 @@ const JobApplicationStatusChart = ({
       .attr("transform", `translate(${width / 2},${height / 2})`);
 
     const pie = d3.pie<JobApplicationStatus>().value((d) => d.count);
+
     const arc = d3
       .arc<d3.PieArcDatum<JobApplicationStatus>>()
       .outerRadius(radius)
       .innerRadius(0);
 
+    // Updated color scale with #3b82f6
     const color = d3
       .scaleOrdinal<string>()
       .domain(jobApplicationStatus.map((d) => d.status))
-      .range(["#a3e635", "#4ade80", "#86efac"]);
+      .range(["#3b82f6"]);
 
     const pieData = pie(jobApplicationStatus);
+
     const arcs = svg
       .selectAll("g.arc")
       .data(pieData)
@@ -89,13 +89,16 @@ const JobApplicationStatusChart = ({
   }, [jobApplicationStatus, windowWidth, windowHeight, isLoading]);
 
   return (
-    <div className="bg-zinc-900 p-6 rounded-lg shadow-md">
+    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">
         Job Application Status
       </h2>
       {isLoading ? (
         <div className="flex justify-center">
-          <Skeleton className="h-64 w-64 rounded-full" />
+          <Skeleton
+            className="h-64 w-64 rounded-full"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
         </div>
       ) : (
         <div className="flex justify-center">

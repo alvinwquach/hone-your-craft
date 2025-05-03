@@ -191,36 +191,31 @@ export default async function Dashboard() {
     processCandidateApplicationStatus(applications);
 
   return (
-    <section className="max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-        <div className="w-full">
-          <SkillsChart
-            skills={skills.skills}
-            frequencies={skills.frequencies}
-          />
-        </div>
-        <div className="w-full">
+    <section className="flex-1 ml-16 md:ml-16 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SkillsChart skills={skills.skills} frequencies={skills.frequencies} />
+        <div className="">
           <MissingSkillsChart
             missingSkills={missingSkills.missingSkills}
             missingSkillsFrequency={missingSkills.missingSkillsFrequency}
           />
         </div>
-        <div className="w-full">
+        <div className="">
           <JobPostingSourceCountChart
             jobPostingSourceCount={jobPostingSourceCount}
           />
         </div>
-        <div className="w-full">
+        <div className="">
           <ApplicationStatusChart
             statusPercentages={applicationStatusData.percentages}
           />
         </div>
-        <div className="w-full">
+        <div className="">
           <InterviewFrequencyChart
             interviewFrequencies={interviewFrequencyData.interviewTypeFrequency}
           />
         </div>
-        <div className="w-full">
+        <div className="">
           <JobApplicationStatusChart
             jobApplicationStatus={jobApplicationStatusCount.statusData}
           />

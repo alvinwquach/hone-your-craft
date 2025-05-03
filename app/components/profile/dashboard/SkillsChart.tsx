@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Skeleton } from "../ui/Skeleton";
@@ -26,7 +25,6 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -80,6 +78,7 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
       .style("pointer-events", "none")
       .style("opacity", 0);
 
+    // Updated bar color to match ShadcN blue theme
     svg
       .selectAll(".bar")
       .data<SkillData>(data)
@@ -89,7 +88,7 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
       .attr("y", (d) => y(d.skill) || 0)
       .attr("width", (d) => x(d.frequency))
       .attr("height", y.bandwidth())
-      .attr("fill", "#a3e635")
+      .attr("fill", "#3b82f6") // Primary blue from ShadcN
       .on("mouseover", (event, d) => {
         tooltip
           .style("opacity", 1)
@@ -126,15 +125,30 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
   };
 
   return (
-    <div className="bg-zinc-900 p-6 rounded-lg shadow-md">
+    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">Skills Overview</h2>
       {isLoading ? (
         <div className="space-y-3">
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
         </div>
       ) : (
         <>
