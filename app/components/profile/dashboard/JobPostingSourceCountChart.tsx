@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
@@ -20,11 +19,9 @@ const JobPostingSourceCountChart = ({
   useEffect(() => {
     setWindowWidth(window.innerWidth);
     setWindowHeight(window.innerHeight);
-
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -56,14 +53,13 @@ const JobPostingSourceCountChart = ({
 
   useEffect(() => {
     if (isLoading) return;
-
     const renderChart = () => {
       if (!chartRef.current) return;
       const margin = { top: 20, right: 30, bottom: 80, left: 120 };
       const width = chartRef.current.offsetWidth - margin.left - margin.right;
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
-      d3.select(chartRef.current).selectAll("svg").remove();
 
+      d3.select(chartRef.current).selectAll("svg").remove();
       const svg = d3
         .select(chartRef.current)
         .append("svg")
@@ -83,6 +79,7 @@ const JobPostingSourceCountChart = ({
         .scaleLinear()
         .domain([0, Math.max(800, maxCount)])
         .range([0, width]);
+
       const y = d3
         .scaleBand()
         .domain(data.map((d) => d.source))
@@ -99,7 +96,9 @@ const JobPostingSourceCountChart = ({
         .attr("y", (d) => y(d.source)!)
         .attr("width", (d) => x(d.count))
         .attr("height", y.bandwidth())
-        .attr("fill", "#a3e635");
+        .attr("fill", "#3b82f6")
+        .attr("stroke", (d) => d.color)
+        .attr("stroke-width", 1);
 
       svg
         .append("g")
@@ -163,7 +162,6 @@ const JobPostingSourceCountChart = ({
           tooltip.style("visibility", "hidden");
         });
     };
-
     renderChart();
   }, [
     jobPostingSourceCount,
@@ -174,17 +172,32 @@ const JobPostingSourceCountChart = ({
   ]);
 
   return (
-    <div className="bg-zinc-900 p-6 rounded-lg shadow-md">
+    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">
         Job Posting Sources
       </h2>
       {isLoading ? (
         <div className="space-y-3">
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
         </div>
       ) : (
         <div ref={chartRef} />

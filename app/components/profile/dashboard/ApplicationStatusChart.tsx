@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { useWindowResize } from "@/app/hooks/useWindowResize";
@@ -11,7 +10,7 @@ const applicationStatuses = [
   "Interview",
   "Offer",
   "Rejected",
-];
+] as const;
 
 const statusColors: StatusColors = {
   Saved: {
@@ -66,11 +65,9 @@ const ApplicationStatusChart = ({
   useEffect(() => {
     setWindowWidth(window.innerWidth);
     setWindowHeight(window.innerHeight);
-
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -88,6 +85,7 @@ const ApplicationStatusChart = ({
       const height = windowHeight * 0.5 - margin.top - margin.bottom;
 
       d3.select(chartRef.current).selectAll("svg").remove();
+
       const svg = d3
         .select(chartRef.current)
         .append("svg")
@@ -104,7 +102,6 @@ const ApplicationStatusChart = ({
       }));
 
       const x = d3.scaleLinear().domain([0, 100]).range([0, width]);
-
       const y = d3
         .scaleBand()
         .domain(data.map((d) => d.status))
@@ -121,7 +118,7 @@ const ApplicationStatusChart = ({
         .attr("y", (d) => y(d.status)!)
         .attr("width", (d) => x(d.percentage))
         .attr("height", y.bandwidth())
-        .attr("fill", "#a3e635")
+        .attr("fill", "#3b82f6") // ShadcN blue
         .attr("stroke", (d) => d.borderColor)
         .attr("stroke-width", 1);
 
@@ -199,17 +196,32 @@ const ApplicationStatusChart = ({
   }, [statusPercentages, windowWidth, windowHeight, renderChart, isLoading]);
 
   return (
-    <div className="bg-zinc-900 p-6 rounded-lg shadow-md">
+    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">
         Application Status
       </h2>
       {isLoading ? (
         <div className="space-y-3">
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
-          <Skeleton className="h-8 w-full rounded" />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
+          <Skeleton
+            className="h-8 w-full rounded"
+            style={{ backgroundColor: "#3b82f6" }}
+          />
         </div>
       ) : (
         <div ref={chartRef} />
