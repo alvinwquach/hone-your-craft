@@ -36,7 +36,7 @@ function SuggestedSkillsCard({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-center gap-2 p-6 sm:p-8 mt-4 sm:mt-0 bg-zinc-900 border-2 border-zinc-700">
+    <div className="flex flex-col lg:flex-row justify-center gap-2 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700">
       <div className="w-full lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">
           Suggested Skills
