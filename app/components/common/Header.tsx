@@ -288,13 +288,13 @@ function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
               <div
                 className={`
                   absolute bottom-full mb-2 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium
-                  bg-black rounded-lg shadow-xs opacity-0 group-hover:opacity-100
+                  bg-zinc-800 rounded-lg shadow-xs opacity-0 group-hover:opacity-100
                   ${isActive ? "visible opacity-100" : ""}
                 `}
               >
                 {item.text}
                 <div
-                  className="tooltip-arrow absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black"
+                  className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-t-zinc-800"
                   data-popper-arrow
                 />
               </div>
@@ -316,7 +316,7 @@ export default function CustomNavigation() {
 
   return (
     <>
-      <nav className="fixed top-0 right-0 z-40 w-full border-b bg-zinc-900 border border-zinc-700">
+      <nav className="fixed top-0 right-0 z-40 w-full bg-gradient-to-b from-zinc-900/95 to-zinc-900/95 backdrop-blur-sm border-b border-zinc-700/30">
         <div className="px-3 py-3 lg:px-5 lg:pl-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start"></div>
