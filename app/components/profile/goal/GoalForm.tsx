@@ -608,7 +608,7 @@ const GoalForm = ({
 
   return (
     <div>
-      <div className="rounded-lg p-6 shadow-lg relative bg-zinc-900">
+      <div className="rounded-lg p-6 shadow-lg relative border border-zinc-700">
         <div className="mt-6 text-white">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
             What is your goal? (optional)
@@ -732,7 +732,7 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMinDecrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-black hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdRemove className="w-3 h-3 text-white" />
                   </button>
@@ -741,12 +741,12 @@ const GoalForm = ({
                     id="jobsAppliedToWeeklyGoalMin"
                     value={goalMin}
                     onChange={handleMinChange}
-                    className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
+                    className="bg-black border h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
                   />
                   <button
                     type="button"
                     onClick={handleMinIncrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-black hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdAdd className="w-3 h-3 text-white" />
                   </button>
@@ -766,7 +766,7 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMaxDecrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-black hover:bg-zinc-600 border rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdRemove className="w-3 h-3 text-white" />
                   </button>
@@ -775,12 +775,12 @@ const GoalForm = ({
                     id="jobsAppliedToWeeklyGoalMax"
                     value={goalMax}
                     onChange={handleMaxChange}
-                    className="bg-zinc-700 border-x-0 h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
+                    className="bg-black border h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
                   />
                   <button
                     type="button"
                     onClick={handleMaxIncrement}
-                    className="bg-zinc-700 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-black border hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdAdd className="w-3 h-3 text-white" />
                   </button>
@@ -812,7 +812,7 @@ const GoalForm = ({
                 id="monthlyInterviewGoal"
                 value={monthlyInterviewsGoal}
                 onChange={handleMonthlyInterviewsGoalChange}
-                className="bg-zinc-700 border h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
+                className="bg-black border h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
                 min={0}
               />
             </div>
@@ -889,7 +889,7 @@ const GoalForm = ({
           <div className="flex justify-start mt-6">
             <button
               type="submit"
-              className="flex items-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-full shadow-md transition-all duration-200 ease-in-out"
+              className="flex items-center px-6 py-3 bg-white text-black rounded-full shadow-md transition-all duration-200 ease-in-out"
             >
               Save goal settings
             </button>
