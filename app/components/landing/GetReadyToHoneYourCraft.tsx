@@ -50,7 +50,7 @@ function GetReadyToHoneYourCraft() {
   }, []);
 
   return (
-    <section className="max-w-5xl mx-auto pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 px-4 sm:px-6 lg:px-8 bg-zinc-800">
+    <section className="max-w-5xl mx-auto pt-20 pb-10 sm:pt-24 sm:pb-12 lg:pt-24 px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 items-center gap-y-6">
         <div className="flex flex-col items-center text-center sm:text-left sm:items-start animate-fade-in-up">
           <div className="flex flex-col sm:flex-row gap-x-4 gap-y-2">
