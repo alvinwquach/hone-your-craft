@@ -376,6 +376,7 @@ model UserConversation {
   conversationId String       @db.ObjectId
   user           User         @relation("UserToUserConversations", fields: [userId], references: [id], onDelete: Cascade)
   conversation   Conversation @relation("ConversationToUserConversations", fields: [conversationId], references: [id], onDelete: Cascade)
+  isDeleted      Boolean      @default(false) 
 
   @@unique([userId, conversationId])
 }
