@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { FaDiscord, FaGithub } from "react-icons/fa";
+import { FaDiscord, FaGithub, FaGoogle } from "react-icons/fa";
 import defaultPfp from "../.././public/images/icons/default_pfp.jpeg";
 
 export default function Login() {
@@ -24,6 +24,13 @@ export default function Login() {
               Log in
             </h1>
             <div className="space-y-3">
+              <button
+                onClick={() => signIn("google")}
+                className="group relative flex w-full items-center justify-center rounded-lg bg-zinc-800 px-4 py-3 text-sm font-medium transition-all duration-300 hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <FaGoogle className="mr-3 h-5 w-5 text-white transition-colors group-hover:text-white" />
+                <span className="text-white">Google</span>
+              </button>
               <button
                 onClick={() => signIn("github")}
                 className="group relative flex w-full items-center justify-center rounded-lg bg-zinc-800 px-4 py-3 text-sm font-medium transition-all duration-300 hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

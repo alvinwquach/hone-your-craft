@@ -32,7 +32,6 @@ export default function ClientJobDashboard({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate data readiness (props are from server)
     setIsLoading(false);
   }, []);
 
