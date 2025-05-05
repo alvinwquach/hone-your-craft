@@ -25,13 +25,14 @@ interface MeetingTabsProps {
 
 const Skeleton = ({ className }: { className: string }) => (
   <div
-    className={`bg-zinc-800 motion-safe:animate-pulse rounded ${className}`}
+    className={`border border-zinc-700 motion-safe:animate-pulse rounded ${className}`}
+    style={{ backgroundColor: "transparent" }}
   />
 );
 
 const EventSkeleton = () => (
-  <div className="bg-zinc-900 transition-all duration-200">
-    <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-zinc-800">
+  <div className="transition-all duration-200 border border-zinc-700">
+    <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-zinc-600">
       <div className="flex flex-col flex-shrink-0 min-w-[150px]">
         <Skeleton className="h-5 w-32 mb-2" />
         <Skeleton className="h-5 w-32 mb-2" />
@@ -47,7 +48,7 @@ const EventSkeleton = () => (
           <Skeleton className="h-4 w-20" />
         </div>
       </div>
-      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-800 hover:bg-zinc-700 transition-colors">
+      <div className="flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer hover:bg-zinc-700 transition-colors border border-zinc-600">
         <Skeleton className="w-4 h-4 text-gray-500 rounded-full" />
         <Skeleton className="h-4 w-20" />
       </div>
@@ -57,9 +58,8 @@ const EventSkeleton = () => (
 
 const DateSectionSkeleton = () => (
   <div className="mb-8">
-    <div className="sticky top-0 z-10 bg-zinc-900 pb-2 mb-4">
+    <div className="sticky top-0 z-10 pb-2 mb-4 border-b border-zinc-600">
       <Skeleton className="h-8 w-1/3 mx-4" />
-      <hr className="border-zinc-800" />
     </div>
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
@@ -83,9 +83,10 @@ export default function MeetingTabs({
 
   const MeetingCard = ({ event }: { event: Event }) => {
     const [expanded, setExpanded] = useState(false);
+
     return (
-      <div className="bg-zinc-900 transition-all duration-200">
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-zinc-800">
+      <div className="transition-all duration-200 border border-zinc-700 border border-zinc-700 rounded-lg">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4">
           <div className="flex flex-col flex-shrink-0">
             <div className="text-sm text-gray-400 mb-2 font-medium">
               {new Date(event.startTime).toLocaleTimeString([], {
@@ -99,7 +100,7 @@ export default function MeetingTabs({
               })}
             </div>
             <div className="pb-2">
-              <h3 className="text-lg font-semibold text-white mb-1 tracking-tight">
+              <h3 className="text-lg font-semibold tracking-tight">
                 {event.title}
               </h3>
               <p className="text-sm text-gray-400 line-clamp-2">
@@ -122,32 +123,36 @@ export default function MeetingTabs({
               e.stopPropagation();
               setExpanded(!expanded);
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer bg-zinc-700 hover:bg-zinc-600 transition-colors border border-zinc-600"
+            className="bg-white flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-colors border border-zinc-600"
           >
             <FaChevronRight
-              className={`w-4 h-4 text-white transition-transform duration-200 ${
+              className={`w-4 h-4 transition-transform duration-200 ${
                 expanded ? "rotate-90" : ""
               }`}
             />
-            <span className="text-sm font-medium text-white">Details</span>
+            <span className="text-sm font-medium">Details</span>
           </button>
         </div>
         {expanded && (
-          <div className="mt-4 pt-4 border-t border-zinc-800">
+          <div className="mt-4 p-4 border-t border-zinc-600">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="text-sm text-gray-400">
-                  Host: {event.creator.name || "Unknown"}
+                  <span className="whitespace-nowrap">
+                    Host: {event.creator.name || "Unknown"}
+                  </span>
                   {activeTab === "upcoming" && (
-                    <span className="text-gray-500 ml-1">
+                    <span className="text-gray-500 ml-1 whitespace-nowrap">
                       ({event.creator.email || "Unknown"})
                     </span>
                   )}
                 </div>
                 <div className="text-sm text-gray-400">
-                  Invitee: {event.participant.name || "Unknown"}
+                  <span className="whitespace-nowrap">
+                    Invitee: {event.participant.name || "Unknown"}
+                  </span>
                   {activeTab === "upcoming" && (
-                    <span className="text-gray-500 ml-1">
+                    <span className="text-gray-500 ml-1 whitespace-nowrap">
                       ({event.participant.email || "Unknown"})
                     </span>
                   )}
@@ -161,19 +166,20 @@ export default function MeetingTabs({
                     e.stopPropagation();
                     handleRescheduleEvent(event.id);
                   }}
-                  className="flex items-center justify-center w-10 h-10 md:w-28 md:h-10 rounded-full md:rounded-full bg-zinc-800 hover:bg-zinc-700 text-white transition-colors border border-zinc-700"
+                  className="flex items-center justify-center w-10 h-10 md:w-28 md:h-10 rounded-full md:rounded-full bg-zinc-700 hover:bg-zinc-600 text-white transition-colors border border-zinc-600"
                 >
                   <MdRefresh className="w-5 h-5 text-gray-400" />
                   <span className="hidden md:inline-block text-sm whitespace-nowrap ml-2">
                     Reschedule
                   </span>
                 </button>
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCancelEvent(event.id);
                   }}
-                  className="flex items-center justify-center w-10 h-10 md:w-28 md:h-10 rounded-full md:rounded-full bg-zinc-800 hover:bg-zinc-700 text-white transition-colors border border-zinc-700"
+                  className="flex items-center justify-center w-10 h-10 md:w-28 md:h-10 rounded-full md:rounded-full bg-zinc-700 hover:bg-zinc-600 text-white transition-colors border border-zinc-600"
                 >
                   <FaTrash className="w-5 h-5 text-gray-400" />
                   <span className="hidden md:inline-block text-sm whitespace-nowrap ml-2">
@@ -192,15 +198,18 @@ export default function MeetingTabs({
     const event = groupedUpcomingEvents[
       Object.keys(groupedUpcomingEvents)[0]
     ]?.find((event) => event.id === eventId);
+
     if (event) {
       const eventTypeId = event.eventType?.id;
       const startTime = event.startTime;
       const endTime = event.endTime;
+
       if (!eventTypeId) {
         console.error("Event type ID not found for event:", eventId);
         toast.error("Unable to reschedule: Event type not found");
         return;
       }
+
       router.push(
         `/reschedule/${eventTypeId}?eventId=${eventId}&start=${startTime}&end=${endTime}`
       );
@@ -222,8 +231,8 @@ export default function MeetingTabs({
 
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
-      <div className="bg-zinc-900 rounded-xl shadow-lg overflow-hidden">
-        <div className="border-b border-zinc-800">
+      <div className="rounded-xl shadow-lg overflow-hidden border border-zinc-700">
+        <div className="border-b border-zinc-600">
           <div className="flex flex-wrap -mb-px justify-start px-4 py-2">
             <button
               onClick={() => setActiveTab("upcoming")}
@@ -279,7 +288,7 @@ export default function MeetingTabs({
               {activeTab === "upcoming" &&
                 Object.entries(groupedUpcomingEvents).map(([date, events]) => (
                   <div key={date} className="mb-8 last:mb-0">
-                    <div className="sticky top-0 z-10 bg-zinc-900 pb-2 mb-4">
+                    <div className="sticky top-0 z-10 pb-2 mb-4 border-b border-zinc-600">
                       <h2 className="text-xl font-semibold text-white px-4 mb-2">
                         {new Date(date).toLocaleDateString("en-US", {
                           weekday: "long",
@@ -288,7 +297,6 @@ export default function MeetingTabs({
                           day: "numeric",
                         })}
                       </h2>
-                      <hr className="border-zinc-800" />
                     </div>
                     <div className="space-y-4">
                       {events.map((event) => (
@@ -300,7 +308,7 @@ export default function MeetingTabs({
               {activeTab === "past" &&
                 Object.entries(groupedPastEvents).map(([date, events]) => (
                   <div key={date} className="mb-8 last:mb-0">
-                    <div className="sticky top-0 z-10 bg-zinc-900 pb-2 mb-4">
+                    <div className="sticky top-0 z-10 pb-2 mb-4 border-b border-zinc-600">
                       <h2 className="text-xl font-semibold text-white px-4 mb-2">
                         {new Date(date).toLocaleDateString("en-US", {
                           weekday: "long",
@@ -309,7 +317,6 @@ export default function MeetingTabs({
                           day: "numeric",
                         })}
                       </h2>
-                      <hr className="border-zinc-800" />
                     </div>
                     <div className="space-y-4">
                       {events.map((event) => (
