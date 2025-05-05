@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
+import { FaTrash, FaSave } from "react-icons/fa";
 
 interface Job {
   company: string;
@@ -22,6 +23,7 @@ interface JobOffersProps {
   onEditOffer?: (offerId: string, updatedSalary: string) => void;
   onDeleteOffer?: (offerId: string) => void;
 }
+
 const Skeleton = ({ className }: { className: string }) => (
   <div
     className={`bg-zinc-800 motion-safe:animate-pulse rounded ${className}`}
@@ -81,6 +83,7 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
   const handleSaveOffer = async (id: string) => {
     const formattedSalary = editingOffer[id] || "";
     const rawSalary = getRawSalary(formattedSalary);
+
     if (rawSalary) {
       try {
         await onEditOffer?.(id, rawSalary);
@@ -101,6 +104,7 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
       "Are you sure you want to delete this offer?"
     );
     if (!confirmed) return;
+
     try {
       await onDeleteOffer?.(offerId);
       toast.success("Offer Deleted");
@@ -180,7 +184,7 @@ function JobOfferCard({
   formatSalaryDisplay,
 }: JobOfferCardProps) {
   return (
-    <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 shadow-sm">
+    <div className="p-6 rounded-xl border border-zinc-800 shadow-sm">
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div className="flex-shrink-0">
@@ -201,13 +205,13 @@ function JobOfferCard({
                   : "No deadline set"}
               </p>
               <div className="mt-4">
-                <label className="text-sm text-gray-400">Salary:</label>
-                <input
-                  type="text"
-                  value={editingOffer || formatSalaryDisplay(offer.salary)}
+                <label className="text-sm text-gray-400">Notes:</label>
+                <textarea
+                  value={editingOffer || ""}
                   onChange={(e) => onEditOffer?.(e.target.value)}
-                  className="w-full mt-2 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter salary"
+                  className="w-full mt-2 p-3 bg-black border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={4}
+                  placeholder="Enter notes..."
                 />
               </div>
             </div>
@@ -216,15 +220,29 @@ function JobOfferCard({
         <div className="flex justify-end space-x-3">
           <button
             onClick={onDeleteOffer}
-            className="px-4 py-2 text-sm font-medium text-red-400 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors border border-zinc-700"
+            className="group relative flex items-center justify-center w-10 h-10 md:w-28 md:h-10 rounded-full md:rounded-full bg-zinc-800 hover:bg-zinc-700 text-white transition-colors border border-zinc-700"
           >
-            Delete Offer
+            <FaTrash className="w-5 h-5 text-gray-400" />
+            <span className="hidden md:inline-block text-sm whitespace-nowrap ml-2">
+              Delete
+            </span>
+            <span className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 bg-zinc-700 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity md:hidden">
+              Delete
+              <div className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-zinc-700" />
+            </span>
           </button>
           <button
             onClick={onSaveOffer}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            className="group relative flex items-center justify-center w-10 h-10 md:w-28 md:h-10 rounded-full md:rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors border border-zinc-700"
           >
-            Save Changes
+            <FaSave className="w-5 h-5 md:hidden" />
+            <span className="hidden md:inline-block text-sm whitespace-nowrap">
+              Save
+            </span>
+            <span className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 bg-zinc-700 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity md:hidden">
+              Save
+              <div className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-zinc-700" />
+            </span>
           </button>
         </div>
       </div>
