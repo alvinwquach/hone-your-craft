@@ -142,11 +142,11 @@ function JobRejections({
 
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
-      <div className="bg-zinc-900 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-black border border-zinc-700 rounded-xl shadow-lg overflow-hidden">
         <div className="p-6">
           {Object.entries(groupedRejections).map(([date, rejections]) => (
             <div key={date} className="mb-8 last:mb-0">
-              <div className="sticky top-0 z-10 bg-zinc-900 pb-2 mb-4">
+              <div className="sticky top-0 z-10 pb-2 mb-4">
                 <h2 className="text-xl font-semibold text-white px-4 mb-2">
                   {new Date(date).toLocaleDateString("en-US", {
                     weekday: "long",
@@ -197,7 +197,7 @@ function JobRejectionCard({
   onDeleteRejection,
 }: JobRejectionCardProps) {
   return (
-    <div className="bg-zinc-900 transition-all duration-200">
+    <div className="transition-all duration-200">
       <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-zinc-800">
         <div className="flex flex-col flex-shrink-0">
           <div className="text-sm text-gray-400 mb-2 font-medium">
@@ -242,7 +242,7 @@ function JobRejectionCard({
                   editingNotes !== undefined ? editingNotes : rejection.notes
                 }
                 onChange={(e) => onNotesChange?.(e.target.value)}
-                className="w-full mt-2 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-2 p-3 bg-black border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={4}
                 placeholder="Enter notes..."
               />
