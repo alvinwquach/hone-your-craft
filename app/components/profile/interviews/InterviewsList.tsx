@@ -80,14 +80,14 @@ export default function InterviewsList({
 
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
-      <div className="bg-zinc-900 rounded-xl shadow-lg overflow-hidden">
+      <div className="border border-zinc-700 rounded-xl shadow-lg overflow-hidden">
         <div className="p-6">
-          <div className="sticky top-0 z-10 bg-zinc-900 pb-4 mb-4 border-b border-zinc-800">
+          <div className="sticky top-0 z-10 pb-4 mb-4 border-b border-zinc-800">
             <div className="flex items-center justify-between px-4 py-2">
               <span className="font-semibold text-white">
                 {conversionRate.message}
               </span>
-              <FaCalendarDay className="h-5 w-5 text-gray-400" />
+              <FaCalendarDay className="h-5 w-5 text-white" />
             </div>
           </div>
 
@@ -108,7 +108,7 @@ export default function InterviewsList({
             <>
               {Object.entries(upcomingInterviews).map(([date, interviews]) => (
                 <div key={date} className="mb-8 last:mb-0">
-                  <div className="sticky top-0 z-10 bg-zinc-900 pb-2 mb-4">
+                  <div className="sticky top-0 z-10 pb-2 mb-4">
                     <h2 className="text-xl font-semibold text-white px-4 mb-2">
                       {date === "No Date"
                         ? "No Date Specified"
@@ -125,7 +125,7 @@ export default function InterviewsList({
                     {interviews.map((interview) => (
                       <div
                         key={interview.id}
-                        className="relative p-4 mb-4 rounded-lg border border-zinc-700 bg-zinc-900 shadow-md hover:shadow-lg transition-shadow hover:scale-[1.01] active:scale-[0.99]"
+                        className="relative p-4 mb-4 rounded-lg border border-zinc-700 shadow-md hover:shadow-lg transition-shadow hover:scale-[1.01] active:scale-[0.99]"
                       >
                         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                           <div className="flex items-center flex-shrink-0 mb-4 md:mb-0">
