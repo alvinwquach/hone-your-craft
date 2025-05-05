@@ -20,12 +20,10 @@ export default async function Interviews() {
             <InterviewCalendarDownloadButton />
           )}
         </div>
-        <div className="pt-16">
-          <InterviewsList
-            upcomingInterviews={upcomingInterviews}
-            conversionRate={conversionRate}
-          />
-        </div>
+        <InterviewsList
+          upcomingInterviews={upcomingInterviews}
+          conversionRate={conversionRate}
+        />
       </div>
     </section>
   );
