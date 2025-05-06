@@ -79,7 +79,7 @@ function Track() {
     <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       {userRole === "CANDIDATE" ? (
         <>
-          <div className="rounded-lg bg-zinc-900 shadow-md mb-8">
+          <div className="rounded-lg border border-zinc-700 shadow-md mb-8">
             <div className="flex flex-col md:flex-row gap-x-4 p-4">
               <CompanyTitleSearchForm
                 companySearchString={companySearchString}

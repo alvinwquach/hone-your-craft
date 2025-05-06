@@ -79,7 +79,7 @@ function JobCard({
   return (
     <div>
       <div
-        className="relative bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border border-zinc-700 rounded-2xl shadow-xl transition-all duration-300 transform backdrop-blur-sm bg-opacity-80 hover:bg-opacity-100 active:scale-[0.995]"
+        className="relative from-zinc-900 via-zinc-800 to-zinc-900 border border-zinc-700 rounded-2xl shadow-xl transition-all duration-300 transform backdrop-blur-sm bg-opacity-80 hover:bg-opacity-100 active:scale-[0.995]"
         {...draggableProps}
         {...draghandleProps}
         ref={innerRef}
