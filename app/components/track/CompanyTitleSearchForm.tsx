@@ -23,12 +23,12 @@ function CompanyTitleSearchForm({
       </label>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <MdBusiness className="w-5 h-5 text-slate-400" />
+          <MdBusiness className="w-5 h-5 text-white" />
         </div>
         <input
           type="search"
           id="company-title-search"
-          className="block w-full p-4 pl-10 text-slate-700 border rounded-lg bg-zinc-800 border-slate-200 text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
+          className="block w-full p-4 pl-10 text-slate-700 border rounded-lg bg-black border-slate-200 text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
           placeholder="Search a company name"
           value={companySearchString}
           onChange={handleInputChange}
