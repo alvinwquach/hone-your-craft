@@ -109,7 +109,7 @@ const ConnectionsCard = ({
   };
 
   const renderSkeletonCard = () => (
-    <div className="bg-zinc-800 p-4 rounded-lg relative animate-pulse">
+    <div className="border border-zinc-700 p-4 rounded-lg relative animate-pulse">
       <Skeleton className="w-16 h-16 rounded-full mb-2" />
       <Skeleton className="w-32 h-5 mb-2" />
       <Skeleton className="w-24 h-4 mb-2" />
@@ -131,7 +131,7 @@ const ConnectionsCard = ({
   );
 
   return (
-    <div className="mt-4 md:flex bg-zinc-900 rounded-lg overflow-hidden">
+    <div className="mt-4 md:flex border border-zinc-700 rounded-lg overflow-hidden">
       <div className="md:w-1/4 w-full border-gray-700">
         <ul className="flex flex-col space-y-4 p-4">
           <li>
@@ -204,7 +204,7 @@ const ConnectionsCard = ({
                     {users.map((user) => (
                       <div
                         key={user.id}
-                        className="bg-zinc-800 p-4 rounded-lg relative"
+                        className="border border-zinc-700  p-4 rounded-lg relative"
                       >
                         <Image
                           src={user.image || defaultPfp}
