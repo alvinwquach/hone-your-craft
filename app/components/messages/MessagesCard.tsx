@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import { RiMailUnreadLine } from "react-icons/ri";
 import { LuMailOpen } from "react-icons/lu";
@@ -51,7 +52,6 @@ const MessagesCard = ({
     Map<string, boolean>
   >(initialMessageReadStatus);
 
-  // Handle clicks outside menu to close it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       let clickedInsideMenu = false;
@@ -233,17 +233,96 @@ const MessagesCard = ({
   };
 
   const getReplyToEmail = (message: any) => {
+    const currentUserId = userData?.user?.id || "";
     const currentUserEmail = userData?.user?.email || "";
+
+    if (!message) return "Unknown Email";
+
     if (activeTab === "inbox" || activeTab === "mentions") {
-      const senderEmail =
-        message.messages?.[0]?.sender?.email || message.sender?.email;
-      return senderEmail !== currentUserEmail ? senderEmail : "Unknown Email";
+      const firstMessage = message.messages?.[0];
+
+      if (
+        firstMessage &&
+        firstMessage.senderId === currentUserId &&
+        message.receiverIds?.length > 0
+      ) {
+        const participantId = message.receiverIds.find(
+          (id: string) => id !== currentUserId
+        );
+        if (participantId) {
+          const participant =
+            message.participants?.find((p: any) => p.id === participantId) ||
+            users.find((user) => user.id === participantId);
+          if (participant?.email && participant.email !== currentUserEmail) {
+            return participant.email;
+          }
+        }
+      }
+
+      if (
+        firstMessage &&
+        firstMessage.sender?.email &&
+        firstMessage.senderId !== currentUserId
+      ) {
+        return firstMessage.sender.email;
+      }
+
+      if (firstMessage && firstMessage.senderId !== currentUserId) {
+        const sender =
+          message.participants?.find(
+            (p: any) => p.id === firstMessage.senderId
+          ) || users.find((user) => user.id === firstMessage.senderId);
+        if (sender?.email && sender.email !== currentUserEmail) {
+          return sender.email;
+        }
+      }
+
+      if (message.receiverIds?.length > 0) {
+        const otherReceiverId = message.receiverIds.find(
+          (id: string) => id !== currentUserId
+        );
+        if (otherReceiverId) {
+          const receiver =
+            message.participants?.find((p: any) => p.id === otherReceiverId) ||
+            users.find((user) => user.id === otherReceiverId);
+          if (receiver?.email && receiver.email !== currentUserEmail) {
+            return receiver.email;
+          }
+        }
+      }
+
+      if (firstMessage?.senderId === currentUserId) {
+        return currentUserEmail || "Unknown Email";
+      }
+
+      return "Unknown Email";
     } else if (activeTab === "sent") {
-      const receiverEmail = message.receivers?.[0]?.email;
-      return receiverEmail !== currentUserEmail
-        ? receiverEmail
-        : "Unknown Email";
+      const receiver = message.receivers?.find(
+        (r: any) => r.email !== currentUserEmail
+      );
+      if (receiver?.email) {
+        return receiver.email;
+      }
+      if (message.receiverIds?.[0]) {
+        const receiver =
+          message.participants?.find(
+            (p: any) => p.id === message.receiverIds[0]
+          ) || users.find((user) => user.id === message.receiverIds[0]);
+        if (receiver?.email && receiver.email !== currentUserEmail) {
+          return receiver.email;
+        }
+      }
+      return "Unknown Email";
+    } else if (activeTab === "trash") {
+      const recipient = message.recipients?.find(
+        (r: any) => r.email !== currentUserEmail
+      );
+      if (recipient?.email) {
+        return recipient.email;
+      }
+      return "Unknown Email";
     }
+
     return "Unknown Email";
   };
 
