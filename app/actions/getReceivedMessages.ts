@@ -5,25 +5,16 @@ import getCurrentUser from "@/app/actions/getCurrentUser";
 import { unstable_cache } from "next/cache";
 import { redirect } from "next/navigation";
 
-interface DBMessage {
-  id: string;
-  senderId: string;
-  content: string;
-  createdAt: Date;
-  subject: string | null;
-  messageType: string;
-  isReadByRecipient: boolean;
-  isDeletedBySender: boolean;
-  isDeletedByRecipient: boolean;
-}
-
 const getCachedConversations = unstable_cache(
   async (userId: string) => {
     const conversations = await prisma.conversation.findMany({
       where: {
         OR: [{ senderId: userId }, { receiverIds: { has: userId } }],
       },
-      include: {
+      select: {
+        id: true,
+        senderId: true,
+        receiverIds: true,
         messages: {
           orderBy: { createdAt: "desc" },
           select: {
@@ -49,17 +40,35 @@ const getCachedConversations = unstable_cache(
       filteredConversations.map(async (conversation) => {
         const messages = conversation.messages;
         const senderIds = [...new Set(messages.map((msg) => msg.senderId))];
-        const senders = await prisma.user.findMany({
-          where: { id: { in: senderIds } },
+        const receiverIds = conversation.receiverIds.filter(
+          (id) => id !== userId
+        );
+        const participantIds = [...new Set([...senderIds, ...receiverIds])];
+
+        const participants = await prisma.user.findMany({
+          where: { id: { in: participantIds } },
           select: { id: true, name: true, email: true, image: true },
         });
 
         return {
           id: conversation.id,
+          senderId: conversation.senderId,
+          receiverIds: conversation.receiverIds,
+          participants: participants.map((p) => ({
+            id: p.id,
+            name: p.name,
+            email: p.email,
+            image: p.image,
+          })),
           messages: messages.map((msg) => ({
             ...msg,
             createdAt: msg.createdAt.toISOString(),
-            sender: senders.find((s) => s.id === msg.senderId)!,
+            sender: participants.find((p) => p.id === msg.senderId) || {
+              id: msg.senderId,
+              name: null,
+              email: null,
+              image: null,
+            },
           })),
         };
       })
