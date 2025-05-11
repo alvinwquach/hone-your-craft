@@ -1,48 +1,28 @@
-"use server";
+import { Suspense } from "react";
+import InfiniteScrollClient, {
+  JobMatchCardSkeleton,
+} from "@/app/components/ui/InfiniteScrollClient";
 
-import JobMatchCard from "@/app/components/profile/match/JobMatchCard";
-import InfiniteScrollClient from "@/app/components/ui/InfiniteScrollClient";
-import { JobMatchCardSkeleton } from "@/app/components/ui/InfiniteScrollClient";
-import { getUserJobPostingsWithSkillMatch } from "../../actions/getUserJobPostingsWithSkillMatch";
+interface JobMatchesSkeletonProps {
+  jobCount?: number;
+}
 
-export default async function JobMatches() {
-  const initialData = await getUserJobPostingsWithSkillMatch(1);
-
-  if (!initialData) {
-    return (
+function JobMatchesSkeleton({ jobCount = 9 }: JobMatchesSkeletonProps) {
+  return (
+    <section className="flex-1 ml-16 md:ml-16 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {Array.from({ length: 9 }).map((_, i) => (
-          <JobMatchCardSkeleton key={`null-skeleton-${i}`} />
+        {Array.from({ length: jobCount }).map((_, i) => (
+          <JobMatchCardSkeleton key={`skeleton-${i}`} />
         ))}
       </div>
-    );
-  }
-
-  if (initialData.jobs.length === 0) {
-    return (
-      <p className="text-center text-gray-400 py-8 mt-6">
-        No job matches found
-      </p>
-    );
-  }
-
-  return (
-    <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
-      <div className="mt-6">
-        {initialData.currentPage === 1 && initialData.totalPages === 1 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {initialData.jobs.slice(0, 9).map((job) => (
-              <JobMatchCard key={job.id} job={job} />
-            ))}
-          </div>
-        ) : (
-          <InfiniteScrollClient
-            initialJobs={initialData.jobs.slice(0, 9)}
-            initialPage={initialData.currentPage}
-            totalPages={initialData.totalPages}
-          />
-        )}
-      </div>
     </section>
+  );
+}
+
+export default function JobMatches() {
+  return (
+    <Suspense fallback={<JobMatchesSkeleton jobCount={9} />}>
+      <InfiniteScrollClient />
+    </Suspense>
   );
 }

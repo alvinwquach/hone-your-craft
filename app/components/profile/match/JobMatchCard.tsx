@@ -37,7 +37,6 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
       const angleDeg = (i / 100) * 180;
       const angleRad = (angleDeg * Math.PI) / 180;
 
-      // Calculate positions for major and minor ticks
       const x1 = centerX + radius * Math.cos(Math.PI - angleRad);
       const y1 = centerY - radius * Math.sin(Math.PI - angleRad);
       const x2 = centerX + innerRadius * Math.cos(Math.PI - angleRad);
@@ -101,7 +100,7 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
   };
 
   return (
-    <div className="relative bg-zinc-900 border border-gray-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
+    <div className="relative border border-zinc-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <h3 className="text-xl font-bold text-white tracking-tight">
