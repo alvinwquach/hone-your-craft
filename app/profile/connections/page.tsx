@@ -1,4 +1,3 @@
-// app/connections/page.tsx
 import { getAllUsers } from "@/app/actions/getAllUsers";
 import { getAllConnections } from "@/app/actions/getAllConnections";
 import { getConnectionRequests } from "@/app/actions/getConnectionRequests";
