@@ -199,7 +199,7 @@ const WeeklyApplicationGoalTracker = ({
 );
 
 const GoalFormSkeleton = () => (
-  <div className="rounded-lg p-6 shadow-lg relative bg-zinc-900">
+  <div className="rounded-lg p-6 shadow-lg relative">
     <Skeleton className="h-6 w-1/3 mb-4 bg-zinc-700" />
     <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
       {[...Array(8)].map((_, i) => (
