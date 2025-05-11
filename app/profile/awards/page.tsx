@@ -66,7 +66,7 @@ export default async function Awards() {
     <Suspense
       fallback={<AwardsSkeleton totalAchievements={totalAchievements} />}
     >
-      <section className="max-w-screen-xxl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
+      <section className="flex-1 ml-16 md:ml-16 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
         <div className="container mx-auto p-4">
           <AwardsTabs
             initialData={{
