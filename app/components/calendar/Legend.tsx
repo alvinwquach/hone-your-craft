@@ -23,8 +23,8 @@ function LegendItem({ color, label }: InterviewType) {
 
 function Legend({ interviewTypes }: LegendProps) {
   return (
-    <div className="bg-zinc-900 p-4 rounded-lg shadow-md max-w-md mx-auto border border-zinc-700">
-      <div className="max-h-[1100px] overflow-y-auto md:overflow-auto">
+    <div className="p-4 shadow-md w-full mx-auto border border-zinc-700">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-h-[1100px] overflow-y-auto">
         {interviewTypes.map((type) => (
           <LegendItem key={type.label} color={type.color} label={type.label} />
         ))}
@@ -32,5 +32,6 @@ function Legend({ interviewTypes }: LegendProps) {
     </div>
   );
 }
+
 
 export default Legend;
