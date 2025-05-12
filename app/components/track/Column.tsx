@@ -52,7 +52,10 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
       {jobs.length > 0 && (
         <div className="space-y-2 mt-2 max-h-[calc(100vh-250px)] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
           {[...Array(jobs.length)].map((_, i) => (
-            <div key={i} className="rounded boder-zinc-700 animate-pulse p-4">
+            <div
+              key={i}
+              className="relative from-zinc-900 via-zinc-800 to-zinc-900 border border-zinc-700 rounded-2xl shadow-xl transition-all duration-300 transform backdrop-blur-sm bg-opacity-80 hover:bg-opacity-100 active:scale-[0.995] p-4"
+            >
               <div className="h-2 w-3/4 mb-2 bg-zinc-700 rounded animate-pulse" />
               <div className="h-2 w-2/4 mb-3 bg-zinc-700 rounded animate-pulse" />
             </div>
