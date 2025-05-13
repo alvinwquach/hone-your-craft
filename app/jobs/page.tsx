@@ -93,10 +93,7 @@ function CandidateJobListSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-zinc-900 p-6 rounded-lg border border-zinc-700"
-        >
+        <div key={i} className="p-6 rounded-lg border border-zinc-700">
           <Skeleton className="h-6 w-1/3 mb-2 bg-zinc-700" />
           <Skeleton className="h-5 w-1/4 mb-2 bg-zinc-700" />
           <Skeleton className="h-4 w-1/5 bg-zinc-700" />
