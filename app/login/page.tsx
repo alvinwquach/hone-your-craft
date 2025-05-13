@@ -7,16 +7,16 @@ import defaultPfp from "../.././public/images/icons/default_pfp.jpeg";
 
 export default function Login() {
   return (
-    <section className="flex items-center justify-center min-h-screen">
+    <section className="flex items-center justify-center min-h-screen bg-zinc-900">
       <div className="container mx-auto flex h-full items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-lg border border-zinc-700 backdrop-blur-sm bg-black p-8 shadow-xl">
+        <div className="w-full max-w-md rounded-xl border border-zinc-800 backdrop-blur-sm bg-black/90 p-8 shadow-lg">
           <div className="mb-8 flex justify-center">
             <Image
               src={defaultPfp}
               alt="Default profile picture"
               width={64}
               height={64}
-              className="rounded-full border-4 border-white shadow-md"
+              className="rounded-full border-4 border-zinc-200 shadow-md transition-all duration-300 hover:border-white"
             />
           </div>
           <div className="space-y-4">
@@ -24,26 +24,26 @@ export default function Login() {
               Log in
             </h1>
             <div className="space-y-3">
-              <button
+              {/* <button
                 onClick={() => signIn("google")}
-                className="group relative flex w-full items-center justify-center rounded-lg bg-white px-4 py-3 text-sm font-medium transition-all duration-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="group relative flex w-full items-center justify-center rounded-lg border-2 border-zinc-700 bg-transparent px-4 py-3 text-sm font-medium transition-all duration-300 hover:border-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <FaGoogle className="mr-3 h-5 w-5 text-black transition-colors group-hover:text-gray-900" />
-                <span className="text-black">Google</span>
-              </button>
+                <FaGoogle className="mr-3 h-5 w-5 text-white transition-colors group-hover:text-white" />
+                <span className="text-white">Continue with Google</span>
+              </button> */}
               <button
                 onClick={() => signIn("github")}
-                className="group relative flex w-full items-center justify-center rounded-lg bg-white px-4 py-3 text-sm font-medium transition-all duration-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="group relative flex w-full items-center justify-center rounded-lg border-2 border-zinc-700 bg-transparent px-4 py-3 text-sm font-medium transition-all duration-300 hover:border-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <FaGithub className="mr-3 h-5 w-5 text-black transition-colors group-hover:text-gray-900" />
-                <span className="text-black">GitHub</span>
+                <FaGithub className="mr-3 h-5 w-5 text-white transition-colors group-hover:text-white" />
+                <span className="text-white">Continue with GitHub</span>
               </button>
               <button
                 onClick={() => signIn("discord")}
-                className="group relative flex w-full items-center justify-center rounded-lg bg-white px-4 py-3 text-sm font-medium transition-all duration-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="group relative flex w-full items-center justify-center rounded-lg border-2 border-zinc-700 bg-transparent px-4 py-3 text-sm font-medium transition-all duration-300 hover:border-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <FaDiscord className="mr-3 h-5 w-5 text-black transition-colors group-hover:text-gray-900" />
-                <span className="text-black">Discord</span>
+                <FaDiscord className="mr-3 h-5 w-5 text-white transition-colors group-hover:text-white" />
+                <span className="text-white">Continue with Discord</span>
               </button>
             </div>
           </div>
