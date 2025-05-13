@@ -34,7 +34,7 @@ const navigationConfig: NavigationConfig = {
     { href: "/", text: "Home", icon: AiOutlineHome },
     { href: "/profile", text: "Profile", icon: FiUser },
     { href: "/messages", text: "Messages", icon: FiMessageCircle },
-    { href: "/calendar", text: "Calendar", icon: FiCalendar },
+    { href: "/calendar/event-types", text: "Calendar", icon: FiCalendar },
     { href: "/jobs", text: "Jobs", icon: FaBriefcase },
   ],
   CANDIDATE: [
@@ -42,7 +42,7 @@ const navigationConfig: NavigationConfig = {
     { href: "/profile", text: "Profile", icon: FiUser },
     { href: "/messages", text: "Messages", icon: FiMessageCircle },
     { href: "/track", text: "Track", icon: FiClipboard },
-    { href: "/calendar", text: "Calendar", icon: FiCalendar },
+    { href: "/calendar/event-types", text: "Calendar", icon: FiCalendar },
     { href: "/jobs", text: "Jobs", icon: FaBriefcase },
   ],
 };
@@ -229,17 +229,26 @@ function ProfileMenu({ isAuthenticated }: { isAuthenticated: boolean }) {
 
 function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
   const pathname = usePathname();
+  const isProfilePage = pathname?.startsWith("/profile");
   const gridCols = Math.min(navigation.length, 6);
 
   return (
     <div
-      className="fixed z-40 w-full max-w-sm md:max-w-xl h-16 -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-full bottom-4 left-1/2 lg:bottom-6"
+      className={`
+        fixed z-40 
+        ${
+          isProfilePage
+            ? "w-[80%] sm:w-[75%] md:max-w-sm lg:max-w-xl left-[calc(50%+1.5rem)]"
+            : "w-[85%] sm:w-[80%] md:max-w-sm lg:max-w-xl left-1/2"
+        } 
+        h-12 sm:h-14 md:h-16 -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-full bottom-3 sm:bottom-4 lg:bottom-6
+      `}
       style={{ "--grid-cols": gridCols } as React.CSSProperties}
     >
       <div
-        className="grid h-full max-w-xl mx-auto"
+        className="grid h-full max-w-full mx-auto"
         style={{
-          gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+          gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
         }}
       >
         {navigation.map((item, index) => {
@@ -274,7 +283,7 @@ function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
               >
                 <item.icon
                   className={`
-                    w-5 h-5 mb-1 transition-colors duration-200
+                    w-4 h-4 sm:w-5 sm:h-5 md:w-5 md:h-5 mb-1 transition-colors duration-200
                     ${
                       isActive
                         ? "text-zinc-100 hover:text-zinc-50"
@@ -287,7 +296,7 @@ function BottomNavigation({ navigation }: { navigation: NavigationItem[] }) {
               </Link>
               <div
                 className={`
-                  absolute bottom-full mb-2 invisible group-hover:visible inline-block px-3 py-2 text-sm font-medium
+                  absolute bottom-full mb-2 invisible group-hover:visible inline-block px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm font-medium
                   bg-zinc-800 rounded-lg shadow-xs opacity-0 group-hover:opacity-100
                   ${isActive ? "visible opacity-100" : ""}
                 `}
