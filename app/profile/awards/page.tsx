@@ -44,16 +44,6 @@ function AwardsSkeleton({ totalAchievements = 6 }: AwardsSkeletonProps) {
 export default async function Awards() {
   const achievementsData = await getAchievements();
 
-  if (!achievementsData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="animate-pulse p-4 rounded-lg bg-gray-800 text-white">
-          Unable to load achievements
-        </div>
-      </div>
-    );
-  }
-
   const { jobAchievements, interviewAchievements, holidayAchievements } =
     achievementsData;
   const totalAchievements = [
