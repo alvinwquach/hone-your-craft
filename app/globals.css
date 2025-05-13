@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
   --fc-button-bg-color: hsl(var(--primary));
   --fc-button-text-color: hsl(var(--primary-foreground));
