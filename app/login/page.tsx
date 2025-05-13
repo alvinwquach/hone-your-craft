@@ -7,7 +7,7 @@ import defaultPfp from "../.././public/images/icons/default_pfp.jpeg";
 
 export default function Login() {
   return (
-    <section className="flex items-center justify-center min-h-screen bg-zinc-900">
+    <section className="flex items-center justify-center min-h-screen">
       <div className="container mx-auto flex h-full items-center justify-center px-4">
         <div className="w-full max-w-md rounded-xl border border-zinc-800 backdrop-blur-sm bg-black/90 p-8 shadow-lg">
           <div className="mb-8 flex justify-center">
