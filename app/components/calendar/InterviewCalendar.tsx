@@ -166,8 +166,17 @@ function InterviewCalendar({ interviews, events }: InterviewCalendarProps) {
     const isInterview = !!event.extendedProps.interviewData;
     if (isInterview) {
       const interview = event.extendedProps.interviewData;
+
+      const interviewLabel =
+        clientInterviewTypes.find(
+          (type) => type.type === interview.interviewType
+        )?.label || interview.interviewType;
+
       return (
         <div className="mt-2 relative text-white">
+          <div className="text-xs font-semibold whitespace-normal">
+            {interviewLabel}
+          </div>
           <div className="text-xs font-semibold whitespace-normal">
             {truncateText(interview.job.title, 40)}
           </div>
