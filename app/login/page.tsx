@@ -24,13 +24,13 @@ export default function Login() {
               Log in
             </h1>
             <div className="space-y-3">
-              <button
+              {/* <button
                 onClick={() => signIn("google")}
                 className="group relative flex w-full items-center justify-center rounded-lg border-2 border-zinc-700 bg-transparent px-4 py-3 text-sm font-medium transition-all duration-300 hover:border-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <FaGoogle className="mr-3 h-5 w-5 text-white transition-colors group-hover:text-white" />
                 <span className="text-white">Continue with Google</span>
-              </button>
+              </button> */}
               <button
                 onClick={() => signIn("github")}
                 className="group relative flex w-full items-center justify-center rounded-lg border-2 border-zinc-700 bg-transparent px-4 py-3 text-sm font-medium transition-all duration-300 hover:border-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
