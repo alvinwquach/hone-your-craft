@@ -17,6 +17,7 @@ const JobApplicationStatusChart = ({
   jobApplicationStatus,
 }: JobApplicationStatusChartProps) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [windowWidth, setWindowWidth] = useState<number>(0);
   const [windowHeight, setWindowHeight] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,18 +37,24 @@ const JobApplicationStatusChart = ({
   });
 
   useEffect(() => {
-    if (isLoading || !jobApplicationStatus || jobApplicationStatus.length === 0)
+    if (
+      isLoading ||
+      !jobApplicationStatus ||
+      jobApplicationStatus.length === 0 ||
+      !containerRef.current
+    )
       return;
 
-    const width = 400;
-    const height = 350;
-    const margin = 40;
+    const containerWidth = containerRef.current.getBoundingClientRect().width;
+    const width = containerWidth;
+    const height = 400;
+    const margin = 60;
     const radius = Math.min(width, height) / 2 - margin;
 
     const svg = d3
       .select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
       .html("")
       .append("g")
       .attr("transform", `translate(${width / 2},${height / 2})`);
@@ -62,7 +69,7 @@ const JobApplicationStatusChart = ({
     const color = d3
       .scaleOrdinal<string>()
       .domain(jobApplicationStatus.map((d) => d.status))
-      .range(["#3b82f6"]);
+      .range(["#3b82f6", "#60a5fa", "#93c5fd"]); // Multiple shades of blue for distinction
 
     const pieData = pie(jobApplicationStatus);
 
@@ -78,11 +85,21 @@ const JobApplicationStatusChart = ({
       .attr("d", arc)
       .attr("fill", (d) => color(d.data.status));
 
+    // Adjust text positioning to prevent overlap and ensure visibility
     arcs
       .append("text")
-      .attr("transform", (d) => `translate(${arc.centroid(d)})`)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "14px")
+      .attr("transform", (d) => {
+        const centroid = arc.centroid(d);
+        const midAngle = Math.atan2(centroid[1], centroid[0]);
+        const x = Math.cos(midAngle) * (radius + 20); // Move text further out
+        const y = Math.sin(midAngle) * (radius + 20);
+        return `translate(${x},${y})`;
+      })
+      .attr("text-anchor", (d) => {
+        const centroid = arc.centroid(d);
+        return centroid[0] >= 0 ? "start" : "end";
+      })
+      .attr("font-size", "12px")
       .attr("fill", "#fff")
       .text((d) => `${d.data.status}: ${d.data.count}`);
   }, [jobApplicationStatus, windowWidth, windowHeight, isLoading]);
@@ -100,8 +117,8 @@ const JobApplicationStatusChart = ({
           />
         </div>
       ) : (
-        <div className="flex justify-center">
-          <svg ref={svgRef}></svg>
+        <div ref={containerRef} className="w-full flex justify-center">
+          <svg ref={svgRef} className="w-full h-auto"></svg>
         </div>
       )}
     </div>
