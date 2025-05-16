@@ -155,35 +155,35 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
             <svg ref={svgRef} className="w-full h-auto"></svg>
           </div>
           {totalPages > 1 && (
-            <div className="mt-4 flex justify-center items-center space-x-3">
+            <div className="mt-4 flex flex-wrap justify-center items-center gap-2">
               <button
                 onClick={() => goToPage(1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
               >
                 First
               </button>
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
               >
                 Previous
               </button>
-              <span className="text-gray-300 text-sm">
+              <span className="text-gray-300 text-sm px-2">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
               >
                 Next
               </button>
               <button
                 onClick={() => goToPage(totalPages)}
                 disabled={currentPage >= totalPages}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
               >
                 Last
               </button>
