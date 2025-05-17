@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Skeleton } from "../ui/Skeleton";
@@ -151,39 +152,39 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
         </div>
       ) : (
         <>
-          <div ref={containerRef} className="w-full overflow-x-auto">
+          <div ref={containerRef} className="w-full">
             <svg ref={svgRef} className="w-full h-auto"></svg>
           </div>
           {totalPages > 1 && (
-            <div className="mt-4 flex flex-wrap justify-center items-center gap-2">
+            <div className="mt-4 flex flex-nowrap justify-center items-center gap-0.5 sm:gap-1">
               <button
                 onClick={() => goToPage(1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
                 First
               </button>
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
-                Previous
+                Prev
               </button>
-              <span className="text-gray-300 text-sm px-2">
+              <span className="text-gray-300 text-xs sm:text-sm px-0.5 sm:px-1 whitespace-nowrap">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
                 Next
               </button>
               <button
                 onClick={() => goToPage(totalPages)}
                 disabled={currentPage >= totalPages}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
                 Last
               </button>
