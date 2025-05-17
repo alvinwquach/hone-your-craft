@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Skeleton } from "../ui/Skeleton";
@@ -35,9 +36,15 @@ export default function MissingSkillsChart({
     if (!svgRef.current || !containerRef.current || isLoading) return;
 
     const containerWidth = containerRef.current.getBoundingClientRect().width;
-    const margin = { top: 20, right: 30, bottom: 40, left: 90 };
-    const width = containerWidth - margin.left - margin.right;
+    let margin = { top: 20, right: 30, bottom: 40, left: 90 };
+    let width = containerWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
+
+    if (width < 0) {
+      margin.left = 30;
+      margin.right = 10;
+      width = containerWidth - margin.left - margin.right;
+    }
 
     d3.select(svgRef.current).selectAll("*").remove();
 
@@ -154,39 +161,39 @@ export default function MissingSkillsChart({
         </div>
       ) : (
         <>
-          <div ref={containerRef} className="w-full overflow-x-auto">
+          <div ref={containerRef} className="w-full">
             <svg ref={svgRef} className="w-full h-auto"></svg>
           </div>
           {totalPages > 1 && (
-            <div className="mt-4 flex flex-wrap justify-center items-center gap-2">
+            <div className="mt-4 flex flex-nowrap justify-center items-center gap-0.5 sm:gap-1">
               <button
                 onClick={() => goToPage(1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
                 First
               </button>
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
-                Previous
+                Prev
               </button>
-              <span className="text-gray-300 text-sm px-2">
+              <span className="text-gray-300 text-xs sm:text-sm px-0.5 sm:px-1 whitespace-nowrap">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
                 Next
               </button>
               <button
                 onClick={() => goToPage(totalPages)}
                 disabled={currentPage >= totalPages}
-                className="px-3 py-1 bg-zinc-700 text-white rounded-lg hover:bg-zinc-600 disabled:bg-zinc-800 disabled:cursor-not-allowed transition-colors min-w-[80px]"
+                className="px-1 py-0.5 sm:px-2 sm:py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed transition-colors min-w-[40px] sm:min-w-[50px] md:min-w-[60px] text-xs sm:text-sm border border-blue-500 sm:shadow-sm"
               >
                 Last
               </button>
