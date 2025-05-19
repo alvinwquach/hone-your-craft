@@ -806,6 +806,9 @@ matchPercentage Float?
  @@index([userId, status, createdAt])
   @@index([status, createdAt])
 
+
+
+
 }
 
 model Interview {
