@@ -3,11 +3,11 @@ import { skillKeywords } from "./skillKeywords";
 export const extractSkillsFromDescription = (description: string): string[] => {
   // Convert the description to lowercase for case-insensitive comparison
   const lowercaseDescription = description.toLowerCase();
-  // Filter the skillKeywords array based on certain conditions
-  const filteredSkills = skillKeywords.filter((skill) => {
-    // Convert each skill to lowercase for case-insensitive comparison
+  const matchedSkills: string[] = [];
+
+  for (const skill of Object.keys(skillKeywords)) {
     const lowercaseSkill = skill.toLowerCase();
-    // Check if the skill is 'chai' and the description contains certain irrelevant keywords related to blockchains
+
     if (
       lowercaseSkill === "chai" &&
       (lowercaseDescription.includes("blockchains") ||
@@ -16,23 +16,23 @@ export const extractSkillsFromDescription = (description: string): string[] => {
         lowercaseDescription.includes("chain") ||
         lowercaseDescription.includes("chains"))
     ) {
-      return false;
+      continue;
     }
-    // Check if the skill is 'java' and the description contains JavaScript variations
+
     if (
       lowercaseSkill === "java" &&
       lowercaseDescription.includes("javascript")
     ) {
-      return false;
+      continue;
     }
-    // Check if the skill is 'ember' and it exists as a standalone word in the description
+
     if (
       lowercaseSkill === "ember" &&
       (lowercaseDescription.includes("remember") ||
         lowercaseDescription.includes("member") ||
         lowercaseDescription.includes("members"))
     ) {
-      return false;
+      continue;
     }
 
     if (
@@ -41,7 +41,7 @@ export const extractSkillsFromDescription = (description: string): string[] => {
         lowercaseDescription.includes("exponential") ||
         lowercaseDescription.includes("exposure"))
     ) {
-      return false;
+      continue;
     }
 
     if (
@@ -51,7 +51,7 @@ export const extractSkillsFromDescription = (description: string): string[] => {
         lowercaseDescription.includes("define") ||
         lowercaseDescription.includes("defines"))
     ) {
-      return false;
+      continue;
     }
 
     if (
@@ -60,13 +60,13 @@ export const extractSkillsFromDescription = (description: string): string[] => {
         lowercaseDescription.includes("scalable") ||
         lowercaseDescription.includes("scalability"))
     ) {
-      return false;
+      continue;
     }
 
+    if (lowercaseDescription.includes(lowercaseSkill)) {
+      matchedSkills.push(skill);
+    }
+  }
 
-    // Check if the description includes the lowercase skill
-    return lowercaseDescription.includes(lowercaseSkill);
-  });
-
-  return filteredSkills;
+  return matchedSkills;
 };
