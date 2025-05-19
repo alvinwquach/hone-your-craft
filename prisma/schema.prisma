@@ -925,6 +925,9 @@ model UserAchievement {
   awardedAt     DateTime    @default(now())
   progress      Int         @default(0)
   lastActionAt  DateTime?
+
+  @@unique([userId, achievementId])
+  
 }
 
 model Account {
