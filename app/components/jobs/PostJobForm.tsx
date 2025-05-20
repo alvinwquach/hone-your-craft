@@ -16,12 +16,12 @@ import {
   SalaryType,
   Frequency,
 } from "@prisma/client";
-import { skillKeywords } from "@/app/lib/skillKeywords";
+import { skillKeywords, SkillDefinition } from "@/app/lib/skillKeywords";
+import { industryKeywords } from "@/app/lib/industryKeywords";
 import { AiOutlineClose } from "react-icons/ai";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
-import { industryKeywords } from "@/app/lib/industryKeywords";
 
 const jobSchema = z.object({
   title: z.string().min(1, "Job title is required"),
@@ -171,21 +171,16 @@ const PostJobForm = () => {
   const [selectedIndustries, setSelectedIndustries] = useState<
     IndustryOption[]
   >([]);
-
   const [selectedRequiredSkills, setSelectedRequiredSkills] = useState<
     SkillOption[]
   >([]);
-
   const [selectedBonusSkills, setSelectedBonusSkills] = useState<SkillOption[]>(
     []
   );
-
   const [selectedExperienceLevels, setSelectedExperienceLevels] = useState<
     ExperienceLevelOption[]
   >([]);
-
   const [isDegreeCardVisible, setIsDegreeCardVisible] = useState(true);
-
   const [hiddenSkills, setHiddenSkills] = useState<{ [key: number]: boolean }>(
     {}
   );
@@ -218,12 +213,12 @@ const PostJobForm = () => {
       bonusSkills: [
         {
           skill: "",
-          yearsOfExperience: 0,
+          yearsOfExperience: null,
           isRequired: null,
         },
       ],
       salary: {
-        amount: 0,
+        amount: null,
         salaryType: "EXACT",
         rangeMin: null,
         rangeMax: null,
@@ -247,12 +242,14 @@ const PostJobForm = () => {
 
   const selectedDegree = watch("requiredDegree.degree");
   const salaryType = watch("salary.salaryType");
-  const alphabeticalSkillKeywords = skillKeywords.sort((a, b) =>
-    a.toLowerCase().localeCompare(b.toLowerCase())
-  );
+  const paymentType = watch("paymentType");
+
+  const alphabeticalSkillKeywords: string[] = Object.values(skillKeywords)
+    .map((skill: SkillDefinition) => skill.name)
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
   const availableBonusSkills = alphabeticalSkillKeywords.filter(
-    (keyword) =>
+    (keyword: string) =>
       !selectedRequiredSkills.some((skill) => skill.value === keyword)
   );
 
@@ -262,15 +259,12 @@ const PostJobForm = () => {
 
   const handleHideSkill = (index: number) => {
     const updatedSkills = [...watch("requiredSkills")];
-
     updatedSkills[index] = {
       ...updatedSkills[index],
       yearsOfExperience: 0,
       isRequired: null,
     };
-
     setValue("requiredSkills", updatedSkills);
-
     setHiddenSkills((prevState) => ({
       ...prevState,
       [index]: true,
@@ -287,7 +281,7 @@ const PostJobForm = () => {
     setValue(`requiredSkills.${index}.yearsOfExperience`, value);
   };
 
-  const handleSalaryAmountChange = (value: number) => {
+  const handleSalaryAmountChange = (value: number | null) => {
     setValue("salary.amount", value);
   };
 
@@ -296,12 +290,7 @@ const PostJobForm = () => {
     setValue("requiredDegree", { degree: null, isRequired: false });
   };
 
-  const updateRequiredSkill = (
-    index: number,
-    isRequired: boolean,
-    watch: any,
-    setValue: any
-  ) => {
+  const updateRequiredSkill = (index: number, isRequired: boolean) => {
     const updatedSkills = [...watch("requiredSkills")];
     updatedSkills[index].isRequired = isRequired;
     setValue("requiredSkills", updatedSkills);
@@ -317,11 +306,10 @@ const PostJobForm = () => {
 
   const handleRequiredSkillChange = (selected: any) => {
     setSelectedRequiredSkills(selected || []);
-
     setValue(
       "requiredSkills",
       selected
-        ? selected.map((skill: any) => ({
+        ? selected.map((skill: SkillOption) => ({
             skill: skill.value,
             yearsOfExperience: 1,
             isRequired: true,
@@ -332,22 +320,17 @@ const PostJobForm = () => {
 
   const handleBonusSkillsChange = (selected: any) => {
     setSelectedBonusSkills(selected || []);
-
     setValue(
       "bonusSkills",
       selected
-        ? selected.map((skill: any) => ({
+        ? selected.map((skill: SkillOption) => ({
             skill: skill.value,
-            yearsOfExperience: false,
+            yearsOfExperience: null,
             isRequired: null,
           }))
         : []
     );
   };
-
-  const paymentTypeValue = watch("paymentType");
-  const salaryTypeValue = watch("salary.salaryType"); 
-  
 
   useEffect(() => {
     const selectedSkillValues = selectedRequiredSkills.map(
@@ -375,11 +358,11 @@ const PostJobForm = () => {
   ]);
 
   useEffect(() => {
-    if (salaryTypeValue !== SalaryType.RANGE) {
+    if (salaryType !== SalaryType.RANGE) {
       setValue("salary.rangeMin", null);
       setValue("salary.rangeMax", null);
     }
-  }, [salaryTypeValue, setValue]);
+  }, [salaryType, setValue]);
 
   useEffect(() => {
     setValue(
@@ -393,10 +376,10 @@ const PostJobForm = () => {
   }, [selectedBonusSkills, setValue]);
 
   useEffect(() => {
-    if (paymentTypeValue === PaymentType.ONE_TIME_PAYMENT) {
+    if (paymentType === PaymentType.ONE_TIME_PAYMENT) {
       setValue("salary.frequency", null);
     }
-  }, [paymentTypeValue, setValue]);
+  }, [paymentType, setValue]);
 
   const customSelectStyles = {
     control: (styles: any) => ({
@@ -464,15 +447,12 @@ const PostJobForm = () => {
       });
 
       if (response.ok) {
-        const responseData = await response.json();
-
         toast.success("Job posted successfully!");
         setTimeout(() => {
           router.push("/jobs");
         }, 1500);
       } else {
         console.error("Error: ", response.statusText);
-
         toast.error(`Error: ${response.statusText}`);
       }
     } catch (error) {
@@ -484,7 +464,7 @@ const PostJobForm = () => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 p-6 max-w-7xl mx-auto  rounded-lg"
+      className="space-y-6 p-6 max-w-7xl mx-auto rounded-lg"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="flex flex-col">
@@ -637,11 +617,10 @@ const PostJobForm = () => {
             )}
           />
         </div>
-
         <div className="flex flex-col">
           <label
             htmlFor="deadline"
-            className="text-sm font-semibold text-gray-300 "
+            className="text-sm font-semibold text-gray-300"
           >
             Application Deadline
           </label>
@@ -702,7 +681,7 @@ const PostJobForm = () => {
         <div className="flex flex-col">
           <label
             htmlFor="experienceLevels"
-            className="text-sm font-semibold text-gray-300 mb-2 "
+            className="text-sm font-semibold text-gray-300 mb-2"
           >
             Experience Levels
           </label>
@@ -757,7 +736,7 @@ const PostJobForm = () => {
             render={({ field }) => (
               <select
                 {...field}
-                className=" p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 value={field.value || ""}
               >
                 <option value="" disabled>
@@ -802,7 +781,7 @@ const PostJobForm = () => {
         </label>
         <Select
           isMulti
-          options={alphabeticalSkillKeywords.map((skill) => ({
+          options={alphabeticalSkillKeywords.map((skill: string) => ({
             label: skill,
             value: skill,
           }))}
@@ -821,7 +800,7 @@ const PostJobForm = () => {
         </label>
         <Select
           isMulti
-          options={availableBonusSkills.map((skill) => ({
+          options={availableBonusSkills.map((skill: string) => ({
             label: skill,
             value: skill,
           }))}
@@ -863,11 +842,11 @@ const PostJobForm = () => {
           )}
         />
       </div>
-      {watch("paymentType") !== PaymentType.ONE_TIME_PAYMENT && (
+      {paymentType !== PaymentType.ONE_TIME_PAYMENT && (
         <div>
-          {(watch("salary.salaryType") === SalaryType.EXACT ||
-            watch("salary.salaryType") === SalaryType.STARTING_AT ||
-            watch("salary.salaryType") === SalaryType.UP_TO) && (
+          {(salaryType === SalaryType.EXACT ||
+            salaryType === SalaryType.STARTING_AT ||
+            salaryType === SalaryType.UP_TO) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="flex flex-col">
                 <label
@@ -883,46 +862,46 @@ const PostJobForm = () => {
                     <input
                       {...field}
                       type="number"
-                      className="p-3 border border-zinc-700 rounded-md bg-black text-white"
+                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="Enter salary amount"
                       value={field.value ?? ""}
                       onChange={(e) =>
-                        handleSalaryAmountChange(parseFloat(e.target.value))
+                        handleSalaryAmountChange(
+                          e.target.value ? parseFloat(e.target.value) : null
+                        )
                       }
                     />
                   )}
                 />
               </div>
-              {watch("paymentType") !== PaymentType.ONE_TIME_PAYMENT && (
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="salary.frequency"
-                    className="text-sm font-semibold text-gray-300"
-                  >
-                    Frequency
-                  </label>
-                  <Controller
-                    control={control}
-                    name="salary.frequency"
-                    render={({ field }) => (
-                      <select
-                        {...field}
-                        className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        value={field.value ?? Frequency.PER_YEAR}
-                      >
-                        {Object.values(Frequency).map((type) => (
-                          <option key={type} value={type}>
-                            {frequencyLabels[type]}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  />
-                </div>
-              )}
+              <div className="flex flex-col">
+                <label
+                  htmlFor="salary.frequency"
+                  className="text-sm font-semibold text-gray-300"
+                >
+                  Frequency
+                </label>
+                <Controller
+                  control={control}
+                  name="salary.frequency"
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      value={field.value ?? Frequency.PER_YEAR}
+                    >
+                      {Object.values(Frequency).map((type) => (
+                        <option key={type} value={type}>
+                          {frequencyLabels[type]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </div>
             </div>
           )}
-          {watch("salary.salaryType") === SalaryType.RANGE && (
+          {salaryType === SalaryType.RANGE && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="flex flex-col">
                 <label
@@ -938,7 +917,7 @@ const PostJobForm = () => {
                     <input
                       {...field}
                       type="number"
-                      className="p-3 border border-zinc-700 rounded-md bg-black text-white"
+                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="Min salary range"
                       value={field.value ?? ""}
                       onChange={(e) => {
@@ -965,7 +944,7 @@ const PostJobForm = () => {
                     <input
                       {...field}
                       type="number"
-                      className="p-3 border border-zinc-700 rounded-md bg-black text-white"
+                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="Max salary range"
                       value={field.value ?? ""}
                       onChange={(e) => {
@@ -978,64 +957,62 @@ const PostJobForm = () => {
                   )}
                 />
               </div>
-              {watch("paymentType") !== PaymentType.ONE_TIME_PAYMENT && (
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="salary.frequency"
-                    className="text-sm font-semibold text-gray-300"
-                  >
-                    Frequency
-                  </label>
-                  <Controller
-                    control={control}
-                    name="salary.frequency"
-                    render={({ field }) => (
-                      <select
-                        {...field}
-                        className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        value={field.value ?? Frequency.PER_YEAR}
-                      >
-                        {Object.values(Frequency).map((type) => (
-                          <option key={type} value={type}>
-                            {frequencyLabels[type]}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  />
-                </div>
-              )}
+              <div className="flex flex-col">
+                <label
+                  htmlFor="salary.frequency"
+                  className="text-sm font-semibold text-gray-300"
+                >
+                  Frequency
+                </label>
+                <Controller
+                  control={control}
+                  name="salary.frequency"
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      value={field.value ?? Frequency.PER_YEAR}
+                    >
+                      {Object.values(Frequency).map((type) => (
+                        <option key={type} value={type}>
+                          {frequencyLabels[type]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </div>
             </div>
           )}
         </div>
       )}
-      {watch("paymentType") === PaymentType.ONE_TIME_PAYMENT && (
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="flex flex-col">
-              <label
-                htmlFor="salary.amount"
-                className="text-sm font-semibold text-gray-300"
-              >
-                Amount
-              </label>
-              <Controller
-                control={control}
-                name="salary.amount"
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    type="number"
-                    className="p-3 border border-gray-300 rounded-md bg-neutral-900 text-white"
-                    placeholder="Enter salary amount"
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      handleSalaryAmountChange(parseFloat(e.target.value))
-                    }
-                  />
-                )}
-              />
-            </div>
+      {paymentType === PaymentType.ONE_TIME_PAYMENT && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="flex flex-col">
+            <label
+              htmlFor="salary.amount"
+              className="text-sm font-semibold text-gray-300"
+            >
+              Amount
+            </label>
+            <Controller
+              control={control}
+              name="salary.amount"
+              render={({ field }) => (
+                <input
+                  {...field}
+                  type="number"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Enter salary amount"
+                  value={field.value ?? ""}
+                  onChange={(e) =>
+                    handleSalaryAmountChange(
+                      e.target.value ? parseFloat(e.target.value) : null
+                    )
+                  }
+                />
+              )}
+            />
           </div>
         </div>
       )}
@@ -1054,14 +1031,10 @@ const PostJobForm = () => {
               className="text-sm font-semibold text-gray-300"
             >
               Have you completed the following level of education:{" "}
-              <span>
-                <span className="text-indigo-400">
-                  {selectedDegree
-                    ? degreeTypeLabels[selectedDegree]
-                    : "[Degree]"}
-                </span>
+              <span className="text-indigo-400">
+                {selectedDegree ? degreeTypeLabels[selectedDegree] : "[Degree]"}
               </span>
-              ?
+              ?{" "}
               <span className="bg-blue-500 ml-2 p-1 rounded-lg">
                 Recommended
               </span>
@@ -1082,7 +1055,7 @@ const PostJobForm = () => {
                 render={({ field }) => (
                   <select
                     {...field}
-                    className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     value={field.value || ""}
                   >
                     <option value="" disabled>
@@ -1129,10 +1102,10 @@ const PostJobForm = () => {
         if (hiddenSkills[index]) return null;
         return (
           <div
-            key={index}
-            className="space-y-6 p-6 border border-zinc-700  rounded-lg shadow-md relative"
+            key={item.id}
+            className="space-y-6 p-6 border border-zinc-700 rounded-lg shadow-md relative"
           >
-            <div className="flex justify-between items-center  w-full">
+            <div className="flex justify-between items-center w-full">
               <div className="flex flex-col">
                 <label
                   htmlFor={`requiredSkills.${index}.yearsOfExperience`}
@@ -1181,7 +1154,7 @@ const PostJobForm = () => {
                         {...field}
                         type="number"
                         min="0"
-                        className="p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Enter years of experience"
                         onChange={(e) =>
                           handleYearsOfExperienceChange(
@@ -1199,12 +1172,7 @@ const PostJobForm = () => {
                     id={`isRequired-${index}`}
                     checked={item.isRequired || false}
                     onChange={(e) =>
-                      updateRequiredSkill(
-                        index,
-                        e.target.checked,
-                        watch,
-                        setValue
-                      )
+                      updateRequiredSkill(index, e.target.checked)
                     }
                     className="h-5 w-5 text-indigo-600"
                   />
