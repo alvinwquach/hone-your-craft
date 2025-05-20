@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import Select from "react-select";
 import {
@@ -18,14 +18,14 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSearchParams, useRouter } from "next/navigation";
 import { industryKeywords } from "@/app/lib/industryKeywords";
-import { skillKeywords } from "@/app/lib/skillKeywords";
+import { skillKeywords, SkillDefinition } from "@/app/lib/skillKeywords";
 import { AiOutlineClose } from "react-icons/ai";
 
 interface JobFormData {
   title: string;
   description: string;
   salary: {
-    amount: number;
+    amount: number | null;
     salaryType: "EXACT" | "RANGE" | "STARTING_AT" | "UP_TO";
     rangeMin: number | null;
     rangeMax: number | null;
@@ -248,12 +248,12 @@ const EditJobForm = ({ jobData, jobId }: any) => {
   const salaryType = watch("salary.salaryType");
   const paymentType = watch("paymentType");
 
-  const alphabeticalSkillKeywords = skillKeywords.sort((a, b) =>
-    a.toLowerCase().localeCompare(b.toLowerCase())
-  );
+  const alphabeticalSkillKeywords: string[] = Object.values(skillKeywords)
+    .map((skill: SkillDefinition) => skill.name)
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
   const availableBonusSkills = alphabeticalSkillKeywords.filter(
-    (keyword) =>
+    (keyword: string) =>
       !selectedRequiredSkills.some((skill) => skill.value === keyword)
   );
 
@@ -279,7 +279,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
     setValue(`requiredSkills.${index}.yearsOfExperience`, value);
   };
 
-  const handleSalaryAmountChange = (value: number) => {
+  const handleSalaryAmountChange = (value: number | null) => {
     setValue("salary.amount", value);
   };
 
@@ -313,7 +313,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
     setValue(
       "requiredSkills",
       selected
-        ? selected.map((skill: any) => ({
+        ? selected.map((skill: SkillOption) => ({
             skill: skill.value,
             yearsOfExperience: 1,
             isRequired: true,
@@ -327,7 +327,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
     setValue(
       "bonusSkills",
       selected
-        ? selected.map((skill: any) => ({
+        ? selected.map((skill: SkillOption) => ({
             skill: skill.value,
             yearsOfExperience: null,
             isRequired: null,
@@ -836,7 +836,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           </label>
           <Select
             isMulti
-            options={alphabeticalSkillKeywords.map((skill) => ({
+            options={alphabeticalSkillKeywords.map((skill: string) => ({
               label: skill,
               value: skill,
             }))}
@@ -855,7 +855,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           </label>
           <Select
             isMulti
-            options={availableBonusSkills.map((skill) => ({
+            options={availableBonusSkills.map((skill: string) => ({
               label: skill,
               value: skill,
             }))}
@@ -921,7 +921,9 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                         placeholder="Enter salary amount"
                         value={field.value ?? ""}
                         onChange={(e) =>
-                          handleSalaryAmountChange(parseFloat(e.target.value))
+                          handleSalaryAmountChange(
+                            e.target.value ? parseFloat(e.target.value) : null
+                          )
                         }
                       />
                     )}
@@ -1059,7 +1061,9 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                     placeholder="Enter salary amount"
                     value={field.value ?? ""}
                     onChange={(e) =>
-                      handleSalaryAmountChange(parseFloat(e.target.value))
+                      handleSalaryAmountChange(
+                        e.target.value ? parseFloat(e.target.value) : null
+                      )
                     }
                   />
                 )}
@@ -1067,8 +1071,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             </div>
           </div>
         )}
-
-        {/* Degree Requirement */}
         {isDegreeCardVisible && (
           <div className="border border-zinc-700 p-8 rounded-lg shadow-md relative">
             <button
@@ -1153,8 +1155,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             </div>
           </div>
         )}
-
-        {/* Required Skills Cards */}
         {requiredSkillFields.map((item, index) => {
           if (hiddenSkills[index]) return null;
           return (
@@ -1242,8 +1242,6 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             </div>
           );
         })}
-
-        {/* Submit Button */}
         <div className="flex justify-end mt-6">
           <button
             type="submit"

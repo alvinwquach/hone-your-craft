@@ -271,76 +271,76 @@ enum InviteStatus {
 }
 
 model UserEvent {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   description   String?
   startTime     DateTime
   endTime       DateTime
-  creatorId     String    @db.ObjectId
-  creator       User      @relation("EventCreator", fields: [creatorId], references: [id])
-  participantId String    @db.ObjectId
-  participant   User      @relation("EventParticipant", fields: [participantId], references: [id])
-  timeSlot      TimeSlot[] @relation(name: "TimeSlotToUserEvent") 
-  eventTypeId   String?   @db.ObjectId
-  eventType     EventType? @relation("EventTypeToUserEvent", fields: [eventTypeId], references: [id])  // Relation to EventType
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  creatorId     String     @db.ObjectId
+  creator       User       @relation("EventCreator", fields: [creatorId], references: [id])
+  participantId String     @db.ObjectId
+  participant   User       @relation("EventParticipant", fields: [participantId], references: [id])
+  timeSlot      TimeSlot[] @relation(name: "TimeSlotToUserEvent")
+  eventTypeId   String?    @db.ObjectId
+  eventType     EventType? @relation("EventTypeToUserEvent", fields: [eventTypeId], references: [id]) // Relation to EventType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("user_events")
 }
 
 model EventType {
-  id                          String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId                      String           @db.ObjectId
-  user                        User             @relation("UserEventTypes", fields: [userId], references: [id])
-  title                       String
-  length                      Int?  
-  createdAt                   DateTime         @default(now())
-  updatedAt                   DateTime         @updatedAt
-  availabilities              EventTypeAvailability[] @relation("EventTypeToAvailability")
-  userEvents                  UserEvent[]      @relation("EventTypeToUserEvent") 
+  id             String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String                  @db.ObjectId
+  user           User                    @relation("UserEventTypes", fields: [userId], references: [id])
+  title          String
+  length         Int?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  availabilities EventTypeAvailability[] @relation("EventTypeToAvailability")
+  userEvents     UserEvent[]             @relation("EventTypeToUserEvent")
 
   @@map("event_Types")
 }
 
-
 model InterviewAvailability {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  user          User     @relation("InterviewAvailability", fields: [userId], references: [id])
-  dayOfWeek     DayOfWeek
-  isRecurring   Boolean  @default(false)
-  startTime     DateTime
-  endTime       DateTime
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String                  @db.ObjectId
+  user           User                    @relation("InterviewAvailability", fields: [userId], references: [id])
+  dayOfWeek      DayOfWeek
+  isRecurring    Boolean                 @default(false)
+  startTime      DateTime
+  endTime        DateTime
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
   availabilities EventTypeAvailability[] @relation("AvailabilityToEventType")
+
   @@map("interview_availabilities")
 }
 
 model EventTypeAvailability {
-  id                  String               @id @default(auto()) @map("_id") @db.ObjectId
-  eventTypeId         String               @db.ObjectId
-  eventType   EventType @relation("EventTypeToAvailability", fields: [eventTypeId], references: [id], onDelete: Cascade)
-  availabilityId      String               @db.ObjectId
-  availability        InterviewAvailability @relation("AvailabilityToEventType", fields: [availabilityId], references: [id])
-  
+  id             String                @id @default(auto()) @map("_id") @db.ObjectId
+  eventTypeId    String                @db.ObjectId
+  eventType      EventType             @relation("EventTypeToAvailability", fields: [eventTypeId], references: [id], onDelete: Cascade)
+  availabilityId String                @db.ObjectId
+  availability   InterviewAvailability @relation("AvailabilityToEventType", fields: [availabilityId], references: [id])
+
   @@unique([eventTypeId, availabilityId])
   @@map("event_type_availability")
 }
 
 model TimeSlot {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  eventId     String     @db.ObjectId
-  event       UserEvent  @relation(name: "TimeSlotToUserEvent", fields: [eventId], references: [id], onDelete: Cascade)
-  startTime   DateTime
-  endTime     DateTime
-  isBooked    Boolean    @default(false)
-  bookedBy    String?    @db.ObjectId
-  duration    Int?       
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  eventId   String    @db.ObjectId
+  event     UserEvent @relation(name: "TimeSlotToUserEvent", fields: [eventId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime
+  isBooked  Boolean   @default(false)
+  bookedBy  String?   @db.ObjectId
+  duration  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("timeslots")
 }
@@ -376,22 +376,22 @@ model UserConversation {
   conversationId String       @db.ObjectId
   user           User         @relation("UserToUserConversations", fields: [userId], references: [id], onDelete: Cascade)
   conversation   Conversation @relation("ConversationToUserConversations", fields: [conversationId], references: [id], onDelete: Cascade)
-  isDeleted      Boolean      @default(false) 
+  isDeleted      Boolean      @default(false)
 
   @@unique([userId, conversationId])
 }
 
 model User {
-  id                           String                        @id @default(auto()) @map("_id") @db.ObjectId
+  id                           String                  @id @default(auto()) @map("_id") @db.ObjectId
   name                         String?
-  email                        String?                       @unique
+  email                        String?                 @unique
   emailVerified                DateTime?
   image                        String?
   company                      String?
   headline                     String?
   bio                          String?
   website                      String?
-  socialLinks                  SocialLinks?                  @relation("UserSocialLinks")
+  socialLinks                  SocialLinks?            @relation("UserSocialLinks")
   title                        String?
   role                         String?
   userRole                     UserRole?
@@ -399,19 +399,19 @@ model User {
   openToRoles                  String[]
   yearsOfExperience            YearsOfExperience?
   skills                       String[]
-  status                       UserStatus?                   @relation("UserStatusRelation")
-  jobAlert                     Boolean                       @default(true)
-  candidateAlert               Boolean                       @default(true)
-  lookingForMentor             Boolean                       @default(false)
-  offeringMentorship           Boolean                       @default(false)
-  mentorshipsOffered           Mentorship[]                  @relation("MentorRelationships")
-  mentorshipsRequested         Mentorship[]                  @relation("MenteeRelationships")
-  profileCompletion            Int                           @default(0)
-  isProfilePublic              Boolean                       @default(true)
+  status                       UserStatus?             @relation("UserStatusRelation")
+  jobAlert                     Boolean                 @default(true)
+  candidateAlert               Boolean                 @default(true)
+  lookingForMentor             Boolean                 @default(false)
+  offeringMentorship           Boolean                 @default(false)
+  mentorshipsOffered           Mentorship[]            @relation("MentorRelationships")
+  mentorshipsRequested         Mentorship[]            @relation("MenteeRelationships")
+  profileCompletion            Int                     @default(0)
+  isProfilePublic              Boolean                 @default(true)
   lastActive                   DateTime?
-  connectionsSent              Connection[]                  @relation("ConnectionsSent")
-  connectionsReceived          Connection[]                  @relation("ConnectionsReceived")
-  documents                    Document[]                    @relation("UserDocuments")
+  connectionsSent              Connection[]            @relation("ConnectionsSent")
+  connectionsReceived          Connection[]            @relation("ConnectionsReceived")
+  documents                    Document[]              @relation("UserDocuments")
   workExperience               WorkExperience[]
   education                    Education[]
   accounts                     Account[]
@@ -421,21 +421,21 @@ model User {
   interviews                   Interview[]
   rejections                   Rejection[]
   notifications                Notification[]
-  applications                 Application[]                 @relation("JobApplications")
-  jobPostings                  JobPosting[]                  @relation("JobPostings")
-  messagesSent                 Message[]                     @relation("SentMessages")
-  messagesReceived             Message[]                     @relation("ReceivedMessages")
-  userConversations            UserConversation[]            @relation("UserToUserConversations")
-  jobRecommendations           JobRecommendation[]           @relation("JobRecommendations")
-  endorsementsGiven            SkillEndorsement[]            @relation("Endorser")
-  endorsementsReceived         SkillEndorsement[]            @relation("Endorsees")
-  collaborations               Collaboration[]               @relation("UserCollaborations")
-  userAchievements             UserAchievement[]             @relation("UserAchievements")
-  createdAt                    DateTime                      @default(now())
-  updatedAt                    DateTime                      @updatedAt
-  interviewAvailability  InterviewAvailability[] @relation("InterviewAvailability")
+  applications                 Application[]           @relation("JobApplications")
+  jobPostings                  JobPosting[]            @relation("JobPostings")
+  messagesSent                 Message[]               @relation("SentMessages")
+  messagesReceived             Message[]               @relation("ReceivedMessages")
+  userConversations            UserConversation[]      @relation("UserToUserConversations")
+  jobRecommendations           JobRecommendation[]     @relation("JobRecommendations")
+  endorsementsGiven            SkillEndorsement[]      @relation("Endorser")
+  endorsementsReceived         SkillEndorsement[]      @relation("Endorsees")
+  collaborations               Collaboration[]         @relation("UserCollaborations")
+  userAchievements             UserAchievement[]       @relation("UserAchievements")
+  createdAt                    DateTime                @default(now())
+  updatedAt                    DateTime                @updatedAt
+  interviewAvailability        InterviewAvailability[] @relation("InterviewAvailability")
   jobsAppliedToDaysPerWeekGoal Int?
-  weeklyStreak                 Int?                          @default(0)
+  weeklyStreak                 Int?                    @default(0)
   lastStreakUpdate             DateTime?
   jobsAppliedToWeeklyGoalMin   Int?
   jobsAppliedToWeeklyGoalMax   Int?
@@ -444,9 +444,9 @@ model User {
   offerReceivedByDateGoal      DateTime?
   offerReceivedByDateGoalStart DateTime?
   offerReceivedByDateGoalEnd   DateTime?
-  eventTypes                   EventType[]    @relation("UserEventTypes")
-  createdEvents   UserEvent[] @relation("EventCreator")
-  participatedEvents UserEvent[] @relation("EventParticipant")
+  eventTypes                   EventType[]             @relation("UserEventTypes")
+  createdEvents                UserEvent[]             @relation("EventCreator")
+  participatedEvents           UserEvent[]             @relation("EventParticipant")
 
   @@map("users")
 }
@@ -780,35 +780,31 @@ model ApplicationStage {
 }
 
 model Job {
-  id           String             @id @default(auto()) @map("_id") @db.ObjectId
-  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String             @db.ObjectId
-  referral     Boolean?
-  company      String
-  description  String
-  title        String
-  industry     String?
-  location     String?
-  workLocation WorkLocation?
-  postUrl      String
-  salary       String?
-  status       ApplicationStatus?
-  interviews   Interview[]
-  offer        Offer[]
-  rejection    Rejection[]
-  jobSkills    JobSkill[]
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  holidayApplied String?
-matchPercentage Float? 
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String             @db.ObjectId
+  referral        Boolean?
+  company         String
+  description     String
+  title           String
+  industry        String?
+  location        String?
+  workLocation    WorkLocation?
+  postUrl         String
+  salary          String?
+  status          ApplicationStatus?
+  interviews      Interview[]
+  offer           Offer[]
+  rejection       Rejection[]
+  jobSkills       JobSkill[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  holidayApplied  String?
+  matchPercentage Float?
 
-  @@map("job")
- @@index([userId, status, createdAt])
+  @@index([userId, status, createdAt])
   @@index([status, createdAt])
-
-
-
-
+  @@map("job")
 }
 
 model Interview {
@@ -822,7 +818,7 @@ model Interview {
   endTime       DateTime?
   interviewDate DateTime?
   interviewType InterviewType
-  videoUrl     String?
+  videoUrl      String?
   meetingId     String?
   passcode      String?
 
@@ -930,7 +926,6 @@ model UserAchievement {
   lastActionAt  DateTime?
 
   @@unique([userId, achievementId])
-  
 }
 
 model Account {

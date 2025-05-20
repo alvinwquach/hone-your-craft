@@ -1,4 +1,5 @@
 "use server";
+
 import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
@@ -30,70 +31,154 @@ const getSourceFromUrl = (postUrl: string): string => {
   );
 };
 
+export interface JobWithSkills {
+  id: string;
+  title: string;
+  company: string;
+  postUrl: string;
+  source: string;
+  matchingSkills: string[];
+  missingSkills: string[];
+  matchPercentage: number;
+}
+
+export interface JobPostingsResponse {
+  jobs: JobWithSkills[];
+  totalPages: number;
+  currentPage: number;
+  totalJobs: number;
+}
+
+
 export const getUserJobPostingsWithSkillMatch = async (
   page: number = 1,
   take: number = ITEMS_PER_PAGE
-) => {
+): Promise<JobPostingsResponse> => {
   console.time("getUserJobPostingsWithSkillMatch");
   try {
     const currentUser = await getCurrentUser();
+    if (!currentUser?.id) {
+      throw new Error("User not authenticated");
+    }
 
-    const userSkills = new Set(currentUser?.skills || []);
-    const userJobs = await prisma.job.findMany({
-      where: { userId: currentUser?.id },
-      select: {
-        id: true,
-        title: true,
-        company: true,
-        postUrl: true,
-        description: true,
-        referral: true,
-      },
-    });
+    const userSkills = new Set(currentUser.skills || []);
+
+    const skip = (page - 1) * take;
+    const [userJobs, totalJobs] = await Promise.all([
+      prisma.job.findMany({
+        where: { userId: currentUser.id },
+        select: {
+          id: true,
+          title: true,
+          company: true,
+          postUrl: true,
+          description: true,
+          referral: true,
+          matchPercentage: true,
+          jobSkills: {
+            select: {
+              skill: { select: { name: true } },
+              isRequired: true,
+            },
+          },
+        },
+        orderBy: { matchPercentage: "desc" },
+        skip,
+        take,
+      }),
+      prisma.job.count({ where: { userId: currentUser.id } }),
+    ]);
     console.timeLog("getUserJobPostingsWithSkillMatch", "Fetched jobs");
 
-    const processedJobs = userJobs.map((job) => {
-      const jobSkills = [
-        ...new Set(extractSkillsFromDescription(job.description)),
-      ];
-      const matchingSkills = jobSkills.filter((skill) => userSkills.has(skill));
-      const missingSkills = jobSkills.filter((skill) => !userSkills.has(skill));
-      const totalSkills = jobSkills.length;
-      const matchPercentage =
-        totalSkills > 0
-          ? Math.round((matchingSkills.length / totalSkills) * 100)
-          : 0;
+    const jobsToUpdate: {
+      id: string;
+      jobSkills: string[];
+      matchPercentage: number;
+    }[] = [];
 
-      return {
-        id: job.id.toString(),
-        title: job.title,
-        company: job.company,
-        postUrl: job.postUrl,
-        source:
-          job.referral === true ? "Referral" : getSourceFromUrl(job.postUrl),
-        matchingSkills,
-        missingSkills,
-        matchPercentage,
-      };
-    });
+    const processedJobs = await Promise.all(
+      userJobs.map(async (job) => {
+        let jobSkills: string[];
+        if (job.jobSkills.length > 0) {
+          jobSkills = job.jobSkills.map((js) => js.skill.name);
+        } else {
+          jobSkills = [
+            ...new Set(extractSkillsFromDescription(job.description)),
+          ];
+          if (jobSkills.length > 0) {
+            jobsToUpdate.push({ id: job.id, jobSkills, matchPercentage: 0 });
+          }
+        }
 
-    console.timeLog("getUserJobPostingsWithSkillMatch", "Processed jobs");
-    const sortedJobs = processedJobs.sort(
-      (a, b) => b.matchPercentage - a.matchPercentage
+        const matchingSkills = jobSkills.filter((skill) =>
+          userSkills.has(skill)
+        );
+        const missingSkills = jobSkills.filter(
+          (skill) => !userSkills.has(skill)
+        );
+        const totalSkills = jobSkills.length;
+        const matchPercentage =
+          totalSkills > 0
+            ? Math.round((matchingSkills.length / totalSkills) * 100)
+            : 0;
+
+        if (Math.abs((job.matchPercentage || 0) - matchPercentage) > 0.1) {
+          jobsToUpdate.push({ id: job.id, jobSkills, matchPercentage });
+        }
+
+        return {
+          id: job.id.toString(),
+          title: job.title,
+          company: job.company,
+          postUrl: job.postUrl,
+          source:
+            job.referral === true ? getSourceFromUrl(job.postUrl) : "Referral",
+          matchingSkills,
+          missingSkills,
+          matchPercentage,
+        };
+      })
     );
-    console.timeLog("getUserJobPostingsWithSkillMatch", "Sorted jobs");
+    console.timeLog("getUserJobPostingsWithSkillMatch", "Processed jobs");
 
-    const totalPages = Math.ceil(sortedJobs.length / take);
-    const startIndex = (page - 1) * take;
-    const resultJobs = sortedJobs.slice(startIndex, startIndex + take);
+    if (jobsToUpdate.length > 0) {
+      await Promise.all(
+        jobsToUpdate.map(({ id, jobSkills, matchPercentage }) =>
+          prisma.job.update({
+            where: { id },
+            data: {
+              matchPercentage,
+              jobSkills:
+                jobSkills.length > 0
+                  ? {
+                      create: jobSkills.map((skill) => ({
+                        skill: {
+                          connectOrCreate: {
+                            where: { name: skill },
+                            create: { name: skill },
+                          },
+                        },
+                        isRequired: true,
+                      })),
+                    }
+                  : undefined,
+            },
+          })
+        )
+      );
+    }
+    console.timeLog("getUserJobPostingsWithSkillMatch", "Updated database");
 
-    console.timeEnd("getUserJobPostingsWithSkillMatch");
-    return {
-      jobs: resultJobs,
+    const totalPages = Math.ceil(totalJobs / take);
+    const result: JobPostingsResponse = {
+      jobs: processedJobs,
       totalPages,
       currentPage: page,
-      totalJobs: sortedJobs.length,
+      totalJobs,
     };
+
+    console.timeEnd("getUserJobPostingsWithSkillMatch");
+    return result;
   } catch (error) {
     console.error("Error fetching user job postings with skill match:", error);
     throw new Error("Failed to fetch user jobs or process skills");

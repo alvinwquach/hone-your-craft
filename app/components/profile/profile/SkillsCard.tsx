@@ -1,7 +1,8 @@
 "use client";
+
 import { useState, useMemo } from "react";
 import { toast } from "react-toastify";
-import { skillKeywords } from "@/app/lib/skillKeywords";
+import { skillKeywords, SkillDefinition } from "@/app/lib/skillKeywords";
 import { Combobox } from "@headlessui/react";
 import { addSkill } from "@/app/actions/addSkill";
 import { removeSkill } from "@/app/actions/removeSkill";
@@ -14,10 +15,23 @@ function SkillsCard({ userSkills }: SkillsCardProps) {
   const [selectedSkills, setSelectedSkills] = useState<string[]>(userSkills);
   const [query, setQuery] = useState("");
 
-  const uniqueSkillKeywords = [...new Set(skillKeywords)];
-  const alphabeticalSkillKeywords = uniqueSkillKeywords.sort((a, b) =>
-    a.toLowerCase().localeCompare(b.toLowerCase())
-  );
+  const alphabeticalSkillKeywords = Object.values(skillKeywords)
+    .map((skill: SkillDefinition) => skill.name)
+    .sort((a: string, b: string) =>
+      a.toLowerCase().localeCompare(b.toLowerCase())
+    );
+
+  const filteredSkills = useMemo(() => {
+    return query === ""
+      ? alphabeticalSkillKeywords.filter(
+          (skill: string) => !selectedSkills.includes(skill)
+        )
+      : alphabeticalSkillKeywords.filter(
+          (skill: string) =>
+            skill.toLowerCase().includes(query.toLowerCase()) &&
+            !selectedSkills.includes(skill)
+        );
+  }, [query, selectedSkills]);
 
   const handleSkillAdd = async (skill: string) => {
     if (selectedSkills.includes(skill)) return;
@@ -50,18 +64,6 @@ function SkillsCard({ userSkills }: SkillsCardProps) {
       toast.error("Failed to remove skill");
     }
   };
-
-  const filteredSkills = useMemo(() => {
-    return query === ""
-      ? alphabeticalSkillKeywords.filter(
-          (skill) => !selectedSkills.includes(skill)
-        )
-      : alphabeticalSkillKeywords.filter(
-          (skill) =>
-            skill.toLowerCase().includes(query.toLowerCase()) &&
-            !selectedSkills.includes(skill)
-        );
-  }, [query, selectedSkills]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700">

@@ -1,72 +1,39 @@
-import { skillKeywords } from "./skillKeywords";
+import { skillKeywords, skillRegex, skillAliasMap } from "./skillKeywords";
+
+const skillCache = new Map<string, string[]>();
 
 export const extractSkillsFromDescription = (description: string): string[] => {
-  // Convert the description to lowercase for case-insensitive comparison
+  if (!description) return [];
+
+  const cacheKey = description.slice(0, 100) + description.length;
+  if (skillCache.has(cacheKey)) {
+    return skillCache.get(cacheKey)!;
+  }
+
+  const matchedSkills = new Set<string>();
   const lowercaseDescription = description.toLowerCase();
-  const matchedSkills: string[] = [];
 
-  for (const skill of Object.keys(skillKeywords)) {
-    const lowercaseSkill = skill.toLowerCase();
+  const matches = lowercaseDescription.matchAll(skillRegex);
+  for (const match of matches) {
+    const matchedSkill = match[0].toLowerCase();
+    const canonicalSkill = skillAliasMap[matchedSkill];
+    if (!canonicalSkill) continue;
 
-    if (
-      lowercaseSkill === "chai" &&
-      (lowercaseDescription.includes("blockchains") ||
-        lowercaseDescription.includes("blockchain") ||
-        lowercaseDescription.includes("archaic") ||
-        lowercaseDescription.includes("chain") ||
-        lowercaseDescription.includes("chains"))
-    ) {
-      continue;
-    }
+    const skillDef = skillKeywords[canonicalSkill];
+    if (!skillDef) continue;
 
-    if (
-      lowercaseSkill === "java" &&
-      lowercaseDescription.includes("javascript")
-    ) {
-      continue;
-    }
+    const hasExclusion = skillDef.exclusions?.some((exclusion) =>
+      lowercaseDescription.includes(exclusion)
+    );
 
-    if (
-      lowercaseSkill === "ember" &&
-      (lowercaseDescription.includes("remember") ||
-        lowercaseDescription.includes("member") ||
-        lowercaseDescription.includes("members"))
-    ) {
-      continue;
-    }
-
-    if (
-      lowercaseSkill === "expo" &&
-      (lowercaseDescription.includes("expose") ||
-        lowercaseDescription.includes("exponential") ||
-        lowercaseDescription.includes("exposure"))
-    ) {
-      continue;
-    }
-
-    if (
-      lowercaseSkill === "defi" &&
-      (lowercaseDescription.includes("definition") ||
-        lowercaseDescription.includes("definite") ||
-        lowercaseDescription.includes("define") ||
-        lowercaseDescription.includes("defines"))
-    ) {
-      continue;
-    }
-
-    if (
-      lowercaseSkill === "scala" &&
-      (lowercaseDescription.includes("unscalable") ||
-        lowercaseDescription.includes("scalable") ||
-        lowercaseDescription.includes("scalability"))
-    ) {
-      continue;
-    }
-
-    if (lowercaseDescription.includes(lowercaseSkill)) {
-      matchedSkills.push(skill);
+    if (!hasExclusion) {
+      matchedSkills.add(canonicalSkill);
     }
   }
 
-  return matchedSkills;
+  const result = Array.from(matchedSkills);
+  if (skillCache.size > 1000) skillCache.clear();
+  skillCache.set(cacheKey, result);
+
+  return result;
 };
