@@ -49,7 +49,6 @@ export interface JobPostingsResponse {
   totalJobs: number;
 }
 
-
 export const getUserJobPostingsWithSkillMatch = async (
   page: number = 1,
   take: number = ITEMS_PER_PAGE
@@ -98,16 +97,16 @@ export const getUserJobPostingsWithSkillMatch = async (
 
     const processedJobs = await Promise.all(
       userJobs.map(async (job) => {
-        let jobSkills: string[];
+        let jobSkills: string[] = [];
+
         if (job.jobSkills.length > 0) {
           jobSkills = job.jobSkills.map((js) => js.skill.name);
-        } else {
+        } else if (job.description) {
           jobSkills = [
             ...new Set(extractSkillsFromDescription(job.description)),
           ];
-          if (jobSkills.length > 0) {
-            jobsToUpdate.push({ id: job.id, jobSkills, matchPercentage: 0 });
-          }
+        } else {
+          jobSkills = [];
         }
 
         const matchingSkills = jobSkills.filter((skill) =>
@@ -116,13 +115,19 @@ export const getUserJobPostingsWithSkillMatch = async (
         const missingSkills = jobSkills.filter(
           (skill) => !userSkills.has(skill)
         );
+
         const totalSkills = jobSkills.length;
         const matchPercentage =
           totalSkills > 0
             ? Math.round((matchingSkills.length / totalSkills) * 100)
             : 0;
 
-        if (Math.abs((job.matchPercentage || 0) - matchPercentage) > 0.1) {
+        // If jobSkills were extracted or matchPercentage differs, mark for update
+        if (
+          job.jobSkills.length === 0 ||
+          (job.matchPercentage !== null &&
+            Math.abs(job.matchPercentage - matchPercentage) > 1) // Use a larger threshold to avoid floating-point issues
+        ) {
           jobsToUpdate.push({ id: job.id, jobSkills, matchPercentage });
         }
 
@@ -142,7 +147,7 @@ export const getUserJobPostingsWithSkillMatch = async (
     console.timeLog("getUserJobPostingsWithSkillMatch", "Processed jobs");
 
     if (jobsToUpdate.length > 0) {
-      await Promise.all(
+      await prisma.$transaction(
         jobsToUpdate.map(({ id, jobSkills, matchPercentage }) =>
           prisma.job.update({
             where: { id },
@@ -151,6 +156,7 @@ export const getUserJobPostingsWithSkillMatch = async (
               jobSkills:
                 jobSkills.length > 0
                   ? {
+                      deleteMany: {},
                       create: jobSkills.map((skill) => ({
                         skill: {
                           connectOrCreate: {
