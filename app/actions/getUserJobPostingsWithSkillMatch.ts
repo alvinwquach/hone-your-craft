@@ -122,11 +122,10 @@ export const getUserJobPostingsWithSkillMatch = async (
             ? Math.round((matchingSkills.length / totalSkills) * 100)
             : 0;
 
-        // If jobSkills were extracted or matchPercentage differs, mark for update
         if (
           job.jobSkills.length === 0 ||
           (job.matchPercentage !== null &&
-            Math.abs(job.matchPercentage - matchPercentage) > 1) // Use a larger threshold to avoid floating-point issues
+            Math.abs(job.matchPercentage - matchPercentage) > 1)
         ) {
           jobsToUpdate.push({ id: job.id, jobSkills, matchPercentage });
         }

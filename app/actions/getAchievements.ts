@@ -330,12 +330,13 @@ const calculateAchievements = async (
   console.time(`calculateAchievements-${userId}`);
   try {
     const jobMilestones = [
-      10, 25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 1500, 2000, 2500,
-      5000, 10000,
+      10, 25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 1500, 1750, 2000,
+      2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4250, 4500, 5000, 10000,
     ];
     const interviewMilestones = [
-      1, 5, 10, 20, 30, 50, 75, 100, 125, 150, 175, 200, 250, 300, 400, 500,
-      600, 700, 800, 900, 1000, 1250, 1500, 2000, 2500, 3000, 4000, 5000, 10000,
+      1, 5, 10, 20, 25, 30, 50, 75, 100, 125, 150, 175, 200, 250, 300, 350, 400,
+      450, 500, 600, 700, 800, 900, 1000, 1250, 1500, 2000, 2500, 3000, 4000,
+      5000, 10000,
     ];
 
     const awardedAchievements: HolidayAchievement[] = [];
@@ -421,7 +422,6 @@ const calculateAchievements = async (
       }
     });
 
-    // Pre-fetch or create Achievement records
     console.time(`preFetchAchievements-${userId}`);
     const achievementNames = awardedAchievements.map((a) => a.name);
     const existingAchievements = await prisma.achievement.findMany({
