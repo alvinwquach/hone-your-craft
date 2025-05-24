@@ -9,6 +9,7 @@ gsap.registerPlugin(TextPlugin);
 const roles = [
   "Software Engineer",
   "Data Scientist",
+  "Data Analyst",
   "Product Manager",
   "DevOps Engineer",
   "Technical Program Manager",
