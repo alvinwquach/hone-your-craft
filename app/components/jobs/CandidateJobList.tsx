@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { applyToJob } from "@/app/actions/applyToJob";
@@ -151,7 +151,7 @@ export default function CandidateJobList({
     return null;
   };
 
-  const loadMoreJobs = async () => {
+  const loadMoreJobs = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await getCachedCandidateJobPostings(page, 10);
@@ -167,9 +167,11 @@ export default function CandidateJobList({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page, userId, userSkills]);
 
   useEffect(() => {
+    const loaderElement = loaderRef.current;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && page <= totalPages && !isLoading) {
@@ -179,16 +181,16 @@ export default function CandidateJobList({
       { threshold: 0.1 }
     );
 
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
+    if (loaderElement) {
+      observer.observe(loaderElement);
     }
 
     return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
+      if (loaderElement) {
+        observer.unobserve(loaderElement);
       }
     };
-  }, [page, totalPages, isLoading]);
+  }, [page, totalPages, isLoading, loadMoreJobs]);
 
   return (
     <div className="space-y-8 w-full max-w-screen-lg mx-auto">
