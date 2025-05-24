@@ -1,7 +1,7 @@
 "use client";
 
 import { getUserJobPostingsWithSkillMatch } from "@/app/actions/getUserJobPostingsWithSkillMatch";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import JobMatchCard from "../profile/match/JobMatchCard";
 
 type JobMatchPosting = {
@@ -202,7 +202,7 @@ export default function InfiniteScrollClient() {
     fetchInitialJobs();
   }, []);
 
-  const loadMoreJobs = async () => {
+  const loadMoreJobs = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await getUserJobPostingsWithSkillMatch(page);
@@ -215,9 +215,11 @@ export default function InfiniteScrollClient() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
+    const observerTarget = loaderRef.current;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && page <= totalPages && !isLoading) {
@@ -227,16 +229,16 @@ export default function InfiniteScrollClient() {
       { threshold: 0.1 }
     );
 
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
+    if (observerTarget) {
+      observer.observe(observerTarget);
     }
 
     return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
+      if (observerTarget) {
+        observer.unobserve(observerTarget);
       }
     };
-  }, [page, totalPages, isLoading]);
+  }, [loadMoreJobs, page, totalPages, isLoading]);
 
   if (error) {
     return (
