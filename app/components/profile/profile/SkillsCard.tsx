@@ -31,7 +31,7 @@ function SkillsCard({ userSkills }: SkillsCardProps) {
             skill.toLowerCase().includes(query.toLowerCase()) &&
             !selectedSkills.includes(skill)
         );
-  }, [query, selectedSkills]);
+  }, [query, selectedSkills, alphabeticalSkillKeywords]); 
 
   const handleSkillAdd = async (skill: string) => {
     if (selectedSkills.includes(skill)) return;
