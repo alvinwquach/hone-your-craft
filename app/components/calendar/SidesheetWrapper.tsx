@@ -4,8 +4,27 @@ import { useState } from "react";
 import Sidesheet from "./Sidesheet";
 import { FaPlus } from "react-icons/fa";
 import { IoCalendarSharp } from "react-icons/io5";
+import { DayOfWeek } from "@prisma/client";
 
-export default function SidesheetWrapper() {
+interface Availability {
+  weekly: {
+    [key: string]: { start: string; end: string }[];
+  };
+  dateSpecific: {
+    startTime: string;
+    endTime: string;
+    isRecurring: boolean;
+    dayOfWeek: DayOfWeek;
+  }[];
+}
+
+interface SidesheetWrapperProps {
+  availability: Availability;
+}
+
+export default function SidesheetWrapper({
+  availability,
+}: SidesheetWrapperProps) {
   const [isSidesheetOpen, setSidesheetOpen] = useState(false);
 
   const toggleSidesheet = () => {
@@ -14,10 +33,11 @@ export default function SidesheetWrapper() {
 
   return (
     <>
-      {isSidesheetOpen && <Sidesheet onClose={toggleSidesheet} />}
+      {isSidesheetOpen && (
+        <Sidesheet onClose={toggleSidesheet} availability={availability} />
+      )}
       <div className="p-4">
         <div className="flex flex-col items-center p-4 space-y-4">
-          {/* Icon Container */}
           <div className="flex items-center justify-center w-24 h-24 rounded-full bg-white p-2">
             <IoCalendarSharp className="h-16 w-16 text-blue-600" />
           </div>

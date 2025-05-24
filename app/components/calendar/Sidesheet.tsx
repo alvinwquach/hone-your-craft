@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FaCalendarAlt, FaTimes } from "react-icons/fa";
 import { HiClock } from "react-icons/hi";
 import { ImLoop } from "react-icons/im";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { DayOfWeek } from "@prisma/client";
 import { createEventType } from "@/app/actions/createEventType";
-import { getInterviewAvailability } from "@/app/actions/getInterviewAvailability";
+import { useSession } from "next-auth/react";
 
 interface Availability {
   weekly: {
@@ -25,28 +24,16 @@ interface Availability {
 
 interface SidesheetProps {
   onClose: () => void;
+  availability: Availability;
 }
 
-function Sidesheet({ onClose }: SidesheetProps) {
+function Sidesheet({ onClose, availability }: SidesheetProps) {
   const [eventName, setEventName] = useState("");
   const [duration, setDuration] = useState("15min");
   const [customDuration, setCustomDuration] = useState({
     value: "",
     unit: "min",
   });
-  const [availability, setAvailability] = useState<Availability>({
-    weekly: {
-      mon: [],
-      tue: [],
-      wed: [],
-      thu: [],
-      fri: [],
-      sat: [],
-      sun: [],
-    },
-    dateSpecific: [],
-  });
-  const [isLoading, setIsLoading] = useState(true);
 
   const { data: session } = useSession();
 
@@ -67,65 +54,6 @@ function Sidesheet({ onClose }: SidesheetProps) {
       [field]: e.target.value,
     }));
   };
-
-  const format = (time: Date, formatString: string) => {
-    return new Date(time)
-      .toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-      .replace(/\s*(AM|PM)\s*/gi, (_, match) => match.toLowerCase())
-      .replace(/\s*-\s*/, "-");
-  };
-
-  const loadAvailability = async () => {
-    if (session) {
-      try {
-        setIsLoading(true);
-        const interviewAvailability = await getInterviewAvailability();
-        if (interviewAvailability) {
-          const newAvailability = { ...availability };
-          Object.keys(newAvailability.weekly).forEach((day) => {
-            const recurringSlots = interviewAvailability
-              .filter(
-                (avail: any) =>
-                  new Date(avail.startTime)
-                    .toLocaleString("en-US", { weekday: "short" })
-                    .toLowerCase() === day && avail.isRecurring
-              )
-              .map((avail: any) => ({
-                start: format(new Date(avail.startTime), "hh:mm a"),
-                end: format(new Date(avail.endTime), "hh:mm a"),
-              }));
-            newAvailability.weekly[day] =
-              recurringSlots.length > 0 ? [recurringSlots[0]] : [];
-          });
-          setAvailability({
-            ...newAvailability,
-            dateSpecific: interviewAvailability.map((avail: any) => ({
-              startTime: avail.startTime,
-              endTime: avail.endTime,
-              isRecurring: avail.isRecurring,
-              dayOfWeek: new Date(avail.startTime)
-                .toLocaleString("en-US", { weekday: "long" })
-                .toUpperCase() as DayOfWeek,
-            })),
-          });
-        }
-      } catch (error) {
-        console.error("Error loading availability:", error);
-        toast.error("Failed to load availability");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  // Use the function in useEffect
-  useEffect(() => {
-    loadAvailability();
-  }, [session]);
 
   const renderWeeklyAvailability = () => {
     const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
@@ -247,70 +175,65 @@ function Sidesheet({ onClose }: SidesheetProps) {
       .replace(/\s*(AM|PM)\s*/gi, (_, match) => match.toLowerCase())
       .replace(/\s*-\s*/, "-");
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isLoading) {
-      let durationInMinutes: number | undefined;
+    let durationInMinutes: number | undefined;
 
-      if (duration === "custom") {
-        if (customDuration.value) {
-          durationInMinutes =
-            parseInt(customDuration.value) *
-            (customDuration.unit === "hrs" ? 60 : 1);
-          if (isNaN(durationInMinutes)) {
-            toast.error("Invalid custom duration format.");
-            return;
-          }
-        } else {
-          toast.error("Custom duration not specified.");
+    if (duration === "custom") {
+      if (customDuration.value) {
+        durationInMinutes =
+          parseInt(customDuration.value) *
+          (customDuration.unit === "hrs" ? 60 : 1);
+        if (isNaN(durationInMinutes)) {
+          toast.error("Invalid custom duration format.");
           return;
         }
       } else {
-        durationInMinutes = parseInt(duration);
-      }
-
-      if (durationInMinutes === undefined) {
-        toast.error("Failed to determine event duration.");
+        toast.error("Custom duration not specified.");
         return;
       }
-
-      const availabilityData = [
-        ...Object.entries(availability.weekly).flatMap(([day, slots]) =>
-          slots.map((slot) => ({
-            dayOfWeek: day.toUpperCase() as DayOfWeek,
-            isRecurring: true,
-            startTime: new Date(`2000-01-01T${slot.start}`).toISOString(),
-            endTime: new Date(`2000-01-01T${slot.end}`).toISOString(),
-          }))
-        ),
-        ...availability.dateSpecific.map((avail) => ({
-          dayOfWeek: avail.dayOfWeek,
-          isRecurring: avail.isRecurring,
-          startTime: new Date(avail.startTime).toISOString(),
-          endTime: new Date(avail.endTime).toISOString(),
-        })),
-      ];
-
-      const dataToSend = {
-        title: eventName,
-        length: durationInMinutes,
-        availabilityData: availabilityData,
-      };
-
-      try {
-        await createEventType(dataToSend);
-        toast.success("Event type created successfully!");
-        onClose();
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error(
-          "There was an error creating the event type. Please try again."
-        );
-      }
     } else {
+      durationInMinutes = parseInt(duration);
+    }
+
+    if (durationInMinutes === undefined) {
+      toast.error("Failed to determine event duration.");
+      return;
+    }
+
+    const availabilityData = [
+      ...Object.entries(availability.weekly).flatMap(([day, slots]) =>
+        slots.map((slot) => ({
+          dayOfWeek: day.toUpperCase() as DayOfWeek,
+          isRecurring: true,
+          startTime: new Date(`2000-01-01T${slot.start}`).toISOString(),
+          endTime: new Date(`2000-01-01T${slot.end}`).toISOString(),
+        }))
+      ),
+      ...availability.dateSpecific.map((avail) => ({
+        dayOfWeek: avail.dayOfWeek,
+        isRecurring: avail.isRecurring,
+        startTime: new Date(avail.startTime).toISOString(),
+        endTime: new Date(avail.endTime).toISOString(),
+      })),
+    ];
+
+    const dataToSend = {
+      title: eventName,
+      length: durationInMinutes,
+      availabilityData: availabilityData,
+    };
+
+    try {
+      await createEventType(dataToSend);
+      toast.success("Event type created successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Error:", error);
       toast.error(
-        "Client availability is not available. Please try again later."
+        "There was an error creating the event type. Please try again."
       );
     }
   };
@@ -400,31 +323,21 @@ function Sidesheet({ onClose }: SidesheetProps) {
               <p className="text-sm text-gray-500 mt-2">
                 {new Date().getFullYear()}
               </p>
-              {isLoading ? (
-                <p className="text-sm text-gray-500">
-                  Loading client availability...
-                </p>
-              ) : (
-                groupByDateRange(availability.dateSpecific)?.map(
-                  (group, index) => {
-                    return (
-                      <div key={index} className="mt-4 rounded-lg">
-                        <div className="flex flex-col space-y-2">
-                          <div className="flex flex-col items-start bg-transparent p-3 rounded-md w-full">
-                            <div className="text-sm text-gray-700 font-semibold w-32">
-                              {formatDateRange(group.startTime, group.endTime)}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {formatTime(group.slots[0].start)} -{" "}
-                              {formatTime(
-                                group.slots[group.slots.length - 1].end
-                              )}
-                            </div>
-                          </div>
+              {groupByDateRange(availability.dateSpecific)?.map(
+                (group, index) => (
+                  <div key={index} className="mt-4 rounded-lg">
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex flex-col items-start bg-transparent p-3 rounded-md w-full">
+                        <div className="text-sm text-gray-700 font-semibold w-32">
+                          {formatDateRange(group.startTime, group.endTime)}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {formatTime(group.slots[0].start)} -{" "}
+                          {formatTime(group.slots[group.slots.length - 1].end)}
                         </div>
                       </div>
-                    );
-                  }
+                    </div>
+                  </div>
                 )
               )}
             </div>
