@@ -338,7 +338,7 @@ const MessagesCard = ({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white md:flex-row">
+    <div className="flex flex-col min-h-screen bg-neutral-900 text-white md:flex-row rounded-lg">
       <div className="w-full border-b border-[#333] p-4 md:w-60 md:border-b-0 md:border-r">
         <div className="mb-4 border-b border-[#333] pb-2">
           <h2 className="text-lg font-semibold text-white">
@@ -352,8 +352,8 @@ const MessagesCard = ({
                 onClick={() => handleTabChange("inbox")}
                 className={`flex items-center gap-2 w-full px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   activeTab === "inbox"
-                    ? "bg-[#1a1a1a] text-white"
-                    : "text-[#999] hover:bg-[#1a1a1a] hover:text-white"
+                    ? "bg-white text-black"
+                    : "text-[#999] hover:bg-neutral-800 hover:text-white"
                 }`}
               >
                 <FaInbox className="w-4 h-4" />
@@ -368,8 +368,8 @@ const MessagesCard = ({
                 onClick={() => handleTabChange("mentions")}
                 className={`flex items-center gap-2 w-full px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   activeTab === "mentions"
-                    ? "bg-[#1a1a1a] text-white"
-                    : "text-[#999] hover:bg-[#1a1a1a] hover:text-white"
+                    ? "bg-white text-black"
+                    : "text-[#999] hover:bg-neutral-800 hover:text-white"
                 }`}
               >
                 <GoMention className="w-4 h-4" />
@@ -381,8 +381,8 @@ const MessagesCard = ({
                 onClick={() => handleTabChange("sent")}
                 className={`flex items-center gap-2 w-full px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   activeTab === "sent"
-                    ? "bg-[#1a1a1a] text-white"
-                    : "text-[#999] hover:bg-[#1a1a1a] hover:text-white"
+                    ? "bg-white text-black"
+                    : "text-[#999] hover:bg-neutral-800 hover:text-white"
                 }`}
               >
                 <FaPaperPlane className="w-4 h-4" />
@@ -394,8 +394,8 @@ const MessagesCard = ({
                 onClick={() => handleTabChange("interviews")}
                 className={`flex items-center gap-2 w-full px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   activeTab === "interviews"
-                    ? "bg-[#1a1a1a] text-white"
-                    : "text-[#999] hover:bg-[#1a1a1a] hover:text-white"
+                    ? "bg-white text-black"
+                    : "text-[#999] hover:bg-neutral-800 hover:text-white"
                 }`}
               >
                 <GrSchedule className="w-4 h-4" />
@@ -407,8 +407,8 @@ const MessagesCard = ({
                 onClick={() => handleTabChange("trash")}
                 className={`flex items-center gap-2 w-full px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   activeTab === "trash"
-                    ? "bg-[#1a1a1a] text-white"
-                    : "text-[#999] hover:bg-[#1a1a1a] hover:text-white"
+                    ? "bg-white text-black"
+                    : "text-[#999] hover:bg-neutral-800 hover:text-white"
                 }`}
               >
                 <FaTrashAlt className="w-4 h-4" />
@@ -430,8 +430,8 @@ const MessagesCard = ({
                   onClick={() => setFilter("all")}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${
                     filter === "all"
-                      ? "bg-[#1a1a1a] text-white"
-                      : "bg-transparent text-[#999] hover:bg-[#1a1a1a] hover:text-white"
+                      ? "bg-neutral-800 text-white"
+                      : "bg-transparent text-[#999] hover:bg-neutral-800 hover:text-white"
                   }`}
                 >
                   All Mail
@@ -440,8 +440,8 @@ const MessagesCard = ({
                   onClick={() => setFilter("unread")}
                   className={`px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${
                     filter === "unread"
-                      ? "bg-[#1a1a1a] text-white"
-                      : "bg-transparent text-[#999] hover:bg-[#1a1a1a] hover:text-white"
+                      ? "bg-neutral-800 text-white"
+                      : "bg-transparent text-[#999] hover:bg-neutral-800 hover:text-white"
                   }`}
                 >
                   Unread
@@ -462,10 +462,10 @@ const MessagesCard = ({
                       onClick={() => setSelectedMessage(conversation)}
                       className={`p-3 rounded-md cursor-pointer transition-colors duration-200 border border-[#333] ${
                         selectedMessage?.id === conversation.id
-                          ? "bg-[#1a1a1a]"
+                          ? "bg-neutral-800"
                           : isUnread
-                          ? "bg-transparent hover:bg-[#1a1a1a]"
-                          : "hover:bg-[#1a1a1a]"
+                          ? "bg-transparent hover:bg-neutral-800"
+                          : "hover:bg-neutral-800"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-4">
@@ -657,7 +657,7 @@ const MessagesCard = ({
             </div>
           ) : null}
         </div>
-        <div className="flex-1 p-4 pb-20 bg-black overflow-y-auto overflow-x-hidden max-w-full">
+        <div className="flex-1 p-4 pb-20 bg-neutral-900 overflow-y-auto overflow-x-hidden max-w-full rounded-lg">
           {selectedMessage ? (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4 border-b border-[#333] pb-2">
