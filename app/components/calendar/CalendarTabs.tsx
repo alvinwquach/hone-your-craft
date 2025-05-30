@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { FaLink, FaCalendarCheck, FaCalendarPlus } from "react-icons/fa";
 import { usePathname } from "next/navigation";
@@ -27,7 +28,7 @@ export default function CalendarTabs() {
   ];
 
   return (
-    <nav className="relative flex border border-zinc-700">
+    <nav className="relative flex bg-neutral-900 border border-zinc-700">
       <div className="flex flex-wrap w-full">
         {tabs.map((tab) => (
           <Link
@@ -39,8 +40,8 @@ export default function CalendarTabs() {
               focus-visible:ring-offset-zinc-900
               ${
                 pathname === `/calendar/${tab.key}`
-                  ? "border-zinc-700 bg-zinc-800"
-                  : "hover:bg-zinc-700 hover:border-zinc-600"
+                  ? "border-neutral-700 bg-neutral-800"
+                  : "hover:bg-neutral-700 hover:border-neutral-600"
               }
               flex-1 min-w-[120px] md:min-w-[140px]
             `}

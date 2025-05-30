@@ -51,11 +51,11 @@ export default function SidesheetWrapper({
             </p>
           </div>
           <button
-            className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded-full text-white hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 bg-white px-4 py-2 rounded-full text-white  transition-colors"
             onClick={toggleSidesheet}
           >
-            <FaPlus className="h-4 w-4 text-white mb-[2px]" />
-            <span>New event type</span>
+            <FaPlus className="h-4 w-4 text-black mb-[2px]" />
+            <span className="text-black">New event type</span>
           </button>
         </div>
       </div>
