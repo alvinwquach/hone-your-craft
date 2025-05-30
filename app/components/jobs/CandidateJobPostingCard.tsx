@@ -255,7 +255,7 @@ function CandidateJobPostingCard({
   return (
     <>
       <div
-        className="flex flex-col gap-4 p-4 border border-zinc-700 rounded-lg cursor-pointer max-w-5xl mx-auto"
+        className="bg-neutral-900 flex flex-col gap-4 p-4 border border-zinc-700 rounded-lg cursor-pointer max-w-5xl mx-auto"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="flex justify-between items-start">
@@ -270,7 +270,7 @@ function CandidateJobPostingCard({
             </div>
           </div>
         </div>
-        <div className="w-full sm:self-end border border-zinc-600 rounded-lg p-3">
+        <div className=" w-full sm:self-end border border-zinc-600 rounded-lg p-3">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-sm text-gray-400">
             <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
               <h2 className="font-semibold text-blue-600">{job.title}</h2>
@@ -305,7 +305,6 @@ function CandidateJobPostingCard({
                 </>
               )}
             </div>
-
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:ml-auto">
               <span className="text-xs text-gray-500">
                 Posted {formatDistanceToNow(new Date(job.createdAt))} ago

@@ -445,7 +445,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
   const customSelectStyles = {
     control: (styles: any) => ({
       ...styles,
-      backgroundColor: "black",
+      backgroundColor: "#262626",
       borderColor: "#333",
       color: "white",
       borderRadius: "0.375rem",
@@ -468,7 +468,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
     }),
     option: (styles: any) => ({
       ...styles,
-      backgroundColor: "#000",
+      backgroundColor: "#262626",
       color: "white",
       ":hover": {
         backgroundColor: "#4f46e5",
@@ -543,7 +543,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter job title"
                 />
               )}
@@ -563,7 +563,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter company name"
                 />
               )}
@@ -584,7 +584,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {Object.values(CompanySize).map((size) => (
                     <option key={size} value={size}>
@@ -629,7 +629,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {Object.values(WorkLocation).map((location) => (
                     <option key={location} value={location}>
@@ -654,7 +654,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter job location"
                 />
               )}
@@ -678,7 +678,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="text"
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter job url"
                 />
               )}
@@ -698,7 +698,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                 <input
                   {...field}
                   type="datetime-local"
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter application deadline"
                   value={formatDateForInput(field.value)}
                   onChange={(e) => field.onChange(new Date(e.target.value))}
@@ -721,7 +721,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="">Select experience</option>
                   {Object.values(YearsOfExperience).map((experience) => (
@@ -767,7 +767,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {Object.values(JobType).map((type) => (
                     <option key={type} value={type}>
@@ -791,7 +791,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
               render={({ field }) => (
                 <select
                   {...field}
-                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   value={field.value || ""}
                 >
                   <option value="" disabled>
@@ -820,7 +820,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
             render={({ field }) => (
               <textarea
                 {...field}
-                className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter job description"
                 rows={6}
               />
@@ -917,7 +917,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                       <input
                         {...field}
                         type="number"
-                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Enter salary amount"
                         value={field.value ?? ""}
                         onChange={(e) =>
@@ -942,7 +942,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                     render={({ field }) => (
                       <select
                         {...field}
-                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         value={field.value ?? Frequency.PER_YEAR}
                       >
                         {Object.values(Frequency).map((type) => (
@@ -972,7 +972,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                       <input
                         {...field}
                         type="number"
-                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Min salary range"
                         value={field.value ?? ""}
                         onChange={(e) => {
@@ -999,7 +999,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                       <input
                         {...field}
                         type="number"
-                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="Max salary range"
                         value={field.value ?? ""}
                         onChange={(e) => {
@@ -1025,7 +1025,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                     render={({ field }) => (
                       <select
                         {...field}
-                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         value={field.value ?? Frequency.PER_YEAR}
                       >
                         {Object.values(Frequency).map((type) => (
@@ -1057,7 +1057,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                   <input
                     {...field}
                     type="number"
-                    className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="Enter salary amount"
                     value={field.value ?? ""}
                     onChange={(e) =>
@@ -1072,7 +1072,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           </div>
         )}
         {isDegreeCardVisible && (
-          <div className="border border-zinc-700 p-8 rounded-lg shadow-md relative">
+          <div className="bg-neutral-900 border border-zinc-700 p-8 rounded-lg shadow-md relative">
             <button
               type="button"
               onClick={handleHideDegreeCard}
@@ -1112,7 +1112,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                   render={({ field }) => (
                     <select
                       {...field}
-                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       value={field.value || ""}
                     >
                       <option value="" disabled>
@@ -1160,7 +1160,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
           return (
             <div
               key={item.id}
-              className="space-y-6 p-6 border border-zinc-700 rounded-lg shadow-md relative"
+              className="space-y-6 p-6 bg-neutral-900 border border-zinc-700 rounded-lg shadow-md relative"
             >
               <div className="flex justify-between items-center w-full">
                 <div className="flex flex-col">
@@ -1191,7 +1191,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                   >
                     Skill*
                   </label>
-                  <div className="p-3 border border-zinc-700 rounded-md bg-black text-white">
+                  <div className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white">
                     {item.skill}
                   </div>
                 </div>
@@ -1211,7 +1211,7 @@ const EditJobForm = ({ jobData, jobId }: any) => {
                           {...field}
                           type="number"
                           min="0"
-                          className="mt-2 p-3 border border-zinc-700 rounded-md bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          className="mt-2 p-3 border border-zinc-700 rounded-md bg-neutral-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                           placeholder="Enter years of experience"
                           onChange={(e) =>
                             handleYearsOfExperienceChange(
