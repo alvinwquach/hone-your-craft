@@ -47,7 +47,7 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
   const SkeletonLoader = () => (
     <div className="p-2">
       <div className="flex justify-center mt-4">
-        <div className="h-14 w-full rounded border border-zinc-700 animate-pulse" />
+        <div className="h-14 w-full rounded border border-zinc-700 animate-pulse bg-white" />
       </div>
       {jobs.length > 0 && (
         <div className="space-y-2 mt-2 max-h-[calc(100vh-250px)] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
@@ -79,7 +79,7 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 className={`p-2 rounded-2xl shadow-lg border border-zinc-700 ${
-                  snapshot.isDraggingOver ? "bg-zinc-800" : "bg-black"
+                  snapshot.isDraggingOver ? "bg-neutral-800" : "bg-neutral-900"
                 } transition-all duration-300`}
               >
                 <h2 className="flex justify-between items-center text-white font-semibold text-lg p-2 rounded-t-2xl border-zinc-700">
@@ -105,9 +105,9 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
                     <div className="flex justify-center mt-4">
                       <button
                         onClick={openAddJobModal}
-                        className="group relative py-2 px-4 mb-2 bg-black border border-zinc-700 hover:from-zinc-800 hover:via-zinc-700 hover:to-zinc-800 w-full max-w-xs text-white transition-all duration-300 rounded-lg shadow-lg active:scale-95"
+                        className="group relative py-2 px-4 mb-2 bg-white text-black border border-zinc-700 hover:from-zinc-800 hover:via-zinc-700 hover:to-zinc-800 w-full max-w-lg  transition-all duration-300 rounded-lg shadow-lg active:scale-95"
                       >
-                        <HiPlusCircle className="h-10 w-10 inline-block text-white group-hover:scale-110 transition-transform" />
+                        <HiPlusCircle className="text-black h-10 w-10 inline-block  group-hover:scale-110 transition-transform" />
                       </button>
                     </div>
                     {!hasNoTrackedJobs && (
