@@ -11,7 +11,7 @@ function AwardsSkeleton({ totalAchievements = 6 }: AwardsSkeletonProps) {
   return (
     <section className="max-w-screen-xxl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[calc(100vh-4rem)]">
       <div className="container mx-auto p-4">
-        <div className="flex flex-wrap -mb-px justify-start border-b border-zinc-700">
+        <div className="flex flex-wrap -mb-px justify-start bg-neutral-800 border-b border-zinc-700">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
