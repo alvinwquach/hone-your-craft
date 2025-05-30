@@ -14,7 +14,7 @@ function JobTitleSearchForm({
   };
 
   return (
-    <form className="mx-auto relative lg:w-full w-2/3 mt-5">
+    <form className="relative w-full">
       <label
         htmlFor="job-title-search"
         className="mb-2 text-sm font-medium text-gray-400 sr-only dark:text-white"
@@ -28,7 +28,7 @@ function JobTitleSearchForm({
         <input
           type="search"
           id="job-title-search"
-          className="block w-full p-4 pl-10 text-slate-700 border rounded-lg bg-black border-slate-200 text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
+          className="block w-full p-4 pl-10 border rounded-lg bg-neutral-800  text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
           placeholder="Search a job title"
           value={titleSearchString}
           onChange={handleInputChange}
