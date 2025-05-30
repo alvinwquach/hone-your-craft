@@ -2,7 +2,7 @@
 
 import { EventType } from "@prisma/client";
 import { FaLink, FaCog, FaTrash, FaClipboard, FaShare } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { deleteEventType } from "@/app/actions/deleteEventType";
@@ -19,6 +19,7 @@ export function EventTypeCard({
   onDelete,
 }: EventTypeCardProps) {
   const [showOptionsMenu, setShowOptionsMenu] = useState<string | null>(null);
+  const optionsMenuRef = useRef<HTMLDivElement>(null);
 
   const formatEventLength = (length: number) => {
     if (length < 60) return `${length} min`;
@@ -40,21 +41,44 @@ export function EventTypeCard({
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        optionsMenuRef.current &&
+        !optionsMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowOptionsMenu(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="border border-zinc-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
+    <div
+      className="bg-neutral-900 border border-zinc-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+      onClick={() => setShowOptionsMenu(null)}
+    >
       <div className="flex justify-between items-start p-6">
         <h3 className="text-xl font-semibold text-white">{event.title}</h3>
         <div className="relative">
           <button
             className="text-zinc-400 hover:text-zinc-200"
-            onClick={() =>
-              setShowOptionsMenu(showOptionsMenu === event.id ? null : event.id)
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowOptionsMenu(
+                showOptionsMenu === event.id ? null : event.id
+              );
+            }}
           >
             <FaCog className="w-5 h-5" />
           </button>
           {showOptionsMenu === event.id && (
-            <div className="absolute right-0 w-40 bg-zinc-800 border border-zinc-700 shadow-md rounded-lg mt-2 py-1 z-10">
+            <div
+              ref={optionsMenuRef}
+              className="absolute right-0 w-40 bg-zinc-800 border border-zinc-700 shadow-md rounded-lg mt-2 py-1 z-10"
+            >
               <button
                 className="flex items-center px-4 py-2 text-sm text-red-500 hover:bg-zinc-700 hover:text-red-400 w-full text-left"
                 onClick={handleDelete}
@@ -69,7 +93,7 @@ export function EventTypeCard({
         <p className="text-sm text-zinc-400 px-6 pb-4">
           {formatEventLength(event.length || 0)}, One-on-One
         </p>
-        <div className="flex justify-between  px-6  mb-2 ">
+        <div className="flex justify-between px-6 mb-2">
           <Link
             href={`/schedule/${event.id}`}
             className="flex items-center text-blue-400 hover:text-blue-300 group"
@@ -80,7 +104,7 @@ export function EventTypeCard({
         <div className="border-t border-zinc-800 py-4">
           <div className="flex justify-between gap-4 px-6">
             <button
-              className="flex items-center text-blue-400 hover:text-blue-300 group"
+              className="flex items-center text-zinc-200 hover:text-blue-300 group"
               onClick={() => {
                 navigator.clipboard.writeText(
                   `${baseUrl}/schedule/${event.id}`
@@ -91,7 +115,7 @@ export function EventTypeCard({
               <FaClipboard className="mr-2" /> Copy link
             </button>
             <button
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+              className="flex items-center px-4 py-2 bg-white text-gray-900 rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => {
                 const shareUrl = `${baseUrl}/schedule/${event.id}`;
                 if (navigator.share) {
