@@ -103,15 +103,15 @@ function CandidateJobListSkeleton() {
   );
 }
 
-function PostJobButtonSkeleton() {
-  return (
-    <div className="w-full lg:w-1/4">
-      <div className="bg-zinc-900 p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
-        <Skeleton className="h-10 w-40 bg-zinc-700 rounded-full" />
-      </div>
-    </div>
-  );
-}
+// function PostJobButtonSkeleton() {
+//   return (
+//     <div className="w-full lg:w-1/4">
+//       <div className="bg-zinc-900 p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
+//         <Skeleton className="h-10 w-40 bg-zinc-700 rounded-full" />
+//       </div>
+//     </div>
+//   );
+// }
 
 export default async function Jobs() {
   const currentUser = await getCurrentUser();
@@ -186,10 +186,13 @@ export default async function Jobs() {
             draftJobsCount={draftJobsCount}
           />
           <div className="w-full lg:w-1/4">
-            <div className="p-6 rounded-lg shadow-lg border border-zinc-700 flex flex-col items-center">
+            <div className="p-6 rounded-lg shadow-lg bg-neutral-900 border border-zinc-700 flex flex-col items-center">
               <Link href="/post-job">
-                <button className="bg-zinc-700 text-white px-4 py-2 rounded-full flex items-center justify-center w-full sm:w-auto">
-                  <IoIosAddCircleOutline className="mr-2" size={20} />
+                <button className="bg-white px-4 py-2 rounded-full flex items-center justify-center w-full sm:w-auto">
+                  <IoIosAddCircleOutline
+                    className="text-black mr-2"
+                    size={20}
+                  />
                   Post a Job
                 </button>
               </Link>
