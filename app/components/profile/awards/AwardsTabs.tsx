@@ -93,9 +93,9 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   }
 
   const lockIcon = unlocked ? (
-    <FaCheck className="bg-zinc-900 p-2 rounded-full w-8 h-8 text-green-500 absolute top-1 right-1" />
+    <FaCheck className="bg-neutral-700 p-2 rounded-full w-8 h-8 text-green-500 absolute top-1 right-1" />
   ) : (
-    <BsLock className="bg-zinc-900 p-2 rounded-full w-8 h-8 text-white absolute top-1 right-1" />
+    <BsLock className="bg-neutral-700 p-2 rounded-full w-8 h-8 text-white absolute top-1 right-1" />
   );
 
   function abbreviateNumber(num: number | null): string {
@@ -127,9 +127,9 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
       : null;
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 border border-zinc-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
+    <div className="flex flex-col p-4 items-center justify-center bg-neutral-900 border border-zinc-700 rounded-2xl shadow-xl transition-all duration-300 transform backdrop-blur-sm">
       <div
-        className={`relative bg-gradient-to-br from-zinc-800 to-zinc-900 ${selectedBorderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
+        className={`relative bg-neutral-800 ${selectedBorderColor} rounded-full h-28 w-28 flex items-center justify-center mb-2`}
         style={cardStyle}
       >
         {selectedIcon}
