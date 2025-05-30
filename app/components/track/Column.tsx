@@ -47,7 +47,7 @@ function Column({ id, jobs, index, onDeleteJob, onJobAdded }: ColumnProps) {
   const SkeletonLoader = () => (
     <div className="p-2">
       <div className="flex justify-center mt-4">
-        <div className="h-14 w-full rounded border border-zinc-700 animate-pulse" />
+        <div className="h-14 w-full rounded border border-zinc-700 animate-pulse bg-white" />
       </div>
       {jobs.length > 0 && (
         <div className="space-y-2 mt-2 max-h-[calc(100vh-250px)] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
