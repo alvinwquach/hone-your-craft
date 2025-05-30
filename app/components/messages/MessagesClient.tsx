@@ -20,13 +20,15 @@ export default function MessagesClient({
   users,
 }: MessagesClientProps) {
   return (
-    <MessagesCard
-      userData={userData}
-      sentMessages={sentMessages}
-      receivedMessages={receivedMessages}
-      trashedSentMessages={trashedSentMessages}
-      mentionedInMessages={mentionedInMessages}
-      users={users}
-    />
+    <div className="border border-zinc-700 rounded-lg">
+      <MessagesCard
+        userData={userData}
+        sentMessages={sentMessages}
+        receivedMessages={receivedMessages}
+        trashedSentMessages={trashedSentMessages}
+        mentionedInMessages={mentionedInMessages}
+        users={users}
+      />
+    </div>
   );
 }
