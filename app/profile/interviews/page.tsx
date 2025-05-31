@@ -15,7 +15,7 @@ export default async function Interviews() {
             Upcoming Interviews
           </h1>
         </div>
-        <div className="fixed top-24 right-8 z-10">
+        <div className="fixed top-16 right-8 z-10">
           {Object.entries(upcomingInterviews).length > 0 && (
             <InterviewCalendarDownloadButton />
           )}
