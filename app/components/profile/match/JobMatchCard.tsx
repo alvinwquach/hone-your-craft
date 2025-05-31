@@ -100,7 +100,7 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
   };
 
   return (
-    <div className="relative border border-zinc-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
+    <div className="relative bg-neutral-900 border border-zinc-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <h3 className="text-xl font-bold text-white tracking-tight">
@@ -111,8 +111,8 @@ export default function JobMatchCard({ job }: { job: JobMatchPosting }) {
             href={job.postUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-block bg-blue-500 bg-opacity-20 text-blue-300 text-xs font-medium px-2.5 py-1 rounded-full border border-green-500/30
-            text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+            className="mt-2 inline-block bg-blue-500 bg-opacity-20 text-xs font-medium px-2.5 py-1 rounded-full border border-green-500/30
+            text-blue-400 hover:text-blue-300  transition-colors"
           >
             {job.source}
           </a>
