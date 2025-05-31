@@ -158,7 +158,7 @@ const WeeklyApplicationDayTracker = ({
       return (
         <Hexagon
           key={index}
-          className={`${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}
+          className={`${wasApplied ? "bg-blue-600" : "bg-neutral-700"}`}
         >
           <span className="text-sm text-white">{dayAbbreviation}</span>
         </Hexagon>
@@ -188,7 +188,9 @@ const WeeklyApplicationGoalTracker = ({
 
       return (
         <div key={index} className="flex flex-col items-center">
-          <Hexagon className={`${wasApplied ? "bg-blue-600" : "bg-gray-400"}`}>
+          <Hexagon
+            className={`${wasApplied ? "bg-blue-600" : "bg-neutral-700"}`}
+          >
             <span className="text-lg text-white">{dayAbbreviation}</span>
           </Hexagon>
           <div className="text-xs mt-2 text-white">{applicationCount}</div>
@@ -608,7 +610,7 @@ const GoalForm = ({
 
   return (
     <div>
-      <div className="rounded-lg p-6 shadow-lg relative border border-zinc-700">
+      <div className="bg-neutral-900 rounded-lg p-6 shadow-lg relative border border-zinc-700">
         <div className="mt-6 text-white">
           <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">
             What is your goal? (optional)
@@ -732,7 +734,7 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMinDecrement}
-                    className="bg-black hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-neutral-800 hover:bg-zinc-600 rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdRemove className="w-3 h-3 text-white" />
                   </button>
@@ -741,12 +743,12 @@ const GoalForm = ({
                     id="jobsAppliedToWeeklyGoalMin"
                     value={goalMin}
                     onChange={handleMinChange}
-                    className="bg-black border h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
+                    className="bg-neutral-800 border h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
                   />
                   <button
                     type="button"
                     onClick={handleMinIncrement}
-                    className="bg-black hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-neutral-800 hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdAdd className="w-3 h-3 text-white" />
                   </button>
@@ -766,7 +768,7 @@ const GoalForm = ({
                   <button
                     type="button"
                     onClick={handleMaxDecrement}
-                    className="bg-black hover:bg-zinc-600 border rounded-s-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-neutral-800 hover:bg-zinc-600 border rounded-s-lg p-3 h-11  border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdRemove className="w-3 h-3 text-white" />
                   </button>
@@ -775,12 +777,12 @@ const GoalForm = ({
                     id="jobsAppliedToWeeklyGoalMax"
                     value={goalMax}
                     onChange={handleMaxChange}
-                    className="bg-black border h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
+                    className="bg-neutral-800 border h-11 text-center text-sm block w-full py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
                   />
                   <button
                     type="button"
                     onClick={handleMaxIncrement}
-                    className="bg-black border hover:bg-zinc-600 rounded-e-lg p-3 h-11 border border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
+                    className="bg-neutral-800 border hover:bg-zinc-600 rounded-e-lg p-3 h-11  border-zinc-500 focus:ring-blue-600 focus:ring-2 focus:outline-none"
                   >
                     <MdAdd className="w-3 h-3 text-white" />
                   </button>
@@ -812,7 +814,7 @@ const GoalForm = ({
                 id="monthlyInterviewGoal"
                 value={monthlyInterviewsGoal}
                 onChange={handleMonthlyInterviewsGoalChange}
-                className="bg-black border h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
+                className="bg-neutral-800 border h-11 text-center text-sm block w-1/2 rounded-lg py-2.5 border-zinc-500 placeholder-gray-400 text-white focus:ring-blue-600 focus:border-blue-600"
                 min={0}
               />
             </div>
