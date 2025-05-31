@@ -26,7 +26,7 @@ interface EducationCardProps {
 
 function EducationCard({ education, openEditModal }: EducationCardProps) {
   return (
-    <div className="p-4 border border-zinc-700">
+    <div className="bg-neutral-900 p-4 border border-zinc-700">
       <div className="flex justify-between items-center">
         <h3 className="text-lg text-white font-semibold">{education.school}</h3>
         <div className="flex space-x-2">

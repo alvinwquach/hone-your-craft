@@ -157,7 +157,7 @@ function RolesCard({ userData }: RoleCardProps) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700 rounded-lg">
+    <div className="bg-neutral-900 flex flex-col lg:flex-row justify-center gap-8 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700 rounded-lg">
       <div className="w-full lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">About</h2>
         <p className="text-gray-400 text-sm">Tell us about yourself.</p>
@@ -170,7 +170,7 @@ function RolesCard({ userData }: RoleCardProps) {
           <div className="relative mt-2 w-full">
             <input
               type="text"
-              className="block w-full p-3 text-sm border rounded-lg bg-black text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
+              className="block w-full p-3 text-sm border rounded-lg bg-neutral-800 text-white focus:ring-blue-500 focus:border-blue-500 border-zinc-700 placeholder-gray-400"
               readOnly
               value={userData?.user?.name || ""}
             />
@@ -205,7 +205,7 @@ function RolesCard({ userData }: RoleCardProps) {
                   type="text"
                   id="role"
                   {...register("role")}
-                  className="block w-full text-white placeholder-gray-400 p-3 pl-10 text-sm border rounded-lg bg-black border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
+                  className="block w-full text-white placeholder-gray-400 p-3 pl-10 text-sm border rounded-lg bg-neutral-800 border-zinc-700 focus:ring-0 focus:border-blue-500 "
                   placeholder="Enter your role"
                   defaultValue={userData?.user?.role || ""}
                 />
@@ -242,12 +242,12 @@ function RolesCard({ userData }: RoleCardProps) {
           <Combobox as="div" value={query} onChange={setQuery}>
             <Combobox.Input
               onChange={(e) => setQuery(e.target.value)}
-              className="block w-full p-3 text-sm text-white border rounded-lg bg-black border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
+              className="block w-full p-3 text-sm text-white border rounded-lg bg-neutral-800 border-zinc-700 focus:ring-0 focus:border-blue-500 placeholder-gray-400"
               placeholder="Select role"
               value={query}
             />
             {filteredRoles.length > 0 && (
-              <Combobox.Options className="mt-2 bg-black text-white rounded-lg max-h-48 border border-zinc-700 overflow-y-auto p-2 w-full">
+              <Combobox.Options className="mt-2 bg-neutral-800 text-white rounded-lg max-h-48 border border-zinc-700 overflow-y-auto p-2 w-full">
                 {filteredRoles.map((role) => (
                   <Combobox.Option
                     key={role}
