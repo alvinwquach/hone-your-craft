@@ -27,12 +27,12 @@ interface JobRejectionsProps {
 
 const Skeleton = ({ className }: { className: string }) => (
   <div
-    className={`bg-zinc-800 motion-safe:animate-pulse rounded ${className}`}
+    className={`bg-neutral-900 motion-safe:animate-pulse rounded ${className}`}
   />
 );
 
 const SkeletonJobCard = () => (
-  <div className="bg-zinc-900 transition-all duration-200">
+  <div className="bg-neutral-900 transition-all duration-200 rounded-lg border-zinc-700">
     <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-zinc-800">
       <div className="flex-shrink-0">
         <Skeleton className="h-5 w-32 mb-2" />
@@ -70,7 +70,6 @@ function JobRejections({
 }: JobRejectionsProps) {
   const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     setIsLoading(false);
   }, [groupedRejections]);
@@ -101,7 +100,6 @@ function JobRejections({
       "Are you sure you want to delete this rejection?"
     );
     if (!confirmed) return;
-
     try {
       await onDeleteRejection?.(rejectionId);
       toast.success("Rejection deleted successfully");
@@ -142,7 +140,7 @@ function JobRejections({
 
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
-      <div className="bg-black border border-zinc-700 rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-neutral-900 border border-zinc-700 rounded-xl shadow-lg overflow-hidden">
         <div className="p-6">
           {Object.entries(groupedRejections).map(([date, rejections]) => (
             <div key={date} className="mb-8 last:mb-0">
@@ -242,7 +240,7 @@ function JobRejectionCard({
                   editingNotes !== undefined ? editingNotes : rejection.notes
                 }
                 onChange={(e) => onNotesChange?.(e.target.value)}
-                className="w-full mt-2 p-3 bg-black border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-2 p-3 bg-neutral-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={4}
                 placeholder="Enter notes..."
               />
