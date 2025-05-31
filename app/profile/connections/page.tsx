@@ -14,7 +14,7 @@ interface ConnectionsSkeletonProps {
 
 function ConnectionsSkeleton({ userCount }: ConnectionsSkeletonProps) {
   return (
-    <div className="mt-4 md:flex border border-[#333] rounded-lg overflow-hidden min-h-[500px] bg-black text-white">
+    <div className="mt-4 md:flex border border-[#333] rounded-lg overflow-hidden min-h-[500px] bg-neutral-900 text-white">
       <div className="md:w-1/4 w-full border-[#333] p-4">
         <ul className="flex flex-col space-y-4">
           {[

@@ -109,7 +109,7 @@ const ConnectionsCard = ({
   };
 
   const renderSkeletonCard = () => (
-    <div className="border border-zinc-700 p-4 rounded-lg relative animate-pulse">
+    <div className="bg-neutral-800 border border-zinc-700 p-4 rounded-lg relative animate-pulse">
       <Skeleton className="w-16 h-16 rounded-full mb-2" />
       <Skeleton className="w-32 h-5 mb-2" />
       <Skeleton className="w-24 h-4 mb-2" />
@@ -131,16 +131,16 @@ const ConnectionsCard = ({
   );
 
   return (
-    <div className="mt-4 md:flex border border-zinc-700 rounded-lg overflow-hidden">
+    <div className="mt-4 md:flex bg-neutral-900 border border-zinc-700 rounded-lg overflow-hidden">
       <div className="md:w-1/4 w-full border-gray-700">
         <ul className="flex flex-col space-y-4 p-4">
           <li>
             <button
               onClick={() => handleTabChange("users")}
-              className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
+              className={`inline-flex items-center px-4 py-3 rounded-lg w-full ${
                 activeTab === "users"
-                  ? "bg-zinc-700 shadow-lg"
-                  : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
+                  ? "bg-white text-black"
+                  : "text-[#999] bg-neutral-800 hover:text-white"
               } transition-colors duration-200 ease-in-out`}
               disabled={isLoading}
             >
@@ -151,10 +151,10 @@ const ConnectionsCard = ({
           <li>
             <button
               onClick={() => handleTabChange("connections")}
-              className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
+              className={`inline-flex items-center px-4 py-3  rounded-lg w-full ${
                 activeTab === "connections"
-                  ? "bg-zinc-700 shadow-lg"
-                  : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
+                  ? "bg-white text-black"
+                  : "text-[#999] bg-neutral-800 hover:text-white"
               } transition-colors duration-200 ease-in-out`}
               disabled={isLoading}
             >
@@ -165,10 +165,10 @@ const ConnectionsCard = ({
           <li>
             <button
               onClick={() => handleTabChange("received")}
-              className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
+              className={`inline-flex items-center px-4 py-3  rounded-lg w-full ${
                 activeTab === "received"
-                  ? "bg-zinc-700 shadow-lg"
-                  : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
+                  ? "bg-white text-black"
+                  : "text-[#999] bg-neutral-800 hover:text-white"
               } transition-colors duration-200 ease-in-out`}
               disabled={isLoading}
             >
@@ -179,10 +179,10 @@ const ConnectionsCard = ({
           <li>
             <button
               onClick={() => handleTabChange("sent")}
-              className={`inline-flex items-center px-4 py-3 text-white rounded-lg w-full ${
+              className={`inline-flex items-center px-4 py-3 rounded-lg w-full ${
                 activeTab === "sent"
-                  ? "bg-zinc-700 shadow-lg"
-                  : "bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"
+                  ? "bg-white text-black"
+                  : "text-[#999] bg-neutral-800 hover:text-white"
               } transition-colors duration-200 ease-in-out`}
               disabled={isLoading}
             >
@@ -204,7 +204,7 @@ const ConnectionsCard = ({
                     {users.map((user) => (
                       <div
                         key={user.id}
-                        className="border border-zinc-700  p-4 rounded-lg relative"
+                        className="bg-neutral-800 border border-zinc-700  p-4 rounded-lg relative"
                       >
                         <Image
                           src={user.image || defaultPfp}
@@ -233,14 +233,12 @@ const ConnectionsCard = ({
                         <div className="absolute top-4 right-4 p-2 rounded-lg">
                           <button
                             onClick={() => handleSendConnectionRequest(user.id)}
-                            className={`p-2 rounded-lg text-white ${
+                            className={`p-2 rounded-lg transition-colors ${
                               user.connectionStatus === "PENDING"
                                 ? "bg-yellow-600 hover:bg-yellow-500"
                                 : user.connectionStatus === "ACCEPTED"
                                 ? "bg-green-600 hover:bg-green-500"
-                                : user.connectionStatus === "NONE"
-                                ? "bg-zinc-600 hover:bg-zinc-500"
-                                : ""
+                                : "bg-white text-black"
                             }`}
                             disabled={
                               user.connectionStatus === "ACCEPTED" ||
@@ -250,13 +248,16 @@ const ConnectionsCard = ({
                             {user.connectionStatus === "PENDING" ? (
                               <AiOutlineClockCircle
                                 size={20}
-                                className="animate-spin"
+                                className="animate-spin text-white"
                               />
                             ) : user.connectionStatus === "ACCEPTED" ? (
-                              <IoIosContacts size={20} />
-                            ) : user.connectionStatus === "NONE" ? (
-                              <AiOutlineUserAdd size={20} />
-                            ) : null}
+                              <IoIosContacts size={20} className="text-white" />
+                            ) : (
+                              <AiOutlineUserAdd
+                                size={20}
+                                className="text-black"
+                              />
+                            )}
                           </button>
                         </div>
                       </div>
@@ -274,7 +275,7 @@ const ConnectionsCard = ({
                     {connections.map((connection) => (
                       <div
                         key={connection.id}
-                        className="bg-zinc-800 p-4 rounded-lg relative"
+                        className="bg-neutral-800 p-4 rounded-lg relative"
                       >
                         <Image
                           src={connection.image || defaultPfp}
