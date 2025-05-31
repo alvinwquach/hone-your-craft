@@ -1,12 +1,15 @@
 "use client";
+
 import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { FaTrash, FaSave } from "react-icons/fa";
+import { FaTrash, FaSave, FaBriefcase } from "react-icons/fa";
+
 interface Job {
   company: string;
   title: string;
 }
+
 interface JobOffer {
   job: Job;
   id: string;
@@ -14,18 +17,22 @@ interface JobOffer {
   offerDeadline: Date | null;
   salary: string;
 }
+
 interface JobOffersProps {
   jobOffers: JobOffer[];
   onEditOffer?: (offerId: string, updatedSalary: string) => void;
   onDeleteOffer?: (offerId: string) => void;
 }
+
 const Skeleton = ({ className }: { className: string }) => (
   <div
     className={`bg-zinc-800 motion-safe:animate-pulse rounded ${className}`}
   />
 );
+
 function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
   const [editingOffer, setEditingOffer] = useState<Record<string, string>>({});
+
   const formatSalaryDisplay = (value: string) => {
     const numericValue = value.replace(/\D/g, "");
     const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -35,14 +42,17 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
   const formatSalaryInput = (value: string) => {
     return value.replace(/[^\d.-]/g, "");
   };
+
   const handleOfferChange = (id: string, value: string) => {
     const formattedValue = formatSalaryInput(value);
     const displayValue = formatSalaryDisplay(formattedValue);
     setEditingOffer((prev) => ({ ...prev, [id]: displayValue }));
   };
+
   const getRawSalary = (formattedValue: string) => {
     return formattedValue.replace(/[^\d.-]/g, "");
   };
+
   const handleSaveOffer = async (id: string) => {
     const formattedSalary = editingOffer[id] || "";
     const rawSalary = getRawSalary(formattedSalary);
@@ -60,11 +70,13 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
       }
     }
   };
+
   const handleDeleteOffer = async (offerId: string) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this offer?"
     );
     if (!confirmed) return;
+
     try {
       await onDeleteOffer?.(offerId);
       toast.success("Offer Deleted");
@@ -73,6 +85,16 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
       console.error("Error deleting offer:", error);
     }
   };
+
+  if (jobOffers.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+        <FaBriefcase className="w-12 h-12 mb-4 text-gray-400" />
+        <p>No offers found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
       <div className="space-y-6 p-6">
@@ -91,6 +113,7 @@ function JobOffers({ jobOffers, onEditOffer, onDeleteOffer }: JobOffersProps) {
     </div>
   );
 }
+
 interface JobOfferCardProps {
   offer: JobOffer;
   editingOffer?: string;
@@ -99,6 +122,7 @@ interface JobOfferCardProps {
   onDeleteOffer?: () => void;
   formatSalaryDisplay: (value: string) => string;
 }
+
 function JobOfferCard({
   offer,
   editingOffer,
@@ -108,7 +132,7 @@ function JobOfferCard({
   formatSalaryDisplay,
 }: JobOfferCardProps) {
   return (
-    <div className="p-6 rounded-xl border border-zinc-800 shadow-sm">
+    <div className="p-6 rounded-xl bg-neutral-900 border border-zinc-800 shadow-sm">
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div className="flex-shrink-0">
@@ -133,7 +157,7 @@ function JobOfferCard({
                 <textarea
                   value={editingOffer || ""}
                   onChange={(e) => onEditOffer?.(e.target.value)}
-                  className="w-full mt-2 p-3 bg-black border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full mt-2 p-3 bg-neutral-800 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={4}
                   placeholder="Enter notes..."
                 />
@@ -150,9 +174,9 @@ function JobOfferCard({
             <span className="hidden md:inline-block text-sm whitespace-nowrap ml-2">
               Delete
             </span>
-            <span className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 bg-zinc-700 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity md:hidden">
+            <span className="absolute right-full top-1/2 transform -translate-y-1/2 -mr-2 bg-zinc-700 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity md:hidden">
               Delete
-              <div className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-zinc-700" />
+              <div className="absolute top-1/2 left-[-4px] transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-l-4 border-transparent border-l-zinc-700" />
             </span>
           </button>
           <button
@@ -173,4 +197,5 @@ function JobOfferCard({
     </div>
   );
 }
+
 export default JobOffers;
