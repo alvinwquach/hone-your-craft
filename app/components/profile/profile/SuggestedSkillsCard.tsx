@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { addSkill } from "@/app/actions/addSkill";
 import { toast } from "react-toastify";
