@@ -196,7 +196,7 @@ const ApplicationStatusChart = ({
   }, [statusPercentages, windowWidth, windowHeight, renderChart, isLoading]);
 
   return (
-    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
+    <div className="bg-neutral-900 border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">
         Application Status
       </h2>

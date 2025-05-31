@@ -134,7 +134,7 @@ export default function MissingSkillsChart({
   };
 
   return (
-    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
+    <div className="bg-neutral-900 border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">Missing Skills</h2>
       {isLoading ? (
         <div className="space-y-3">
