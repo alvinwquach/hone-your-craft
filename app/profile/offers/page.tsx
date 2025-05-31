@@ -9,6 +9,7 @@ import JobOffers from "@/app/components/profile/offers/JobOffers";
 const Skeleton = ({ className = "" }: { className: string }) => (
   <div className={`motion-safe:animate-pulse rounded ${className}`} />
 );
+
 const SkeletonJobCard = () => (
   <div className="p-6 rounded-xl border border-zinc-800 shadow-sm">
     <div className="space-y-4">
@@ -32,9 +33,11 @@ const SkeletonJobCard = () => (
     </div>
   </div>
 );
+
 interface JobOffersSkeletonProps {
   offerCount: number;
 }
+
 function JobOffersSkeleton({ offerCount }: JobOffersSkeletonProps) {
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
@@ -46,8 +49,10 @@ function JobOffersSkeleton({ offerCount }: JobOffersSkeletonProps) {
     </div>
   );
 }
+
 export default async function Offers() {
   const jobOffers = await getOffers();
+
   return (
     <section className="flex-1 ml-16 md:ml-16 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
       <div className="container mx-auto p-4">
