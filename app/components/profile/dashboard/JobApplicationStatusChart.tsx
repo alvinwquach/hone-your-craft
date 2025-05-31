@@ -69,7 +69,7 @@ const JobApplicationStatusChart = ({
     const color = d3
       .scaleOrdinal<string>()
       .domain(jobApplicationStatus.map((d) => d.status))
-      .range(["#3b82f6", "#60a5fa", "#93c5fd"]); // Multiple shades of blue for distinction
+      .range(["#3b82f6", "#60a5fa", "#93c5fd"]);
 
     const pieData = pie(jobApplicationStatus);
 
@@ -85,13 +85,12 @@ const JobApplicationStatusChart = ({
       .attr("d", arc)
       .attr("fill", (d) => color(d.data.status));
 
-    // Adjust text positioning to prevent overlap and ensure visibility
     arcs
       .append("text")
       .attr("transform", (d) => {
         const centroid = arc.centroid(d);
         const midAngle = Math.atan2(centroid[1], centroid[0]);
-        const x = Math.cos(midAngle) * (radius + 20); // Move text further out
+        const x = Math.cos(midAngle) * (radius + 20);
         const y = Math.sin(midAngle) * (radius + 20);
         return `translate(${x},${y})`;
       })
@@ -105,7 +104,7 @@ const JobApplicationStatusChart = ({
   }, [jobApplicationStatus, windowWidth, windowHeight, isLoading]);
 
   return (
-    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
+    <div className="bg-neutral-900 border border-zinc-700 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">
         Job Application Status
       </h2>

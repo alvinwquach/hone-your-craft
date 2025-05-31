@@ -125,7 +125,7 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
   };
 
   return (
-    <div className="border border-zinc-700 p-6 rounded-lg shadow-md">
+    <div className="border border-zinc-700 bg-neutral-900 p-6 rounded-lg shadow-md">
       <h2 className="text-white text-lg font-semibold mb-4">Skills Overview</h2>
       {isLoading ? (
         <div className="space-y-3">
@@ -152,7 +152,7 @@ export default function SkillsChart({ skills, frequencies }: SkillsChartProps) {
         </div>
       ) : (
         <>
-          <div ref={containerRef} className="w-full">
+          <div ref={containerRef} className="w-full bg-neutral-900">
             <svg ref={svgRef} className="w-full h-auto"></svg>
           </div>
           {totalPages > 1 && (
