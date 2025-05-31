@@ -36,7 +36,7 @@ function SuggestedSkillsCard({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-center gap-2 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700">
+    <div className="bg-neutral-900 flex flex-col lg:flex-row justify-center gap-2 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700">
       <div className="w-full lg:w-1/3">
         <h2 className="text-base font-semibold text-white mb-2">
           Suggested Skills
@@ -52,7 +52,7 @@ function SuggestedSkillsCard({
           {missingSkills.map((missingSkill) => (
             <span
               key={missingSkill}
-              className="bg-zinc-700 text-white px-3 py-1 text-sm cursor-pointer hover:bg-zinc-600 hover:text-blue-400"
+              className="bg-neutral-800 text-white px-3 py-1 text-sm cursor-pointer  hover:bg-zinc-600 hover:text-blue-400"
               onClick={() => handleSkillAdd(missingSkill)}
             >
               {missingSkill}

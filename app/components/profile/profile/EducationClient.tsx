@@ -105,15 +105,13 @@ export default function EducationClient({
 
   return (
     <>
-      <div className="border border-zinc-700 p-4 flex justify-between items-center">
+      <div className="bg-neutral-900 border border-zinc-700 p-4 flex justify-between items-center">
         <div className="text-white flex items-center space-x-2">
-          <span className="text-white text-xl text-black font-semibold">
-            Education
-          </span>
+          <span className="text-white text-xl font-semibold">Education</span>
         </div>
         <button
           onClick={openModal}
-          className="mr-2 bg-zinc-600 hover:bg-zinc-700 text-white p-2 rounded-full flex items-center transition-all duration-200 shadow-sm hover:shadow-md"
+          className="mr-2 bg-white text-black p-2 rounded-full flex items-center transition-all duration-200 shadow-sm hover:shadow-md"
         >
           <FaPlus className="w-5 h-5" />
         </button>
