@@ -107,7 +107,7 @@ export function JobMatchCardSkeleton() {
   const missingSkillsCount = 2;
 
   return (
-    <div className="relative border border-zinc-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
+    <div className="relative bg-neutral-900 border border-zinc-700 rounded-2xl p-6 shadow-xl transition-all duration-300 transform backdrop-blur-sm">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <Skeleton className="h-7 w-3/4 mb-2" />
