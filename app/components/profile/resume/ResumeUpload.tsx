@@ -174,7 +174,7 @@ const ResumeUpload = ({ resumeData, isLoading }: ResumeUploadProps) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-center gap-6 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700 rounded-lg max-w-[calc(100vw-13rem)] mx-auto">
+    <div className="bg-neutral-900 flex flex-col lg:flex-row justify-center gap-6 p-6 sm:p-8 mt-4 sm:mt-0 border border-zinc-700 rounded-lg max-w-[calc(100vw-13rem)] mx-auto">
       <div className="w-full lg:w-[300px]">
         <h2 className="text-base font-semibold text-white mb-2">
           Upload your resume
@@ -213,7 +213,7 @@ const ResumeUpload = ({ resumeData, isLoading }: ResumeUploadProps) => {
         ) : null}
         <label
           htmlFor="dropzone-file"
-          className={`flex flex-col items-center justify-center w-full h-36 border-2 border-zinc-700 border-dashed rounded-lg cursor-pointer bg-zinc-900 transition-colors relative ${
+          className={`flex flex-col items-center justify-center w-full h-36 border-2 border-zinc-700 border-dashed rounded-lg cursor-pointer bg-neutral-800 transition-colors relative ${
             isUploading ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
