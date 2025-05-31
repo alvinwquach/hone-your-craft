@@ -25,13 +25,13 @@ interface MeetingTabsProps {
 
 const Skeleton = ({ className }: { className: string }) => (
   <div
-    className={`border border-zinc-700 motion-safe:animate-pulse rounded ${className}`}
+    className={`bg-neutral-900 border border-zinc-700 motion-safe:animate-pulse rounded ${className}`}
     style={{ backgroundColor: "transparent" }}
   />
 );
 
 const EventSkeleton = () => (
-  <div className="transition-all duration-200 border border-zinc-700">
+  <div className="transition-all duration-200 bg-neutral-800 border border-zinc-700">
     <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4 border-b border-zinc-600">
       <div className="flex flex-col flex-shrink-0 min-w-[150px]">
         <Skeleton className="h-5 w-32 mb-2" />
@@ -85,24 +85,24 @@ export default function MeetingTabs({
     const [expanded, setExpanded] = useState(false);
 
     return (
-      <div className="transition-all duration-200 border border-zinc-700 border border-zinc-700 rounded-lg">
+      <div className="transition-all duration-200 bg-neutral-800 border border-zinc-700  rounded-lg">
         <div className="flex flex-col md:flex-row justify-between items-start gap-4 p-4">
           <div className="flex flex-col flex-shrink-0">
-            <div className="text-sm text-gray-400 mb-2 font-medium">
-              {new Date(event.startTime).toLocaleTimeString([], {
-                hour: "numeric",
-                minute: "2-digit",
-              })}{" "}
-              -{" "}
-              {new Date(event.endTime).toLocaleTimeString([], {
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </div>
+            <h3 className="text-lg text-white font-semibold tracking-tight">
+              {event.title}
+            </h3>
             <div className="pb-2">
-              <h3 className="text-lg font-semibold tracking-tight">
-                {event.title}
-              </h3>
+              <div className="text-sm text-gray-400 mb-2 font-medium">
+                {new Date(event.startTime).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}{" "}
+                -{" "}
+                {new Date(event.endTime).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </div>
               <p className="text-sm text-gray-400 line-clamp-2">
                 {event.description || "No description provided"}
               </p>
@@ -173,7 +173,6 @@ export default function MeetingTabs({
                     Reschedule
                   </span>
                 </button>
-
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -231,7 +230,7 @@ export default function MeetingTabs({
 
   return (
     <div className="w-full max-w-3xl mx-auto mt-6">
-      <div className="rounded-xl shadow-lg overflow-hidden border border-zinc-700">
+      <div className="rounded-xl shadow-lg overflow-hidden bg-neutral-900 border border-zinc-700">
         <div className="border-b border-zinc-600">
           <div className="flex flex-wrap -mb-px justify-start px-4 py-2">
             <button
