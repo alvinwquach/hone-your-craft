@@ -12,6 +12,7 @@ function Onboarding() {
   const [userRole, setUserRole] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const router = useRouter();
+
   const cutoffDate = "2024-10-31T00:00:00Z";
   const userCreatedAt = session?.user?.createdAt;
   const isNewUser = userCreatedAt ? userCreatedAt >= cutoffDate : false;
@@ -30,7 +31,6 @@ function Onboarding() {
         },
         body: JSON.stringify({ userRole }),
       });
-
       if (response.ok) {
         toast.success(`🎉 Role updated to "${userRole}" successfully!`);
         await update({ userRole });
@@ -56,31 +56,31 @@ function Onboarding() {
 
   return (
     <>
-      <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
+      <div className="max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen bg-neutral-900">
         {showConfetti && <Confetti />}
-        <div className="p-6 mt- rounded-lg shadow-lg max-w-md w-full mx-auto bg-zinc-900">
-          <h1 className="text-2xl font-bold mb-4 text-center">
+        <div className="p-6 mt- rounded-lg shadow-xl max-w-md w-full mx-auto bg-neutral-900 border border-neutral-700">
+          <h1 className="text-2xl font-bold mb-4 text-center text-white">
             {isNewUser ? `Welcome! 🎊` : `Welcome Back!`}
           </h1>
-          <p className="mb-6 text-center text-gray-300">
+          <p className="mb-6 text-center text-gray-200">
             {isNewUser
               ? `We're excited to help you get started here at Hone Your Craft.`
               : `Thank you for using Hone Your Craft! We're making some updates to improve your experience.`}
           </p>
           {isNewUser ? (
             <>
-              <p className="mb-6 text-center text-gray-300">
+              <p className="mb-6 text-center text-gray-200">
                 As a Client or Hiring Manager, you can connect with talented
                 individuals and streamline your hiring process.
               </p>
-              <p className="mb-6 text-center text-gray-300">
+              <p className="mb-6 text-center text-gray-200">
                 As a Job Seeker, you can explore exciting opportunities and
                 showcase your skills to potential employers.
               </p>
             </>
           ) : (
             <>
-              <p className="mb-6 text-center text-gray-300">
+              <p className="mb-6 text-center text-gray-200">
                 We&rsquo;re excited to share our new features! We&rsquo;re now
                 connecting clients and hiring managers with talent.
               </p>
@@ -96,8 +96,8 @@ function Onboarding() {
                   type="button"
                   className={`flex items-center justify-center py-3 px-6 rounded-lg transition duration-200 ease-in-out ${
                     userRole === "CLIENT"
-                      ? "bg-zinc-800 text-white transform scale-105"
-                      : "bg-zinc-600 text-gray-200 hover:bg-zinc-700"
+                      ? "bg-zinc-800 text-white transform scale-105 shadow-md"
+                      : "bg-zinc-600 text-gray-200 hover:bg-zinc-700 hover:text-white active:bg-zinc-500"
                   }`}
                   onClick={() =>
                     setUserRole(userRole === "CLIENT" ? "" : "CLIENT")
@@ -109,8 +109,8 @@ function Onboarding() {
                   type="button"
                   className={`flex items-center justify-center py-3 px-6 rounded-lg transition duration-200 ease-in-out ${
                     userRole === "CANDIDATE"
-                      ? "bg-zinc-800 text-white transform scale-105"
-                      : "bg-zinc-600 text-gray-200 hover:bg-zinc-700"
+                      ? "bg-zinc-800 text-white transform scale-105 shadow-md"
+                      : "bg-zinc-600 text-gray-200 hover:bg-zinc-700 hover:text-white active:bg-zinc-500"
                   }`}
                   onClick={() =>
                     setUserRole(userRole === "CANDIDATE" ? "" : "CANDIDATE")
@@ -120,14 +120,13 @@ function Onboarding() {
                 </button>
               </div>
             </fieldset>
-
             <p className="mb-4 text-center text-gray-400">
               Whether you are a job seeker or a hiring manager, we are here to
               support your journey!
             </p>
             <button
               type="submit"
-              className="flex items-center justify-center w-full bg-white text-black py-2 rounded-md hover:bg-gray-200 transition duration-150"
+              className="flex items-center justify-center w-full bg-white text-black py-2 rounded-md hover:bg-gray-200 transition duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <span className="mr-2">Proceed</span>
               <FaArrowRight />
