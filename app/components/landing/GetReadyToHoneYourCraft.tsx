@@ -13,6 +13,8 @@ const roles = [
   "Product Manager",
   "DevOps Engineer",
   "Technical Program Manager",
+  "Data Engineer",
+  "Prompt Engineer",
   "AI Researcher",
   "Cloud Engineer",
 ];
