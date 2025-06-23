@@ -38,7 +38,9 @@ export const getUserTopTenJobSkillsAndFrequency =
       const jobSkills: string[] = [];
 
       for (const job of userJobs) {
-        const extractedSkills = extractSkillsFromDescription(job.description);
+        const extractedSkills = await extractSkillsFromDescription(
+          job.description
+        );
         jobSkills.push(...extractedSkills);
       }
 

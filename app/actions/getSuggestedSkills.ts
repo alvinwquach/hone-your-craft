@@ -30,9 +30,13 @@ export const getSuggestedSkills = unstable_cache(
       });
 
       const jobSkills = new Set(
-        jobPostings.flatMap((job) =>
-          extractSkillsFromDescription(job.description)
-        )
+        (
+          await Promise.all(
+            jobPostings.map((job) =>
+              extractSkillsFromDescription(job.description)
+            )
+          )
+        ).flat()
       );
 
       const suggestedSkills = Array.from(jobSkills)
