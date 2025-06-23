@@ -47,7 +47,7 @@ async function processSkillsData(jobs: any[], userSkills: string[]) {
   const missingSkillsFrequencyMap = new Map<string, number>();
 
   for (const job of jobs) {
-    const extractedSkills = extractSkillsFromDescription(job.description);
+    const extractedSkills = await extractSkillsFromDescription(job.description);
     for (const skill of extractedSkills) {
       skillFrequencyMap.set(skill, (skillFrequencyMap.get(skill) || 0) + 1);
       if (!userSkills.includes(skill)) {

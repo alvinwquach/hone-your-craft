@@ -44,7 +44,9 @@ export const getUserTopTenMissingJobSkillsAndFrequency =
       const missingSkillsFrequencyMap = new Map<string, number>();
 
       for (const job of userJobs) {
-        const extractedSkills = extractSkillsFromDescription(job.description);
+        const extractedSkills = await extractSkillsFromDescription(
+          job.description
+        );
         updateMissingSkillsFrequencyMap(
           missingSkillsFrequencyMap,
           extractedSkills,

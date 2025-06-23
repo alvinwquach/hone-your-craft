@@ -102,9 +102,13 @@ export const getUserJobPostingsWithSkillMatch = async (
         if (job.jobSkills.length > 0) {
           jobSkills = job.jobSkills.map((js) => js.skill.name);
         } else if (job.description) {
-          jobSkills = [
-            ...new Set(extractSkillsFromDescription(job.description)),
-          ];
+          try {
+            jobSkills = await extractSkillsFromDescription(job.description);
+            jobSkills = [...new Set(jobSkills)]; // Ensure unique skills
+          } catch (error) {
+            console.error(`Failed to extract skills for job ${job.id}:`, error);
+            jobSkills = [];
+          }
         } else {
           jobSkills = [];
         }

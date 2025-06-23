@@ -4,7 +4,6 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "../lib/db/prisma";
 import { extractSkillsFromDescription } from "../lib/extractSkillsFromDescription";
 
-// Update the missing skills frequency map
 const updateMissingSkillsFrequencyMap = (
   missingSkillsFrequencyMap: Map<string, number>,
   jobSkills: string[],
@@ -25,10 +24,10 @@ export const getUserJobMissingSkillsAndFrequency = async (
   page: number = 1,
   pageSize: number = 10
 ) => {
+  console.time("getUserJobMissingSkillsAndFrequency");
   try {
     // Retrieve the current user
     const currentUser = await getCurrentUser();
-
     // Check if the user ID is missing
     if (!currentUser?.id) {
       throw new Error("User not authenticated or user ID not found");
@@ -39,7 +38,12 @@ export const getUserJobMissingSkillsAndFrequency = async (
       where: {
         userId: currentUser.id,
       },
+      select: {
+        id: true,
+        description: true,
+      },
     });
+    console.timeLog("getUserJobMissingSkillsAndFrequency", "Fetched jobs");
 
     // Fetch user skills from the current user
     const userSkills = currentUser.skills || [];
@@ -50,7 +54,16 @@ export const getUserJobMissingSkillsAndFrequency = async (
     // Iterate over user jobs
     for (const job of userJobs) {
       // Get the list of job skills extracted from the job description
-      const extractedSkills = extractSkillsFromDescription(job.description);
+      let extractedSkills: string[] = [];
+      if (job.description) {
+        try {
+          extractedSkills = await extractSkillsFromDescription(job.description);
+          extractedSkills = [...new Set(extractedSkills)];
+        } catch (error) {
+          console.error(`Failed to extract skills for job ${job.id}:`, error);
+          extractedSkills = [];
+        }
+      }
 
       // Update the missing skills frequency map for this job
       updateMissingSkillsFrequencyMap(
@@ -59,17 +72,18 @@ export const getUserJobMissingSkillsAndFrequency = async (
         userSkills
       );
     }
+    console.timeLog("getUserJobMissingSkillsAndFrequency", "Processed skills");
 
     // Convert the missingSkillsFrequencyMap to an array of objects for sorting
     const missingSkillsFrequencyArray = Array.from(
       missingSkillsFrequencyMap.entries()
     ).map(([skill, frequency]) => ({ skill, frequency }));
 
-    // Sort the missing skills frequency array by frequency in descending order
+    // Sort by frequency in descending order
     missingSkillsFrequencyArray.sort((a, b) => b.frequency - a.frequency);
 
+    // Pagination
     const totalPages = Math.ceil(missingSkillsFrequencyArray.length / pageSize);
-
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedMissingSkills = missingSkillsFrequencyArray.slice(
@@ -84,6 +98,7 @@ export const getUserJobMissingSkillsAndFrequency = async (
       (entry) => entry.frequency
     );
 
+    console.timeEnd("getUserJobMissingSkillsAndFrequency");
     return {
       sortedMissingSkills,
       sortedMissingFrequencies,
