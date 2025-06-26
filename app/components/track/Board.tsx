@@ -7,6 +7,7 @@ import Confetti from "react-confetti";
 import { DragDropContext, DropResult, Droppable } from "@hello-pangea/dnd";
 import { ApplicationStatus } from "@prisma/client";
 import Column from "./Column";
+import { updateJob } from "@/app/actions/updateJob";
 
 interface ColumnType {
   id: ApplicationStatus;
@@ -119,7 +120,6 @@ function Board({ userJobs, onDeleteJob }: any) {
       const [removed] = newColumns.splice(source.index, 1);
       // Insert the removed item at the destination index
       newColumns.splice(destination.index, 0, removed);
-
       // Update the board state with the new columns
       setBoard({
         ...board,
@@ -129,12 +129,11 @@ function Board({ userJobs, onDeleteJob }: any) {
       // Otherwise, handle job movement between columns
       const startCol = board.columns[source.droppableId];
       const finishCol = board.columns[destination.droppableId];
-
       // Check if startCol and finishCol exist
       if (!startCol || !finishCol) return;
-
       // Check if the drag and drop is within the same column and index
-      if (source.index === destination.index && startCol === finishCol) return;
+      if (source.index === destination.index && startCol.id === finishCol.id)
+        return;
 
       // Create a copy of the jobs array in the start column
       const newJobs = [...startCol.jobs];
@@ -150,7 +149,6 @@ function Board({ userJobs, onDeleteJob }: any) {
           ...startCol,
           jobs: newJobs,
         };
-        // Create a copy of the columns array
         const newColumns = [...board.columns];
         // Update the column at the source droppableId index
         const droppableIdNum = parseInt(source.droppableId);
@@ -182,26 +180,18 @@ function Board({ userJobs, onDeleteJob }: any) {
           ...finishCol,
           jobs: finishJobs,
         };
+
         try {
-          const response = await fetch(`/api/job/${jobMoved.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              status: finishCol.id,
-              company: jobMoved.company,
-              title: jobMoved.title,
-              postUrl: jobMoved.postUrl,
-              description: jobMoved.description,
-            }),
+          const result = await updateJob(jobMoved.id, {
+            status: finishCol.id,
           });
 
-          if (!response.ok) {
-            throw new Error("Failed to update job status");
+          if ("error" in result) {
+            toast.error(result.error);
+            return;
           }
 
-          mutate("/api/jobs");
+          mutate("/api/tracked-jobs");
 
           switch (finishCol.id) {
             case "OFFER":
@@ -218,13 +208,15 @@ function Board({ userJobs, onDeleteJob }: any) {
               toast.success("Job Status Updated");
               break;
           }
+
+          setBoard({
+            ...board,
+            columns: newColumns,
+          });
         } catch (error) {
           console.error("Error updating job:", error);
+          toast.error("Failed to update job status");
         }
-        setBoard({
-          ...board,
-          columns: newColumns,
-        });
       }
     }
   };
