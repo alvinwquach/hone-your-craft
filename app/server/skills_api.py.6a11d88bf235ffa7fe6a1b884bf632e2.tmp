@@ -136,18 +136,15 @@ def extract_skills_single(description: str) -> List[str]:
     for token in doc:
         if token.is_alpha and not token.is_stop and token.pos_ in ["NOUN", "PROPN"] and token.text not in extracted_skills:
             lemma = token.lemma_
-                       # Re-process token for embeddings
-
+    # Re-process token for embeddings
             token_doc = nlp(token.text)
-                      # Check similarity for variations (e.g., "JS" vs. "JavaScript")
-
+    # Check similarity for variations (e.g., "JS" vs. "JavaScript")
             for skill, skill_doc in skill_docs.items():
                 similarity = token_doc.similarity(skill_doc)
                 if similarity > similarity_threshold:
                     extracted_skills.add(skill)
                     break
                       # Apply heuristic for new single-word skills
-
             if lemma not in extracted_skills and len(lemma) > 2:
                 if (
                     any(char.isupper() for char in token.text) or
@@ -155,14 +152,11 @@ def extract_skills_single(description: str) -> List[str]:
                     "-" in token.text or
                     token.pos_ == "PROPN"
                 ):
-                                        # Check requirement context
-
+    # Check requirement context
                     if token.dep_ in ["dobj", "pobj"] and token.head.text.lower() in ["require", "need", "use", "experience"]:
                         extracted_skills.add(token.text)
-
     return list(extracted_skills)
 
-# Define FastAPI endpoint to extract skills from a job description
 # Define FastAPI endpoint to extract skills from a job description
 # - Accept POST request with JobDescription payload
 # - Call extract_skills_single and return results
