@@ -24,7 +24,6 @@ export const getUserJobMissingSkillsAndFrequency = async (
   page: number = 1,
   pageSize: number = 10
 ) => {
-  console.time("getUserJobMissingSkillsAndFrequency");
   try {
     // Retrieve the current user
     const currentUser = await getCurrentUser();
@@ -43,7 +42,6 @@ export const getUserJobMissingSkillsAndFrequency = async (
         description: true,
       },
     });
-    console.timeLog("getUserJobMissingSkillsAndFrequency", "Fetched jobs");
 
     // Fetch user skills from the current user
     const userSkills = currentUser.skills || [];
@@ -72,7 +70,6 @@ export const getUserJobMissingSkillsAndFrequency = async (
         userSkills
       );
     }
-    console.timeLog("getUserJobMissingSkillsAndFrequency", "Processed skills");
 
     // Convert the missingSkillsFrequencyMap to an array of objects for sorting
     const missingSkillsFrequencyArray = Array.from(
@@ -98,7 +95,6 @@ export const getUserJobMissingSkillsAndFrequency = async (
       (entry) => entry.frequency
     );
 
-    console.timeEnd("getUserJobMissingSkillsAndFrequency");
     return {
       sortedMissingSkills,
       sortedMissingFrequencies,

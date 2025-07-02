@@ -32,7 +32,6 @@ const holidayTypeHandlers: { [key: string]: (year: number) => Date | null } = {
 };
 
 const calculateEasterSunday = (year: number): Date | null => {
-  console.time(`calculateEasterSunday-${year}`);
   try {
     const a = year % 19;
     const b = Math.floor(year / 100);
@@ -50,12 +49,10 @@ const calculateEasterSunday = (year: number): Date | null => {
     const day = ((h + l - 7 * m + 114) % 31) + 1;
     return new Date(year, month - 1, day);
   } finally {
-    console.timeEnd(`calculateEasterSunday-${year}`);
   }
 };
 
 const getHolidayDate = (holiday: Holiday, year: number): Date | null => {
-  console.time(`getHolidayDate-${holiday.name}-${year}`);
   try {
     if (holiday.date) {
       const [month, day] = holiday.date.split("-");
@@ -71,7 +68,6 @@ const getHolidayDate = (holiday: Holiday, year: number): Date | null => {
     }
     return null;
   } finally {
-    console.timeEnd(`getHolidayDate-${holiday.name}-${year}`);
   }
 };
 
@@ -80,7 +76,6 @@ const getNthMondayOfMonth = (
   month: number,
   nth: number
 ): Date => {
-  console.time(`getNthMondayOfMonth-${year}-${month}-${nth}`);
   try {
     const date = new Date(year, month - 1, 1);
     const dayOfWeek = date.getDay();
@@ -88,12 +83,10 @@ const getNthMondayOfMonth = (
     date.setDate(date.getDate() + diff + 7 * (nth - 1));
     return date;
   } finally {
-    console.timeEnd(`getNthMondayOfMonth-${year}-${month}-${nth}`);
   }
 };
 
 const getLastMondayOfMonth = (year: number, month: number): Date => {
-  console.time(`getLastMondayOfMonth-${year}-${month}`);
   try {
     const date = new Date(year, month, 0);
     const dayOfWeek = date.getDay();
@@ -101,7 +94,6 @@ const getLastMondayOfMonth = (year: number, month: number): Date => {
     date.setDate(date.getDate() - diff);
     return date;
   } finally {
-    console.timeEnd(`getLastMondayOfMonth-${year}-${month}`);
   }
 };
 
@@ -110,7 +102,6 @@ const getNthThursdayOfMonth = (
   month: number,
   nth: number
 ): Date => {
-  console.time(`getNthThursdayOfMonth-${year}-${month}-${nth}`);
   try {
     const date = new Date(year, month - 1, 1);
     const dayOfWeek = date.getDay();
@@ -118,11 +109,9 @@ const getNthThursdayOfMonth = (
     date.setDate(date.getDate() + diff + 7 * (nth - 1));
     return date;
   } finally {
-    console.timeEnd(`getNthThursdayOfMonth-${year}-${month}-${nth}`);
   }
 };
 
-// Precompute holidays for current and next year
 const holidayDatesCache = new Map<string, { name: string; date: Date }>();
 const currentYear = new Date().getFullYear();
 const yearsToCache = [currentYear, currentYear + 1];
@@ -145,7 +134,6 @@ const usHolidays: Holiday[] = [
 ];
 
 yearsToCache.forEach((year) => {
-  console.time(`cacheHolidays-${year}`);
   try {
     usHolidays.forEach((holiday) => {
       const date = getHolidayDate(holiday, year);
@@ -157,12 +145,10 @@ yearsToCache.forEach((year) => {
       }
     });
   } finally {
-    console.timeEnd(`cacheHolidays-${year}`);
   }
 });
 
 const checkIfHoliday = (date: Date): string | null => {
-  console.time(`checkIfHoliday-${date.toISOString()}`);
   try {
     const key = `${date.getFullYear()}-${(date.getMonth() + 1)
       .toString()
@@ -170,23 +156,19 @@ const checkIfHoliday = (date: Date): string | null => {
     const holiday = holidayDatesCache.get(key);
     return holiday ? holiday.name : null;
   } finally {
-    console.timeEnd(`checkIfHoliday-${date.toISOString()}`);
   }
 };
 
 const trackApplicationDays = (jobs: { createdAt: Date }[]): number => {
-  console.time("trackApplicationDays");
   try {
     return new Set(
       jobs.map((job) => new Date(job.createdAt).toISOString().split("T")[0])
     ).size;
   } finally {
-    console.timeEnd("trackApplicationDays");
   }
 };
 
 const calculateWeeklyApplicationStreak = async (userId: string) => {
-  console.time(`calculateWeeklyApplicationStreak-${userId}`);
   try {
     const target = await prisma.user.findUnique({
       where: { id: userId },
@@ -213,8 +195,6 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
       },
       select: { createdAt: true },
     });
-
-    console.log(`Jobs this week for user ${userId}: ${jobsThisWeek.length}`);
 
     const distinctDaysApplied = trackApplicationDays(jobsThisWeek);
     const goalMet =
@@ -244,8 +224,6 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
         where: { id: userId },
         data: { weeklyStreak: newStreak, lastStreakUpdate: currentWeekStart },
       });
-
-      console.log(`Updated streak for user ${userId}: ${newStreak}`);
 
       const streakWeeks = newStreak;
       const achievements = [
@@ -303,9 +281,6 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
               awardedAt: new Date(),
             },
           });
-          console.log(
-            `Awarded streak achievement: ${achievement.name} for user ${userId}`
-          );
         }
       }
     }
@@ -318,7 +293,6 @@ const calculateWeeklyApplicationStreak = async (userId: string) => {
     );
     throw error;
   } finally {
-    console.timeEnd(`calculateWeeklyApplicationStreak-${userId}`);
   }
 };
 
@@ -327,7 +301,6 @@ const calculateAchievements = async (
   appliedJobs: { createdAt: Date }[],
   interviews: { acceptedDate: Date }[]
 ) => {
-  console.time(`calculateAchievements-${userId}`);
   try {
     const jobMilestones = [
       10, 25, 50, 75, 100, 125, 250, 500, 750, 1000, 1250, 1500, 1750, 2000,
@@ -355,19 +328,9 @@ const calculateAchievements = async (
       }))
       .sort((a, b) => a.acceptedDate.getTime() - b.acceptedDate.getTime());
 
-    console.log(
-      `Processing ${processedAppliedJobs.length} jobs for user ${userId}`
-    );
-    console.log(
-      `Processing ${processedInterviews.length} interviews for user ${userId}`
-    );
-
     processedAppliedJobs.forEach((job) => {
       appliedJobsCount++;
       if (jobMilestones.includes(appliedJobsCount)) {
-        console.log(
-          `Milestone ${appliedJobsCount} reached on ${job.createdAt} for user ${userId}`
-        );
         awardedAchievements.push({
           id: `${userId}-job-${appliedJobsCount}`,
           name: `Applied to ${appliedJobsCount} Jobs`,
@@ -380,9 +343,6 @@ const calculateAchievements = async (
     processedInterviews.forEach((interview) => {
       interviewsCount++;
       if (interviewMilestones.includes(interviewsCount)) {
-        console.log(
-          `Interview milestone ${interviewsCount} reached on ${interview.acceptedDate} for user ${userId}`
-        );
         awardedAchievements.push({
           id: `${userId}-interview-${interviewsCount}`,
           name: `Attended ${interviewsCount} Interviews`,
@@ -422,7 +382,6 @@ const calculateAchievements = async (
       }
     });
 
-    console.time(`preFetchAchievements-${userId}`);
     const achievementNames = awardedAchievements.map((a) => a.name);
     const existingAchievements = await prisma.achievement.findMany({
       where: { name: { in: achievementNames } },
@@ -454,9 +413,7 @@ const calculateAchievements = async (
       select: { id: true, name: true },
     });
     updatedAchievements.forEach((a) => achievementMap.set(a.name, a.id));
-    console.timeEnd(`preFetchAchievements-${userId}`);
 
-    console.time(`batchInsertAchievements-${userId}`);
     const existingUserAchievements = await prisma.userAchievement.findMany({
       where: {
         userId,
@@ -485,28 +442,18 @@ const calculateAchievements = async (
           });
         })
     );
-    console.timeEnd(`batchInsertAchievements-${userId}`);
-
-    console.log(
-      `Awarded ${awardedAchievements.length} achievements for user ${userId}`
-    );
-    console.log(
-      `Locked ${lockedAchievements.length} achievements for user ${userId}`
-    );
 
     return { awardedAchievements, lockedAchievements };
   } catch (error) {
     console.error(`Error in calculateAchievements for user ${userId}:`, error);
     throw error;
   } finally {
-    console.timeEnd(`calculateAchievements-${userId}`);
   }
 };
 
 const getUserJobs = (userId: string) =>
   unstable_cache(
     async (id: string) => {
-      console.time(`getUserJobs-${id}`);
       try {
         const jobs = await prisma.job.findMany({
           where: { userId: id, status: { not: "SAVED" } },
@@ -517,10 +464,8 @@ const getUserJobs = (userId: string) =>
             holidayApplied: true,
           },
         });
-        console.log(`Fetched ${jobs.length} jobs for user ${id}`);
         return jobs;
       } finally {
-        console.timeEnd(`getUserJobs-${id}`);
       }
     },
     [`user_jobs_${userId}`],
@@ -530,16 +475,13 @@ const getUserJobs = (userId: string) =>
 const getUserInterviews = (userId: string) =>
   unstable_cache(
     async (id: string) => {
-      console.time(`getUserInterviews-${id}`);
       try {
         const interviews = await prisma.interview.findMany({
           where: { userId: id, interviewDate: { not: null } },
           select: { id: true, acceptedDate: true, interviewDate: true },
         });
-        console.log(`Fetched ${interviews.length} interviews for user ${id}`);
         return interviews;
       } finally {
-        console.timeEnd(`getUserInterviews-${id}`);
       }
     },
     [`user_interviews_${userId}`],
@@ -549,7 +491,6 @@ const getUserInterviews = (userId: string) =>
 const getUserAchievements = (userId: string) =>
   unstable_cache(
     async (id: string) => {
-      console.time(`getUserAchievements-${id}`);
       try {
         const achievements = await prisma.userAchievement.findMany({
           where: { userId: id },
@@ -557,12 +498,9 @@ const getUserAchievements = (userId: string) =>
             achievement: { select: { id: true, description: true } },
           },
         });
-        console.log(
-          `Fetched ${achievements.length} existing achievements for user ${id}`
-        );
+
         return achievements;
       } finally {
-        console.timeEnd(`getUserAchievements-${id}`);
       }
     },
     [`user_achievements_${userId}`],
@@ -576,7 +514,6 @@ const cachedCalculateAchievements = unstable_cache(
 );
 
 const sortAchievements = (a: HolidayAchievement, b: HolidayAchievement) => {
-  console.time(`sortAchievements`);
   try {
     if (a.unlocked !== b.unlocked) {
       return a.unlocked ? -1 : 1;
@@ -599,50 +536,33 @@ const sortAchievements = (a: HolidayAchievement, b: HolidayAchievement) => {
       ? holidayNameA.localeCompare(holidayNameB)
       : indexA - indexB;
   } finally {
-    console.timeEnd(`sortAchievements`);
   }
 };
 
 export async function getAchievements() {
-  console.time("getAchievements");
   try {
     const currentUser = await getCurrentUser();
-    console.log(`Current user ID: ${currentUser?.id}`);
 
     if (!currentUser) {
-      console.log("No current user, redirecting to login");
       return redirect("/login");
     }
 
-    console.time(`fetchUserData-${currentUser.id}`);
     const [userJobs, userInterviews, userAchievements] = await Promise.all([
       getUserJobs(currentUser.id),
       getUserInterviews(currentUser.id),
       getUserAchievements(currentUser.id),
     ]);
-    console.timeEnd(`fetchUserData-${currentUser.id}`);
 
-    console.log(`Jobs fetched for user ${currentUser.id}: ${userJobs.length}`);
-    console.log(
-      `Interviews fetched for user ${currentUser.id}: ${userInterviews.length}`
-    );
-    console.log(
-      `Existing achievements for user ${currentUser.id}: ${userAchievements.length}`
-    );
-
-    console.time(`calculateAchievementsAndStreak-${currentUser.id}`);
     const [achievementsResult, weeklyResult] = await Promise.all([
       cachedCalculateAchievements(currentUser.id, userJobs, userInterviews),
       calculateWeeklyApplicationStreak(currentUser.id),
     ]);
-    console.timeEnd(`calculateAchievementsAndStreak-${currentUser.id}`);
 
     const { awardedAchievements, lockedAchievements } = achievementsResult;
     const holidayAchievements: HolidayAchievement[] = [];
     const lockedHolidayAchievements: HolidayAchievement[] = [];
     const uniqueHolidaysAppliedOn = new Set<string>();
 
-    console.time(`processHolidayAchievements-${currentUser.id}`);
     userJobs.forEach((job) => {
       const holiday =
         job.holidayApplied || checkIfHoliday(new Date(job.createdAt));
@@ -660,9 +580,6 @@ export async function getAchievements() {
           ).getFullYear()}.`,
           unlocked: true,
         });
-        console.log(
-          `Added holiday achievement: Applied on ${holiday} for user ${currentUser.id}`
-        );
       }
     });
 
@@ -676,9 +593,7 @@ export async function getAchievements() {
         });
       }
     });
-    console.timeEnd(`processHolidayAchievements-${currentUser.id}`);
 
-    console.time(`organizeAchievements-${currentUser.id}`);
     const organizedAchievements = {
       jobAchievements: [
         ...awardedAchievements.filter((a) => a.name.includes("Applied to")),
@@ -693,32 +608,6 @@ export async function getAchievements() {
         ...lockedHolidayAchievements,
       ].sort(sortAchievements),
     };
-    console.timeEnd(`organizeAchievements-${currentUser.id}`);
-
-    console.log(
-      `Job achievements for user ${currentUser.id}:`,
-      organizedAchievements.jobAchievements.map(
-        (a) => `${a.name} (unlocked: ${a.unlocked})`
-      )
-    );
-    console.log(
-      `Interview achievements for user ${currentUser.id}:`,
-      organizedAchievements.interviewAchievements.map(
-        (a) => `${a.name} (unlocked: ${a.unlocked})`
-      )
-    );
-    console.log(
-      `Holiday achievements for user ${currentUser.id}:`,
-      organizedAchievements.holidayAchievements.map(
-        (a) => `${a.name} (unlocked: ${a.unlocked})`
-      )
-    );
-    console.log(
-      `Weekly streak for user ${currentUser.id}: ${weeklyResult.streak}`
-    );
-    console.log(
-      `Applied days this week for user ${currentUser.id}: ${weeklyResult.appliedDaysCount}`
-    );
 
     return {
       ...organizedAchievements,
@@ -730,6 +619,5 @@ export async function getAchievements() {
     console.error("Error fetching or calculating user achievements:", error);
     throw error;
   } finally {
-    console.timeEnd("getAchievements");
   }
 };

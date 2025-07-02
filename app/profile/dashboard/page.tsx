@@ -11,8 +11,6 @@ import SkillsChart from "@/app/components/profile/dashboard/SkillsChart";
 import MissingSkillsChart from "@/app/components/profile/dashboard/MissingSkillsChart";
 
 async function getUserData(userId: string) {
-  console.time("Fetch User Data");
-
   const [jobs, interviews, applications] = await Promise.all([
     prisma.job.findMany({
       where: { userId },
@@ -36,13 +34,10 @@ async function getUserData(userId: string) {
     }),
   ]);
 
-  console.timeEnd("Fetch User Data");
   return { jobs, interviews, applications };
 }
 
 async function processSkillsData(jobs: any[], userSkills: string[]) {
-  console.time("Process Skills Data");
-
   const skillFrequencyMap = new Map<string, number>();
   const missingSkillsFrequencyMap = new Map<string, number>();
 
@@ -67,8 +62,6 @@ async function processSkillsData(jobs: any[], userSkills: string[]) {
     .map(([skill, frequency]) => ({ skill, frequency }))
     .sort((a, b) => b.frequency - a.frequency);
 
-  console.timeEnd("Process Skills Data");
-
   return {
     skills: {
       skills: skillsArray.map((entry) => entry.skill),
@@ -84,8 +77,6 @@ async function processSkillsData(jobs: any[], userSkills: string[]) {
 }
 
 function processApplicationStatus(jobs: any[]) {
-  console.time("Process Application Status");
-
   const statusCounts = new Map<string, number>();
   jobs.forEach((job) => {
     if (job.status) {
@@ -101,14 +92,10 @@ function processApplicationStatus(jobs: any[]) {
     percentages.set(status, parseFloat(percentage.toFixed(2)));
   });
 
-  console.timeEnd("Process Application Status");
-
   return { percentages };
 }
 
 function processInterviewFrequency(interviews: any[]) {
-  console.time("Process Interview Frequency");
-
   const interviewTypeFrequency = interviews.reduce(
     (acc, { interviewType, _count }) => ({
       ...acc,
@@ -117,13 +104,10 @@ function processInterviewFrequency(interviews: any[]) {
     {}
   );
 
-  console.timeEnd("Process Interview Frequency");
   return { interviewTypeFrequency };
 }
 
 function processJobPostingSourceCount(jobs: any[]) {
-  console.time("Process Job Posting Source Count");
-
   const SOURCE_MAPPINGS = new Map([
     ["otta", "Otta"],
     ["linkedin", "LinkedIn"],
@@ -156,19 +140,15 @@ function processJobPostingSourceCount(jobs: any[]) {
     sourceCountRecord[source] = (sourceCountRecord[source] || 0) + 1;
   });
 
-  console.timeEnd("Process Job Posting Source Count");
   return sourceCountRecord;
 }
 
 function processCandidateApplicationStatus(applications: any[]) {
-  console.time("Process Candidate Application Status");
-
   const statusData = applications.map(({ status, _count }) => ({
     status: convertToSentenceCase(status),
     count: _count.status,
   }));
 
-  console.timeEnd("Process Candidate Application Status");
   return { statusData };
 }
 

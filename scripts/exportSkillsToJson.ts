@@ -21,6 +21,4 @@ fs.writeFileSync(
   "utf-8"
 );
 
-console.log("Skills exported to public/skills.json");
-
 export {};

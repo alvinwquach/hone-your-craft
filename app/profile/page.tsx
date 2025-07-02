@@ -18,11 +18,11 @@ import { getSuggestedSkills } from "../actions/getSuggestedSkills";
 
 export default async function Profile() {
   const currentUser = await getCurrentUser();
-  const userData = await getUserByEmail(currentUser?.email ?? "");
-  const suggestedSkills = await getSuggestedSkills();
-
-  const educationListContent = await EducationList();
-
+  const [userData, suggestedSkills, educationListContent] = await Promise.all([
+    getUserByEmail(currentUser?.email ?? ""),
+    getSuggestedSkills(),
+    EducationList(),
+  ]);
   return (
     <div className="flex">
       <section className="flex-1 ml-16 md:ml-16 max-w-screen-2xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-24 min-h-screen">
