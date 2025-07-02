@@ -53,7 +53,6 @@ export const getUserJobPostingsWithSkillMatch = async (
   page: number = 1,
   take: number = ITEMS_PER_PAGE
 ): Promise<JobPostingsResponse> => {
-  console.time("getUserJobPostingsWithSkillMatch");
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
@@ -87,7 +86,6 @@ export const getUserJobPostingsWithSkillMatch = async (
       }),
       prisma.job.count({ where: { userId: currentUser.id } }),
     ]);
-    console.timeLog("getUserJobPostingsWithSkillMatch", "Fetched jobs");
 
     const jobsToUpdate: {
       id: string;
@@ -147,7 +145,6 @@ export const getUserJobPostingsWithSkillMatch = async (
         };
       })
     );
-    console.timeLog("getUserJobPostingsWithSkillMatch", "Processed jobs");
 
     if (jobsToUpdate.length > 0) {
       await prisma.$transaction(
@@ -176,7 +173,6 @@ export const getUserJobPostingsWithSkillMatch = async (
         )
       );
     }
-    console.timeLog("getUserJobPostingsWithSkillMatch", "Updated database");
 
     const totalPages = Math.ceil(totalJobs / take);
     const result: JobPostingsResponse = {
@@ -186,7 +182,6 @@ export const getUserJobPostingsWithSkillMatch = async (
       totalJobs,
     };
 
-    console.timeEnd("getUserJobPostingsWithSkillMatch");
     return result;
   } catch (error) {
     console.error("Error fetching user job postings with skill match:", error);

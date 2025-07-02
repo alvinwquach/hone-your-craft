@@ -6,10 +6,8 @@ import { unstable_cache } from "next/cache";
 
 const getCachedTrackedJobs = unstable_cache(
   async () => {
-    console.time("getCachedTrackedJobs");
     const currentUser = await getCurrentUser();
 
-    console.time("prismaQuery");
     const jobs = await prisma.job.findMany({
       where: { userId: currentUser?.id },
       select: {
@@ -47,7 +45,6 @@ const getCachedTrackedJobs = unstable_cache(
       },
       orderBy: [{ createdAt: "desc" }],
     });
-    console.timeLog("prismaQuery");
 
     const columns = new Map<
       ApplicationStatus,
@@ -68,7 +65,6 @@ const getCachedTrackedJobs = unstable_cache(
 
     const columnValues = await Promise.all(columnPromises);
     columnValues.forEach((column) => columns.set(column.id, column));
-    console.timeLog("getCachedTrackedJobs");
     return Array.from(columns.values());
   },
   ["jobs"],
@@ -79,9 +75,7 @@ const getCachedTrackedJobs = unstable_cache(
 
 export async function GET(request: NextRequest) {
   try {
-    console.time("GET Request");
     const result = await getCachedTrackedJobs();
-    console.timeLog("GET Request");
     return NextResponse.json({ columns: result });
   } catch (error) {
     console.error("Error:", error);
