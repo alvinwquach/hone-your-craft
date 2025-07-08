@@ -39,7 +39,7 @@ except Exception as e:
 # - Read skills.json from the current working directory
 # - skills.json is generated from skillKeywords.ts in the Next.js app
 # - Handle errors if file is missing or malformed
-skills_file = "../../public/skills.json"
+skills_file = "./skills.json"
 try:
     if not os.path.exists(skills_file):
         raise FileNotFoundError(f"{skills_file} not found in {os.getcwd()}")
