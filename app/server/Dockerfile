@@ -22,7 +22,7 @@ COPY skills_api.py /app/app/skills_api.py
 COPY skills.json /app/skills.json
 
 # Expose FastAPI port
-EXPOSE 8000
+EXPOSE 8080
 
 # Run the FastAPI app using uvicorn
-CMD ["uvicorn", "app.skills_api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.skills_api:app", "--host", "0.0.0.0", "--port", "8080"]
