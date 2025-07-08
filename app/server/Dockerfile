@@ -9,17 +9,17 @@ RUN apt-get update && apt-get install -y gcc curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies (including spaCy)
-COPY app/server/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Download spaCy English medium model
 RUN python -m spacy download en_core_web_md
 
 # Copy FastAPI source code
-COPY app/server/skills_api.py ./app/skills_api.py
+COPY skills_api.py /app/app/skills_api.py
 
-# Copy skills.json from the public folder
-COPY public/skills.json ./skills.json
+# Copy skills.json
+COPY skills.json /app/skills.json
 
 # Expose FastAPI port
 EXPOSE 8000
