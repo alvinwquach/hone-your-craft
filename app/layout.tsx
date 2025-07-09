@@ -1,3 +1,4 @@
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { GoogleTagManager } from "@next/third-parties/google";
@@ -35,6 +36,7 @@ export default function RootLayout({
             <ToastContainer />
           </SessionProvider>
           {/* <Top10MissingSkillsTicker /> */}
+          <SpeedInsights />
         </body>
       </html>
     </AuthProvider>
