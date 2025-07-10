@@ -1,3 +1,4 @@
 declare module "next/cache" {
-  export const revalidatePath: (path: string, type?: string) => void;
+  export function revalidateTag(tag: string): void;
+  export function revalidatePath(path: string, type?: "page" | "layout"): void;
 }
