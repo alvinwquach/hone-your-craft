@@ -1,0 +1,10 @@
+model Mentorship {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  mentorId  String           @db.ObjectId
+  mentor    User             @relation("MentorRelationships", fields: [mentorId], references: [id])
+  menteeId  String           @db.ObjectId
+  mentee    User             @relation("MenteeRelationships", fields: [menteeId], references: [id])
+  status    MentorshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}

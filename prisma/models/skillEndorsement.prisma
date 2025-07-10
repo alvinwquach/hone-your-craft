@@ -1,0 +1,13 @@
+model SkillEndorsement {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  endorserId String   @db.ObjectId
+  endorser   User     @relation("Endorser", fields: [endorserId], references: [id], onDelete: Cascade)
+  userId     String   @db.ObjectId
+  user       User     @relation("Endorsees", fields: [userId], references: [id], onDelete: Cascade)
+  skillId    String   @db.ObjectId
+  skill      Skill    @relation("SkillEndorsements", fields: [skillId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([endorserId, userId, skillId])
+  @@map("skill_endorsements")
+}

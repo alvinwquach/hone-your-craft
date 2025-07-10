@@ -1,0 +1,9 @@
+
+model Skill {
+  id                       String                    @id @default(auto()) @map("_id") @db.ObjectId
+  name                     String                    @unique
+  endorsements             SkillEndorsement[]        @relation("SkillEndorsements")
+  jobSkills                JobSkill[]                @relation("JobSkillToSkill")
+  jobPostingSkillsRequired JobPostingRequiredSkill[] @relation("JobPostingRequiredSkillToSkill")
+  jobPostingSkillsBonus    JobPostingBonusSkill[]    @relation("JobPostingBonusSkillToSkill")
+}

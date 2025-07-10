@@ -1,0 +1,8 @@
+model Conversation {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  senderId          String             @db.ObjectId
+  receiverIds       String[]           @db.ObjectId
+  messages          Message[]          @relation("ConversationMessages")
+  createdAt         DateTime           @default(now())
+  userConversations UserConversation[] @relation("ConversationToUserConversations")
+}

@@ -1,0 +1,13 @@
+model EventType {
+  id             String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String                  @db.ObjectId
+  user           User                    @relation("UserEventTypes", fields: [userId], references: [id])
+  title          String
+  length         Int?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  availabilities EventTypeAvailability[] @relation("EventTypeToAvailability")
+  userEvents     UserEvent[]             @relation("EventTypeToUserEvent")
+
+  @@map("event_Types")
+}

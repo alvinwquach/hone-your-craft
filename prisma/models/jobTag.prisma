@@ -1,0 +1,9 @@
+model JobTag {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  jobPosting   JobPosting @relation("JobTags", fields: [jobPostingId], references: [id])
+  jobPostingId String     @db.ObjectId
+  tag          Tag        @relation("JobTags", fields: [tagId], references: [id])
+  tagId        String     @db.ObjectId
+
+  @@unique([jobPostingId, tagId])
+}

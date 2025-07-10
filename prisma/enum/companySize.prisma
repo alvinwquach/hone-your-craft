@@ -1,0 +1,9 @@
+enum CompanySize {
+  Tiny_1_10
+  Small_11_50
+  Medium_51_200
+  Large_201_500
+  XLarge_501_1000
+  XXLarge_1001_5000
+  Enterprise_5000plus
+}

@@ -1,0 +1,8 @@
+enum JobPostingStatus {
+  OPEN
+  CLOSED
+  DRAFT
+  ARCHIVED
+  FILLED
+  COMPLETED
+}

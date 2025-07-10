@@ -1,0 +1,11 @@
+model Degree {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  degreeType   DegreeType
+  jobPosting   JobPosting @relation("JobPostingDegrees", fields: [jobPostingId], references: [id], onDelete: Cascade)
+  jobPostingId String     @db.ObjectId
+  isRequired   Boolean
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("degrees")
+}

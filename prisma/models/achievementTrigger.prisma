@@ -1,0 +1,9 @@
+model AchievementTrigger {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  achievementId String      @db.ObjectId
+  achievement   Achievement @relation("AchievementTriggers", fields: [achievementId], references: [id], onDelete: Cascade)
+  condition     String
+  action        String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}

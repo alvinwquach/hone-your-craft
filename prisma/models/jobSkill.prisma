@@ -1,0 +1,13 @@
+model JobSkill {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  jobId             String   @db.ObjectId
+  job               Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill             Skill    @relation("JobSkillToSkill", fields: [skillId], references: [id], onDelete: Cascade)
+  skillId           String   @db.ObjectId
+  isRequired        Boolean?
+  yearsOfExperience Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("job_skills")
+}

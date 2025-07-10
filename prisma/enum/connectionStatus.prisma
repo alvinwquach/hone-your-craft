@@ -1,0 +1,6 @@
+enum ConnectionStatus {
+  NONE
+  PENDING
+  ACCEPTED
+  REJECTED
+}

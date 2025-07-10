@@ -1,0 +1,13 @@
+model ApplicationStage {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  applicationId String            @db.ObjectId
+  application   Application       @relation("ApplicationStages", fields: [applicationId], references: [id], onDelete: Cascade)
+  stage         ApplicationStatus
+  description   String?
+  attachments   String[]
+  notes         String?
+  updatedAt     DateTime          @updatedAt
+  createdAt     DateTime          @default(now())
+
+  @@index([applicationId])
+}

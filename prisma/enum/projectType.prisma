@@ -1,0 +1,6 @@
+enum ProjectType {
+  PERSONAL
+  FREELANCE
+  ACADEMIC
+  CLIENT
+}

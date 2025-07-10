@@ -1,0 +1,14 @@
+model TimeSlot {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  eventId   String    @db.ObjectId
+  event     UserEvent @relation(name: "TimeSlotToUserEvent", fields: [eventId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime
+  isBooked  Boolean   @default(false)
+  bookedBy  String?   @db.ObjectId
+  duration  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("timeslots")
+}

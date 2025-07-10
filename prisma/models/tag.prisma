@@ -1,0 +1,5 @@
+model Tag {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name    String   @unique
+  jobTags JobTag[] @relation("JobTags")
+}

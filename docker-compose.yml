@@ -32,7 +32,7 @@ services:
     depends_on:
       - mongodb
     volumes:
-      - ./app/server/skills.json:/app/skills.json:ro # Optional: Mount skills.json for live updates
+      - ./app/server/skills.json:/app/skills.json:ro
 
   mongodb:
     image: mongo:latest
@@ -41,10 +41,10 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-      MONGO_INITDB_DATABASE: hone-your-craft # Specify the database name
+      MONGO_INITDB_DATABASE: hone-your-craft 
     volumes:
       - mongo-data:/data/db
-    command: ["mongod", "--auth"] # Enable authentication
+    command: ["mongod", "--auth"] 
 
 volumes:
   mongo-data:
