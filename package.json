@@ -82,6 +82,6 @@
     "typescript": "^5.3.3"
   },
   "prisma": {
-    "schema": "../closet-sync/prisma/schema.prisma"
-  }
+    "schema": "./prisma/schema.prisma"
+  }  
 }
