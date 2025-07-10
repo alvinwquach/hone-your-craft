@@ -1,0 +1,14 @@
+model InterviewAvailability {
+  id             String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String                  @db.ObjectId
+  user           User                    @relation("InterviewAvailability", fields: [userId], references: [id])
+  dayOfWeek      DayOfWeek
+  isRecurring    Boolean                 @default(false)
+  startTime      DateTime
+  endTime        DateTime
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  availabilities EventTypeAvailability[] @relation("AvailabilityToEventType")
+
+  @@map("interview_availabilities")
+}

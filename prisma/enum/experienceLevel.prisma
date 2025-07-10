@@ -1,0 +1,16 @@
+enum ExperienceLevel {
+  INTERN
+  TRAINEE
+  JUNIOR
+  ASSOCIATE
+  MID
+  SENIOR
+  LEAD
+  STAFF
+  PRINCIPAL
+  MANAGER
+  DIRECTOR
+  VP
+  EXECUTIVE
+  C_LEVEL
+}

@@ -1,0 +1,13 @@
+model Salary {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  jobPostingId String     @unique @db.ObjectId
+  jobPosting   JobPosting @relation("SalaryJobPosting", fields: [jobPostingId], references: [id], onDelete: Cascade)
+  amount       Float?
+  rangeMin     Float?
+  rangeMax     Float?
+  salaryType   SalaryType @default(RANGE)
+  frequency    Frequency?
+  negotiable   Boolean?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}

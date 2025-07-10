@@ -1,0 +1,18 @@
+model UserEvent {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String?
+  startTime     DateTime
+  endTime       DateTime
+  creatorId     String     @db.ObjectId
+  creator       User       @relation("EventCreator", fields: [creatorId], references: [id])
+  participantId String     @db.ObjectId
+  participant   User       @relation("EventParticipant", fields: [participantId], references: [id])
+  timeSlot      TimeSlot[] @relation(name: "TimeSlotToUserEvent")
+  eventTypeId   String?    @db.ObjectId
+  eventType     EventType? @relation("EventTypeToUserEvent", fields: [eventTypeId], references: [id]) // Relation to EventType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_events")
+}

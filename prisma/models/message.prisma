@@ -1,0 +1,26 @@
+model Message {
+  id                         String       @id @default(auto()) @map("_id") @db.ObjectId
+  sender                     User         @relation("SentMessages", fields: [senderId], references: [id])
+  senderId                   String       @db.ObjectId
+  recipients                 User         @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  recipientId                String[]     @db.ObjectId
+  subject                    String?
+  content                    String
+  messageType                MessageType  @default(TEXT)
+  mentionedUserIds           String[]
+  createdAt                  DateTime     @default(now())
+  updatedAt                  DateTime     @updatedAt
+  isReadByRecipient          Boolean      @default(false)
+  isDeletedBySender          Boolean      @default(false)
+  isDeletedFromTrashBySender Boolean      @default(false)
+  isDeletedByRecipient       Boolean      @default(false)
+  replyToId                  String?      @db.ObjectId
+  threadId                   String?      @db.ObjectId
+  deliveryStatus             String?
+  reactionCount              Int          @default(0)
+  readAt                     DateTime?
+  conversationId             String       @db.ObjectId
+  conversation               Conversation @relation("ConversationMessages", fields: [conversationId], references: [id])
+
+  @@map("messages")
+}

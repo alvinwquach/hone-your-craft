@@ -1,0 +1,18 @@
+model SocialLinks {
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String  @unique @db.ObjectId
+  user             User    @relation("UserSocialLinks", fields: [userId], references: [id])
+  linkedinUrl      String?
+  githubUrl        String?
+  twitterUrl       String?
+  facebookUrl      String?
+  instagramUrl     String?
+  youtubeUrl       String?
+  tiktokUrl        String?
+  pinterestUrl     String?
+  redditUrl        String?
+  snapchatUrl      String?
+  mediumUrl        String?
+  stackOverflowUrl String?
+  behanceUrl       String?
+}

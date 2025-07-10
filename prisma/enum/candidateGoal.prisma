@@ -1,0 +1,10 @@
+enum CandidateGoal {
+  ChangeMyCareer
+  BuildAPortfolio
+  GrowInMyExistingRole
+  ExploreNewOpportunities
+  ImproveSkillset
+  LookingForANewJob
+  ReceiveAnOffer
+  NotSureYet
+}

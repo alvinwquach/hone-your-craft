@@ -1,0 +1,13 @@
+
+model UserAchievement {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String      @db.ObjectId
+  user          User        @relation("UserAchievements", fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String      @db.ObjectId
+  achievement   Achievement @relation("AchievementUserAchievements", fields: [achievementId], references: [id], onDelete: Cascade)
+  awardedAt     DateTime    @default(now())
+  progress      Int         @default(0)
+  lastActionAt  DateTime?
+
+  @@unique([userId, achievementId])
+}

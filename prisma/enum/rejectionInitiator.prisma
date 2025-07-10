@@ -1,0 +1,4 @@
+enum RejectionInitiator {
+  APPLICANT
+  COMPANY
+}

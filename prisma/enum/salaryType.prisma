@@ -1,0 +1,6 @@
+enum SalaryType {
+  RANGE
+  STARTING_AT
+  UP_TO
+  EXACT
+}

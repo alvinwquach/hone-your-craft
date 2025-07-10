@@ -1,0 +1,14 @@
+model JobRecommendation {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String     @db.ObjectId
+  user          User       @relation("JobRecommendations", fields: [userId], references: [id])
+  jobPostingId  String     @db.ObjectId
+  job           JobPosting @relation("JobRecommendations", fields: [jobPostingId], references: [id])
+  recommendedAt DateTime   @default(now())
+  source        String?
+  rationale     String?
+  isAccepted    Boolean    @default(false)
+  acceptedAt    DateTime?
+  rejectedAt    DateTime?
+  feedback      String?
+}

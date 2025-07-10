@@ -1,0 +1,15 @@
+model Application {
+  id           String               @id @default(auto()) @map("_id") @db.ObjectId
+  candidateId  String               @db.ObjectId
+  candidate    User                 @relation("JobApplications", fields: [candidateId], references: [id])
+  jobPostingId String               @db.ObjectId
+  jobPosting   JobPosting           @relation("JobApplications", fields: [jobPostingId], references: [id])
+  status       JobApplicationStatus @default(PENDING)
+  appliedAt    DateTime             @default(now())
+  acceptedAt   DateTime?
+  rejectedAt   DateTime?
+  stages       ApplicationStage[]   @relation("ApplicationStages")
+  resumeUrl    String?
+
+  @@map("applications")
+}

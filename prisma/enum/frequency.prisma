@@ -1,0 +1,5 @@
+enum Frequency {
+  PER_YEAR
+  PER_MONTH
+  PER_HOUR
+}

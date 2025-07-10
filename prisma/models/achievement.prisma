@@ -1,0 +1,11 @@
+
+model Achievement {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  name             String               @unique
+  description      String
+  iconUrl          String?
+  userAchievements UserAchievement[]    @relation("AchievementUserAchievements")
+  triggers         AchievementTrigger[] @relation("AchievementTriggers")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}

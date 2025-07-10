@@ -1,0 +1,38 @@
+model JobPosting {
+  id                   String                    @id @default(auto()) @map("_id") @db.ObjectId
+  user                 User                      @relation("JobPostings", fields: [userId], references: [id], onDelete: Cascade)
+  userId               String                    @db.ObjectId
+  company              String?
+  companySize          CompanySize?
+  industry             String[]
+  title                String
+  jobType              JobType?
+  url                  String?
+  deadline             DateTime?
+  experienceLevels     ExperienceLevel[]
+  yearsOfExperience    YearsOfExperience?
+  description          String
+  responsibilities     String[]
+  location             String?
+  workLocation         WorkLocation?
+  paymentType          PaymentType
+  salary               Salary?                   @relation("SalaryJobPosting")
+  status               JobPostingStatus          @default(OPEN)
+  interviewProcess     String[]
+  requiredSkills       JobPostingRequiredSkill[] @relation("RequiredJobSkills")
+  bonusSkills          JobPostingBonusSkill[]    @relation("BonusJobSkills")
+  requiredDegree       Degree[]                  @relation("JobPostingDegrees")
+  views                Int                       @default(0)
+  applications         Application[]             @relation("JobApplications")
+  applicationsReceived Int                       @default(0)
+  isArchived           Boolean                   @default(false)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  jobRecommendations   JobRecommendation[]       @relation("JobRecommendations")
+  jobTags              JobTag[]                  @relation("JobTags")
+  rejections           Rejection[]               @relation("JobRejections")
+  offers               Offer[]                   @relation("JobOffers")
+  directApplications   Int                       @default(0)
+
+  @@map("job_postings")
+}

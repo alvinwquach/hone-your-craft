@@ -1,0 +1,10 @@
+model Collaboration {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectId      String   @db.ObjectId
+  // project        Project  @relation("ProjectCollaborations", fields: [projectId], references: [id])
+  collaboratorId String   @db.ObjectId
+  collaborator   User     @relation("UserCollaborations", fields: [collaboratorId], references: [id])
+  role           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

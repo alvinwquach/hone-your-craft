@@ -1,0 +1,17 @@
+model Interview {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  user          User?         @relation(fields: [userId], references: [id])
+  userId        String?       @db.ObjectId
+  job           Job           @relation(fields: [jobId], references: [id])
+  jobId         String        @db.ObjectId
+  acceptedDate  DateTime      @default(now())
+  startTime     DateTime?
+  endTime       DateTime?
+  interviewDate DateTime?
+  interviewType InterviewType
+  videoUrl      String?
+  meetingId     String?
+  passcode      String?
+
+  @@map("interview")
+}

@@ -1,0 +1,8 @@
+enum MentorshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+  IN_PROGRESS
+}
